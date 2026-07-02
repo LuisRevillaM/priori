@@ -23,6 +23,7 @@ from tqe.runtime.executor import (
     space_region_generation_anchor_record,
 )
 from tqe.runtime.ir import ExecutionStatus, TacticalQueryDocument, stable_hash
+from tqe.semantic_registry.generate import generate_scp0_artifacts
 
 
 REPORT_PATH = Path("artifacts/autonomous/afl-space-region-generation-verification-report.json")
@@ -225,6 +226,7 @@ def verify_search_flip() -> tuple[list[dict[str, Any]], dict[str, Any]]:
 
 
 def verify_space_region_generation() -> dict[str, Any]:
+    _registry, _runtime_manifest, registry_lock, parity_report = generate_scp0_artifacts(write=True)
     executor = TacticalQueryExecutor(
         canonical_root=Path(os.environ.get("TQE_DATA_ROOT", str(DEFAULT_CANONICAL_ROOT))),
         raw_root=Path(os.environ.get("TQE_RAW_ROOT", str(DEFAULT_RAW_ROOT))),
@@ -236,6 +238,14 @@ def verify_space_region_generation() -> dict[str, Any]:
     fixture_records = [record for record in [fail_fixture, unknown_fixture] if record is not None]
 
     findings: list[dict[str, Any]] = [*search_findings]
+    if parity_report.status != "PASS":
+        findings.append(
+            {
+                "code": "scp0_parity_failed",
+                "parity_status": parity_report.status,
+                "parity_finding_count": len(parity_report.findings),
+            }
+        )
     for label, execution, rows in [
         ("open_space_region", open_execution, open_rows),
         ("available_space_region", available_execution, available_rows),
@@ -281,6 +291,7 @@ def verify_space_region_generation() -> dict[str, Any]:
 
     report = {
         "schema_version": "afl.space_region_generation.v1",
+        "registry_lock": registry_lock.model_dump(mode="json"),
         "milestone": "AFL-08 space_region_generation primitive / SCL named-gap closure",
         "status": "PASS" if not findings else "FAIL",
         "threshold_version": THRESHOLD_VERSION,

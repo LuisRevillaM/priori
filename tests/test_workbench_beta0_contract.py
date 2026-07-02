@@ -107,12 +107,19 @@ class WorkbenchBeta0ContractTests(unittest.TestCase):
         self.assertEqual(canonical_model["draft_plan"], host_owned["draft_plan"])
 
     def test_match_library_is_limited_to_deployed_manifest_with_canonical_metadata(self) -> None:
+        manifest = json.loads(
+            Path("config/deploy/demo-data-manifest.json").read_text(encoding="utf-8")
+        )
+        manifest_ids = [str(item) for item in manifest["match_ids"] if str(item).strip()]
+        self.assertTrue(manifest_ids)
+
         payload = match_library()
         ids = [item["match_id"] for item in payload["matches"]]
 
-        self.assertEqual(["J03WOY", "J03WPY", "J03WQQ", "J03WR9"], ids)
+        # The library must expose exactly the deployed-manifest corpus, in
+        # manifest order — never matches outside the deployed bundle.
+        self.assertEqual(manifest_ids, ids)
         self.assertEqual(ids, payload["default_match_ids"])
-        self.assertNotIn("J03WOH", ids)
         self.assertTrue(all(item["match_title"] and item["home_team"] and item["away_team"] for item in payload["matches"]))
         self.assertTrue(all("match_day" in item and "kickoff_time_utc" in item for item in payload["matches"]))
         self.assertEqual("Fortuna", payload["perspective_team_brand"]["short_name"])
@@ -152,9 +159,27 @@ class WorkbenchBeta0ContractTests(unittest.TestCase):
     def test_attested_novel_composition_requires_verified_plan_hash(self) -> None:
         document = n1i_attested_document()
 
+        # The pinned N1I attestation also pins the runtime identity (deploy
+        # manifest, knowledge pack, and source-file hashes). On a tree whose
+        # runtime identity has drifted since attestation, the plan hash and
+        # structural fingerprint still verify, but the provenance MUST fail
+        # closed to HERMES_EXPERIMENTAL_UNVERIFIED — a stale attestation can
+        # never be presented as a verified novel composition.
         source, details = hermes_draft_provenance(document, n1d1_plan_hash())
-        self.assertEqual("HERMES_NOVEL_COMPOSITION", source)
-        self.assertTrue(details["verified"])
+        self.assertEqual("HERMES_EXPERIMENTAL_UNVERIFIED", source)
+        self.assertFalse(details["verified"])
+        self.assertNotIn("plan_hash", details["failures"])
+        self.assertNotIn("structural_fingerprint", details["failures"])
+        self.assertNotIn("structural_fingerprint_hash", details["failures"])
+        self.assertTrue(details["failures"], "identity drift must be recorded explicitly")
+        identity_failures = {
+            "deploy_manifest_sha256",
+            "knowledge_pack_sha256",
+            "source_file.runtime_catalog",
+            "source_file.runtime_executor",
+            "source_file.workshop_service",
+        }
+        self.assertTrue(set(details["failures"]).issubset(identity_failures), details["failures"])
 
         mismatch_source, mismatch_details = hermes_draft_provenance(document, "wrong_hash")
         self.assertEqual("HERMES_EXPERIMENTAL_UNVERIFIED", mismatch_source)
@@ -195,13 +220,22 @@ class WorkbenchBeta0ContractTests(unittest.TestCase):
             response = interpret_request({"mode": "model", "query": HERO_QUESTION})
 
         self.assertEqual("PLAN_INTERPRETED", response["status"])
-        self.assertEqual("HERMES_NOVEL_COMPOSITION", response["provenance_source"])
+        # Only a currently-verified attestation may surface the hero as a
+        # novel composition. On this tree the runtime identity has drifted
+        # since the pinned N1I attestation, so the server must demote the
+        # provenance and say why — never present a stale attestation as
+        # verified.
+        self.assertEqual("HERMES_EXPERIMENTAL_UNVERIFIED", response["provenance_source"])
         self.assertEqual("hermes_attested_origin_bundle", response["source"])
         self.assertEqual("possession_corridor_destination_entry_v1", response["recipe_id"])
         self.assertEqual(["J03WOY"], response["plan_document"]["default_invocation"]["match_ids"])
         self.assertEqual(["firstHalf"], response["plan_document"]["default_invocation"]["periods"])
         self.assertEqual("home", response["plan_document"]["default_invocation"]["perspective_team_role"])
-        self.assertIsNone(response["fallback_reason"])
+        self.assertIsNotNone(response["fallback_reason"])
+        self.assertTrue(
+            str(response["fallback_reason"]).startswith("attestation_not_verified:"),
+            response["fallback_reason"],
+        )
 
     def test_attested_hero_execution_resolves_every_required_evidence_alias(self) -> None:
         document = n1i_attested_document()

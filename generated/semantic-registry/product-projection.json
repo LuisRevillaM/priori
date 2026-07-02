@@ -664,7 +664,9 @@
               "line_compactness_m",
               "team_width_m",
               "team_depth_m",
-              "team_area_m2"
+              "team_area_m2",
+              "nearest_defender_distance_m",
+              "closing_speed_mps"
             ],
             "default": {
               "payload_type": "enum",
@@ -682,7 +684,9 @@
               "line_compactness_m",
               "team_width_m",
               "team_depth_m",
-              "team_area_m2"
+              "team_area_m2",
+              "nearest_defender_distance_m",
+              "closing_speed_mps"
             ],
             "default": {
               "payload_type": "enum",
@@ -699,7 +703,8 @@
             "allowed_values": [
               "line_status",
               "multi_line_status",
-              "team_compactness_status"
+              "team_compactness_status",
+              "pressure_status"
             ],
             "default": {
               "payload_type": "enum",
@@ -717,6 +722,7 @@
               "line_status",
               "multi_line_status",
               "team_compactness_status",
+              "pressure_status",
               "none"
             ],
             "default": {
@@ -1017,8 +1023,20 @@
               "pass_episode_id",
               "passer_id",
               "receiver_id",
+              "event_anchor_frame_id",
+              "physical_release_frame_id",
+              "controlled_reception_frame_id",
+              "release_match_time_ms",
+              "reception_match_time_ms",
               "event_type",
               "controlled_pass_status",
+              "release_control_status",
+              "controlled_reception_status",
+              "possession_continuity_status",
+              "release_ball_point",
+              "reception_ball_point",
+              "release_passer_point",
+              "reception_receiver_point",
               "forward_progression_m"
             ],
             "missing_data_semantics": "unknown",
@@ -2917,7 +2935,10 @@
             "allowed_values": [
               "anchor_frame_id",
               "physical_release_frame_id",
-              "controlled_reception_frame_id"
+              "controlled_reception_frame_id",
+              "carry_start_frame_id",
+              "carry_end_frame_id",
+              "terminal_release_frame_id"
             ],
             "default": {
               "payload_type": "enum",
@@ -2935,7 +2956,8 @@
               "receiver_id",
               "passer_id",
               "relay_player_id",
-              "terminal_receiver_id"
+              "terminal_receiver_id",
+              "carrier_id"
             ],
             "default": {
               "payload_type": "enum",
@@ -3005,6 +3027,7 @@
           "pass_chain_status",
           "pass_chain_reason",
           "input_pass_episode_id",
+          "input_passer_id",
           "relay_pass_episode_id",
           "terminal_pass_episode_id",
           "relay_player_id",
@@ -3050,6 +3073,7 @@
               "pass_chain_status",
               "pass_chain_reason",
               "input_pass_episode_id",
+              "input_passer_id",
               "relay_pass_episode_id",
               "terminal_pass_episode_id",
               "relay_player_id",
@@ -3252,7 +3276,10 @@
             "allowed_values": [
               "anchor_frame_id",
               "physical_release_frame_id",
-              "controlled_reception_frame_id"
+              "controlled_reception_frame_id",
+              "carry_start_frame_id",
+              "carry_end_frame_id",
+              "terminal_release_frame_id"
             ],
             "default": {
               "payload_type": "enum",
@@ -3270,7 +3297,8 @@
               "receiver_id",
               "passer_id",
               "relay_player_id",
-              "terminal_receiver_id"
+              "terminal_receiver_id",
+              "carrier_id"
             ],
             "default": {
               "payload_type": "enum",
@@ -6054,16 +6082,16 @@
   ],
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "1a1fa4a7b75453fa4ce0fef355550df1c10f3d151d2904cd3e08551b7d2c9c7c",
+    "baseline_artifact_revision": "c6d408c38dc6e77abee036f5b78a4a282282518b14fa425bf385ad4411627263",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "6b8cc04649be311424db50fb72da1640dc2567856b0fa01b1ed4a4afe19fb706",
+    "lock_hash": "202886dd13c8e71e3ea45db1b48d25b224257d244eea0d673ea4e9348217a85c",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "0eb974ec4e9c36395d773506ea7a55f86d454355d0da391a60774026118899e3",
+    "registry_revision": "8d2945ae759373dbdbb0be95a33555a7dd874a4defa73af172eaa2d851946e16",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "46aafc14a3c32974245158bc7fe55fc150918f3461a2348ba5a7ca3ca44c3841",
+    "runtime_manifest_revision": "67d57df99aa41c0928c5c4a6f14015546b387436dd5ea0a38602a8864a0d4471",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"

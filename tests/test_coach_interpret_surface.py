@@ -1,6 +1,9 @@
 import unittest
+from copy import deepcopy
+from typing import Any
 
 from src.tqe.workshop.app_service import (
+    COACH_PRODUCT_CLAIM_REQUIREMENTS,
     coach_moment_payload,
     coach_no_moments_kind,
     coach_preview_runtime_family_without_surface,
@@ -8,6 +11,16 @@ from src.tqe.workshop.app_service import (
     coach_template,
     coach_visual_moment_kind,
 )
+
+
+def with_dotted_value(payload: dict[str, Any], path: str, value: Any) -> dict[str, Any]:
+    mutated = deepcopy(payload)
+    current: Any = mutated
+    parts = path.split(".")
+    for part in parts[:-1]:
+        current = current[part]
+    current[parts[-1]] = value
+    return mutated
 
 
 class CoachInterpretSurfaceTests(unittest.TestCase):
@@ -22,11 +35,11 @@ class CoachInterpretSurfaceTests(unittest.TestCase):
 
         self.assertEqual("progressive_carry_under_pressure", coach_no_moments_kind(contract))
         self.assertEqual(
-            "In this match, no carry progressed forward under defender pressure.",
+            "Across these matches, no carry progressed forward under defender pressure.",
             coach_template("no_moments_found.progressive_carry_under_pressure"),
         )
 
-    def test_line_break_zero_has_match_scoped_copy(self) -> None:
+    def test_line_break_zero_has_corpus_scoped_copy(self) -> None:
         contract = {
             "required_evidence": [
                 "line_break_status",
@@ -42,7 +55,7 @@ class CoachInterpretSurfaceTests(unittest.TestCase):
 
         self.assertEqual("line_break_no_underneath_support", coach_no_moments_kind(contract))
         self.assertEqual(
-            "In this match, that line-break moment did not appear.",
+            "Across these matches, that clean-control line-break moment did not appear.",
             coach_template("no_moments_found.line_break_no_underneath_support"),
         )
 
@@ -64,7 +77,7 @@ class CoachInterpretSurfaceTests(unittest.TestCase):
         self.assertEqual("line_break_with_two_underneath_outlets", coach_no_moments_kind(contract))
         self.assertFalse(coach_preview_runtime_family_without_surface(contract))
         self.assertEqual(
-            "In this match, no line break had two underneath outlets.",
+            "Across these matches, no clean-control line break had two underneath outlets.",
             coach_template("no_moments_found.line_break_with_two_underneath_outlets"),
         )
 
@@ -117,11 +130,11 @@ class CoachInterpretSurfaceTests(unittest.TestCase):
         self.assertEqual("high_bypass_completed_pass", coach_no_moments_kind(contract))
         self.assertFalse(coach_preview_runtime_family_without_surface(contract))
         self.assertEqual(
-            "One completed pass bypassed multiple opponents. The ball reaches the final third.",
+            "Passes bypassed multiple opponents with control after reception.",
             coach_template("moment_found.high_bypass_completed_pass"),
         )
         self.assertEqual(
-            "In this match, no completed pass bypassed five opponents.",
+            "Across these matches, no clean-control pass bypassed five opponents.",
             coach_template("no_moments_found.high_bypass_completed_pass"),
         )
 
@@ -136,37 +149,68 @@ class CoachInterpretSurfaceTests(unittest.TestCase):
 
         self.assertTrue(coach_preview_runtime_family_without_surface(contract))
 
-    def test_high_bypass_value_claim_requires_retention(self) -> None:
-        payload = coach_moment_payload("high_bypass_completed_pass")
-        gate = coach_product_claim_gate("high_bypass_completed_pass", payload)
+    def test_high_bypass_claim_gate_enforces_every_declared_requirement(self) -> None:
+        kind = "high_bypass_completed_pass"
+        payload = coach_moment_payload(kind)
+        gate = coach_product_claim_gate(kind, payload)
 
         self.assertTrue(gate["passed"])
-        self.assertEqual("completed_high_bypass_pass_reached_final_third_and_retained", gate["claim_id"])
+        spec = COACH_PRODUCT_CLAIM_REQUIREMENTS[kind]
+        self.assertEqual(spec["claim_id"], gate["claim_id"])
+        # The claim id must stay in observed-evidence language.
+        self.assertTrue(gate["claim_id"].startswith("observed_"))
 
-        unbacked = dict(payload)
-        unbacked["moment"] = dict(payload["moment"])
-        unbacked["moment"]["possession_retention"] = dict(payload["moment"]["possession_retention"])
-        unbacked["moment"]["possession_retention"]["status"] = "FAIL"
-
-        failed = coach_product_claim_gate("high_bypass_completed_pass", unbacked)
+        # The clean-control retention evidence is load-bearing: contradicting it
+        # must flip the gate with an explicit failure record.
+        unbacked = with_dotted_value(payload, "moment.clean_control_retention.status", "FAIL")
+        failed = coach_product_claim_gate(kind, unbacked)
         self.assertFalse(failed["passed"])
         self.assertIn(
             {
-                "path": "moment.possession_retention.status",
+                "path": "moment.clean_control_retention.status",
                 "expected": "PASS",
                 "actual": "FAIL",
             },
             failed["failures"],
         )
 
-    def test_line_break_copy_is_narrow_and_does_not_require_retention(self) -> None:
-        payload = coach_moment_payload("line_break_with_underneath_outlet")
-        self.assertEqual("FAIL", payload["moment"]["possession_retention"]["status"])
+        # Every equals-requirement in the declared claim contract is enforced,
+        # not just the retention path.
+        for requirement in spec["requirements"]:
+            if "equals" not in requirement:
+                continue
+            tampered = with_dotted_value(payload, requirement["path"], "__contradicted__")
+            self.assertFalse(
+                coach_product_claim_gate(kind, tampered)["passed"],
+                f"requirement not enforced: {requirement['path']}",
+            )
 
-        gate = coach_product_claim_gate("line_break_with_underneath_outlet", payload)
+    def test_unknown_kind_fails_closed_without_claim_id(self) -> None:
+        gate = coach_product_claim_gate("not_a_registered_kind", {})
 
+        self.assertFalse(gate["passed"])
+        self.assertIsNone(gate["claim_id"])
+        self.assertIn({"path": "kind", "reason": "claim_requirements_missing"}, gate["failures"])
+
+    def test_line_break_claim_requires_clean_control_but_not_possession_retention(self) -> None:
+        kind = "line_break_with_underneath_outlet"
+        payload = coach_moment_payload(kind)
+        # Possession retention is not proven for this moment...
+        self.assertNotEqual("PASS", payload["moment"]["possession_retention"]["status"])
+
+        gate = coach_product_claim_gate(kind, payload)
+
+        # ...and the claim passes anyway, because the declared claim is scoped to
+        # clean control after reception, not possession retention.
         self.assertTrue(gate["passed"])
-        self.assertEqual("observed_line_break_with_underneath_outlet", gate["claim_id"])
+        self.assertEqual(
+            COACH_PRODUCT_CLAIM_REQUIREMENTS[kind]["claim_id"], gate["claim_id"]
+        )
+        self.assertTrue(gate["claim_id"].startswith("observed_"))
+
+        # Clean-control retention is still required evidence.
+        unbacked = with_dotted_value(payload, "moment.clean_control_retention.status", "FAIL")
+        self.assertFalse(coach_product_claim_gate(kind, unbacked)["passed"])
 
 
 if __name__ == "__main__":

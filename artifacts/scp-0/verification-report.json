@@ -727,82 +727,33 @@
     "ai": {
       "added": [
         "composition:composition.ai_corridor_destination.2026_06_23",
-        "recipe:first_time_relay_after_receiver_line_transition_v1:0.1.0",
-        "recipe:line_break_support_response_v1:0.1.0",
-        "runtime:primitive:action_chain:0.1.0",
-        "runtime:primitive:action_event_anchor:0.1.0",
-        "runtime:primitive:change_across_anchor:0.1.0",
-        "runtime:primitive:multi_line_model:0.1.0",
-        "runtime:primitive:one_touch_relay_episode:0.1.0",
-        "runtime:primitive:pairwise_distance:0.1.0",
-        "runtime:primitive:pass_chain_episode:0.1.0",
-        "runtime:primitive:receiver_line_transition_during_pass_leg:0.1.0",
-        "runtime:primitive:switch_of_play:0.1.0",
-        "runtime:primitive:team_compactness:0.1.0",
-        "runtime:primitive:tracking_quality:0.1.0",
-        "runtime:primitive:velocity:0.1.0",
-        "runtime:relation:pressure_on_carrier:0.1.0"
+        "runtime:primitive:carry_episode:0.1.0",
+        "runtime:primitive:time_to_arrival:0.1.0"
       ],
       "added_details": {
         "composition:composition.ai_corridor_destination.2026_06_23": {
           "projection_contract_hash": "a796f3d6ca9399358c6bf535d0d7d8f57509bbf9763661cf191c76e346af9d3b"
         },
-        "recipe:first_time_relay_after_receiver_line_transition_v1:0.1.0": {
-          "projection_contract_hash": "9ed7dd94d66ac65628b54512990b2d1ddd14d588e9dde931d81295cf1ea7d605"
+        "runtime:primitive:carry_episode:0.1.0": {
+          "projection_contract_hash": "fac40aee740663083b4f48ee0fee9d5326ecbc12e9000a033a7c2d8e2ff239d7"
         },
-        "recipe:line_break_support_response_v1:0.1.0": {
-          "projection_contract_hash": "c63cbe4f2d787da3787a6127d3fa2ebd0355037284173040becd9c15c66b80f5"
-        },
-        "runtime:primitive:action_chain:0.1.0": {
-          "projection_contract_hash": "f137a3c7d7031b39578febe9f6c2b4ce8a0032aa3720c99ee9d554efc714bb6b"
-        },
-        "runtime:primitive:action_event_anchor:0.1.0": {
-          "projection_contract_hash": "8e62f3e65d93fb12cdaa92a9b38012efde2443efd6375c9fd2ec255352368fa4"
-        },
-        "runtime:primitive:change_across_anchor:0.1.0": {
-          "projection_contract_hash": "6bec7322861b28c7e42649cf1d8c55bec1909cbd0b30c63da9cb9242cefa26cd"
-        },
-        "runtime:primitive:multi_line_model:0.1.0": {
-          "projection_contract_hash": "5e2bcb5c0c1202caf872612333c0302cc8f9014b1603a7d7df90bed298accfbe"
-        },
-        "runtime:primitive:one_touch_relay_episode:0.1.0": {
-          "projection_contract_hash": "77a5d0514dc92b60a6974755690cd4c6b10c388c78f4aee87f1162b6361cd006"
-        },
-        "runtime:primitive:pairwise_distance:0.1.0": {
-          "projection_contract_hash": "cd5eb8ef82b23a544d7bc3ee9b989ed3a3fe61a42e9f21bded34a097a05b104a"
-        },
-        "runtime:primitive:pass_chain_episode:0.1.0": {
-          "projection_contract_hash": "7e944b4c55d731b4dd2b6ec65011c38d21ebf1d2606f154df865a293cb5ca0c0"
-        },
-        "runtime:primitive:receiver_line_transition_during_pass_leg:0.1.0": {
-          "projection_contract_hash": "c908635db523d3a50c6589d1d57c9325cbb3cb918a1f25d046fc29db42954ec9"
-        },
-        "runtime:primitive:switch_of_play:0.1.0": {
-          "projection_contract_hash": "d935006f039a807c989037e2891c62faa8d0ca4bba37e47b933c73679b363ef2"
-        },
-        "runtime:primitive:team_compactness:0.1.0": {
-          "projection_contract_hash": "5e17486c2cb6e1654ecf9e40b176109587dd7b023f24e2006fc301248beb3777"
-        },
-        "runtime:primitive:tracking_quality:0.1.0": {
-          "projection_contract_hash": "9f365bf1bada6bfac3d546cf0f03d26edc178305393d62ba42b24ccd033c4df9"
-        },
-        "runtime:primitive:velocity:0.1.0": {
-          "projection_contract_hash": "f4369cac5b49256675f49d03dee288a0b3d0b202a4ddffce5e4b5387e7a5ee0a"
-        },
-        "runtime:relation:pressure_on_carrier:0.1.0": {
-          "projection_contract_hash": "12bcebc22867494d5e6063c375767e726fbbfeb824c71bf03dd0ac0928fd7bc2"
+        "runtime:primitive:time_to_arrival:0.1.0": {
+          "projection_contract_hash": "779ce10e289191634f45051d6c90f9bd37c41e0d5e1d3a2811e5cc20ad85423a"
         }
       },
-      "baseline_count": 27,
+      "baseline_count": 45,
       "contract_changed": [
         "recipe:ball_side_block_shift_v1:1.0.0",
+        "recipe:first_time_relay_after_receiver_line_transition_v1:0.1.0",
         "recipe:high_bypass_completed_pass_v1:0.1.0",
+        "recipe:line_break_support_response_v1:0.1.0",
         "recipe:opposite_corridor_after_shift_v1:0.1.0",
         "recipe:possession_corridor_availability_v1:0.1.0",
+        "runtime:primitive:change_across_anchor:0.1.0",
         "runtime:primitive:controlled_pass_episode:0.1.0",
-        "runtime:primitive:defensive_line_model:0.1.0",
-        "runtime:primitive:relative_position_to_line:0.1.0",
-        "runtime:relation:support_arrival_relation:0.1.0"
+        "runtime:primitive:pairwise_distance:0.1.0",
+        "runtime:primitive:pass_chain_episode:0.1.0",
+        "runtime:relation:pressure_on_carrier:0.1.0"
       ],
       "contract_changed_details": {
         "recipe:ball_side_block_shift_v1:1.0.0": {
@@ -814,6 +765,15 @@
           ],
           "projection_contract_hash": "3e3f2db76424e3dd2400588ddc2395ce1461a3a7a0d7956e68d1df8063900536"
         },
+        "recipe:first_time_relay_after_receiver_line_transition_v1:0.1.0": {
+          "baseline_contract_hash": "a69e03a6015f653ab73c5c1fe5f785493d43e8de5db6d843b598b29c16aaf524",
+          "changed_fields": [
+            "capability_dependencies",
+            "normalized_plan_hash",
+            "operator_dependencies"
+          ],
+          "projection_contract_hash": "9ed7dd94d66ac65628b54512990b2d1ddd14d588e9dde931d81295cf1ea7d605"
+        },
         "recipe:high_bypass_completed_pass_v1:0.1.0": {
           "baseline_contract_hash": "ab114133e2ddd681c5b1ec3c22e05b0a61dc4bc17be1b5d428f27b89242003e4",
           "changed_fields": [
@@ -821,6 +781,15 @@
             "operator_dependencies"
           ],
           "projection_contract_hash": "432ab3ca35a0ed3a05a6fc44b1ec3cdbb7b5d5ae64ddfc6115ac60bdbd5f2ac2"
+        },
+        "recipe:line_break_support_response_v1:0.1.0": {
+          "baseline_contract_hash": "a0a83061005860a3212d895055edce154c0b82c035b637c185d330d34f07424e",
+          "changed_fields": [
+            "capability_dependencies",
+            "normalized_plan_hash",
+            "operator_dependencies"
+          ],
+          "projection_contract_hash": "c63cbe4f2d787da3787a6127d3fa2ebd0355037284173040becd9c15c66b80f5"
         },
         "recipe:opposite_corridor_after_shift_v1:0.1.0": {
           "baseline_contract_hash": "4787ae0c978901f5ee8834a767209890d77b3508f4ee6d8fef87836a6d505f5e",
@@ -839,50 +808,54 @@
           ],
           "projection_contract_hash": "0d1daea8595cd6fe2d7c3a8b483f05efa3fea99dbe5e9df496c443783d8b4f70"
         },
+        "runtime:primitive:change_across_anchor:0.1.0": {
+          "baseline_contract_hash": "6bec7322861b28c7e42649cf1d8c55bec1909cbd0b30c63da9cb9242cefa26cd",
+          "changed_fields": [
+            "parameters"
+          ],
+          "projection_contract_hash": "e4e82178972ffc81085f75c1d30a2767e9e20f0d82ad11a1755004e9390dcdd1"
+        },
         "runtime:primitive:controlled_pass_episode:0.1.0": {
-          "baseline_contract_hash": "91fcabf7351c1253b89e552f75c188b83f7afe8aa591a7299b801e254234425f",
+          "baseline_contract_hash": "0ae83df9a078907612759f473b3ab3b0b640ae2e021eb2d7571f3c8995f20652",
+          "changed_fields": [
+            "outputs"
+          ],
+          "projection_contract_hash": "54e6cc870e85493e222c5337a72d053d18c2fadee0d9a9c28566e9a6651e2cd7"
+        },
+        "runtime:primitive:pairwise_distance:0.1.0": {
+          "baseline_contract_hash": "cd5eb8ef82b23a544d7bc3ee9b989ed3a3fe61a42e9f21bded34a097a05b104a",
+          "changed_fields": [
+            "parameters"
+          ],
+          "projection_contract_hash": "fa20644e8359a9a5a3fdf5dc4b0f58a0d2f71825958a3eeb78310f51a6065b5c"
+        },
+        "runtime:primitive:pass_chain_episode:0.1.0": {
+          "baseline_contract_hash": "7e944b4c55d731b4dd2b6ec65011c38d21ebf1d2606f154df865a293cb5ca0c0",
           "changed_fields": [
             "evidence_fields",
-            "outputs",
-            "parameters"
+            "outputs"
           ],
-          "projection_contract_hash": "0ae83df9a078907612759f473b3ab3b0b640ae2e021eb2d7571f3c8995f20652"
+          "projection_contract_hash": "0e4f6477acda06af186d95b77371e8f5d17999f0e21cb5e14a83c25cda27f6cb"
         },
-        "runtime:primitive:defensive_line_model:0.1.0": {
-          "baseline_contract_hash": "bd6f7561243d065bbf5a50c3f3882d4e3d20600bb1a83bc68f661b0f0872b5df",
+        "runtime:relation:pressure_on_carrier:0.1.0": {
+          "baseline_contract_hash": "12bcebc22867494d5e6063c375767e726fbbfeb824c71bf03dd0ac0928fd7bc2",
           "changed_fields": [
             "parameters"
           ],
-          "projection_contract_hash": "5f34c5bc61390c519c5acb5fa3393eb57cfa0bfa2d0da07f630578d250993355"
-        },
-        "runtime:primitive:relative_position_to_line:0.1.0": {
-          "baseline_contract_hash": "ba5ab172992cc5539d648abde0d7c4210e0818ab2a5998e947b2a70f4dca6531",
-          "changed_fields": [
-            "parameters"
-          ],
-          "projection_contract_hash": "57fef100397bf1e80362c705abd4ee7203ad45e86bf31ca24706f918cade954e"
-        },
-        "runtime:relation:support_arrival_relation:0.1.0": {
-          "baseline_contract_hash": "13f4c07504e0a6190e0ae9008b52efe1b998de38d35da98aeb403e9f4570289b",
-          "changed_fields": [
-            "evidence_fields",
-            "outputs",
-            "parameters"
-          ],
-          "projection_contract_hash": "5f4bd59cc6e4d71348dcaff1f0e7767e57fd835d230a54bfe4b938c3b22e314d"
+          "projection_contract_hash": "cb4922d3cf51b6f11a3f1e67f8ed3a38492fc92b3ca9664d9b1d1f85f19e4977"
         }
       },
-      "projection_count": 43,
+      "projection_count": 48,
       "removed": [],
       "removed_details": {},
-      "shared_count": 27
+      "shared_count": 45
     },
     "baseline_sources": {
-      "baseline_artifact_revision": "878510d6fb01403e67d2a1938133285a167aeff2e9eebcde7775bc5da161c534",
+      "baseline_artifact_revision": "c6d408c38dc6e77abee036f5b78a4a282282518b14fa425bf385ad4411627263",
       "capability_catalog": {
         "exists": true,
         "path": "generated/capability-catalog.json",
-        "source_artifact_sha256": "e033424d71e17868e415209e39936270197904e712e90ab47d44a2b24df7daab"
+        "source_artifact_sha256": "08962fcf74a54a8db3d8f7bcc917876d3094437b3524cc90196515422453289b"
       },
       "product_recipe_contracts": {
         "frozen_baseline": false,
@@ -893,118 +866,66 @@
       "tactical_knowledge_pack": {
         "exists": true,
         "path": "generated/tactical-knowledge-pack.json",
-        "source_artifact_sha256": "e4c7f012b1295d7632449377485dd4c64b9987aa4ec4e971e4d516c69261191f"
+        "source_artifact_sha256": "7541c0470d2765132448c08bfeee1b44df785085ddea6d6de63bacd276f4b80b"
       }
     },
     "product": {
       "added": [
-        "composition:composition.ai_corridor_destination.2026_06_23",
-        "runtime:primitive:action_chain:0.1.0",
-        "runtime:primitive:action_event_anchor:0.1.0",
-        "runtime:primitive:change_across_anchor:0.1.0",
-        "runtime:primitive:multi_line_model:0.1.0",
-        "runtime:primitive:one_touch_relay_episode:0.1.0",
-        "runtime:primitive:pairwise_distance:0.1.0",
-        "runtime:primitive:pass_chain_episode:0.1.0",
-        "runtime:primitive:receiver_line_transition_during_pass_leg:0.1.0",
-        "runtime:primitive:switch_of_play:0.1.0",
-        "runtime:primitive:team_compactness:0.1.0",
-        "runtime:primitive:tracking_quality:0.1.0",
-        "runtime:primitive:velocity:0.1.0",
-        "runtime:relation:pressure_on_carrier:0.1.0"
+        "composition:composition.ai_corridor_destination.2026_06_23"
       ],
       "added_details": {
         "composition:composition.ai_corridor_destination.2026_06_23": {
           "projection_contract_hash": "a796f3d6ca9399358c6bf535d0d7d8f57509bbf9763661cf191c76e346af9d3b"
-        },
-        "runtime:primitive:action_chain:0.1.0": {
-          "projection_contract_hash": "f137a3c7d7031b39578febe9f6c2b4ce8a0032aa3720c99ee9d554efc714bb6b"
-        },
-        "runtime:primitive:action_event_anchor:0.1.0": {
-          "projection_contract_hash": "8e62f3e65d93fb12cdaa92a9b38012efde2443efd6375c9fd2ec255352368fa4"
-        },
-        "runtime:primitive:change_across_anchor:0.1.0": {
-          "projection_contract_hash": "6bec7322861b28c7e42649cf1d8c55bec1909cbd0b30c63da9cb9242cefa26cd"
-        },
-        "runtime:primitive:multi_line_model:0.1.0": {
-          "projection_contract_hash": "5e2bcb5c0c1202caf872612333c0302cc8f9014b1603a7d7df90bed298accfbe"
-        },
-        "runtime:primitive:one_touch_relay_episode:0.1.0": {
-          "projection_contract_hash": "77a5d0514dc92b60a6974755690cd4c6b10c388c78f4aee87f1162b6361cd006"
-        },
-        "runtime:primitive:pairwise_distance:0.1.0": {
-          "projection_contract_hash": "cd5eb8ef82b23a544d7bc3ee9b989ed3a3fe61a42e9f21bded34a097a05b104a"
-        },
-        "runtime:primitive:pass_chain_episode:0.1.0": {
-          "projection_contract_hash": "7e944b4c55d731b4dd2b6ec65011c38d21ebf1d2606f154df865a293cb5ca0c0"
-        },
-        "runtime:primitive:receiver_line_transition_during_pass_leg:0.1.0": {
-          "projection_contract_hash": "c908635db523d3a50c6589d1d57c9325cbb3cb918a1f25d046fc29db42954ec9"
-        },
-        "runtime:primitive:switch_of_play:0.1.0": {
-          "projection_contract_hash": "d935006f039a807c989037e2891c62faa8d0ca4bba37e47b933c73679b363ef2"
-        },
-        "runtime:primitive:team_compactness:0.1.0": {
-          "projection_contract_hash": "5e17486c2cb6e1654ecf9e40b176109587dd7b023f24e2006fc301248beb3777"
-        },
-        "runtime:primitive:tracking_quality:0.1.0": {
-          "projection_contract_hash": "9f365bf1bada6bfac3d546cf0f03d26edc178305393d62ba42b24ccd033c4df9"
-        },
-        "runtime:primitive:velocity:0.1.0": {
-          "projection_contract_hash": "f4369cac5b49256675f49d03dee288a0b3d0b202a4ddffce5e4b5387e7a5ee0a"
-        },
-        "runtime:relation:pressure_on_carrier:0.1.0": {
-          "projection_contract_hash": "12bcebc22867494d5e6063c375767e726fbbfeb824c71bf03dd0ac0928fd7bc2"
         }
       },
-      "baseline_count": 23,
-      "contract_changed": [
-        "runtime:primitive:controlled_pass_episode:0.1.0",
-        "runtime:primitive:defensive_line_model:0.1.0",
-        "runtime:primitive:relative_position_to_line:0.1.0",
-        "runtime:relation:support_arrival_relation:0.1.0"
-      ],
-      "contract_changed_details": {
-        "runtime:primitive:controlled_pass_episode:0.1.0": {
-          "baseline_contract_hash": "91fcabf7351c1253b89e552f75c188b83f7afe8aa591a7299b801e254234425f",
-          "changed_fields": [
-            "evidence_fields",
-            "outputs",
-            "parameters"
-          ],
-          "projection_contract_hash": "0ae83df9a078907612759f473b3ab3b0b640ae2e021eb2d7571f3c8995f20652"
-        },
-        "runtime:primitive:defensive_line_model:0.1.0": {
-          "baseline_contract_hash": "bd6f7561243d065bbf5a50c3f3882d4e3d20600bb1a83bc68f661b0f0872b5df",
-          "changed_fields": [
-            "parameters"
-          ],
-          "projection_contract_hash": "5f34c5bc61390c519c5acb5fa3393eb57cfa0bfa2d0da07f630578d250993355"
-        },
-        "runtime:primitive:relative_position_to_line:0.1.0": {
-          "baseline_contract_hash": "ba5ab172992cc5539d648abde0d7c4210e0818ab2a5998e947b2a70f4dca6531",
-          "changed_fields": [
-            "parameters"
-          ],
-          "projection_contract_hash": "57fef100397bf1e80362c705abd4ee7203ad45e86bf31ca24706f918cade954e"
-        },
-        "runtime:relation:support_arrival_relation:0.1.0": {
-          "baseline_contract_hash": "13f4c07504e0a6190e0ae9008b52efe1b998de38d35da98aeb403e9f4570289b",
-          "changed_fields": [
-            "evidence_fields",
-            "outputs",
-            "parameters"
-          ],
-          "projection_contract_hash": "5f4bd59cc6e4d71348dcaff1f0e7767e57fd835d230a54bfe4b938c3b22e314d"
-        }
-      },
-      "projection_count": 37,
+      "baseline_count": 50,
+      "contract_changed": [],
+      "contract_changed_details": {},
+      "projection_count": 42,
       "recipe_contract_baseline_mode": "current_runtime_alignment",
       "recipe_contract_baseline_note": "Product recipe contracts are compared against current runtime manifest recipes until a pinned product recipe baseline artifact exists.",
       "recipe_contract_frozen_baseline": false,
-      "removed": [],
-      "removed_details": {},
-      "shared_count": 23
+      "removed": [
+        "runtime:primitive:acceleration:0.1.0",
+        "runtime:primitive:cover_shadow:0.1.0",
+        "runtime:primitive:join_episode_sets:0.1.0",
+        "runtime:primitive:marking:0.1.0",
+        "runtime:primitive:off_ball_run:0.1.0",
+        "runtime:primitive:off_ball_run_type:0.1.0",
+        "runtime:primitive:set_piece_structure:0.1.0",
+        "runtime:primitive:space_region_generation:0.1.0",
+        "runtime:relation:team_press:0.1.0"
+      ],
+      "removed_details": {
+        "runtime:primitive:acceleration:0.1.0": {
+          "baseline_contract_hash": "8044338ee752d7de324f50f6913f20afe30a5dd313d277d712733cd8bb11d49f"
+        },
+        "runtime:primitive:cover_shadow:0.1.0": {
+          "baseline_contract_hash": "7ae43012a6725d814b7484c7c92de81096359754b7911cb77c3663ab0449c453"
+        },
+        "runtime:primitive:join_episode_sets:0.1.0": {
+          "baseline_contract_hash": "2f6bdc456dd304ea076428c34091df75e8080f09fd3f59ced8438a733cbc55ae"
+        },
+        "runtime:primitive:marking:0.1.0": {
+          "baseline_contract_hash": "cd562049b2d56bc8e66313150e2e44514c85807660affce1c437516c322aca72"
+        },
+        "runtime:primitive:off_ball_run:0.1.0": {
+          "baseline_contract_hash": "33613344dd6da60fd75f0b57726c5e5e6d8ed90667694bd88b22db0a723bb856"
+        },
+        "runtime:primitive:off_ball_run_type:0.1.0": {
+          "baseline_contract_hash": "aecfbc7602290037495eafcfe044e75810d0d7ab7d76cb1b28f30a8e69f0fa2d"
+        },
+        "runtime:primitive:set_piece_structure:0.1.0": {
+          "baseline_contract_hash": "3ee4719126044663905d42988d43d4afff0eca0577df593e9d36d0317523ba61"
+        },
+        "runtime:primitive:space_region_generation:0.1.0": {
+          "baseline_contract_hash": "3ae62e6ad6caceb2e14343362d5578780d25891e9fb9e8a4014e5a7a835a578a"
+        },
+        "runtime:relation:team_press:0.1.0": {
+          "baseline_contract_hash": "4cf1558ccf3ed95deb1fea53b10166cb7144b63af1b1b8fa8b45b623425a6708"
+        }
+      },
+      "shared_count": 41
     }
   },
   "recipes": {
@@ -1016,26 +937,26 @@
   },
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "878510d6fb01403e67d2a1938133285a167aeff2e9eebcde7775bc5da161c534",
+    "baseline_artifact_revision": "c6d408c38dc6e77abee036f5b78a4a282282518b14fa425bf385ad4411627263",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "f089d7ddcd8e2edf194f4a1eecfdb032b92e7a5eef542fd9a67df61607662f43",
+    "lock_hash": "202886dd13c8e71e3ea45db1b48d25b224257d244eea0d673ea4e9348217a85c",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "ed9a392a5fb20039b2ec9715d46038cd1fa13afa7dc82a3c0205ec8aa7dfea1b",
+    "registry_revision": "8d2945ae759373dbdbb0be95a33555a7dd874a4defa73af172eaa2d851946e16",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "4758821eaad7d4f346a49ad617590654643a2f87d6d5d1951cacffce8dc93cee",
+    "runtime_manifest_revision": "67d57df99aa41c0928c5c4a6f14015546b387436dd5ea0a38602a8864a0d4471",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"
   },
   "runtime_capabilities": {
-    "bound": 30,
+    "bound": 44,
     "duplicate_bindings": 0,
-    "including_operators_total": 38,
+    "including_operators_total": 52,
     "orphaned": 0,
-    "runtime_total": 30,
+    "runtime_total": 44,
     "unresolved_bindings": 0
   },
   "schema_version": "1.0",

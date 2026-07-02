@@ -51,14 +51,56 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
         registry, runtime_manifest, lock, report = generate_scp0_artifacts(write=False)
 
         self.assertEqual("PASS", report.status)
-        self.assertEqual(30, report.runtime_capabilities["bound"])
-        self.assertEqual(38, report.runtime_capabilities["including_operators_total"])
-        self.assertEqual(8, report.operators["semantically_defined"])
-        self.assertEqual(6, report.recipes["mapped"])
-        self.assertEqual(1, report.validated_compositions["mapped"])
+        self.assertEqual([], report.findings)
+        # Every runtime capability must have a canonical binding: bound count is
+        # derived from the live runtime manifest, never a hardcoded snapshot.
+        runtime_total = len(runtime_manifest["capabilities"])
+        operator_total = len(runtime_manifest["operators"])
+        self.assertEqual(runtime_total, report.runtime_capabilities["runtime_total"])
+        self.assertEqual(runtime_total, report.runtime_capabilities["bound"])
+        self.assertEqual(0, report.runtime_capabilities["orphaned"])
+        self.assertEqual(0, report.runtime_capabilities["unresolved_bindings"])
+        self.assertEqual(0, report.runtime_capabilities["duplicate_bindings"])
+        self.assertEqual(
+            runtime_total + operator_total,
+            report.runtime_capabilities["including_operators_total"],
+        )
+        self.assertEqual(operator_total, report.operators["semantically_defined"])
+        self.assertEqual(0, report.operators["missing_definitions"])
+        self.assertEqual(report.recipes["registered"], report.recipes["mapped"])
+        self.assertEqual(0, report.recipes["missing_plan_artifacts"])
+        self.assertEqual(
+            report.validated_compositions["total"], report.validated_compositions["mapped"]
+        )
         self.assertEqual({"product": 0, "ai": 0}, report.atlas_leakage)
         self.assertEqual(741, len(registry.atlas_entries))
         self.assertEqual(runtime_manifest["runtime_manifest_revision"], lock.runtime_manifest_revision)
+
+    def test_checked_in_lock_and_parity_report_match_fresh_regeneration(self) -> None:
+        """Stale-green guard: the pinned lock/report must agree with a fresh regeneration."""
+        _registry, _runtime_manifest, lock, report = generate_scp0_artifacts(write=False)
+
+        checked_in_lock = json.loads(
+            Path("semantic-registry/registry.lock.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(checked_in_lock["lock_hash"], lock.lock_hash)
+        self.assertEqual(checked_in_lock["registry_revision"], lock.registry_revision)
+        self.assertEqual(
+            checked_in_lock["runtime_manifest_revision"], lock.runtime_manifest_revision
+        )
+
+        checked_in_report = json.loads(
+            Path("generated/semantic-registry/semantic-parity-report.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual("PASS", checked_in_report["status"])
+        self.assertEqual([], checked_in_report["findings"])
+        self.assertEqual(checked_in_report["registry_lock"]["lock_hash"], lock.lock_hash)
+        self.assertEqual(
+            checked_in_report["runtime_capabilities"],
+            report.model_dump(mode="json")["runtime_capabilities"],
+        )
 
     def test_runtime_capability_without_binding_fails(self) -> None:
         registry = load_registry()
@@ -249,16 +291,19 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
 
         differences = scpgen.build_projection_differences(runtime_manifest, projections)
 
+        product = differences["product"]
+        # The product baseline is the regenerated capability catalog, so shared
+        # records must have identical contracts (no silent drift).
+        self.assertEqual([], product["contract_changed"])
+        # Diff counts must be internally consistent rather than pinned numbers.
         self.assertEqual(
-            [
-                "runtime:primitive:controlled_pass_episode:0.1.0",
-                "runtime:primitive:defensive_line_model:0.1.0",
-                "runtime:primitive:relative_position_to_line:0.1.0",
-                "runtime:relation:support_arrival_relation:0.1.0",
-            ],
-            differences["product"]["contract_changed"],
+            product["shared_count"],
+            product["baseline_count"] - len(product["removed"]),
         )
-        self.assertEqual(23, differences["product"]["shared_count"])
+        self.assertEqual(
+            product["shared_count"],
+            product["projection_count"] - len(product["added"]),
+        )
 
     def test_unapproved_baseline_add_remove_or_contract_change_fails(self) -> None:
         registry = load_registry()
@@ -871,9 +916,25 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
 
         changed = build_projections(registry, runtime_manifest, lock)
 
+        # A subject can appear more than once in the unsupported projection
+        # (product denial and AI denial are separate records); excluding it
+        # must remove every record for that subject and nothing else.
+        excluded_row_count = sum(
+            1
+            for item in baseline["unsupported"]["items"]
+            if f"runtime:{item['kind']}:{item['id']}:{item['version']}" == unsupported_subject
+        )
+        self.assertGreater(excluded_row_count, 0)
         self.assertEqual(
-            len(baseline["unsupported"]["items"]) - 1,
+            len(baseline["unsupported"]["items"]) - excluded_row_count,
             len(changed["unsupported"]["items"]),
+        )
+        self.assertNotIn(
+            unsupported_subject,
+            {
+                f"runtime:{item['kind']}:{item['id']}:{item['version']}"
+                for item in changed["unsupported"]["items"]
+            },
         )
 
     def test_product_recipe_parity_reports_current_runtime_alignment_mode(self) -> None:

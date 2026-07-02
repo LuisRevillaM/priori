@@ -314,6 +314,78 @@ concepts:
     evidence_contract_ref: evidence.opposite_corridor_after_shift.v1
     tags: [corridor, block_shift, destination_entry, recipe]
 
+  - id: concept.observed_speed_change
+    kind: Concept
+    display_name: Observed Speed Change
+    description: Observed entity speed-up or slow-down around an anchor-relative frame, measured from two non-overlapping displacement-velocity windows.
+    claim_contract_ref: claim.observed_speed_change.v1
+    evidence_contract_ref: evidence.observed_speed_change.v1
+    tags: [acceleration, kinematics, tracking]
+
+  - id: concept.observed_lane_screening
+    kind: Concept
+    display_name: Observed Ball-Target Lane Screening
+    description: Observed defender screening geometry on the ball-to-target lane at an anchor-relative frame.
+    claim_contract_ref: claim.observed_lane_screening.v1
+    evidence_contract_ref: evidence.observed_lane_screening.v1
+    tags: [cover-shadow, lane, geometry, tracking]
+
+  - id: concept.declared_episode_join
+    kind: Concept
+    display_name: Declared Episode Join
+    description: Binary join of two episode evidence sets under declared key, status, temporal-order, and entity-distinctness constraints.
+    claim_contract_ref: claim.declared_episode_join.v1
+    evidence_contract_ref: evidence.declared_episode_join.v1
+    tags: [composition, join, episodes]
+
+  - id: concept.observed_marking_proximity
+    kind: Concept
+    display_name: Observed Marking Proximity
+    description: Observed nearest-opposition proximity to an anchor target player at an anchor-relative frame.
+    claim_contract_ref: claim.observed_marking_proximity.v1
+    evidence_contract_ref: evidence.observed_marking_proximity.v1
+    tags: [marking, proximity, tracking]
+
+  - id: concept.observed_off_ball_movement
+    kind: Concept
+    display_name: Observed Off-Ball Movement
+    description: Observed endpoint-window off-ball movement episode for the best same-scope outfield candidate around an anchor-relative frame.
+    claim_contract_ref: claim.observed_off_ball_movement.v1
+    evidence_contract_ref: evidence.observed_off_ball_movement.v1
+    tags: [off-ball-run, movement, tracking]
+
+  - id: concept.observed_run_path_geometry
+    kind: Concept
+    display_name: Observed Run Path Geometry
+    description: Observed path-geometry classification of an already observed off-ball run episode for supported literal labels.
+    claim_contract_ref: claim.observed_run_path_geometry.v1
+    evidence_contract_ref: evidence.observed_run_path_geometry.v1
+    tags: [off-ball-run, path-geometry, tracking]
+
+  - id: concept.observed_set_piece_structure
+    kind: Concept
+    display_name: Observed Set-Piece Structure
+    description: Provider-recognized restart events with observed attacking and defending outfield arrangement at the aligned event frame.
+    claim_contract_ref: claim.observed_set_piece_structure.v1
+    evidence_contract_ref: evidence.observed_set_piece_structure.v1
+    tags: [set-piece, restart, events, tracking]
+
+  - id: concept.observed_open_space_candidates
+    kind: Concept
+    display_name: Observed Open-Space Candidates
+    description: Sampled open-space candidate geometry from observed outfield-player positions at an anchor-relative frame.
+    claim_contract_ref: claim.observed_open_space_candidates.v1
+    evidence_contract_ref: evidence.observed_open_space_candidates.v1
+    tags: [space, geometry, tracking]
+
+  - id: concept.observed_team_press_geometry
+    kind: Concept
+    display_name: Observed Team-Press Geometry
+    description: Observed multi-defender pressure geometry around an anchor carrier using distance, closing speed, approach angle, and angular spread.
+    claim_contract_ref: claim.observed_team_press_geometry.v1
+    evidence_contract_ref: evidence.observed_team_press_geometry.v1
+    tags: [press, pressure, geometry, tracking]
+
 operationalizations:
   - id: op.possession_segment_intervals.v1
     kind: Operationalization
@@ -1089,6 +1161,232 @@ operationalizations:
     claim_contract_ref: claim.opponent_ball_side_transition_count.v1
     evidence_contract_ref: evidence.opponent_ball_side_transition_count.v1
 
+  - id: op.observed_two_window_speed_change.v1
+    kind: Operationalization
+    display_name: Observed Two-Window Speed Change
+    description: Estimate observed speed change from two non-overlapping displacement-velocity windows under frozen plausibility limits.
+    concept_refs: [concept.observed_speed_change]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking]
+    applicability: [anchor_available, entity_coordinates_available_at_window_endpoints]
+    inputs:
+      - name: anchors
+        type: {container: EpisodeSet, value: AnchorRef, unit: none, entity_scope: anchor}
+      - name: tracking_window
+        type: {container: TrajectorySet, value: Position, unit: metre, coordinate_frame: pitch_absolute}
+    outputs:
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, unit: none, entity_scope: anchor}
+      - name: acceleration_mps2
+        type: {container: FrameSignal, value: Scalar, unit: none, entity_scope: anchor}
+      - name: acceleration_status
+        type: {container: FrameSignal, value: Enum, unit: none, entity_scope: anchor}
+      - name: deceleration_status
+        type: {container: FrameSignal, value: Enum, unit: none, entity_scope: anchor}
+    lowering: [anchor_frame_selection, two_window_velocity_estimation, speed_delta_evaluation, plausibility_gate]
+    claim_contract_ref: claim.observed_speed_change.v1
+    evidence_contract_ref: evidence.observed_speed_change.v1
+
+  - id: op.observed_ball_target_lane_screening.v1
+    kind: Operationalization
+    display_name: Observed Ball-Target Lane Screening
+    description: Evaluate whether an observed candidate defender lies between ball and target within frozen lane-distance and projection bounds.
+    concept_refs: [concept.observed_lane_screening]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking]
+    applicability: [anchor_available, ball_and_target_coordinates_available, observed_defender_candidates_available]
+    inputs:
+      - name: anchors
+        type: {container: EpisodeSet, value: AnchorRef, unit: none, entity_scope: anchor}
+      - name: observed_ball_position
+        type: {container: PointSignal, value: Point, unit: metre, coordinate_frame: pitch_absolute, entity_scope: ball}
+      - name: observed_outfield_positions
+        type: {container: EntitySetSignal, value: Point, unit: metre, coordinate_frame: pitch_absolute, entity_scope: team}
+    outputs:
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, unit: none, entity_scope: anchor}
+      - name: cover_shadow_status
+        type: {container: FrameSignal, value: Enum, unit: none, entity_scope: anchor}
+      - name: passing_lane_denial_status
+        type: {container: FrameSignal, value: Enum, unit: none, entity_scope: anchor}
+      - name: screening_defender_distance_to_lane_m
+        type: {container: FrameSignal, value: Scalar, unit: metre, entity_scope: anchor}
+    lowering: [anchor_frame_selection, ball_target_lane_construction, defender_lane_projection, threshold_evaluation]
+    claim_contract_ref: claim.observed_lane_screening.v1
+    evidence_contract_ref: evidence.observed_lane_screening.v1
+
+  - id: op.declared_key_episode_join.v1
+    kind: Operationalization
+    display_name: Declared Key Episode Join
+    description: Join two episode sets by declared evidence-key fields with optional status, temporal-order, and pairwise entity constraints.
+    concept_refs: [concept.declared_episode_join]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking, events]
+    applicability: [upstream_episode_evidence_available]
+    inputs:
+      - name: left_episodes
+        type: {container: EpisodeSet, value: AnchorRef, unit: none, entity_scope: anchor}
+      - name: right_episodes
+        type: {container: EpisodeSet, value: AnchorRef, unit: none, entity_scope: anchor}
+    outputs:
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, unit: none, entity_scope: anchor}
+      - name: join_status
+        type: {container: FrameSignal, value: Enum, unit: none, entity_scope: anchor}
+    lowering: [key_projection, status_guard, temporal_order_guard, entity_distinctness_guard]
+    claim_contract_ref: claim.declared_episode_join.v1
+    evidence_contract_ref: evidence.declared_episode_join.v1
+
+  - id: op.observed_nearest_opponent_proximity.v1
+    kind: Operationalization
+    display_name: Observed Nearest-Opponent Proximity
+    description: Evaluate nearest observed opponent distance to a declared target player under a frozen distance threshold.
+    concept_refs: [concept.observed_marking_proximity]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking]
+    applicability: [anchor_available, target_player_coordinates_available, observed_marker_candidates_available]
+    inputs:
+      - name: anchors
+        type: {container: EpisodeSet, value: AnchorRef, unit: none, entity_scope: anchor}
+      - name: observed_outfield_positions
+        type: {container: EntitySetSignal, value: Point, unit: metre, coordinate_frame: pitch_absolute, entity_scope: team}
+    outputs:
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, unit: none, entity_scope: anchor}
+      - name: marking_status
+        type: {container: FrameSignal, value: Enum, unit: none, entity_scope: anchor}
+      - name: unmarked_status
+        type: {container: FrameSignal, value: Enum, unit: none, entity_scope: anchor}
+      - name: nearest_marker_distance_m
+        type: {container: FrameSignal, value: Scalar, unit: metre, entity_scope: anchor}
+    lowering: [anchor_frame_selection, target_resolution, nearest_candidate_distance, threshold_evaluation]
+    claim_contract_ref: claim.observed_marking_proximity.v1
+    evidence_contract_ref: evidence.observed_marking_proximity.v1
+
+  - id: op.observed_off_ball_run_episode.v1
+    kind: Operationalization
+    display_name: Observed Off-Ball Run Episode
+    description: Detect endpoint-window displacement, speed, and ball-distance movement for a non-ball actor under frozen thresholds.
+    concept_refs: [concept.observed_off_ball_movement]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking]
+    applicability: [anchor_available, candidate_endpoint_coordinates_available, ball_endpoint_coordinates_available]
+    inputs:
+      - name: anchors
+        type: {container: EpisodeSet, value: AnchorRef, unit: none, entity_scope: anchor}
+      - name: tracking_window
+        type: {container: TrajectorySet, value: Position, unit: metre, coordinate_frame: pitch_absolute}
+      - name: observed_ball_position
+        type: {container: PointSignal, value: Point, unit: metre, coordinate_frame: pitch_absolute, entity_scope: ball}
+    outputs:
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, unit: none, entity_scope: anchor}
+      - name: off_ball_run_status
+        type: {container: FrameSignal, value: Enum, unit: none, entity_scope: anchor}
+      - name: run_speed_mps
+        type: {container: FrameSignal, value: Scalar, unit: none, entity_scope: anchor}
+    lowering: [anchor_frame_selection, lookahead_window_selection, endpoint_displacement, ball_distance_guard, threshold_evaluation]
+    claim_contract_ref: claim.observed_off_ball_movement.v1
+    evidence_contract_ref: evidence.observed_off_ball_movement.v1
+
+  - id: op.observed_run_path_label_classification.v1
+    kind: Operationalization
+    display_name: Observed Run Path Label Classification
+    description: Classify run-in-behind and diagonal path labels from observed run endpoint geometry and the observed opposition outfield line.
+    concept_refs: [concept.observed_run_path_geometry]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking]
+    applicability: [observed_off_ball_run_episode_available, defensive_line_coverage_available]
+    inputs:
+      - name: runs
+        type: {container: EpisodeSet, value: AnchorRef, unit: none, entity_scope: anchor}
+      - name: observed_defending_positions
+        type: {container: EntitySetSignal, value: Point, unit: metre, coordinate_frame: pitch_absolute, entity_scope: team}
+    outputs:
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, unit: none, entity_scope: anchor}
+      - name: run_in_behind_status
+        type: {container: FrameSignal, value: Enum, unit: none, entity_scope: anchor}
+      - name: diagonal_run_status
+        type: {container: FrameSignal, value: Enum, unit: none, entity_scope: anchor}
+      - name: off_ball_run_type_status
+        type: {container: FrameSignal, value: Enum, unit: none, entity_scope: anchor}
+    lowering: [run_endpoint_projection, observed_line_estimation, path_component_thresholds, label_assignment]
+    claim_contract_ref: claim.observed_run_path_geometry.v1
+    evidence_contract_ref: evidence.observed_run_path_geometry.v1
+
+  - id: op.provider_restart_structure_snapshot.v1
+    kind: Operationalization
+    display_name: Provider Restart Structure Snapshot
+    description: Expose recognized provider restart events with observed outfield bounding-box arrangement evidence at the aligned tracking frame.
+    concept_refs: [concept.observed_set_piece_structure]
+    semantic_basis: INFERRED_CANDIDATE
+    required_modalities: [events, tracking]
+    applicability: [provider_restart_event_available, aligned_tracking_frame_available]
+    inputs:
+      - name: match_state
+        type: {container: WorldState, value: MatchState, unit: none}
+    outputs:
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, unit: none, entity_scope: anchor}
+      - name: set_piece_structure_status
+        type: {container: FrameSignal, value: Enum, unit: none, entity_scope: anchor}
+    lowering: [provider_restart_filter, nearest_tracking_frame_alignment, outfield_arrangement_snapshot]
+    claim_contract_ref: claim.observed_set_piece_structure.v1
+    evidence_contract_ref: evidence.observed_set_piece_structure.v1
+
+  - id: op.sampled_open_space_candidate_generation.v1
+    kind: Operationalization
+    display_name: Sampled Open-Space Candidate Generation
+    description: Sample pitch-grid points against observed outfield positions under frozen nearest-player distance thresholds.
+    concept_refs: [concept.observed_open_space_candidates]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking]
+    applicability: [anchor_available, attacking_direction_available, observed_players_available_for_both_teams]
+    inputs:
+      - name: anchors
+        type: {container: EpisodeSet, value: AnchorRef, unit: none, entity_scope: anchor}
+      - name: match_state
+        type: {container: WorldState, value: MatchState, unit: none}
+    outputs:
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, unit: none, entity_scope: anchor}
+      - name: open_space_status
+        type: {container: FrameSignal, value: Enum, unit: none, entity_scope: anchor}
+      - name: open_space_region_count
+        type: {container: FrameSignal, value: Scalar, unit: count, entity_scope: anchor}
+      - name: representative_open_space_point
+        type: {container: FrameSignal, value: Point, unit: none, entity_scope: anchor}
+    lowering: [anchor_frame_selection, zone_scope_resolution, grid_sampling, nearest_player_distance_thresholds]
+    claim_contract_ref: claim.observed_open_space_candidates.v1
+    evidence_contract_ref: evidence.observed_open_space_candidates.v1
+
+  - id: op.observed_multi_defender_pressure_geometry.v1
+    kind: Operationalization
+    display_name: Observed Multi-Defender Pressure Geometry
+    description: Evaluate multiple observed defenders against frozen distance, closing-speed, approach-angle, and angular-spread thresholds around a carrier.
+    concept_refs: [concept.observed_team_press_geometry]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking]
+    applicability: [anchor_available, carrier_coordinates_available, observed_defender_kinematics_available]
+    inputs:
+      - name: anchors
+        type: {container: EpisodeSet, value: AnchorRef, unit: none, entity_scope: anchor}
+      - name: observed_defending_positions
+        type: {container: EntitySetSignal, value: Point, unit: metre, coordinate_frame: pitch_absolute, entity_scope: team}
+    outputs:
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, unit: none, entity_scope: anchor}
+      - name: team_press_status
+        type: {container: FrameSignal, value: Enum, unit: none, entity_scope: anchor}
+      - name: pressure_actor_count
+        type: {container: FrameSignal, value: Scalar, unit: count, entity_scope: anchor}
+      - name: pressure_angle_spread_degrees
+        type: {container: FrameSignal, value: Scalar, unit: none, entity_scope: anchor}
+    lowering: [anchor_frame_selection, carrier_resolution, defender_kinematic_thresholds, angular_spread_evaluation]
+    claim_contract_ref: claim.observed_team_press_geometry.v1
+    evidence_contract_ref: evidence.observed_team_press_geometry.v1
+
 definition_profiles:
   - id: profile.high_bypass_default.v1
     kind: DefinitionProfile
@@ -1385,6 +1683,69 @@ implementations:
     implements: [op.release_reception_opponent_transition_count.v1]
     source_refs: [src/tqe/runtime/pass_bypass.py, src/tqe/runtime/catalog.py]
 
+  - id: impl.acceleration.python.v1
+    kind: Implementation
+    display_name: Observed Speed Change Python Implementation
+    description: Current acceleration implementation.
+    implements: [op.observed_two_window_speed_change.v1]
+    source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+
+  - id: impl.cover_shadow.python.v1
+    kind: Implementation
+    display_name: Observed Ball-Target Lane Screening Python Implementation
+    description: Current cover_shadow implementation.
+    implements: [op.observed_ball_target_lane_screening.v1]
+    source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+
+  - id: impl.join_episode_sets.python.v1
+    kind: Implementation
+    display_name: Declared Episode Join Python Implementation
+    description: Current join_episode_sets implementation.
+    implements: [op.declared_key_episode_join.v1]
+    source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+
+  - id: impl.marking.python.v1
+    kind: Implementation
+    display_name: Observed Marking Proximity Python Implementation
+    description: Current marking implementation.
+    implements: [op.observed_nearest_opponent_proximity.v1]
+    source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+
+  - id: impl.off_ball_run.python.v1
+    kind: Implementation
+    display_name: Observed Off-Ball Movement Python Implementation
+    description: Current off_ball_run implementation.
+    implements: [op.observed_off_ball_run_episode.v1]
+    source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+
+  - id: impl.off_ball_run_type.python.v1
+    kind: Implementation
+    display_name: Observed Run Path Geometry Python Implementation
+    description: Current off_ball_run_type implementation.
+    implements: [op.observed_run_path_label_classification.v1]
+    source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+
+  - id: impl.set_piece_structure.python.v1
+    kind: Implementation
+    display_name: Observed Set-Piece Structure Python Implementation
+    description: Current set_piece_structure implementation.
+    implements: [op.provider_restart_structure_snapshot.v1]
+    source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+
+  - id: impl.space_region_generation.python.v1
+    kind: Implementation
+    display_name: Observed Open-Space Candidates Python Implementation
+    description: Current space_region_generation implementation.
+    implements: [op.sampled_open_space_candidate_generation.v1]
+    source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+
+  - id: impl.team_press.python.v1
+    kind: Implementation
+    display_name: Observed Team-Press Geometry Python Implementation
+    description: Current team_press implementation.
+    implements: [op.observed_multi_defender_pressure_geometry.v1]
+    source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+
 runtime_bindings:
   - id: binding.primitive.possession_segment.0_1_0
     kind: RuntimeBinding
@@ -1567,12 +1928,12 @@ runtime_bindings:
         type: {container: Scalar, value: Enum, unit: none}
         required: false
         default: {payload_type: enum, value: anchor_frame_id, unit: none}
-        allowed_values: [anchor_frame_id, physical_release_frame_id, controlled_reception_frame_id]
+        allowed_values: [anchor_frame_id, physical_release_frame_id, controlled_reception_frame_id, carry_start_frame_id, carry_end_frame_id, terminal_release_frame_id]
       - name: entity_a_field
         type: {container: Scalar, value: Enum, unit: none}
         required: false
         default: {payload_type: enum, value: receiver_id, unit: none}
-        allowed_values: [receiver_id, passer_id, relay_player_id, terminal_receiver_id]
+        allowed_values: [receiver_id, passer_id, relay_player_id, terminal_receiver_id, carrier_id]
       - name: entity_b_field
         type: {container: Scalar, value: Enum, unit: none}
         required: false
@@ -2179,12 +2540,12 @@ runtime_bindings:
         type: {container: Scalar, value: Enum, unit: none}
         required: false
         default: {payload_type: enum, value: controlled_reception_frame_id, unit: none}
-        allowed_values: [anchor_frame_id, physical_release_frame_id, controlled_reception_frame_id]
+        allowed_values: [anchor_frame_id, physical_release_frame_id, controlled_reception_frame_id, carry_start_frame_id, carry_end_frame_id, terminal_release_frame_id]
       - name: carrier_id_field
         type: {container: Scalar, value: Enum, unit: none}
         required: false
         default: {payload_type: enum, value: receiver_id, unit: none}
-        allowed_values: [receiver_id, passer_id, relay_player_id, terminal_receiver_id]
+        allowed_values: [receiver_id, passer_id, relay_player_id, terminal_receiver_id, carrier_id]
       - name: maximum_pressure_distance_m
         type: {container: Scalar, value: Scalar, unit: metre}
         required: false
@@ -2347,22 +2708,22 @@ runtime_bindings:
         type: {container: Scalar, value: Enum, unit: none}
         required: false
         default: {payload_type: enum, value: line_compactness_m, unit: none}
-        allowed_values: [line_compactness_m, team_width_m, team_depth_m, team_area_m2]
+        allowed_values: [line_compactness_m, team_width_m, team_depth_m, team_area_m2, nearest_defender_distance_m, closing_speed_mps]
       - name: after_value_field
         type: {container: Scalar, value: Enum, unit: none}
         required: false
         default: {payload_type: enum, value: line_compactness_m, unit: none}
-        allowed_values: [line_compactness_m, team_width_m, team_depth_m, team_area_m2]
+        allowed_values: [line_compactness_m, team_width_m, team_depth_m, team_area_m2, nearest_defender_distance_m, closing_speed_mps]
       - name: before_status_field
         type: {container: Scalar, value: Enum, unit: none}
         required: false
         default: {payload_type: enum, value: line_status, unit: none}
-        allowed_values: [line_status, multi_line_status, team_compactness_status]
+        allowed_values: [line_status, multi_line_status, team_compactness_status, pressure_status]
       - name: after_status_field
         type: {container: Scalar, value: Enum, unit: none}
         required: false
         default: {payload_type: enum, value: line_status, unit: none}
-        allowed_values: [line_status, multi_line_status, team_compactness_status, none]
+        allowed_values: [line_status, multi_line_status, team_compactness_status, pressure_status, none]
       - name: required_status_value
         type: {container: Scalar, value: Enum, unit: none}
         required: false
@@ -2845,6 +3206,577 @@ runtime_bindings:
       bypassed_buffer_m: bypassed_buffer_m
     uncovered_runtime_outputs: [anchor_evaluations, forward_progression_m]
 
+  - id: binding.primitive.acceleration.0_1_0
+    kind: RuntimeBinding
+    display_name: acceleration runtime binding
+    description: Canonical runtime binding for acceleration 0.1.0.
+    runtime_capability: {id: acceleration, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.acceleration.python.v1
+    implements: [op.observed_two_window_speed_change.v1]
+    conformance_status: PARTIAL
+    known_deviations: [v0.1 reports two-window displacement-derived speed change only and uses unit none for metres-per-second scalar fields.]
+    input_bindings:
+      anchors: {source: NODE_INPUT, runtime_port: anchors}
+      tracking_window: {source: RUNTIME_CONTEXT, context_ref: canonical_tracking_window}
+    output_bindings:
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+      acceleration_mps2: {runtime_port: acceleration_mps2}
+      acceleration_status: {runtime_port: acceleration_status}
+      deceleration_status: {runtime_port: deceleration_status}
+    semantic_parameters:
+      - name: frame_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: anchor_frame_id, unit: none}
+        allowed_values: [anchor_frame_id, physical_release_frame_id, controlled_reception_frame_id, transition_frame_id, carry_start_frame_id, carry_end_frame_id]
+      - name: entity_id_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: receiver_id, unit: none}
+        allowed_values: [receiver_id, passer_id, relay_player_id, terminal_receiver_id, carrier_id]
+      - name: lookback_seconds
+        type: {container: Scalar, value: Scalar, unit: second}
+        required: false
+        default: {payload_type: number, value: 0.4, unit: second}
+        minimum: 0.04
+        maximum: 3.0
+      - name: minimum_abs_delta_speed_mps
+        type: {container: Scalar, value: Scalar, unit: none}
+        required: false
+        default: {payload_type: number, value: 0.4, unit: none}
+        minimum: 0.0
+        maximum: 8.0
+      - name: minimum_abs_acceleration_mps2
+        type: {container: Scalar, value: Scalar, unit: none}
+        required: false
+        default: {payload_type: number, value: 0.75, unit: none}
+        minimum: 0.0
+        maximum: 20.0
+      - name: maximum_player_speed_mps
+        type: {container: Scalar, value: Scalar, unit: none}
+        required: false
+        default: {payload_type: number, value: 10.0, unit: none}
+        minimum: 0.1
+        maximum: 15.0
+      - name: maximum_abs_acceleration_mps2
+        type: {container: Scalar, value: Scalar, unit: none}
+        required: false
+        default: {payload_type: number, value: 12.0, unit: none}
+        minimum: 0.1
+        maximum: 30.0
+    parameter_bindings:
+      frame_field: frame_field
+      entity_id_field: entity_id_field
+      lookback_seconds: lookback_seconds
+      minimum_abs_delta_speed_mps: minimum_abs_delta_speed_mps
+      minimum_abs_acceleration_mps2: minimum_abs_acceleration_mps2
+      maximum_player_speed_mps: maximum_player_speed_mps
+      maximum_abs_acceleration_mps2: maximum_abs_acceleration_mps2
+
+  - id: binding.primitive.cover_shadow.0_1_0
+    kind: RuntimeBinding
+    display_name: cover_shadow runtime binding
+    description: Canonical runtime binding for cover_shadow 0.1.0.
+    runtime_capability: {id: cover_shadow, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.cover_shadow.python.v1
+    implements: [op.observed_ball_target_lane_screening.v1]
+    conformance_status: PARTIAL
+    known_deviations: [v0.1 claims single nearest screening-defender lane geometry at one declared frame only; it does not infer denial quality or defender intent.]
+    input_bindings:
+      anchors: {source: NODE_INPUT, runtime_port: anchors}
+      observed_ball_position: {source: RUNTIME_CONTEXT, context_ref: canonical_match_state.ball_position}
+      observed_outfield_positions: {source: RUNTIME_CONTEXT, context_ref: canonical_match_state.outfield_positions}
+    output_bindings:
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+      cover_shadow_status: {runtime_port: cover_shadow_status}
+      passing_lane_denial_status: {runtime_port: passing_lane_denial_status}
+      screening_defender_distance_to_lane_m: {runtime_port: screening_defender_distance_to_lane_m}
+    semantic_parameters:
+      - name: frame_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: anchor_frame_id, unit: none}
+        allowed_values: [anchor_frame_id, event_anchor_frame_id, physical_release_frame_id, controlled_reception_frame_id, carry_start_frame_id, carry_end_frame_id]
+      - name: target_entity_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: receiver_id, unit: none}
+        allowed_values: [receiver_id, passer_id, relay_player_id, terminal_receiver_id, carrier_id, run_player_id]
+      - name: candidate_scope
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: opposition_outfield_to_anchor_team, unit: none}
+        allowed_values: [opposition_outfield_to_anchor_team, defending_outfield, perspective_outfield]
+      - name: maximum_lane_distance_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 2.0, unit: metre}
+        minimum: 0.1
+        maximum: 10.0
+      - name: minimum_projection_fraction
+        type: {container: Scalar, value: Scalar, unit: fraction}
+        required: false
+        default: {payload_type: number, value: 0.05, unit: fraction}
+        minimum: 0.0
+        maximum: 0.49
+      - name: minimum_lane_length_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 5.0, unit: metre}
+        minimum: 0.1
+        maximum: 80.0
+      - name: minimum_observed_defenders
+        type: {container: Scalar, value: Scalar, unit: count}
+        required: false
+        default: {payload_type: number, value: 6.0, unit: count}
+        minimum: 1.0
+        maximum: 10.0
+    parameter_bindings:
+      frame_field: frame_field
+      target_entity_field: target_entity_field
+      candidate_scope: candidate_scope
+      maximum_lane_distance_m: maximum_lane_distance_m
+      minimum_projection_fraction: minimum_projection_fraction
+      minimum_lane_length_m: minimum_lane_length_m
+      minimum_observed_defenders: minimum_observed_defenders
+
+  - id: binding.primitive.join_episode_sets.0_1_0
+    kind: RuntimeBinding
+    display_name: join_episode_sets runtime binding
+    description: Canonical runtime binding for join_episode_sets 0.1.0.
+    runtime_capability: {id: join_episode_sets, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.join_episode_sets.python.v1
+    implements: [op.declared_key_episode_join.v1]
+    conformance_status: PARTIAL
+    known_deviations: [v0.1 joins bounded declared evidence-key fields on binary episode sets only; n-way compositions must chain binary joins.]
+    input_bindings:
+      left_episodes: {source: NODE_INPUT, runtime_port: left_episodes}
+      right_episodes: {source: NODE_INPUT, runtime_port: right_episodes}
+    output_bindings:
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+      join_status: {runtime_port: join_status}
+    semantic_parameters:
+      - name: left_key_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: anchor_id, unit: none}
+        allowed_values: [anchor_id, terminal_pass_id, input_pass_episode_id, relay_pass_episode_id, right_anchor_id]
+      - name: right_key_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: anchor_id, unit: none}
+        allowed_values: [anchor_id, pass_episode_id, input_pass_episode_id, relay_pass_episode_id, right_anchor_id]
+      - name: left_status_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: none, unit: none}
+        allowed_values: [none, carry_status, change_status, one_touch_relay_status, pass_chain_status, join_status]
+      - name: right_status_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: none, unit: none}
+        allowed_values: [none, carry_status, change_status, one_touch_relay_status, pass_chain_status, join_status]
+      - name: required_status_value
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: PASS, unit: none}
+        allowed_values: [PASS, FAIL, UNKNOWN]
+      - name: temporal_relation
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: none, unit: none}
+        allowed_values: [none, left_ends_before_right, left_starts_before_right, overlaps]
+      - name: left_time_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: anchor_frame_id, unit: none}
+        allowed_values: [anchor_frame_id, start_frame_id, end_frame_id, carry_start_frame_id, carry_end_frame_id, relay_touch_frame_id, terminal_controlled_reception_frame_id]
+      - name: right_time_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: anchor_frame_id, unit: none}
+        allowed_values: [anchor_frame_id, start_frame_id, end_frame_id, carry_start_frame_id, carry_end_frame_id, relay_touch_frame_id, terminal_controlled_reception_frame_id]
+      - name: maximum_gap_seconds
+        type: {container: Scalar, value: Scalar, unit: second}
+        required: false
+        default: {payload_type: number, value: 999.0, unit: second}
+        minimum: 0.0
+        maximum: 999.0
+      - name: distinct_entity_fields
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: none, unit: none}
+        allowed_values: [none, 'input_passer_id,relay_player_id', 'carrier_id,relay_player_id,terminal_receiver_id', 'passer_id,receiver_id,terminal_receiver_id']
+      - name: same_entity_fields
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: none, unit: none}
+        allowed_values: [none, 'input_passer_id=terminal_receiver_id']
+    parameter_bindings:
+      left_key_field: left_key_field
+      right_key_field: right_key_field
+      left_status_field: left_status_field
+      right_status_field: right_status_field
+      required_status_value: required_status_value
+      temporal_relation: temporal_relation
+      left_time_field: left_time_field
+      right_time_field: right_time_field
+      maximum_gap_seconds: maximum_gap_seconds
+      distinct_entity_fields: distinct_entity_fields
+      same_entity_fields: same_entity_fields
+
+  - id: binding.primitive.marking.0_1_0
+    kind: RuntimeBinding
+    display_name: marking runtime binding
+    description: Canonical runtime binding for marking 0.1.0.
+    runtime_capability: {id: marking, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.marking.python.v1
+    implements: [op.observed_nearest_opponent_proximity.v1]
+    conformance_status: PARTIAL
+    known_deviations: [v0.1 reports nearest observed opponent proximity at one declared frame only; it does not infer marking assignment or scheme.]
+    input_bindings:
+      anchors: {source: NODE_INPUT, runtime_port: anchors}
+      observed_outfield_positions: {source: RUNTIME_CONTEXT, context_ref: canonical_match_state.outfield_positions}
+    output_bindings:
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+      marking_status: {runtime_port: marking_status}
+      unmarked_status: {runtime_port: unmarked_status}
+      nearest_marker_distance_m: {runtime_port: nearest_marker_distance_m}
+    semantic_parameters:
+      - name: frame_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: anchor_frame_id, unit: none}
+        allowed_values: [anchor_frame_id, event_anchor_frame_id, physical_release_frame_id, controlled_reception_frame_id, carry_start_frame_id, carry_end_frame_id, terminal_release_frame_id]
+      - name: target_player_id_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: receiver_id, unit: none}
+        allowed_values: [receiver_id, passer_id, relay_player_id, terminal_receiver_id, carrier_id, run_player_id]
+      - name: candidate_scope
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: opposition_outfield_to_anchor_team, unit: none}
+        allowed_values: [opposition_outfield_to_anchor_team, defending_outfield, perspective_outfield]
+      - name: maximum_marking_distance_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 3.0, unit: metre}
+        minimum: 0.5
+        maximum: 15.0
+      - name: minimum_observed_marker_candidates
+        type: {container: Scalar, value: Scalar, unit: count}
+        required: false
+        default: {payload_type: number, value: 6.0, unit: count}
+        minimum: 1.0
+        maximum: 10.0
+    parameter_bindings:
+      frame_field: frame_field
+      target_player_id_field: target_player_id_field
+      candidate_scope: candidate_scope
+      maximum_marking_distance_m: maximum_marking_distance_m
+      minimum_observed_marker_candidates: minimum_observed_marker_candidates
+
+  - id: binding.primitive.off_ball_run.0_1_0
+    kind: RuntimeBinding
+    display_name: off_ball_run runtime binding
+    description: Canonical runtime binding for off_ball_run 0.1.0.
+    runtime_capability: {id: off_ball_run, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.off_ball_run.python.v1
+    implements: [op.observed_off_ball_run_episode.v1]
+    conformance_status: PARTIAL
+    known_deviations: [v0.1 selects the best same-scope candidate from endpoint displacement only; directional path labels are separate derived claims.]
+    input_bindings:
+      anchors: {source: NODE_INPUT, runtime_port: anchors}
+      tracking_window: {source: RUNTIME_CONTEXT, context_ref: canonical_tracking_window}
+      observed_ball_position: {source: RUNTIME_CONTEXT, context_ref: canonical_match_state.ball_position}
+    output_bindings:
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+      off_ball_run_status: {runtime_port: off_ball_run_status}
+      run_speed_mps: {runtime_port: run_speed_mps}
+    semantic_parameters:
+      - name: frame_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: anchor_frame_id, unit: none}
+        allowed_values: [anchor_frame_id, event_anchor_frame_id, transition_frame_id, controlled_reception_frame_id]
+      - name: candidate_scope
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: same_team_outfield_as_anchor, unit: none}
+        allowed_values: [same_team_outfield_as_anchor, perspective_outfield, defending_outfield]
+      - name: lookahead_seconds
+        type: {container: Scalar, value: Scalar, unit: second}
+        required: false
+        default: {payload_type: number, value: 1.2, unit: second}
+        minimum: 0.2
+        maximum: 5.0
+      - name: minimum_run_displacement_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 4.0, unit: metre}
+        minimum: 0.0
+        maximum: 30.0
+      - name: minimum_run_speed_mps
+        type: {container: Scalar, value: Scalar, unit: none}
+        required: false
+        default: {payload_type: number, value: 3.0, unit: none}
+        minimum: 0.0
+        maximum: 12.0
+      - name: minimum_ball_distance_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 5.0, unit: metre}
+        minimum: 0.0
+        maximum: 40.0
+      - name: minimum_observed_candidates
+        type: {container: Scalar, value: Scalar, unit: count}
+        required: false
+        default: {payload_type: number, value: 6.0, unit: count}
+        minimum: 1.0
+        maximum: 10.0
+      - name: maximum_missing_candidate_ratio
+        type: {container: Scalar, value: Scalar, unit: none}
+        required: false
+        default: {payload_type: number, value: 0.35, unit: none}
+        minimum: 0.0
+        maximum: 1.0
+    parameter_bindings:
+      frame_field: frame_field
+      candidate_scope: candidate_scope
+      lookahead_seconds: lookahead_seconds
+      minimum_run_displacement_m: minimum_run_displacement_m
+      minimum_run_speed_mps: minimum_run_speed_mps
+      minimum_ball_distance_m: minimum_ball_distance_m
+      minimum_observed_candidates: minimum_observed_candidates
+      maximum_missing_candidate_ratio: maximum_missing_candidate_ratio
+
+  - id: binding.primitive.off_ball_run_type.0_1_0
+    kind: RuntimeBinding
+    display_name: off_ball_run_type runtime binding
+    description: Canonical runtime binding for off_ball_run_type 0.1.0.
+    runtime_capability: {id: off_ball_run_type, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.off_ball_run_type.python.v1
+    implements: [op.observed_run_path_label_classification.v1]
+    conformance_status: PARTIAL
+    known_deviations: [v0.1 classifies run-in-behind and diagonal path labels from observed endpoint geometry only.]
+    input_bindings:
+      runs: {source: NODE_INPUT, runtime_port: runs}
+      observed_defending_positions: {source: RUNTIME_CONTEXT, context_ref: canonical_match_state.defending_outfield_positions}
+    output_bindings:
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+      run_in_behind_status: {runtime_port: run_in_behind_status}
+      diagonal_run_status: {runtime_port: diagonal_run_status}
+      off_ball_run_type_status: {runtime_port: off_ball_run_type_status}
+    semantic_parameters:
+      - name: minimum_forward_progression_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 4.0, unit: metre}
+        minimum: 0.0
+        maximum: 40.0
+      - name: minimum_lateral_displacement_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 2.0, unit: metre}
+        minimum: 0.0
+        maximum: 40.0
+      - name: minimum_observed_defenders
+        type: {container: Scalar, value: Scalar, unit: count}
+        required: false
+        default: {payload_type: number, value: 6.0, unit: count}
+        minimum: 1.0
+        maximum: 10.0
+    parameter_bindings:
+      minimum_forward_progression_m: minimum_forward_progression_m
+      minimum_lateral_displacement_m: minimum_lateral_displacement_m
+      minimum_observed_defenders: minimum_observed_defenders
+
+  - id: binding.primitive.set_piece_structure.0_1_0
+    kind: RuntimeBinding
+    display_name: set_piece_structure runtime binding
+    description: Canonical runtime binding for set_piece_structure 0.1.0.
+    runtime_capability: {id: set_piece_structure, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.set_piece_structure.python.v1
+    implements: [op.provider_restart_structure_snapshot.v1]
+    conformance_status: PARTIAL
+    known_deviations: [v0.1 exposes provider restart identity with observed bounding-box arrangement evidence only.]
+    input_bindings:
+      match_state: {source: RUNTIME_CONTEXT, context_ref: canonical_match_state}
+    output_bindings:
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+      set_piece_structure_status: {runtime_port: set_piece_structure_status}
+    semantic_parameters:
+      - name: minimum_observed_outfield_players
+        type: {container: Scalar, value: Scalar, unit: count}
+        required: false
+        default: {payload_type: number, value: 6.0, unit: count}
+        minimum: 1.0
+        maximum: 10.0
+    parameter_bindings:
+      minimum_observed_outfield_players: minimum_observed_outfield_players
+
+  - id: binding.primitive.space_region_generation.0_1_0
+    kind: RuntimeBinding
+    display_name: space_region_generation runtime binding
+    description: Canonical runtime binding for space_region_generation 0.1.0.
+    runtime_capability: {id: space_region_generation, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.space_region_generation.python.v1
+    implements: [op.sampled_open_space_candidate_generation.v1]
+    conformance_status: PARTIAL
+    known_deviations: [v0.1 samples grid points against observed outfield positions only; it does not produce continuous regions or pitch-control values.]
+    input_bindings:
+      anchors: {source: NODE_INPUT, runtime_port: anchors}
+      match_state: {source: RUNTIME_CONTEXT, context_ref: canonical_match_state}
+    output_bindings:
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+      open_space_status: {runtime_port: open_space_status}
+      open_space_region_count: {runtime_port: open_space_region_count}
+      representative_open_space_point: {runtime_port: representative_open_space_point}
+    semantic_parameters:
+      - name: frame_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: anchor_frame_id, unit: none}
+        allowed_values: [anchor_frame_id, transition_frame_id, carry_end_frame_id, controlled_reception_frame_id]
+      - name: zone_scope
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: any, unit: none}
+        allowed_values: [any, attacking_half, defensive_half, middle_third, final_third]
+      - name: grid_step_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 8.0, unit: metre}
+        minimum: 2.0
+        maximum: 20.0
+      - name: minimum_opponent_distance_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 8.0, unit: metre}
+        minimum: 1.0
+        maximum: 30.0
+      - name: minimum_teammate_distance_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 4.0, unit: metre}
+        minimum: 0.0
+        maximum: 20.0
+      - name: minimum_open_points
+        type: {container: Scalar, value: Scalar, unit: count}
+        required: false
+        default: {payload_type: number, value: 1.0, unit: count}
+        minimum: 1.0
+        maximum: 20.0
+      - name: maximum_candidate_points
+        type: {container: Scalar, value: Scalar, unit: count}
+        required: false
+        default: {payload_type: number, value: 5.0, unit: count}
+        minimum: 1.0
+        maximum: 50.0
+      - name: minimum_observed_players_per_team
+        type: {container: Scalar, value: Scalar, unit: count}
+        required: false
+        default: {payload_type: number, value: 6.0, unit: count}
+        minimum: 1.0
+        maximum: 10.0
+    parameter_bindings:
+      frame_field: frame_field
+      zone_scope: zone_scope
+      grid_step_m: grid_step_m
+      minimum_opponent_distance_m: minimum_opponent_distance_m
+      minimum_teammate_distance_m: minimum_teammate_distance_m
+      minimum_open_points: minimum_open_points
+      maximum_candidate_points: maximum_candidate_points
+      minimum_observed_players_per_team: minimum_observed_players_per_team
+
+  - id: binding.relation.team_press.0_1_0
+    kind: RuntimeBinding
+    display_name: team_press runtime binding
+    description: Canonical runtime binding for team_press 0.1.0.
+    runtime_capability: {id: team_press, version: 0.1.0, kind: relation}
+    implementation_ref: impl.team_press.python.v1
+    implements: [op.observed_multi_defender_pressure_geometry.v1]
+    conformance_status: PARTIAL
+    known_deviations: ['Multi-defender press geometry is operationalized through frozen distance, closing, approach-angle, and angular-spread thresholds; it does not infer trap, trigger, or scheme.']
+    input_bindings:
+      anchors: {source: NODE_INPUT, runtime_port: anchors}
+      observed_defending_positions: {source: RUNTIME_CONTEXT, context_ref: canonical_match_state.defending_outfield_positions}
+    output_bindings:
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+      team_press_status: {runtime_port: team_press_status}
+      pressure_actor_count: {runtime_port: pressure_actor_count}
+      pressure_angle_spread_degrees: {runtime_port: pressure_angle_spread_degrees}
+    semantic_parameters:
+      - name: frame_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: anchor_frame_id, unit: none}
+        allowed_values: [anchor_frame_id, physical_release_frame_id, controlled_reception_frame_id, carry_start_frame_id, carry_end_frame_id, terminal_release_frame_id]
+      - name: carrier_id_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: receiver_id, unit: none}
+        allowed_values: [receiver_id, passer_id, relay_player_id, terminal_receiver_id, carrier_id]
+      - name: maximum_press_distance_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 7.0, unit: metre}
+        minimum: 1.0
+        maximum: 20.0
+      - name: minimum_closing_speed_mps
+        type: {container: Scalar, value: Scalar, unit: none}
+        required: false
+        default: {payload_type: number, value: 0.0, unit: none}
+        minimum: -5.0
+        maximum: 10.0
+      - name: maximum_approach_angle_degrees
+        type: {container: Scalar, value: Scalar, unit: none}
+        required: false
+        default: {payload_type: number, value: 135.0, unit: none}
+        minimum: 0.0
+        maximum: 180.0
+      - name: minimum_pressing_defenders
+        type: {container: Scalar, value: Scalar, unit: count}
+        required: false
+        default: {payload_type: number, value: 2.0, unit: count}
+        minimum: 2.0
+        maximum: 10.0
+      - name: minimum_angle_spread_degrees
+        type: {container: Scalar, value: Scalar, unit: none}
+        required: false
+        default: {payload_type: number, value: 30.0, unit: none}
+        minimum: 0.0
+        maximum: 180.0
+      - name: minimum_observed_defenders
+        type: {container: Scalar, value: Scalar, unit: count}
+        required: false
+        default: {payload_type: number, value: 6.0, unit: count}
+        minimum: 1.0
+        maximum: 10.0
+      - name: lookback_seconds
+        type: {container: Scalar, value: Scalar, unit: second}
+        required: false
+        default: {payload_type: number, value: 0.4, unit: second}
+        minimum: 0.04
+        maximum: 3.0
+      - name: candidate_scope
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: defending_outfield, unit: none}
+        allowed_values: [defending_outfield]
+    parameter_bindings:
+      frame_field: frame_field
+      carrier_id_field: carrier_id_field
+      maximum_press_distance_m: maximum_press_distance_m
+      minimum_closing_speed_mps: minimum_closing_speed_mps
+      maximum_approach_angle_degrees: maximum_approach_angle_degrees
+      minimum_pressing_defenders: minimum_pressing_defenders
+      minimum_angle_spread_degrees: minimum_angle_spread_degrees
+      minimum_observed_defenders: minimum_observed_defenders
+      lookback_seconds: lookback_seconds
+      candidate_scope: candidate_scope
+
 operator_definitions:
   - id: operator.gt.1_0_0
     kind: OperatorDefinition
@@ -3232,6 +4164,78 @@ claim_contracts:
     prohibited: [proves_switch_was_available, proves_not_switching_was_mistake, proves_pass_should_be_played, proves_optimality, proves_player_intent]
     unknown_conditions: [shift_context_unresolved, corridor_relation_missing, destination_entry_coverage_incomplete]
 
+  - id: claim.observed_speed_change.v1
+    kind: ClaimContract
+    display_name: Observed Speed Change Claims
+    description: Claims permitted for observed two-window speed-change measurements.
+    permitted: [observed_two_window_speed_change_evaluated_under_frozen_thresholds]
+    prohibited: [effort_inferred, sprint_quality_inferred, physical_capacity_inferred, player_intent_inferred, pressure_breaking_quality_inferred, tactical_causation_inferred, optimality_inferred]
+    unknown_conditions: [velocity_window_endpoint_missing, implausible_speed_or_acceleration_spike, tracking_quality_insufficient]
+
+  - id: claim.observed_lane_screening.v1
+    kind: ClaimContract
+    display_name: Observed Ball-Target Lane Screening Claims
+    description: Claims permitted for observed ball-target lane screening geometry.
+    permitted: [observed_defender_screening_geometry_on_declared_ball_target_lane]
+    prohibited: [defender_intent_inferred, lane_denial_quality_inferred, pass_probability_inferred, pitch_control_inferred, marking_assignment_inferred, defensive_scheme_inferred, tactical_causation_inferred, optimality_inferred]
+    unknown_conditions: [ball_or_target_tracking_missing, lane_below_minimum_length, insufficient_observed_defenders]
+
+  - id: claim.declared_episode_join.v1
+    kind: ClaimContract
+    display_name: Declared Episode Join Claims
+    description: Claims permitted for declared-key episode joins over upstream evidence.
+    permitted: [episode_rows_joined_under_declared_key_status_time_and_entity_constraints]
+    prohibited: [tactical_intent_inferred, tactical_causation_inferred, role_semantics_inferred, decision_quality_inferred, optimality_inferred]
+    unknown_conditions: [join_key_evidence_missing, upstream_status_unknown, temporal_evidence_missing]
+
+  - id: claim.observed_marking_proximity.v1
+    kind: ClaimContract
+    display_name: Observed Marking Proximity Claims
+    description: Claims permitted for observed nearest-opponent proximity measurements.
+    permitted: [observed_nearest_opponent_proximity_evaluated_under_declared_threshold]
+    prohibited: [marking_assignment_inferred, defensive_scheme_inferred, man_or_zone_responsibility_inferred, player_role_inferred, player_intent_inferred, tactical_causation_inferred, marking_quality_inferred, optimality_inferred]
+    unknown_conditions: [target_tracking_missing, insufficient_observed_marker_candidates]
+
+  - id: claim.observed_off_ball_movement.v1
+    kind: ClaimContract
+    display_name: Observed Off-Ball Movement Claims
+    description: Claims permitted for observed endpoint-window off-ball movement episodes.
+    permitted: [observed_endpoint_window_off_ball_movement_evaluated_under_frozen_thresholds]
+    prohibited: [run_purpose_inferred, decoy_movement_inferred, marker_dragging_inferred, space_creation_inferred, tactical_role_identified, player_intent_inferred, tactical_causation_inferred, run_quality_inferred, optimality_inferred]
+    unknown_conditions: [candidate_endpoint_tracking_missing, ball_endpoint_missing, missing_candidate_ratio_exceeded]
+
+  - id: claim.observed_run_path_geometry.v1
+    kind: ClaimContract
+    display_name: Observed Run Path Geometry Claims
+    description: Claims permitted for observed run path-geometry label classification.
+    permitted: [observed_run_path_geometry_classified_for_supported_literal_labels]
+    prohibited: [decoy_movement_inferred, marker_dragging_inferred, space_creation_inferred, overlap_role_inferred, third_player_purpose_inferred, player_intent_inferred, tactical_causation_inferred, run_quality_inferred, optimality_inferred]
+    unknown_conditions: [defensive_line_coverage_insufficient, run_endpoint_tracking_missing]
+
+  - id: claim.observed_set_piece_structure.v1
+    kind: ClaimContract
+    display_name: Observed Set-Piece Structure Claims
+    description: Claims permitted for provider-recognized restart structure snapshots.
+    permitted: [provider_recognized_restart_reported_with_observed_outfield_arrangement]
+    prohibited: [routine_variant_inferred, planned_play_inferred, delivery_pattern_inferred, marking_assignment_inferred, player_role_inferred, player_intent_inferred, structure_quality_inferred, tactical_causation_inferred]
+    unknown_conditions: [insufficient_observed_outfield_players, event_frame_alignment_missing]
+
+  - id: claim.observed_open_space_candidates.v1
+    kind: ClaimContract
+    display_name: Observed Open-Space Candidates Claims
+    description: Claims permitted for sampled open-space candidate geometry.
+    permitted: [sampled_open_space_candidate_geometry_reported_under_frozen_distance_thresholds]
+    prohibited: [pitch_control_inferred, space_value_inferred, space_creation_inferred, space_exploitation_inferred, player_intent_inferred, tactical_causation_inferred, quality_inferred, optimality_inferred]
+    unknown_conditions: [attacking_direction_unavailable, invalid_grid_parameters, insufficient_observed_player_tracking]
+
+  - id: claim.observed_team_press_geometry.v1
+    kind: ClaimContract
+    display_name: Observed Team-Press Geometry Claims
+    description: Claims permitted for observed multi-defender pressure geometry.
+    permitted: [observed_multi_defender_pressure_geometry_evaluated_under_frozen_thresholds]
+    prohibited: [press_trap_inferred, pressing_trigger_inferred, coordinated_scheme_inferred, defensive_communication_inferred, player_intent_inferred, tactical_causation_inferred, pressure_quality_inferred, optimality_inferred]
+    unknown_conditions: [carrier_tracking_missing, insufficient_defender_tracking, kinematic_evidence_missing]
+
 evidence_contracts:
   - id: evidence.possession_context.v1
     kind: EvidenceContract
@@ -3505,6 +4509,78 @@ evidence_contracts:
     inherits: [evidence.ball_side_block_shift.v1, evidence.progressive_connection_availability.v1, evidence.relation_destination_entry.v1]
     required: [match_id, period, anchor_id, anchor_frame_id, possession_start_frame_id, possession_end_frame_id, ball_side, wide_entry_y_m, baseline_defensive_centroid_y_m, defending_outfield_player_ids, signed_shift_metres, shift_frame_id, classification, outcome_window_start_frame_id, outcome_window_end_frame_id, relation_id, open_frame_id, target_player_id, destination_region, minimum_clearance_m, entry_status, entry_mode, witness_frame_id]
     replay_projection: [ball_position, centroid_shift, corridor_geometry, destination_region, ball_path]
+
+  - id: evidence.observed_speed_change.v1
+    kind: EvidenceContract
+    display_name: Observed Speed Change Evidence
+    description: Evidence required for observed two-window speed-change measurements.
+    required: [anchor_id, anchor_frame_id, acceleration_status, deceleration_status, acceleration_reason, acceleration_frame_id, acceleration_entity_id, previous_speed_mps, current_speed_mps, delta_speed_mps, acceleration_mps2, acceleration_model, smoothing_policy, noise_policy, tracking_quality_status, coverage_status, acceleration_verdict_bias]
+    optional: []
+    replay_projection: []
+
+  - id: evidence.observed_lane_screening.v1
+    kind: EvidenceContract
+    display_name: Observed Ball-Target Lane Screening Evidence
+    description: Evidence required for observed ball-target lane screening geometry.
+    required: [anchor_id, anchor_frame_id, cover_shadow_status, passing_lane_denial_status, cover_shadow_reason, cover_shadow_frame_id, target_entity_id, ball_point, target_point, lane_length_m, candidate_scope, observed_defender_count, minimum_observed_defenders, maximum_lane_distance_m, minimum_projection_fraction, screening_defender_id, screening_defender_distance_to_lane_m, screening_defender_projection_fraction, screening_defender_point, screening_projection_point, screening_defender_evidence, cover_shadow_model, coverage_status, cover_shadow_claim_boundary]
+    optional: []
+    replay_projection: []
+
+  - id: evidence.declared_episode_join.v1
+    kind: EvidenceContract
+    display_name: Declared Episode Join Evidence
+    description: Evidence required for declared-key episode joins.
+    required: [anchor_id, anchor_frame_id, join_status, join_reason, left_key_field, right_key_field, join_key, left_anchor_id, right_anchor_id, left_status_field, right_status_field, temporal_relation, distinct_entity_fields, distinct_entities_status, same_entity_fields, same_entity_status]
+    optional: []
+    replay_projection: []
+
+  - id: evidence.observed_marking_proximity.v1
+    kind: EvidenceContract
+    display_name: Observed Marking Proximity Evidence
+    description: Evidence required for observed nearest-opponent proximity measurements.
+    required: [anchor_id, anchor_frame_id, marking_status, unmarked_status, marking_reason, marking_frame_id, target_player_id, nearest_marker_id, nearest_marker_distance_m, maximum_marking_distance_m, candidate_scope, target_player_team_role, candidate_team_role, observed_marker_candidate_count, minimum_observed_marker_candidates, coverage_status, marking_model, marking_assignment_policy, marking_claim_boundary]
+    optional: []
+    replay_projection: []
+
+  - id: evidence.observed_off_ball_movement.v1
+    kind: EvidenceContract
+    display_name: Observed Off-Ball Movement Evidence
+    description: Evidence required for observed endpoint-window off-ball movement episodes.
+    required: [anchor_id, anchor_frame_id, source_anchor_id, off_ball_run_status, off_ball_run_reason, run_player_id, run_start_frame_id, run_end_frame_id, run_start_point, run_end_point, run_duration_seconds, run_displacement_m, run_forward_progression_m, run_lateral_displacement_m, run_speed_mps, run_start_ball_distance_m, run_end_ball_distance_m, candidate_scope, candidate_team_role, coverage_status, off_ball_run_model, off_ball_distance_policy, off_ball_run_claim_boundary]
+    optional: []
+    replay_projection: []
+
+  - id: evidence.observed_run_path_geometry.v1
+    kind: EvidenceContract
+    display_name: Observed Run Path Geometry Evidence
+    description: Evidence required for observed run path-geometry label classification.
+    required: [anchor_id, anchor_frame_id, off_ball_run_type_status, off_ball_run_type_reason, run_in_behind_status, diagonal_run_status, observed_run_type_labels, run_player_id, run_start_frame_id, run_end_frame_id, run_forward_progression_m, run_lateral_displacement_m, defensive_line_start_x_m, defensive_line_end_x_m, attacking_direction, run_start_beyond_line, run_end_beyond_line, coverage_status, off_ball_run_type_model, off_ball_run_type_claim_boundary]
+    optional: []
+    replay_projection: []
+
+  - id: evidence.observed_set_piece_structure.v1
+    kind: EvidenceContract
+    display_name: Observed Set-Piece Structure Evidence
+    description: Evidence required for provider-recognized restart structure snapshots.
+    required: [anchor_id, anchor_frame_id, set_piece_structure_status, set_piece_structure_reason, set_piece_restart_type, event_type, event_anchor_frame_id, set_piece_attacking_team_role, set_piece_defending_team_role, attacking_shape_width_m, attacking_shape_depth_m, defending_shape_width_m, defending_shape_depth_m, coverage_status, structure_model, coordinate_system, set_piece_structure_claim_boundary]
+    optional: []
+    replay_projection: []
+
+  - id: evidence.observed_open_space_candidates.v1
+    kind: EvidenceContract
+    display_name: Observed Open-Space Candidates Evidence
+    description: Evidence required for sampled open-space candidate geometry.
+    required: [anchor_id, anchor_frame_id, open_space_status, open_space_reason, space_frame_id, zone_scope, grid_step_m, minimum_opponent_distance_m, minimum_teammate_distance_m, open_space_region_count, representative_open_space_point, representative_nearest_opponent_distance_m, representative_nearest_teammate_distance_m, open_space_candidate_points, space_region_model, space_region_claim_boundary, coverage_status]
+    optional: []
+    replay_projection: []
+
+  - id: evidence.observed_team_press_geometry.v1
+    kind: EvidenceContract
+    display_name: Observed Team-Press Geometry Evidence
+    description: Evidence required for observed multi-defender pressure geometry.
+    required: [anchor_id, anchor_frame_id, team_press_status, team_press_reason, team_press_frame_id, carrier_id, pressure_actor_ids, pressure_actor_count, nearby_defender_ids, nearby_defender_count, observed_defender_count, pressure_angle_spread_degrees, pressure_actor_evidence, maximum_press_distance_m, minimum_closing_speed_mps, maximum_approach_angle_degrees, minimum_pressing_defenders, minimum_angle_spread_degrees, minimum_observed_defenders, coverage_status, team_press_model, team_press_claim_boundary]
+    optional: []
+    replay_projection: []
 
 exposure_policies:
   - id: exposure.runtime.possession_segment.0_1_0
@@ -3811,6 +4887,87 @@ exposure_policies:
     product: ALLOWED
     reasons: [validated_composition_selection_allowed]
 
+  - id: exposure.runtime.acceleration.0_1_0
+    kind: ExposurePolicy
+    display_name: acceleration exposure
+    description: Conservative substrate exposure policy for acceleration; denied from product and AI projection pending exposure review.
+    subject_ref: runtime:primitive:acceleration:0.1.0
+    ai_compiler: DENIED
+    product: DENIED
+    reasons: [substrate_capability_pending_exposure_review]
+
+  - id: exposure.runtime.cover_shadow.0_1_0
+    kind: ExposurePolicy
+    display_name: cover_shadow exposure
+    description: Conservative substrate exposure policy for cover_shadow; denied from product and AI projection pending exposure review.
+    subject_ref: runtime:primitive:cover_shadow:0.1.0
+    ai_compiler: DENIED
+    product: DENIED
+    reasons: [substrate_capability_pending_exposure_review]
+
+  - id: exposure.runtime.join_episode_sets.0_1_0
+    kind: ExposurePolicy
+    display_name: join_episode_sets exposure
+    description: Conservative substrate exposure policy for join_episode_sets; denied from product and AI projection pending exposure review.
+    subject_ref: runtime:primitive:join_episode_sets:0.1.0
+    ai_compiler: DENIED
+    product: DENIED
+    reasons: [substrate_capability_pending_exposure_review]
+
+  - id: exposure.runtime.marking.0_1_0
+    kind: ExposurePolicy
+    display_name: marking exposure
+    description: Conservative substrate exposure policy for marking; denied from product and AI projection pending exposure review.
+    subject_ref: runtime:primitive:marking:0.1.0
+    ai_compiler: DENIED
+    product: DENIED
+    reasons: [substrate_capability_pending_exposure_review]
+
+  - id: exposure.runtime.off_ball_run.0_1_0
+    kind: ExposurePolicy
+    display_name: off_ball_run exposure
+    description: Conservative substrate exposure policy for off_ball_run; denied from product and AI projection pending exposure review.
+    subject_ref: runtime:primitive:off_ball_run:0.1.0
+    ai_compiler: DENIED
+    product: DENIED
+    reasons: [substrate_capability_pending_exposure_review]
+
+  - id: exposure.runtime.off_ball_run_type.0_1_0
+    kind: ExposurePolicy
+    display_name: off_ball_run_type exposure
+    description: Conservative substrate exposure policy for off_ball_run_type; denied from product and AI projection pending exposure review.
+    subject_ref: runtime:primitive:off_ball_run_type:0.1.0
+    ai_compiler: DENIED
+    product: DENIED
+    reasons: [substrate_capability_pending_exposure_review]
+
+  - id: exposure.runtime.set_piece_structure.0_1_0
+    kind: ExposurePolicy
+    display_name: set_piece_structure exposure
+    description: Conservative substrate exposure policy for set_piece_structure; denied from product and AI projection pending exposure review.
+    subject_ref: runtime:primitive:set_piece_structure:0.1.0
+    ai_compiler: DENIED
+    product: DENIED
+    reasons: [substrate_capability_pending_exposure_review]
+
+  - id: exposure.runtime.space_region_generation.0_1_0
+    kind: ExposurePolicy
+    display_name: space_region_generation exposure
+    description: Conservative substrate exposure policy for space_region_generation; denied from product and AI projection pending exposure review.
+    subject_ref: runtime:primitive:space_region_generation:0.1.0
+    ai_compiler: DENIED
+    product: DENIED
+    reasons: [substrate_capability_pending_exposure_review]
+
+  - id: exposure.runtime.team_press.0_1_0
+    kind: ExposurePolicy
+    display_name: team_press exposure
+    description: Conservative substrate exposure policy for team_press; denied from product and AI projection pending exposure review.
+    subject_ref: runtime:relation:team_press:0.1.0
+    ai_compiler: DENIED
+    product: DENIED
+    reasons: [substrate_capability_pending_exposure_review]
+
 projection_policies:
   - id: projection.product.v1
     kind: ProjectionPolicy
@@ -3826,142 +4983,60 @@ projection_policies:
         permitted_fields: []
         rationale: Verified Hermes-authored composition is intentionally new relative to the product baseline.
         review_condition: Remove or update this waiver when the product baseline intentionally includes the composition.
-      - subject_ref: runtime:primitive:one_touch_relay_episode:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: 77a5d0514dc92b60a6974755690cd4c6b10c388c78f4aee87f1162b6361cd006
+      - subject_ref: runtime:primitive:acceleration:0.1.0
+        difference_kind: REMOVED
+        baseline_contract_hash: 8044338ee752d7de324f50f6913f20afe30a5dd313d277d712733cd8bb11d49f
         permitted_fields: []
-        rationale: One-touch relay is intentionally added as part of the first pass-chain package.
-        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
-      - subject_ref: runtime:primitive:receiver_line_transition_during_pass_leg:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: c908635db523d3a50c6589d1d57c9325cbb3cb918a1f25d046fc29db42954ec9
+        rationale: Acceleration is runtime-executable substrate but is intentionally denied from the product projection pending exposure and product-claim review.
+        review_condition: Remove this waiver when the capability passes exposure review and enters the product projection.
+      - subject_ref: runtime:primitive:cover_shadow:0.1.0
+        difference_kind: REMOVED
+        baseline_contract_hash: 7ae43012a6725d814b7484c7c92de81096359754b7911cb77c3663ab0449c453
         permitted_fields: []
-        rationale: Receiver line transition is intentionally added as part of the first pass-chain package.
-        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
-      - subject_ref: runtime:primitive:pass_chain_episode:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: 7e944b4c55d731b4dd2b6ec65011c38d21ebf1d2606f154df865a293cb5ca0c0
+        rationale: Cover shadow is runtime-executable substrate but is intentionally denied from the product projection pending exposure and product-claim review.
+        review_condition: Remove this waiver when the capability passes exposure review and enters the product projection.
+      - subject_ref: runtime:primitive:join_episode_sets:0.1.0
+        difference_kind: REMOVED
+        baseline_contract_hash: 2f6bdc456dd304ea076428c34091df75e8080f09fd3f59ced8438a733cbc55ae
         permitted_fields: []
-        rationale: Pass-chain episode is intentionally added as part of the first pass-chain package.
-        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
-      - subject_ref: runtime:primitive:action_event_anchor:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: 8e62f3e65d93fb12cdaa92a9b38012efde2443efd6375c9fd2ec255352368fa4
+        rationale: Join episode sets is runtime-executable substrate but is intentionally denied from the product projection pending exposure and product-claim review.
+        review_condition: Remove this waiver when the capability passes exposure review and enters the product projection.
+      - subject_ref: runtime:primitive:marking:0.1.0
+        difference_kind: REMOVED
+        baseline_contract_hash: cd562049b2d56bc8e66313150e2e44514c85807660affce1c437516c322aca72
         permitted_fields: []
-        rationale: Provider action event anchors are intentionally added for northstar substrate action sequencing.
-        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
-      - subject_ref: runtime:primitive:action_chain:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: f137a3c7d7031b39578febe9f6c2b4ce8a0032aa3720c99ee9d554efc714bb6b
+        rationale: Marking is runtime-executable substrate but is intentionally denied from the product projection pending exposure and product-claim review.
+        review_condition: Remove this waiver when the capability passes exposure review and enters the product projection.
+      - subject_ref: runtime:primitive:off_ball_run:0.1.0
+        difference_kind: REMOVED
+        baseline_contract_hash: 33613344dd6da60fd75f0b57726c5e5e6d8ed90667694bd88b22db0a723bb856
         permitted_fields: []
-        rationale: Action chains are intentionally added for northstar substrate sequencing.
-        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
-      - subject_ref: runtime:primitive:tracking_quality:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: 9f365bf1bada6bfac3d546cf0f03d26edc178305393d62ba42b24ccd033c4df9
+        rationale: Off-ball run is runtime-executable substrate but is intentionally denied from the product projection pending exposure and product-claim review.
+        review_condition: Remove this waiver when the capability passes exposure review and enters the product projection.
+      - subject_ref: runtime:primitive:off_ball_run_type:0.1.0
+        difference_kind: REMOVED
+        baseline_contract_hash: aecfbc7602290037495eafcfe044e75810d0d7ab7d76cb1b28f30a8e69f0fa2d
         permitted_fields: []
-        rationale: Tracking quality is intentionally added to preserve UNKNOWN under poor coordinate coverage.
-        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
-      - subject_ref: runtime:primitive:pairwise_distance:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: cd5eb8ef82b23a544d7bc3ee9b989ed3a3fe61a42e9f21bded34a097a05b104a
+        rationale: Off-ball run type is runtime-executable substrate but is intentionally denied from the product projection pending exposure and product-claim review.
+        review_condition: Remove this waiver when the capability passes exposure review and enters the product projection.
+      - subject_ref: runtime:primitive:set_piece_structure:0.1.0
+        difference_kind: REMOVED
+        baseline_contract_hash: 3ee4719126044663905d42988d43d4afff0eca0577df593e9d36d0317523ba61
         permitted_fields: []
-        rationale: Pairwise distance is intentionally added as a geometric substrate primitive.
-        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
-      - subject_ref: runtime:primitive:velocity:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: f4369cac5b49256675f49d03dee288a0b3d0b202a4ddffce5e4b5387e7a5ee0a
+        rationale: Set-piece structure is runtime-executable substrate but is intentionally denied from the product projection pending exposure and product-claim review.
+        review_condition: Remove this waiver when the capability passes exposure review and enters the product projection.
+      - subject_ref: runtime:primitive:space_region_generation:0.1.0
+        difference_kind: REMOVED
+        baseline_contract_hash: 3ae62e6ad6caceb2e14343362d5578780d25891e9fb9e8a4014e5a7a835a578a
         permitted_fields: []
-        rationale: Velocity is intentionally added as a kinematic substrate primitive for pressure and movement clauses.
-        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
-      - subject_ref: runtime:primitive:time_to_arrival:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: 779ce10e289191634f45051d6c90f9bd37c41e0d5e1d3a2811e5cc20ad85423a
+        rationale: Space region generation is runtime-executable substrate but is intentionally denied from the product projection pending exposure and product-claim review.
+        review_condition: Remove this waiver when the capability passes exposure review and enters the product projection.
+      - subject_ref: runtime:relation:team_press:0.1.0
+        difference_kind: REMOVED
+        baseline_contract_hash: 4cf1558ccf3ed95deb1fea53b10166cb7144b63af1b1b8fa8b45b623425a6708
         permitted_fields: []
-        rationale: Time-to-arrival is intentionally added as a reachability substrate primitive and closes the Q4 lane-coverage typed gap.
-        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
-      - subject_ref: runtime:primitive:carry_episode:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: fac40aee740663083b4f48ee0fee9d5326ecbc12e9000a033a7c2d8e2ff239d7
-        permitted_fields: []
-        rationale: Carry episode is intentionally added as a conservative observed movement-under-control substrate primitive.
-        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
-      - subject_ref: runtime:primitive:multi_line_model:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: 5e2bcb5c0c1202caf872612333c0302cc8f9014b1603a7d7df90bed298accfbe
-        permitted_fields: []
-        rationale: Multi-line model is intentionally added for observed ranked geometric line clauses.
-        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
-      - subject_ref: runtime:relation:pressure_on_carrier:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: 12bcebc22867494d5e6063c375767e726fbbfeb824c71bf03dd0ac0928fd7bc2
-        permitted_fields: []
-        rationale: Pressure on carrier is intentionally added as a first-class observed pressure relation.
-        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
-      - subject_ref: runtime:primitive:team_compactness:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: 5e17486c2cb6e1654ecf9e40b176109587dd7b023f24e2006fc301248beb3777
-        permitted_fields: []
-        rationale: Team compactness is intentionally added for the Q4 compact-then-switch executable prefix.
-        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
-      - subject_ref: runtime:primitive:switch_of_play:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: d935006f039a807c989037e2891c62faa8d0ca4bba37e47b933c73679b363ef2
-        permitted_fields: []
-        rationale: Switch of play is intentionally added for the Q4 compact-then-switch executable prefix.
-        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
-      - subject_ref: runtime:primitive:change_across_anchor:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: 6bec7322861b28c7e42649cf1d8c55bec1909cbd0b30c63da9cb9242cefa26cd
-        permitted_fields: []
-        rationale: Change across anchor is intentionally added for the Q4 compact-then-switch executable prefix.
-        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
-      - subject_ref: runtime:primitive:transition_anchor:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: 3e9945aa75b6d02953acd3c4eb7576372675e66cc442f6b2f29cd4021a3a4ee8
-        permitted_fields: []
-        rationale: Transition anchor is intentionally added for Q5 regain/outcome-window substrate.
-        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
-      - subject_ref: runtime:primitive:structured_zone:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: 8ff674254979bc5bb021d218f9283ddfe5756ec7910e99297973ad39037d7c1c
-        permitted_fields: []
-        rationale: Structured zone is intentionally added for Q5 own-half and later zone clauses.
-        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
-      - subject_ref: runtime:primitive:outcome_window:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: b6b4021e18ac226e8d05fd5aa7216f2d564e3d89e3931c69f21b9e5d94c91148
-        permitted_fields: []
-        rationale: Outcome window is intentionally added for Q5 retained-possession outcome clauses.
-        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
-      - subject_ref: runtime:primitive:controlled_pass_episode:0.1.0
-        difference_kind: CONTRACT_CHANGED
-        baseline_contract_hash: 91fcabf7351c1253b89e552f75c188b83f7afe8aa591a7299b801e254234425f
-        projection_contract_hash: 0ae83df9a078907612759f473b3ab3b0b640ae2e021eb2d7571f3c8995f20652
-        permitted_fields: [evidence_fields, outputs, parameters]
-        rationale: Existing controlled-pass capability now exposes provider event type and a bounded event-type filter for throw-in clauses.
-        review_condition: Re-review if the changed field set expands beyond event-type evidence/filtering.
-      - subject_ref: runtime:primitive:defensive_line_model:0.1.0
-        difference_kind: CONTRACT_CHANGED
-        baseline_contract_hash: bd6f7561243d065bbf5a50c3f3882d4e3d20600bb1a83bc68f661b0f0872b5df
-        projection_contract_hash: 5f34c5bc61390c519c5acb5fa3393eb57cfa0bfa2d0da07f630578d250993355
-        permitted_fields: [parameters]
-        rationale: Existing line model accepts additional relay anchor-frame fields for the pass-chain package.
-        review_condition: Re-review if the changed field set expands beyond bounded parameter allowed-values.
-      - subject_ref: runtime:primitive:relative_position_to_line:0.1.0
-        difference_kind: CONTRACT_CHANGED
-        baseline_contract_hash: ba5ab172992cc5539d648abde0d7c4210e0818ab2a5998e947b2a70f4dca6531
-        projection_contract_hash: 57fef100397bf1e80362c705abd4ee7203ad45e86bf31ca24706f918cade954e
-        permitted_fields: [parameters]
-        rationale: Existing relative-position helper accepts additional relay entity/frame fields for the pass-chain package.
-        review_condition: Re-review if the changed field set expands beyond bounded parameter allowed-values.
-      - subject_ref: runtime:relation:support_arrival_relation:0.1.0
-        difference_kind: CONTRACT_CHANGED
-        baseline_contract_hash: 13f4c07504e0a6190e0ae9008b52efe1b998de38d35da98aeb403e9f4570289b
-        projection_contract_hash: 5f4bd59cc6e4d71348dcaff1f0e7767e57fd835d230a54bfe4b938c3b22e314d
-        permitted_fields: [evidence_fields, outputs, parameters]
-        rationale: Existing support-arrival relation now exposes bounded upstream-status guards used to avoid coercing UNKNOWN into no support.
-        review_condition: Re-review if the changed field set expands beyond status-guard evidence and parameters.
+        rationale: Team press is runtime-executable substrate but is intentionally denied from the product projection pending exposure and product-claim review.
+        review_condition: Remove this waiver when the capability passes exposure review and enters the product projection.
   - id: projection.ai.v1
     kind: ProjectionPolicy
     display_name: AI Projection Policy
@@ -3988,6 +5063,41 @@ projection_policies:
         permitted_fields: []
         rationale: Carry episode is intentionally added as a model-visible conservative movement-under-control substrate primitive.
         review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:change_across_anchor:0.1.0
+        difference_kind: CONTRACT_CHANGED
+        baseline_contract_hash: 6bec7322861b28c7e42649cf1d8c55bec1909cbd0b30c63da9cb9242cefa26cd
+        projection_contract_hash: e4e82178972ffc81085f75c1d30a2767e9e20f0d82ad11a1755004e9390dcdd1
+        permitted_fields: [parameters]
+        rationale: Change-across-anchor gained bounded pressure-evidence field options in its declared parameters.
+        review_condition: Re-review if the baseline hash, projection hash, or changed field set changes.
+      - subject_ref: runtime:primitive:controlled_pass_episode:0.1.0
+        difference_kind: CONTRACT_CHANGED
+        baseline_contract_hash: 0ae83df9a078907612759f473b3ab3b0b640ae2e021eb2d7571f3c8995f20652
+        projection_contract_hash: 54e6cc870e85493e222c5337a72d053d18c2fadee0d9a9c28566e9a6651e2cd7
+        permitted_fields: [outputs]
+        rationale: Controlled-pass episode output evidence-field declarations were extended relative to the pinned AI baseline.
+        review_condition: Re-review if the baseline hash, projection hash, or changed field set changes.
+      - subject_ref: runtime:primitive:pairwise_distance:0.1.0
+        difference_kind: CONTRACT_CHANGED
+        baseline_contract_hash: cd5eb8ef82b23a544d7bc3ee9b989ed3a3fe61a42e9f21bded34a097a05b104a
+        projection_contract_hash: fa20644e8359a9a5a3fdf5dc4b0f58a0d2f71825958a3eeb78310f51a6065b5c
+        permitted_fields: [parameters]
+        rationale: Pairwise distance gained bounded carry/terminal anchor-field options in its declared parameters.
+        review_condition: Re-review if the baseline hash, projection hash, or changed field set changes.
+      - subject_ref: runtime:primitive:pass_chain_episode:0.1.0
+        difference_kind: CONTRACT_CHANGED
+        baseline_contract_hash: 7e944b4c55d731b4dd2b6ec65011c38d21ebf1d2606f154df865a293cb5ca0c0
+        projection_contract_hash: 0e4f6477acda06af186d95b77371e8f5d17999f0e21cb5e14a83c25cda27f6cb
+        permitted_fields: [evidence_fields, outputs]
+        rationale: Pass-chain episode evidence-field declarations were extended relative to the pinned AI baseline.
+        review_condition: Re-review if the baseline hash, projection hash, or changed field set changes.
+      - subject_ref: runtime:relation:pressure_on_carrier:0.1.0
+        difference_kind: CONTRACT_CHANGED
+        baseline_contract_hash: 12bcebc22867494d5e6063c375767e726fbbfeb824c71bf03dd0ac0928fd7bc2
+        projection_contract_hash: cb4922d3cf51b6f11a3f1e67f8ed3a38492fc92b3ca9664d9b1d1f85f19e4977
+        permitted_fields: [parameters]
+        rationale: Pressure-on-carrier gained bounded carry/terminal anchor-field options in its declared parameters.
+        review_condition: Re-review if the baseline hash, projection hash, or changed field set changes.
       - subject_ref: recipe:line_break_support_response_v1:0.1.0
         difference_kind: CONTRACT_CHANGED
         baseline_contract_hash: a0a83061005860a3212d895055edce154c0b82c035b637c185d330d34f07424e
@@ -4473,6 +5583,105 @@ maturity_assessments:
     validation: VERIFIED
     agent_safety: APPROVED
     product: EXPOSED
+
+  - id: maturity.runtime.acceleration.0_1_0
+    kind: MaturityAssessment
+    display_name: acceleration maturity
+    description: Maturity assessment for acceleration; substrate capability without product-claim validation.
+    subject_ref: runtime:primitive:acceleration:0.1.0
+    semantic: PROPOSED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: REVIEWED
+    product: NOT_EXPOSED
+
+  - id: maturity.runtime.cover_shadow.0_1_0
+    kind: MaturityAssessment
+    display_name: cover_shadow maturity
+    description: Maturity assessment for cover_shadow; substrate capability without product-claim validation.
+    subject_ref: runtime:primitive:cover_shadow:0.1.0
+    semantic: PROPOSED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: REVIEWED
+    product: NOT_EXPOSED
+
+  - id: maturity.runtime.join_episode_sets.0_1_0
+    kind: MaturityAssessment
+    display_name: join_episode_sets maturity
+    description: Maturity assessment for join_episode_sets; substrate capability without product-claim validation.
+    subject_ref: runtime:primitive:join_episode_sets:0.1.0
+    semantic: PROPOSED
+    implementation: IMPLEMENTED
+    validation: IMPLEMENTED
+    agent_safety: REVIEWED
+    product: NOT_EXPOSED
+
+  - id: maturity.runtime.marking.0_1_0
+    kind: MaturityAssessment
+    display_name: marking maturity
+    description: Maturity assessment for marking; substrate capability without product-claim validation.
+    subject_ref: runtime:primitive:marking:0.1.0
+    semantic: PROPOSED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: REVIEWED
+    product: NOT_EXPOSED
+
+  - id: maturity.runtime.off_ball_run.0_1_0
+    kind: MaturityAssessment
+    display_name: off_ball_run maturity
+    description: Maturity assessment for off_ball_run; substrate capability without product-claim validation.
+    subject_ref: runtime:primitive:off_ball_run:0.1.0
+    semantic: PROPOSED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: REVIEWED
+    product: NOT_EXPOSED
+
+  - id: maturity.runtime.off_ball_run_type.0_1_0
+    kind: MaturityAssessment
+    display_name: off_ball_run_type maturity
+    description: Maturity assessment for off_ball_run_type; substrate capability without product-claim validation.
+    subject_ref: runtime:primitive:off_ball_run_type:0.1.0
+    semantic: PROPOSED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: REVIEWED
+    product: NOT_EXPOSED
+
+  - id: maturity.runtime.set_piece_structure.0_1_0
+    kind: MaturityAssessment
+    display_name: set_piece_structure maturity
+    description: Maturity assessment for set_piece_structure; substrate capability without product-claim validation.
+    subject_ref: runtime:primitive:set_piece_structure:0.1.0
+    semantic: PROPOSED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: REVIEWED
+    product: NOT_EXPOSED
+
+  - id: maturity.runtime.space_region_generation.0_1_0
+    kind: MaturityAssessment
+    display_name: space_region_generation maturity
+    description: Maturity assessment for space_region_generation; substrate capability without product-claim validation.
+    subject_ref: runtime:primitive:space_region_generation:0.1.0
+    semantic: PROPOSED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: REVIEWED
+    product: NOT_EXPOSED
+
+  - id: maturity.runtime.team_press.0_1_0
+    kind: MaturityAssessment
+    display_name: team_press maturity
+    description: Maturity assessment for team_press; substrate capability without product-claim validation.
+    subject_ref: runtime:relation:team_press:0.1.0
+    semantic: PROPOSED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: REVIEWED
+    product: NOT_EXPOSED
 
 plan_artifacts:
   - id: plan.ball_side_block_shift.v1

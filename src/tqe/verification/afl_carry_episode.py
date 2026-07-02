@@ -16,6 +16,7 @@ from typing import Any
 from tqe.runtime.binder import bind_document
 from tqe.runtime.executor import TacticalQueryExecutor, execution_result_rows, runtime_parameters
 from tqe.runtime.ir import ExecutionStatus, TacticalQueryDocument, stable_hash
+from tqe.semantic_registry.generate import generate_scp0_artifacts
 from tqe.verification.afl_substrate_q4 import _eq_predicate, _evidence, _number_param, _status_counts
 from tqe.verification.afl_validation_factory import (
     ValidationFactorySpec,
@@ -221,6 +222,7 @@ def carry_episode_document() -> dict[str, Any]:
 
 
 def verify_carry_episode() -> dict[str, Any]:
+    _registry, _runtime_manifest, registry_lock, parity_report = generate_scp0_artifacts(write=True)
     document_payload = carry_episode_document()
     PLAN_ARTIFACT_PATH.parent.mkdir(parents=True, exist_ok=True)
     PLAN_ARTIFACT_PATH.write_text(json.dumps(document_payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -240,6 +242,14 @@ def verify_carry_episode() -> dict[str, Any]:
     )
 
     findings: list[dict[str, str]] = []
+    if parity_report.status != "PASS":
+        findings.append(
+            {
+                "code": "scp0_parity_failed",
+                "parity_status": parity_report.status,
+                "parity_finding_count": len(parity_report.findings),
+            }
+        )
     if execution.status != ExecutionStatus.PASS:
         findings.append({"code": "execution_not_pass", "message": f"Execution status was {execution.status}.", "path": "execution.status"})
     if execution.provenance.get("compatibility_profile") != "generic":
@@ -271,6 +281,7 @@ def verify_carry_episode() -> dict[str, Any]:
 
     report = {
         "schema_version": "afl.carry_episode.v1",
+        "registry_lock": registry_lock.model_dump(mode="json"),
         "milestone": "AFL-08 carry_episode substrate",
         "status": "PASS" if not findings else "FAIL",
         "plan": {

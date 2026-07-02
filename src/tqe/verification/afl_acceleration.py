@@ -24,6 +24,7 @@ from tqe.runtime.executor import (
     runtime_parameters,
 )
 from tqe.runtime.ir import ExecutionStatus, TacticalQueryDocument, stable_hash
+from tqe.semantic_registry.generate import generate_scp0_artifacts
 
 
 REPORT_PATH = Path("artifacts/autonomous/afl-acceleration-verification-report.json")
@@ -151,6 +152,7 @@ def verify_search_flip() -> tuple[list[dict[str, Any]], dict[str, Any]]:
 
 
 def verify_acceleration() -> dict[str, Any]:
+    _registry, _runtime_manifest, registry_lock, parity_report = generate_scp0_artifacts(write=True)
     executor = TacticalQueryExecutor(
         canonical_root=Path(os.environ.get("TQE_DATA_ROOT", str(DEFAULT_CANONICAL_ROOT))),
         raw_root=Path(os.environ.get("TQE_RAW_ROOT", str(DEFAULT_RAW_ROOT))),
@@ -164,6 +166,14 @@ def verify_acceleration() -> dict[str, Any]:
 
     evidence = evidence_presence(combined_records)
     findings: list[dict[str, Any]] = [*search_findings]
+    if parity_report.status != "PASS":
+        findings.append(
+            {
+                "code": "scp0_parity_failed",
+                "parity_status": parity_report.status,
+                "parity_finding_count": len(parity_report.findings),
+            }
+        )
     for label, execution, rows in [
         ("acceleration", acceleration_execution, acceleration_rows),
         ("deceleration", deceleration_execution, deceleration_rows),
@@ -197,6 +207,7 @@ def verify_acceleration() -> dict[str, Any]:
 
     report = {
         "schema_version": "afl.acceleration.v1",
+        "registry_lock": registry_lock.model_dump(mode="json"),
         "milestone": "AFL-08 acceleration primitive / SCL named-gap closure",
         "status": "PASS" if not findings else "FAIL",
         "threshold_version": THRESHOLD_VERSION,
