@@ -229,3 +229,116 @@ library has to follow: a coach-facing claim is allowed only when the
 composition beneath it proves that exact claim. The system gets better by
 making each remaining overclaim easy to find and easy to fence, not by adding
 cleverness on top.
+
+---
+
+# Part two: auditing the compiler with its own doctrine
+
+*Added 2026-07-02. Part one ended with a rule: a claim is allowed only when
+the composition beneath it proves that exact claim. Part two is what happened
+when we turned that rule on the compiler itself — the measurement code, the
+gates that verify it, and our own flagship numbers.*
+
+## What we tested this time
+
+Part one tested a concept (the high-bypass pass) against the stack. Part two
+tested the stack against itself: a foundation audit of the runtime core and
+every measurement kernel, with one standing question — *where can missing
+evidence still become a definite answer?* Every finding below was reproduced
+with synthetic geometry before it was believed, and every fix was reviewed
+adversarially by a reviewer whose job was to reject it.
+
+The audit also found something more uncomfortable than any single bug: the
+machinery that was supposed to keep the vocabulary honest had gone stale
+without anyone noticing. The checked-in parity report said all capabilities
+were bound and clean; regenerating it fresh said nine capabilities were
+executable with no registered contract at all. The report was written only on
+success, so a failure left yesterday's success in place. Verification you
+don't re-run is decoration.
+
+## First, the gates had to stop lying
+
+Before touching a single measurement, three structural changes:
+
+- **Verifiers became read-only.** A gate used to regenerate its own evidence
+  files when run, which once overwrote a verified historical report with a
+  weaker local one. Now every gate is a pure check that fails loudly on
+  drift; rewriting pinned evidence takes an explicit, logged opt-in — and a
+  failing run writes the failing report, so stale success is impossible.
+- **Continuous verification.** Every push now re-runs the test suite and the
+  vocabulary parity checks on independent infrastructure, including a step
+  that fails if any gate modified a tracked file.
+- **A judge we cannot impersonate.** Promotion of a capability now requires a
+  signature from a key held only in a protected environment, alongside the
+  fingerprint of a privately-authored evaluation set. The builder — human or
+  agent — cannot certify its own work. The first thing the configured gate
+  did was refuse to promote, correctly, because one canary in its own
+  machinery had been written backwards. We fixed the judge's code in the
+  open; the certificate records the judge's own hash, so even that fix is
+  auditable.
+
+## Then the measurements: three numbers that had to change
+
+**639 became 563, and 135 failures became 84.** Part one counted 639
+candidate passes on the test match. It turns out 76 of them were throw-ins,
+free kicks, goal kicks, and kick-offs — a substring filter had quietly
+admitted set pieces, and a throw-in was being judged for ground control while
+the ball was in the thrower's hands. Open play is now the declared default;
+set pieces are included only by explicit declaration. And of the old FAIL
+verdicts, a third were not failures at all: a pass still in flight at the
+half-time whistle, or a passer visible in one frame out of a hundred, had
+been recorded as *contradicted* when the honest answer was *unknown*. FAIL
+now means the evidence contradicts the claim; UNKNOWN means we could not
+decide. They are different facts.
+
+**A corridor's 0.8 seconds became 0.6.** Episode durations were counted as
+frames-times-rate, which silently awards one extra frame interval to every
+episode. Measured as true elapsed span, fifteen corridors on the M1.1 corpus
+that appeared to stay open for exactly 0.8 seconds had actually been open for
+0.6. Durations also no longer bridge tracking dropouts: if the ball or the
+target player is untracked mid-window, the episode closes with
+`closed_on_missing_evidence` rather than quietly counting untracked time as
+corridor time.
+
+**The pitch got one lane model instead of two.** Lane occupancy divided the
+pitch into five equal lanes; the corridor destination logic used a different,
+fractional partition. The same point at y = 8.0 m was "central" to one
+primitive and "half-space" to the other — two primitives that would disagree
+inside a single composed query. There is now one declared partition (five
+equal lanes, mirror-symmetric, ties toward center, with an explicit
+epsilon), used by every consumer. Requirements like "two players in the
+central lane" now count distinct players in a frame, not player-frames — one
+player observed twice no longer impersonates two players.
+
+## The hero number: 14 → 11 → 12
+
+Part one's era produced an attested flagship result: fourteen moments where a
+progressive corridor opened early in a possession, stayed open at least 0.8
+seconds, and the ball entered its destination region in time. That attested
+record still stands — it honestly describes what the June engine measured.
+
+The live engine now finds twelve, and the path matters more than the number.
+Honest durations removed three moments whose corridors had only appeared to
+clear the threshold. The unified lane geometry then admitted one moment the
+old fractional partition had wrongly excluded. Both steps are pinned in the
+contract test with their causes, so the number's history is part of the
+evidence: *fourteen under inflated time, eleven under honest time, twelve
+under honest geometry.*
+
+A system whose flagship number cannot change is advertising. A system whose
+flagship number changes exactly when its measurements improve — and can show
+you why, moment by moment — is an instrument.
+
+## Where this leaves the approach, again
+
+Part one's rule was about the boundary between substrate and product. Part
+two extends it downward: the substrate itself, the gates that verify it, and
+the numbers we are proudest of get no exemption. The discipline is now
+mechanical rather than behavioral — read-only gates, continuous parity,
+an unimpersonatable judge — because part two's real lesson is that honesty
+maintained by memory decays, and honesty maintained by machinery doesn't.
+
+Nothing in part two added a new football concept. Every change made an
+existing claim smaller, truer, or better-declared. The library's next growth
+— compositional operators that let one vocabulary answer many questions — now
+builds on measurements that mean what they say.
