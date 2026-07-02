@@ -32,6 +32,7 @@ from tqe.runtime.relations import evaluate_geometric_progressive_corridors  # no
 OUT_PATH = REPO_ROOT / "apps/workbench-alpha/public/case-study-part-two-replays.json"
 N1I_ORIGIN_BUNDLE = REPO_ROOT / "delivery/n1d/n1f-origin-bundle.json"
 PITCH = {"length_m": 105.0, "width_m": 68.0, "coordinate_contract": "centered_metres"}
+REVIEW_VERIFIED_TWELFTH_RESULT_ID = "854d129b6d14f7dd"
 
 
 def main() -> None:
@@ -204,38 +205,32 @@ def twelfth_hero_payload(canonical_root: Path, raw_root: Path) -> dict[str, Any]
         params=params,
     )
     execution_rows = execution_result_rows(executor.execute(bound))
-    selected_relation_ids = {
-        str(row["requested_evidence"]["relation_id"])
-        for row in execution_rows
-        if row.get("match_id") == "J03WOY" and row.get("period") == "firstHalf"
-    }
-    entries = [
-        record
-        for record in state.signals["destination_entry"]["entry_status_records"]
-        if str(record.get("entry_status")) == "PASS"
-        and str(record.get("relation_id")) in selected_relation_ids
-        and str(record.get("destination_region", "")).endswith("_half_space")
-        and 6.8 < abs(float((record.get("destination_entry_point") or {}).get("y_m", 999))) < 11.34
-    ]
-    if not entries:
-        raise RuntimeError("No live hero entry found in the lane-boundary half-space band.")
-    entry = sorted(
-        entries,
-        key=lambda item: (
-            abs(abs(float(item["destination_entry_point"]["y_m"])) - 8.0),
-            int(item["anchor_frame_id"]),
-            str(item["relation_id"]),
+    # DOC-1 round-1 review verified this result id by diffing the archived
+    # F1-C-era engine (`d006780`, 11 rows) against the live F1-D engine
+    # (12 rows). The exhibit must show that set-difference row, not a
+    # heuristic lane-boundary proxy.
+    final_row = next(
+        (row for row in execution_rows if str(row["result_id"]) == REVIEW_VERIFIED_TWELFTH_RESULT_ID),
+        None,
+    )
+    if final_row is None:
+        raise RuntimeError(f"Verified twelfth hero result {REVIEW_VERIFIED_TWELFTH_RESULT_ID} not found.")
+    verified_relation_id = str(final_row["requested_evidence"]["relation_id"])
+    entry = next(
+        (
+            record
+            for record in state.signals["destination_entry"]["entry_status_records"]
+            if str(record.get("entry_status")) == "PASS"
+            and str(record.get("relation_id")) == verified_relation_id
         ),
-    )[0]
+        None,
+    )
+    if entry is None:
+        raise RuntimeError(f"Entry evidence for verified relation {verified_relation_id} not found.")
     episode = next(
         item
         for item in state.signals["progressive_corridor"]["episodes"]
         if str(item["relation_id"]) == str(entry["relation_id"])
-    )
-    final_row = next(
-        row
-        for row in execution_rows
-        if str(row["requested_evidence"]["relation_id"]) == str(entry["relation_id"])
     )
     replay = replay_window(
         canonical_root=canonical_root,
@@ -252,7 +247,13 @@ def twelfth_hero_payload(canonical_root: Path, raw_root: Path) -> dict[str, Any]
             "final_result_id": final_row["result_id"],
             "live_result_count": len(execution_rows),
             "hero_genealogy": "14 -> 11 -> 12",
-            "unified_lane_note": "The destination point sits inside the declared five-equal-lanes half-space band.",
+            "set_difference_provenance": {
+                "archived_f1c_engine_commit": "d006780",
+                "review_commit": "283dd42",
+                "added_result_id": REVIEW_VERIFIED_TWELFTH_RESULT_ID,
+                "added_relation_id": verified_relation_id,
+            },
+            "unified_lane_note": "The destination point is the reviewed set-difference row admitted after lane unification.",
             "relation_episode": episode,
         },
         "replay": replay,
@@ -265,9 +266,15 @@ def lane_partition_payload() -> dict[str, Any]:
         "schema_version": "case_study_part_two.lane_partition.v0",
         "moment": {
             "marker_y_m": 8.0,
-            "old_fractional_model": "fractional destination logic could disagree with lane occupancy",
-            "old_occupancy_model": "lane occupancy used five equal lanes",
+            "old_fractional_model": "old fractional destination model",
+            "old_fractional_abs_central_bound_m": 11.22,
+            "old_fractional_classification": "central",
+            "old_occupancy_model": "old lane occupancy model",
+            "old_occupancy_classification": "RIGHT_HALF_SPACE",
             "current_model": "five_equal_lanes_abs_y_ties_toward_center",
+            "current_classification": "right_half_space",
+            "current_band_min_y_m": 6.8,
+            "current_band_max_y_m": 20.4,
         },
         "partition": metadata,
         "replay": {"pitch": PITCH, "frames": []},

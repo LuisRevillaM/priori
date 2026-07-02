@@ -226,8 +226,14 @@ type LanePartitionPayload = {
   moment: {
     marker_y_m: number;
     old_fractional_model: string;
+    old_fractional_abs_central_bound_m: number;
+    old_fractional_classification: string;
     old_occupancy_model: string;
+    old_occupancy_classification: string;
     current_model: string;
+    current_classification: string;
+    current_band_min_y_m: number;
+    current_band_max_y_m: number;
   };
   partition: {
     lane_width_m: number;
@@ -700,11 +706,11 @@ export function CaseStudy() {
         <div className="cs-example-context" aria-label="Twelfth hero exhibit context">
           <div>
             <span>Look for</span>
-            <strong>The corridor target and destination point inside the declared half-space band.</strong>
+            <strong>The corridor target and destination point in the declared central lane.</strong>
           </div>
           <div>
             <span>Proves</span>
-            <strong>The live hero query now finds twelve moments under one shared lane model.</strong>
+            <strong>This result is the row added by the 11-to-12 set difference.</strong>
           </div>
           <div>
             <span>Does not claim</span>
@@ -716,7 +722,7 @@ export function CaseStudy() {
           overlay="twelfth_hero"
           verdict="Live hero result admitted by unified lane geometry"
           facts={(payload) => <TwelfthHeroFacts payload={payload} />}
-          caption="The destination point sits in the five-equal-lanes half-space band. Once corridor destination logic and lane occupancy used the same model, this possession qualified."
+          caption="This is the verified set-difference result: it appears in the live twelve-row engine output and was absent from the F1-C eleven-row output."
         />
 
         <h3 className="cs-example-title">Exhibit four: one pitch, one partition</h3>
@@ -982,12 +988,37 @@ function LanePartitionFigure({ payload }: { payload: LanePartitionPayload }) {
           <div className="cs-partition-marker" style={{ left: `${leftPercent}%` }}>
             <strong>y = {marker.toFixed(1)}m</strong>
           </div>
+          <div className="cs-partition-contrast" aria-label="Lane model classification contrast">
+            <div>
+              <span>Old destination</span>
+              <strong>{payload.moment.old_fractional_classification}</strong>
+              <em>|y| &lt; {payload.moment.old_fractional_abs_central_bound_m.toFixed(2)}m</em>
+            </div>
+            <div>
+              <span>Old occupancy</span>
+              <strong>{payload.moment.old_occupancy_classification}</strong>
+              <em>separate five-lane model</em>
+            </div>
+            <div>
+              <span>Declared model</span>
+              <strong>{payload.moment.current_classification}</strong>
+              <em>
+                {payload.moment.current_band_min_y_m.toFixed(1)}-
+                {payload.moment.current_band_max_y_m.toFixed(1)}m
+              </em>
+            </div>
+          </div>
         </div>
       </div>
       <figcaption>
         <span>Declared lane model · five equal bands</span>
-        The old system let destination regions and lane occupancy disagree. The live runtime uses the
-        same mirror-symmetric five-lane partition everywhere.
+        At y = {marker.toFixed(1)}m, the old fractional destination model said{" "}
+        <strong>{payload.moment.old_fractional_classification}</strong> because |y| was below{" "}
+        {payload.moment.old_fractional_abs_central_bound_m.toFixed(2)}m; old lane occupancy said{" "}
+        <strong>{payload.moment.old_occupancy_classification}</strong>; the declared shared model says{" "}
+        <strong>{payload.moment.current_classification}</strong> inside{" "}
+        {payload.moment.current_band_min_y_m.toFixed(1)}-{payload.moment.current_band_max_y_m.toFixed(1)}m,
+        with ties toward center.
       </figcaption>
     </figure>
   );
@@ -1915,7 +1946,13 @@ const CSS = `
 .cs-partition-band span{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-90deg);white-space:nowrap;color:rgba(250,249,245,.72);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;letter-spacing:.05em;text-transform:uppercase}
 .cs-partition-marker{position:absolute;top:16px;bottom:16px;width:0;border-left:2px solid #f2cf73;filter:drop-shadow(0 0 10px rgba(242,207,115,.35))}
 .cs-partition-marker strong{position:absolute;left:8px;top:8px;white-space:nowrap;background:rgba(16,42,32,.84);color:#fff1bd;border:1px solid rgba(255,241,189,.32);border-radius:6px;padding:4px 6px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
+.cs-partition-contrast{position:absolute;left:32px;right:32px;bottom:30px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.cs-partition-contrast div{background:rgba(16,42,32,.84);border:1px solid rgba(255,241,189,.24);border-radius:7px;padding:8px 9px}
+.cs-partition-contrast span{display:block;margin:0 0 4px;color:rgba(250,249,245,.62);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9px;text-transform:uppercase;letter-spacing:.06em}
+.cs-partition-contrast strong{display:block;color:#fff1bd;font-size:12px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cs-partition-contrast em{display:block;margin-top:3px;color:rgba(250,249,245,.58);font-style:normal;font-size:10px;line-height:1.25}
 @media(max-width:720px){.cs-replay-facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:720px){.cs-genealogy{grid-template-columns:1fr}.cs-genealogy-arrow{display:none}}
+@media(max-width:720px){.cs-partition-contrast{grid-template-columns:1fr;left:22px;right:22px}.cs-partition{height:360px}}
 @media(max-width:560px){.cs-replay{width:calc(100vw - 28px);margin-top:22px;margin-bottom:24px}}
 `;
