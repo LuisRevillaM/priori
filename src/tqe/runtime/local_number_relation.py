@@ -42,6 +42,7 @@ class LocalNumberReason(str, Enum):
     REFERENCE_POINT_INVALID = "reference_point_invalid"
     PLAYER_POSITIONS_MISSING = "player_positions_missing"
     INVALID_PLAYER_IDS = "invalid_player_ids"
+    PLAYER_ON_BOTH_SIDES = "player_present_on_both_sides"
     MISSING_PLAYER_EVIDENCE = "missing_player_evidence"
     INVALID_PLAYER_COORDINATES = "invalid_player_coordinates"
     DUPLICATE_PLAYER_POSITION_RECORDS = "duplicate_player_position_records"
@@ -251,6 +252,14 @@ def evaluate_local_number_relation(
         return _evaluation(
             UNKNOWN,
             LocalNumberReason.INVALID_PLAYER_IDS.value,
+            {**empty_base, "coverage_status": UNKNOWN},
+        )
+    if set(perspective_ids) & set(defending_ids):
+        # A player declared on both sides is contradictory side-membership
+        # evidence; counting it twice would fabricate a numerical advantage.
+        return _evaluation(
+            UNKNOWN,
+            LocalNumberReason.PLAYER_ON_BOTH_SIDES.value,
             {**empty_base, "coverage_status": UNKNOWN},
         )
 

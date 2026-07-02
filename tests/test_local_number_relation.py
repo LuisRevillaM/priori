@@ -161,6 +161,67 @@ class LocalNumberRelationKernelTest(unittest.TestCase):
         self.assertEqual(first.to_dict(), second.to_dict())
         self.assertEqual(("p1", "p2"), first.perspective_player_ids)
 
+    def test_player_on_both_sides_is_unknown_not_double_counted(self) -> None:
+        # A 1v1 where the same player id appears on both sides must not become
+        # a 2v1 PASS; contradictory side membership is UNKNOWN.
+        evaluation = evaluate_local_number_relation(
+            anchor_frame_id=100,
+            evaluation_frame_id=100,
+            reference_point=(0.0, 0.0),
+            perspective_positions=[
+                player("p1", 100, 0.0, 0.0),
+                player("shared", 100, 1.0, 0.0),
+            ],
+            defending_positions=[
+                player("shared", 100, 1.0, 0.0),
+                player("d1", 100, 2.0, 0.0),
+            ],
+            config=LocalNumberConfig(radius_m=10.0, minimum_difference=1),
+        )
+
+        self.assertEqual(UNKNOWN, evaluation.status)
+        self.assertEqual(LocalNumberReason.PLAYER_ON_BOTH_SIDES.value, evaluation.reason)
+        self.assertIsNone(evaluation.perspective_count)
+        self.assertIsNone(evaluation.defending_count)
+        self.assertIsNone(evaluation.local_number_difference)
+
+    def test_overlap_detected_from_explicit_player_id_declarations(self) -> None:
+        evaluation = evaluate_local_number_relation(
+            anchor_frame_id=110,
+            evaluation_frame_id=110,
+            reference_point=(0.0, 0.0),
+            perspective_player_ids=["p1", "shared"],
+            defending_player_ids=["shared", "d1"],
+            perspective_positions=[
+                player("p1", 110, 0.0, 0.0),
+                player("shared", 110, 1.0, 0.0),
+            ],
+            defending_positions=[
+                player("shared", 110, 1.0, 0.0),
+                player("d1", 110, 2.0, 0.0),
+            ],
+        )
+
+        self.assertEqual(UNKNOWN, evaluation.status)
+        self.assertEqual(LocalNumberReason.PLAYER_ON_BOTH_SIDES.value, evaluation.reason)
+
+    def test_disjoint_sides_are_unaffected_by_overlap_guard(self) -> None:
+        evaluation = evaluate_local_number_relation(
+            anchor_frame_id=120,
+            evaluation_frame_id=120,
+            reference_point=(0.0, 0.0),
+            perspective_positions=[
+                player("p1", 120, 0.0, 0.0),
+                player("p2", 120, 1.0, 0.0),
+            ],
+            defending_positions=[player("d1", 120, 2.0, 0.0)],
+            config=LocalNumberConfig(radius_m=10.0, minimum_difference=1),
+        )
+
+        self.assertEqual(PASS, evaluation.status)
+        self.assertEqual(2, evaluation.perspective_count)
+        self.assertEqual(1, evaluation.defending_count)
+
     def test_invalid_config_fails_closed(self) -> None:
         evaluation = evaluate_local_number_relation(
             anchor_frame_id=90,

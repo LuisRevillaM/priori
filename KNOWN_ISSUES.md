@@ -14,6 +14,20 @@ since June 19.)
   sparse-tracking release checks, corridor episodes silently bridging missing
   frames, `exists`/`count_at_least` fallbacks on empty episode sets. Full
   list with file:line and reproductions in the foundation audit report.
+  PARTIALLY FIXED (F1-A, 2026-07-01) — the sharp low-ripple findings are
+  closed with adversarial tests: T9 (non-numeric coordinate no longer raises
+  from `relative_position_to_line`; yields UNKNOWN `entity_position_invalid`),
+  G8 (live gt/gte/lte `truth_series` now honors the actual operator instead
+  of always `>=`), G5 (goalkeeper handling in `defensive_line` is fail-closed
+  — `goalkeeper_id=None` + `goalkeeper_id_known=True` yields UNKNOWN
+  `goalkeeper_identity_missing` unless the caller declares
+  `goalkeeper_excluded_from_positions=True`; mapping `y_m` is no longer
+  fabricated as 0.0), G3 temporal-order half (`controlled_line_break` returns
+  UNKNOWN `reception_before_release` for temporally impossible evidence), and
+  G7 overlap half (`local_number_relation` returns UNKNOWN
+  `player_present_on_both_sides` instead of double-counting). Still open from
+  the audit: T1–T8, G1–G2, G4, G6, G9–G10, the G3 buffer-provenance half, and
+  the G7 roster-known flag.
 - Two incompatible lane geometries coexist (`lane_occupancy` five-lane model
   vs `relations.destination_lane` fractional model); composed queries mixing
   them will disagree with themselves.
@@ -47,6 +61,13 @@ since June 19.)
   `delivery/autonomous/afl09a/frozen-expectations/time_to_arrival_q4.json`) —
   same expected-drift class as n1d; pre-existing before F0-2, now fails
   read-only. Needs a deliberate re-freeze decision.
+- Same expected-drift class (verified during F1-A, 2026-07-01, byte-identical
+  with and without the F1-A fixes applied, so unrelated to them):
+  `make afl-relative-position-verify`, `make afl-substrate-q4-verify`, and
+  `make afl-line-break-support-response-verify` fail read-only on
+  `bound_plan_hash`/`result_ids`/result-signature drift against their
+  afl09a frozen expectations. Needs the same deliberate re-freeze decision;
+  not re-frozen under F1-A because the drift predates it.
 
 ## Standing blockers (external authority)
 

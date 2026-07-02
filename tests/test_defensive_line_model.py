@@ -12,6 +12,7 @@ class DefensiveLineModelTest(unittest.TestCase):
         evaluation = evaluate_defensive_line_model(
             ball_x_m=0.0,
             attacking_direction=1,
+            goalkeeper_excluded_from_positions=True,
             config=DefensiveLineConfig(goal_side_buffer_m=1.0, line_band_width_m=1.0),
             defending_player_positions={
                 "d1": (10.0, -12.0),
@@ -32,6 +33,7 @@ class DefensiveLineModelTest(unittest.TestCase):
         evaluation = evaluate_defensive_line_model(
             ball_x_m=0.0,
             attacking_direction=1,
+            goalkeeper_excluded_from_positions=True,
             config=DefensiveLineConfig(goal_side_buffer_m=1.0, line_band_width_m=1.0),
             defending_player_positions={
                 "d1": (5.0, -8.0),
@@ -51,6 +53,7 @@ class DefensiveLineModelTest(unittest.TestCase):
         evaluation = evaluate_defensive_line_model(
             ball_x_m=None,
             attacking_direction=1,
+            goalkeeper_excluded_from_positions=True,
             defending_player_positions=compact_line_positions(),
         )
 
@@ -87,6 +90,89 @@ class DefensiveLineModelTest(unittest.TestCase):
         self.assertEqual(("d1", "d2", "d3", "d4"), evaluation.defender_ids)
         self.assertNotIn("gk", {item.player_id for item in evaluation.defender_positions_used})
 
+    def test_unknown_when_goalkeeper_unidentified_in_supplied_positions(self) -> None:
+        # goalkeeper_id=None with goalkeeper_id_known=True and no declaration
+        # that the goalkeeper was excluded upstream is fail-closed: the model
+        # must not silently count the goalkeeper as an outfield line member.
+        evaluation = evaluate_defensive_line_model(
+            ball_x_m=0.0,
+            attacking_direction=1,
+            config=DefensiveLineConfig(goal_side_buffer_m=1.0, line_band_width_m=1.0),
+            defending_player_positions={
+                "gk": (10.3, 0.0),
+                "d1": (10.0, -12.0),
+                "d2": (10.2, -4.0),
+                "d3": (10.4, 4.0),
+                "d4": (10.7, 12.0),
+            },
+        )
+
+        self.assertEqual("UNKNOWN", evaluation.status)
+        self.assertEqual("goalkeeper_identity_missing", evaluation.reason)
+        self.assertEqual((), evaluation.defender_ids)
+
+    def test_goalkeeper_exclusion_declaration_matches_explicit_goalkeeper_id(self) -> None:
+        outfield_only = {
+            "d1": (10.0, -12.0),
+            "d2": (10.2, -4.0),
+            "d3": (10.4, 4.0),
+            "d4": (10.7, 12.0),
+        }
+        declared_excluded = evaluate_defensive_line_model(
+            ball_x_m=0.0,
+            attacking_direction=1,
+            goalkeeper_excluded_from_positions=True,
+            config=DefensiveLineConfig(goal_side_buffer_m=1.0, line_band_width_m=1.0),
+            defending_player_positions=dict(outfield_only),
+        )
+        identified = evaluate_defensive_line_model(
+            ball_x_m=0.0,
+            attacking_direction=1,
+            goalkeeper_id="gk",
+            config=DefensiveLineConfig(goal_side_buffer_m=1.0, line_band_width_m=1.0),
+            defending_player_positions={**outfield_only, "gk": (10.3, 0.0)},
+        )
+
+        self.assertEqual("PASS", declared_excluded.status)
+        self.assertEqual("PASS", identified.status)
+        self.assertEqual(declared_excluded.defender_ids, identified.defender_ids)
+        self.assertEqual(declared_excluded.line_x_m, identified.line_x_m)
+
+    def test_missing_mapping_y_is_not_fabricated_as_zero(self) -> None:
+        with_y = evaluate_defensive_line_model(
+            ball_x_m=0.0,
+            attacking_direction=1,
+            goalkeeper_excluded_from_positions=True,
+            config=DefensiveLineConfig(goal_side_buffer_m=1.0, line_band_width_m=1.0),
+            defending_player_positions={
+                "d1": {"x_m": 10.0, "y_m": -12.0},
+                "d2": {"x_m": 10.2, "y_m": -4.0},
+                "d3": {"x_m": 10.4, "y_m": 4.0},
+                "d4": {"x_m": 10.7, "y_m": 12.0},
+            },
+        )
+        without_y = evaluate_defensive_line_model(
+            ball_x_m=0.0,
+            attacking_direction=1,
+            goalkeeper_excluded_from_positions=True,
+            config=DefensiveLineConfig(goal_side_buffer_m=1.0, line_band_width_m=1.0),
+            defending_player_positions={
+                "d1": {"x_m": 10.0},
+                "d2": {"x_m": 10.2},
+                "d3": {"x_m": 10.4},
+                "d4": {"x_m": 10.7},
+            },
+        )
+
+        self.assertEqual("PASS", without_y.status)
+        self.assertEqual(with_y.defender_ids, without_y.defender_ids)
+        self.assertEqual(with_y.line_x_m, without_y.line_x_m)
+        self.assertEqual(
+            {None},
+            {item.y_m for item in without_y.defender_positions_used},
+        )
+        self.assertNotIn(0.0, {item.y_m for item in without_y.defender_positions_used})
+
     def test_unknown_when_goalkeeper_identity_uncertain(self) -> None:
         evaluation = evaluate_defensive_line_model(
             ball_x_m=0.0,
@@ -102,6 +188,7 @@ class DefensiveLineModelTest(unittest.TestCase):
         evaluation = evaluate_defensive_line_model(
             ball_x_m=0.0,
             attacking_direction=1,
+            goalkeeper_excluded_from_positions=True,
             active_defender_ids_known=False,
             defending_player_positions=compact_line_positions(),
         )
@@ -113,11 +200,13 @@ class DefensiveLineModelTest(unittest.TestCase):
         forward = evaluate_defensive_line_model(
             ball_x_m=0.0,
             attacking_direction=1,
+            goalkeeper_excluded_from_positions=True,
             defending_player_positions=compact_line_positions(),
         )
         mirrored = evaluate_defensive_line_model(
             ball_x_m=0.0,
             attacking_direction=-1,
+            goalkeeper_excluded_from_positions=True,
             defending_player_positions={
                 player_id: DefensivePlayerPosition(x_m=-position.x_m, y_m=position.y_m)
                 for player_id, position in compact_line_positions().items()
@@ -134,6 +223,7 @@ class DefensiveLineModelTest(unittest.TestCase):
         first = evaluate_defensive_line_model(
             ball_x_m=0.0,
             attacking_direction=1,
+            goalkeeper_excluded_from_positions=True,
             defending_player_positions={
                 "d4": (10.7, 12.0),
                 "d1": (10.0, -12.0),
@@ -145,6 +235,7 @@ class DefensiveLineModelTest(unittest.TestCase):
         second = evaluate_defensive_line_model(
             ball_x_m=0.0,
             attacking_direction=1,
+            goalkeeper_excluded_from_positions=True,
             defending_player_positions={
                 "behind_ball": (-1.0, 0.0),
                 "d2": (10.2, -4.0),
@@ -160,6 +251,7 @@ class DefensiveLineModelTest(unittest.TestCase):
         evaluation = evaluate_defensive_line_model(
             ball_x_m=0.0,
             attacking_direction=1,
+            goalkeeper_excluded_from_positions=True,
             config=DefensiveLineConfig(goal_side_buffer_m=1.0, line_band_width_m=3.0),
             defending_player_positions={
                 "a1": (10.0, -12.0),

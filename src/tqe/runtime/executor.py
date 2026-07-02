@@ -1756,6 +1756,22 @@ def resolved_node_parameters(node: BoundPlanNode) -> dict[str, TypedValue]:
     return {}
 
 
+def comparison_operator_truth(operator_name: str, threshold: float) -> Callable[[float], bool]:
+    """Return the truth function for a live numeric comparison operator.
+
+    Used for both the per-record pass statuses and the persisted
+    ``truth_series`` evidence so the two can never disagree on the operator.
+    """
+
+    if operator_name == "gt":
+        return lambda value: bool(value > threshold)
+    if operator_name == "gte":
+        return lambda value: bool(value >= threshold)
+    if operator_name == "lte":
+        return lambda value: bool(value <= threshold)
+    raise RuntimeError(f"unsupported comparison operator {operator_name}")
+
+
 def execute_predicate_with_resolved_inputs(
     *,
     context: MatchContext,
@@ -1772,12 +1788,8 @@ def execute_predicate_with_resolved_inputs(
             raise RuntimeError(f"{node.node_id} requires compare")
         threshold = float(compare.value)
         values = numeric_runtime_values(runtime_value, node.node_id)
-        if node.operator.name == "gt":
-            passed = [None if value is None else value > threshold for value in values]
-        elif node.operator.name == "gte":
-            passed = [None if value is None else value >= threshold for value in values]
-        else:
-            passed = [None if value is None else value <= threshold for value in values]
+        comparator = comparison_operator_truth(node.operator.name, threshold)
+        passed = [None if value is None else comparator(value) for value in values]
         output: dict[str, Any] = {
             "predicate": predicate_frame_signal_from_source(runtime_value, passed, node)
         }
@@ -1787,7 +1799,7 @@ def execute_predicate_with_resolved_inputs(
                 measure_series = record.get("measure_series")
                 if isinstance(measure_series, pd.Series):
                     record["truth_series"] = measure_series.apply(
-                        lambda item: None if is_nan_number(item) else bool(float(item) >= threshold)
+                        lambda item: None if is_nan_number(item) else comparator(float(item))
                     )
                 record_candidate_predicate(
                     candidate=record,
@@ -6720,6 +6732,9 @@ def defensive_line_anchor_record(
         attacking_direction=attack_x_sign,
         goalkeeper_id=None,
         goalkeeper_id_known=bool(known_outfield_ids),
+        # cached_defending_positions_at_frame filters to known_outfield_ids,
+        # so the goalkeeper is already excluded from the supplied positions.
+        goalkeeper_excluded_from_positions=bool(known_outfield_ids),
         active_defender_ids_known=bool(known_outfield_ids),
         anchor_frame_id=line_evaluation_frame_id,
         config=config,

@@ -281,11 +281,11 @@ def _coerce_entity_position(
         return None, "entity_position_missing"
     try:
         position = _coerce_entity_position_value(value)
+        if not isfinite(position.x_m):
+            return None, "entity_position_invalid"
+        if position.y_m is not None and not isfinite(position.y_m):
+            return None, "entity_position_invalid"
     except (IndexError, KeyError, TypeError, ValueError):
-        return None, "entity_position_invalid"
-    if not isfinite(position.x_m):
-        return None, "entity_position_invalid"
-    if position.y_m is not None and not isfinite(position.y_m):
         return None, "entity_position_invalid"
     return position, None
 
@@ -294,7 +294,10 @@ def _coerce_entity_position_value(value: PositionInput) -> EntityPosition:
     if isinstance(value, EntityPosition):
         if isinstance(value.x_m, bool) or isinstance(value.y_m, bool):
             raise TypeError("boolean coordinates are invalid")
-        return value
+        return EntityPosition(
+            x_m=float(value.x_m),
+            y_m=None if value.y_m is None else float(value.y_m),
+        )
     if isinstance(value, Mapping):
         raw_x = value["x_m"] if "x_m" in value else value["x"]
         raw_y = value.get("y_m", value.get("y"))

@@ -25,14 +25,14 @@ class DefensiveLineConfig:
 @dataclass(frozen=True)
 class DefensivePlayerPosition:
     x_m: float
-    y_m: float
+    y_m: float | None = None
 
 
 @dataclass(frozen=True)
 class DefenderPositionEvidence:
     player_id: str
     x_m: float
-    y_m: float
+    y_m: float | None
     normalized_x_m: float | None
     goal_side_of_ball: bool
 
@@ -95,6 +95,7 @@ def evaluate_defensive_line_model(
     attack_x_sign: int | None = None,
     goalkeeper_id: str | None = None,
     goalkeeper_id_known: bool = True,
+    goalkeeper_excluded_from_positions: bool = False,
     active_defender_ids_known: bool = True,
     anchor_frame_id: int | str | None = None,
     config: DefensiveLineConfig = DefensiveLineConfig(),
@@ -105,6 +106,15 @@ def evaluate_defensive_line_model(
     ``normalized_x_m = x_m * attacking_direction``. Larger normalized x is
     goalward for the attacking team. Goal-side candidates must sit strictly
     beyond the ball plus ``goal_side_buffer_m``.
+
+    Goalkeeper handling is fail-closed: a caller must either supply
+    ``goalkeeper_id`` (excluded from line membership here), declare the
+    identity unknown with ``goalkeeper_id_known=False`` (yields UNKNOWN), or
+    declare ``goalkeeper_excluded_from_positions=True`` meaning the supplied
+    positions are already goalkeeper-free. ``goalkeeper_id=None`` with
+    ``goalkeeper_id_known=True`` and no upstream-exclusion declaration is
+    contradictory evidence and yields UNKNOWN instead of silently counting the
+    goalkeeper as an outfield line member.
     """
 
     _validate_config(config)
@@ -143,6 +153,17 @@ def evaluate_defensive_line_model(
     if not goalkeeper_id_known:
         return _unknown(
             reason="goalkeeper_identity_uncertain",
+            attacking_direction=resolved_direction,
+            anchor_frame_id=anchor_frame_id,
+            ball_x_m=ball_x_m,
+            normalized_ball_x_m=normalized_ball_x,
+            goalkeeper_id=goalkeeper_id,
+            config=config,
+            defender_positions_used=evidence,
+        )
+    if goalkeeper_id is None and not goalkeeper_excluded_from_positions:
+        return _unknown(
+            reason="goalkeeper_identity_missing",
             attacking_direction=resolved_direction,
             anchor_frame_id=anchor_frame_id,
             ball_x_m=ball_x_m,
@@ -347,9 +368,10 @@ def _coerce_position(value: PositionInput) -> DefensivePlayerPosition:
     if isinstance(value, DefensivePlayerPosition):
         return value
     if isinstance(value, Mapping):
+        raw_y = value.get("y_m")
         return DefensivePlayerPosition(
             x_m=float(value["x_m"]),
-            y_m=float(value.get("y_m", 0.0)),
+            y_m=None if raw_y is None else float(raw_y),
         )
     if isinstance(value, Sequence) and not isinstance(value, str):
         return DefensivePlayerPosition(x_m=float(value[0]), y_m=float(value[1]))

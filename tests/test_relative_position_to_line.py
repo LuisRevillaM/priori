@@ -135,6 +135,47 @@ class RelativePositionToLineTest(unittest.TestCase):
         self.assertEqual(UNKNOWN, bool_entity.status)
         self.assertEqual("entity_position_invalid", bool_entity.reason)
 
+    def test_non_numeric_entity_coordinates_yield_unknown_not_exception(self) -> None:
+        # Bad coordinate evidence must degrade to UNKNOWN with a typed reason;
+        # it must never escape as an exception from the kernel.
+        bad_positions = [
+            EntityPosition(x_m="not-a-number"),
+            EntityPosition(x_m=None),
+            EntityPosition(x_m=object()),
+            EntityPosition(x_m=5.0, y_m="not-a-number"),
+            EntityPosition(x_m=float("nan")),
+            EntityPosition(x_m=float("inf")),
+            {"x_m": "not-a-number"},
+            ("not-a-number", 0.0),
+        ]
+        for position in bad_positions:
+            with self.subTest(position=position):
+                evaluation = evaluate_relative_position_to_line(
+                    line_x_m=10.0,
+                    entity_position=position,
+                    attacking_direction=1,
+                )
+                self.assertEqual(UNKNOWN, evaluation.status)
+                self.assertEqual("entity_position_invalid", evaluation.reason)
+                self.assertIsNone(evaluation.normalized_entity_x_m)
+
+    def test_numeric_string_coordinates_mirror_mapping_coercion(self) -> None:
+        # A numeric-string EntityPosition must classify identically to the
+        # equivalent mapping input instead of raising.
+        typed = evaluate_relative_position_to_line(
+            line_x_m=10.0,
+            entity_position=EntityPosition(x_m="12.0", y_m="0.0"),
+            attacking_direction=1,
+        )
+        mapped = evaluate_relative_position_to_line(
+            line_x_m=10.0,
+            entity_position={"x_m": "12.0", "y_m": "0.0"},
+            attacking_direction=1,
+        )
+
+        self.assertEqual(AHEAD_OF_LINE, typed.status)
+        self.assertEqual(typed.to_dict(), mapped.to_dict())
+
     def test_unknown_when_attacking_direction_invalid(self) -> None:
         evaluation = evaluate_relative_position_to_line(
             line_x_m=10.0,

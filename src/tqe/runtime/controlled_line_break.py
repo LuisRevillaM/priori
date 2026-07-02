@@ -52,6 +52,7 @@ class ControlledLineBreakReason(str, Enum):
     RELATION_POSITION_INVALID = "relation_position_invalid"
     RELATION_POSITION_CONTRADICTORY = "relation_position_contradictory"
     CONTROLLED_PASS_NOT_ESTABLISHED = "controlled_pass_not_established"
+    RECEPTION_BEFORE_RELEASE = "reception_before_release"
     RELEASE_ALREADY_AHEAD_OF_LINE = "release_already_ahead_of_line"
     RELEASE_LEVEL_NOT_ACCEPTED = "release_level_not_accepted"
     RECEPTION_NOT_AHEAD_OF_LINE = "reception_not_ahead_of_line"
@@ -259,6 +260,16 @@ def evaluate_controlled_line_break_episode(
         return _evaluation(UNKNOWN, release_side.reason, base)
     if reception_side.reason is not None:
         return _evaluation(UNKNOWN, reception_side.reason, base)
+    release_order_frame = _orderable_frame_id(base["release_anchor_frame_id"])
+    reception_order_frame = _orderable_frame_id(base["reception_anchor_frame_id"])
+    if (
+        release_order_frame is not None
+        and reception_order_frame is not None
+        and reception_order_frame < release_order_frame
+    ):
+        # A reception observed before its own release is temporally impossible
+        # input evidence, not an observed contradiction of the line break.
+        return _evaluation(UNKNOWN, ControlledLineBreakReason.RECEPTION_BEFORE_RELEASE.value, base)
 
     if release_side.status == AHEAD_OF_LINE:
         return _evaluation(FAIL, ControlledLineBreakReason.RELEASE_ALREADY_AHEAD_OF_LINE.value, base)
@@ -597,6 +608,17 @@ def _string_or_none(value: object | None) -> str | None:
     if value is None:
         return None
     return str(value)
+
+
+def _orderable_frame_id(value: object | None) -> int | None:
+    """Coerce an evidence frame id to an orderable integer, else None."""
+
+    if value is None or isinstance(value, bool):
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
 
 
 def _default_anchor_id(controlled_pass_anchor_id: str | None, line_anchor_id: str | None) -> str | None:

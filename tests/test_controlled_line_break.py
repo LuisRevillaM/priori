@@ -233,6 +233,78 @@ class ControlledLineBreakEpisodeTest(unittest.TestCase):
         self.assertEqual(FAIL, evaluation.status)
         self.assertEqual("release_level_not_accepted", evaluation.reason)
 
+    def test_reception_before_release_is_temporally_impossible_and_unknown(self) -> None:
+        # Geometry that would otherwise PASS must not survive temporally
+        # impossible input evidence (reception frame before release frame).
+        evaluation = evaluate_controlled_line_break_episode(
+            controlled_pass_evidence=ControlledPassEvidence(
+                anchor_id="pass-1",
+                release_anchor_frame_id=100,
+                reception_anchor_frame_id=40,
+            ),
+            observed_line_evidence=line(),
+            release_relative_position_evidence=RelativePositionEvidence(status=BEHIND_LINE),
+            reception_relative_position_evidence=RelativePositionEvidence(status=AHEAD_OF_LINE),
+        )
+
+        self.assertEqual(UNKNOWN, evaluation.status)
+        self.assertEqual("reception_before_release", evaluation.reason)
+
+    def test_reception_before_release_also_blocks_fail_side_geometry(self) -> None:
+        # The temporal contradiction poisons the whole episode: it must not
+        # surface as a positively observed FAIL either.
+        evaluation = evaluate_controlled_line_break_episode(
+            controlled_pass_evidence=ControlledPassEvidence(
+                anchor_id="pass-1",
+                release_anchor_frame_id=100,
+                reception_anchor_frame_id=40,
+            ),
+            observed_line_evidence=line(),
+            release_relative_position_evidence=RelativePositionEvidence(status=AHEAD_OF_LINE),
+            reception_relative_position_evidence=RelativePositionEvidence(status=AHEAD_OF_LINE),
+        )
+
+        self.assertEqual(UNKNOWN, evaluation.status)
+        self.assertEqual("reception_before_release", evaluation.reason)
+
+    def test_temporal_order_boundaries_and_relation_frame_sources(self) -> None:
+        equal_frames = evaluate_controlled_line_break_episode(
+            controlled_pass_evidence=ControlledPassEvidence(
+                anchor_id="pass-1",
+                release_anchor_frame_id=100,
+                reception_anchor_frame_id=100,
+            ),
+            observed_line_evidence=line(),
+            release_relative_position_evidence=RelativePositionEvidence(status=BEHIND_LINE),
+            reception_relative_position_evidence=RelativePositionEvidence(status=AHEAD_OF_LINE),
+        )
+        ordered_via_relations = evaluate_controlled_line_break_episode(
+            controlled_pass_evidence=ControlledPassEvidence(anchor_id="pass-1"),
+            observed_line_evidence=line(),
+            release_relative_position_evidence=RelativePositionEvidence(
+                status=BEHIND_LINE,
+                anchor_frame_id=100,
+            ),
+            reception_relative_position_evidence=RelativePositionEvidence(
+                status=AHEAD_OF_LINE,
+                anchor_frame_id=40,
+            ),
+        )
+        unordered_missing_frame = evaluate_controlled_line_break_episode(
+            controlled_pass_evidence=ControlledPassEvidence(
+                anchor_id="pass-1",
+                release_anchor_frame_id=100,
+            ),
+            observed_line_evidence=line(),
+            release_relative_position_evidence=RelativePositionEvidence(status=BEHIND_LINE),
+            reception_relative_position_evidence=RelativePositionEvidence(status=AHEAD_OF_LINE),
+        )
+
+        self.assertEqual(PASS, equal_frames.status)
+        self.assertEqual(UNKNOWN, ordered_via_relations.status)
+        self.assertEqual("reception_before_release", ordered_via_relations.reason)
+        self.assertEqual(PASS, unordered_missing_frame.status)
+
     def test_mirrored_attacking_direction_preserves_result(self) -> None:
         forward = evaluate_controlled_line_break_episode(
             controlled_pass_evidence=ControlledPassEvidence(anchor_id="pass-1"),
