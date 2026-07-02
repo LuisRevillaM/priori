@@ -1,15 +1,15 @@
 {
   "ai_projection_policy": "projection.ai.v1",
-  "baseline_artifact_revision": "40e874bae356b1e2e878a92546c3d442993f34d229a6e2fba6a982c3bfd0a5ba",
+  "baseline_artifact_revision": "3dd448463c9bbc97eee7968c8cb026ff74a8d1b0385b74b7fefa8a247c8dc037",
   "evidence_schema_version": "1.0",
   "generator_version": "scp0.generator.v1",
-  "lock_hash": "1e42709ec489fffa5db847eb7abd51ade7b1c9d0c7b0e7bdb06e1a5f624d0050",
+  "lock_hash": "789a16b2898685932043e849689d2e1a100d28547fa658d4ca7d5915605fd654",
   "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
   "product_projection_policy": "projection.product.v1",
   "recipe_projection_policy": "projection.recipe_library.v1",
   "registry_revision": "7be6e088dd7ecac39e065cf88380a6c1d25c1711ff0baf16dc0a545834dd2a63",
   "research_atlas_projection_policy": "projection.research_atlas.v1",
-  "runtime_manifest_revision": "fbb046a565021b7619edef821673a4111c5ae6c3a7d7e8835df2304f30aadefe",
+  "runtime_manifest_revision": "1700c5931180b2bb238821b1c51b739ea1da15384e0c4207fabd3d0b89bc9bb0",
   "schema_version": "1.0",
   "typed_plan_schema_version": "1.0",
   "unsupported_projection_policy": "projection.unsupported.v1"

@@ -1,6 +1,6 @@
 {
   "passport_count": 44,
-  "passport_revision": "b04c258bfc87e269729fc24f02482cdc1b8d9dcc2e7caee952cd4ba397e7647f",
+  "passport_revision": "6c85d5bc28e26e5c6bbeb9122a72c03302bc7037824645982afd26bee33bc29b",
   "passports": [
     {
       "binding": {
@@ -19824,7 +19824,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "59f04ff7d009149b17c09060b55a6d0e9a94dea1e133905d24e91d15d23e2332",
+      "passport_hash": "8ca5da465984255af9d2be10b31c5c602ce2e2d85a79ab2525b9a920215d02a4",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -19841,7 +19841,9 @@
           "open_frame_id",
           "open_confirm_frame_id",
           "close_frame_id",
+          "close_reason",
           "duration_seconds",
+          "pass_frame_count",
           "target_player_id",
           "destination_side",
           "destination_region",
@@ -19872,7 +19874,10 @@
           "No pass probability.",
           "No optimality or decision-quality claim.",
           "No receiver body-orientation model.",
-          "No offside model in V1 acceptance."
+          "No offside model in V1 acceptance.",
+          "`close_reason` is one of `closed_after_failures`, `closed_on_missing_evidence`, or `window_end`.",
+          "Coverage rule: with no witness relation, any UNKNOWN or INVALID state makes the anchor evaluation UNKNOWN rather than FAIL.",
+          "Missing evidence closes an open episode immediately and may reopen only after fresh configured PASS frames; observed FAIL closes only after close_after_frames."
         ],
         "missing_data_semantics": "unknown",
         "name": "geometric_progressive_corridor",
@@ -19885,7 +19890,9 @@
               "open_frame_id",
               "open_confirm_frame_id",
               "close_frame_id",
+              "close_reason",
               "duration_seconds",
+              "pass_frame_count",
               "target_player_id",
               "destination_side",
               "destination_region",
@@ -19915,7 +19922,12 @@
               "relation_count",
               "witness_relation_id",
               "unknown_reason",
-              "state_counts"
+              "state_counts",
+              "total_state_count",
+              "known_state_count",
+              "unknown_state_count",
+              "unknown_state_ratio",
+              "coverage_status"
             ],
             "missing_data_semantics": "unknown",
             "name": "anchor_evaluations",
@@ -20394,7 +20406,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "e52149822c1aeafa78f89a1e20033d0ec0610f36b9f99793accbe2c6d8ae4105",
+      "passport_hash": "f66f15ec0196840fb1135aed87ff58dc322d20749690141a93b9fc7e02d6ba93",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -20411,7 +20423,9 @@
           "open_frame_id",
           "open_confirm_frame_id",
           "close_frame_id",
+          "close_reason",
           "duration_seconds",
+          "pass_frame_count",
           "target_player_id",
           "destination_side",
           "destination_region",
@@ -20442,7 +20456,10 @@
           "No pass probability.",
           "No optimality or decision-quality claim.",
           "No player intent, causation, or missed-opportunity claim.",
-          "No receiver body-orientation or offside model."
+          "No receiver body-orientation or offside model.",
+          "`close_reason` is one of `closed_after_failures`, `closed_on_missing_evidence`, or `window_end`.",
+          "Coverage rule: with no witness relation, any UNKNOWN or INVALID state makes the anchor evaluation UNKNOWN rather than FAIL.",
+          "Missing evidence closes an open episode immediately and may reopen only after fresh configured PASS frames; observed FAIL closes only after close_after_frames."
         ],
         "missing_data_semantics": "unknown",
         "name": "geometric_progressive_corridor_from_anchor_set",
@@ -20455,7 +20472,9 @@
               "open_frame_id",
               "open_confirm_frame_id",
               "close_frame_id",
+              "close_reason",
               "duration_seconds",
+              "pass_frame_count",
               "target_player_id",
               "destination_side",
               "destination_region",
@@ -20485,7 +20504,12 @@
               "relation_count",
               "witness_relation_id",
               "unknown_reason",
-              "state_counts"
+              "state_counts",
+              "total_state_count",
+              "known_state_count",
+              "unknown_state_count",
+              "unknown_state_ratio",
+              "coverage_status"
             ],
             "missing_data_semantics": "unknown",
             "name": "anchor_evaluations",
@@ -23900,16 +23924,16 @@
   "projection_id": "priori.capability_passport_projection.afl08",
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "40e874bae356b1e2e878a92546c3d442993f34d229a6e2fba6a982c3bfd0a5ba",
+    "baseline_artifact_revision": "3dd448463c9bbc97eee7968c8cb026ff74a8d1b0385b74b7fefa8a247c8dc037",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "1e42709ec489fffa5db847eb7abd51ade7b1c9d0c7b0e7bdb06e1a5f624d0050",
+    "lock_hash": "789a16b2898685932043e849689d2e1a100d28547fa658d4ca7d5915605fd654",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
     "registry_revision": "7be6e088dd7ecac39e065cf88380a6c1d25c1711ff0baf16dc0a545834dd2a63",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "fbb046a565021b7619edef821673a4111c5ae6c3a7d7e8835df2304f30aadefe",
+    "runtime_manifest_revision": "1700c5931180b2bb238821b1c51b739ea1da15384e0c4207fabd3d0b89bc9bb0",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"

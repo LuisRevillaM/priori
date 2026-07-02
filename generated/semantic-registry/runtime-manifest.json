@@ -5721,7 +5721,9 @@
         "open_frame_id",
         "open_confirm_frame_id",
         "close_frame_id",
+        "close_reason",
         "duration_seconds",
+        "pass_frame_count",
         "target_player_id",
         "destination_side",
         "destination_region",
@@ -5752,7 +5754,10 @@
         "No pass probability.",
         "No optimality or decision-quality claim.",
         "No receiver body-orientation model.",
-        "No offside model in V1 acceptance."
+        "No offside model in V1 acceptance.",
+        "`close_reason` is one of `closed_after_failures`, `closed_on_missing_evidence`, or `window_end`.",
+        "Coverage rule: with no witness relation, any UNKNOWN or INVALID state makes the anchor evaluation UNKNOWN rather than FAIL.",
+        "Missing evidence closes an open episode immediately and may reopen only after fresh configured PASS frames; observed FAIL closes only after close_after_frames."
       ],
       "missing_data_semantics": "unknown",
       "name": "geometric_progressive_corridor",
@@ -5765,7 +5770,9 @@
             "open_frame_id",
             "open_confirm_frame_id",
             "close_frame_id",
+            "close_reason",
             "duration_seconds",
+            "pass_frame_count",
             "target_player_id",
             "destination_side",
             "destination_region",
@@ -5795,7 +5802,12 @@
             "relation_count",
             "witness_relation_id",
             "unknown_reason",
-            "state_counts"
+            "state_counts",
+            "total_state_count",
+            "known_state_count",
+            "unknown_state_count",
+            "unknown_state_ratio",
+            "coverage_status"
           ],
           "missing_data_semantics": "unknown",
           "name": "anchor_evaluations",
@@ -5901,7 +5913,9 @@
         "open_frame_id",
         "open_confirm_frame_id",
         "close_frame_id",
+        "close_reason",
         "duration_seconds",
+        "pass_frame_count",
         "target_player_id",
         "destination_side",
         "destination_region",
@@ -5932,7 +5946,10 @@
         "No pass probability.",
         "No optimality or decision-quality claim.",
         "No player intent, causation, or missed-opportunity claim.",
-        "No receiver body-orientation or offside model."
+        "No receiver body-orientation or offside model.",
+        "`close_reason` is one of `closed_after_failures`, `closed_on_missing_evidence`, or `window_end`.",
+        "Coverage rule: with no witness relation, any UNKNOWN or INVALID state makes the anchor evaluation UNKNOWN rather than FAIL.",
+        "Missing evidence closes an open episode immediately and may reopen only after fresh configured PASS frames; observed FAIL closes only after close_after_frames."
       ],
       "missing_data_semantics": "unknown",
       "name": "geometric_progressive_corridor_from_anchor_set",
@@ -5945,7 +5962,9 @@
             "open_frame_id",
             "open_confirm_frame_id",
             "close_frame_id",
+            "close_reason",
             "duration_seconds",
+            "pass_frame_count",
             "target_player_id",
             "destination_side",
             "destination_region",
@@ -5975,7 +5994,12 @@
             "relation_count",
             "witness_relation_id",
             "unknown_reason",
-            "state_counts"
+            "state_counts",
+            "total_state_count",
+            "known_state_count",
+            "unknown_state_count",
+            "unknown_state_ratio",
+            "coverage_status"
           ],
           "missing_data_semantics": "unknown",
           "name": "anchor_evaluations",
@@ -8009,6 +8033,6 @@
       "unit": "none"
     }
   ],
-  "runtime_manifest_revision": "fbb046a565021b7619edef821673a4111c5ae6c3a7d7e8835df2304f30aadefe",
+  "runtime_manifest_revision": "1700c5931180b2bb238821b1c51b739ea1da15384e0c4207fabd3d0b89bc9bb0",
   "schema_version": "1.0"
 }

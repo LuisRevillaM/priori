@@ -176,7 +176,11 @@ def validate_episode_shape(report: dict[str, Any]) -> list[dict[str, Any]]:
             continue
         if (
             episode["status"] != "PASS"
-            or float(episode["duration_seconds"]) < config.open_after_frames / config.analysis_rate_hz
+            # F1-C: duration_seconds is elapsed span (close - open). An episode
+            # opened after N consecutive PASS states spans at least (N - 1)
+            # analysis intervals, not N — the old pass-frame-count expectation
+            # over-required by one interval.
+            or float(episode["duration_seconds"]) < (config.open_after_frames - 1) / config.analysis_rate_hz
             or float(episode["minimum_clearance_m"]) < config.minimum_clearance_m
             or int(episode["open_frame_id"]) > int(episode["close_frame_id"])
             or int(episode["open_confirm_frame_id"]) < int(episode["open_frame_id"])

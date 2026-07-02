@@ -74,3 +74,25 @@ bar: no full-suite table, no review.
 Fences and environment notes unchanged from the packet. The n1c-verify
 failure observed in this working copy is environmental (two untracked
 workshop handle files), not caused by this diff.
+
+---
+
+# F1-C Acceptance Review — Round 2: ACCEPTED
+
+Reviewed 2026-07-02, commits `f1a18ca` + `6a475b7`, merged as `a0c9732`.
+R1 verified empirically (the round-1 probe now yields two episodes split by
+closed_on_missing_evidence; 16 independent probes including NaN positions,
+reopen-requires-fresh-PASS, and boundary absences all pass; corpus
+byte-identical before/after). R2 declarations conform in both catalog
+variants and the module docstring. R3 full-suite table matches reality —
+exactly the six expected failures, independently reproduced.
+
+Director acceptance actions in the merge batch: contracts regenerated
+(parity PASS, 0 findings); attested-hero contract test re-pinned 14 -> 11
+with the duration-honesty rationale (the attestation remains valid history);
+m1_1_gate_d episode-shape expectation corrected to elapsed-span semantics
+((N-1)/rate minimum). Ride-alongs carried to the F1-D/F2 backlog:
+orientation synthetic-UNKNOWN fabrication, executor-path test promotion,
+corridor-test relocation, and one round-2 semantic note (whole-missing-frame
+UNKNOWN emission scoped to window-present targets — defensible, needs a
+declaration line).

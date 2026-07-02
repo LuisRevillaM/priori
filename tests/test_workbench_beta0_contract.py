@@ -265,7 +265,13 @@ class WorkbenchBeta0ContractTests(unittest.TestCase):
         self.assertEqual("pass", execution_record["execution_status"])
         self.assertTrue(execution_record["execution_complete"])
         self.assertEqual(0, execution_record["requested_evidence_failure_count"])
-        self.assertEqual(14, len(rows))
+        # The N1D.1 attestation recorded 14 results under the pre-F1-C duration
+        # semantics (pass-frame count, one interval inflated). F1-C's honest
+        # elapsed-span durations drop the three results whose corridors sat at
+        # exactly 0.8s under the old counting (0.6s measured honestly). The
+        # attestation remains valid as history; the live contract asserts the
+        # current truthful count.
+        self.assertEqual(11, len(rows))
         for row in rows:
             evidence = row["requested_evidence"]
             for alias in required_aliases:
