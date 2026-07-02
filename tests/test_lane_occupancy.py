@@ -16,6 +16,8 @@ from tqe.runtime.lane_occupancy import (
     evaluate_lane_occupancy,
 )
 from tqe.runtime.executor import observed_outfield_positions_at_frame
+from tqe.runtime.lane_geometry import DEFAULT_TIE_EPSILON_M, classify_lane_y, lane_family
+from tqe.runtime.relations import destination_lane, destination_region_bounds, destination_side
 
 
 class LaneOccupancyKernelTest(unittest.TestCase):
@@ -52,7 +54,8 @@ class LaneOccupancyKernelTest(unittest.TestCase):
         self.assertEqual((100,), evaluation.frame_ids)
         self.assertEqual(-34.0, evaluation.lane_definitions[0].min_y_m)
         self.assertEqual(34.0, evaluation.lane_definitions[-1].max_y_m)
-        self.assertEqual("min_y_inclusive_max_y_exclusive_except_final_lane", evaluation.boundary_policy)
+        self.assertEqual("five_equal_lanes_abs_y_ties_toward_center", evaluation.boundary_policy)
+        self.assertEqual(1e-9, evaluation.tie_epsilon_m)
 
     def test_passes_multi_lane_and_count_requirement(self) -> None:
         evaluation = evaluate_lane_occupancy(
@@ -118,9 +121,67 @@ class LaneOccupancyKernelTest(unittest.TestCase):
         self.assertEqual(LEFT_WIDE, assignments["left-touchline"])
         self.assertEqual(LEFT_HALF_SPACE, assignments["left-half-boundary"])
         self.assertEqual(CENTRAL, assignments["central-boundary"])
-        self.assertEqual(RIGHT_HALF_SPACE, assignments["right-half-boundary"])
-        self.assertEqual(RIGHT_WIDE, assignments["right-wide-boundary"])
+        self.assertEqual(CENTRAL, assignments["right-half-boundary"])
+        self.assertEqual(RIGHT_HALF_SPACE, assignments["right-wide-boundary"])
         self.assertEqual(RIGHT_WIDE, assignments["right-touchline"])
+
+    def test_shared_lane_model_matches_corridor_destination_classification(self) -> None:
+        expected = {
+            -34.0: (LEFT_WIDE, "left", "wide", {"min_y_m": -34.0, "max_y_m": -20.4}),
+            -20.4: (LEFT_HALF_SPACE, "left", "half_space", {"min_y_m": -20.4, "max_y_m": -6.8}),
+            -6.8: (CENTRAL, "central", "central", {"min_y_m": -6.8, "max_y_m": 6.8}),
+            0.0: (CENTRAL, "central", "central", {"min_y_m": -6.8, "max_y_m": 6.8}),
+            6.8: (CENTRAL, "central", "central", {"min_y_m": -6.8, "max_y_m": 6.8}),
+            20.4: (RIGHT_HALF_SPACE, "right", "half_space", {"min_y_m": 6.8, "max_y_m": 20.4}),
+            34.0: (RIGHT_WIDE, "right", "wide", {"min_y_m": 20.4, "max_y_m": 34.0}),
+            8.0: (RIGHT_HALF_SPACE, "right", "half_space", {"min_y_m": 6.8, "max_y_m": 20.4}),
+        }
+
+        for y_m, (lane_id, side, family, bounds) in expected.items():
+            with self.subTest(y_m=y_m):
+                self.assertEqual(lane_id, classify_lane_y(y_m))
+                self.assertEqual(side, destination_side(y_m))
+                self.assertEqual(family, destination_lane(y_m))
+                self.assertEqual(bounds, destination_region_bounds(side, family))
+
+    def test_lane_occupancy_uses_shared_epsilon_around_band_edges(self) -> None:
+        epsilon = DEFAULT_TIE_EPSILON_M
+        values = [
+            -20.4 - epsilon / 2.0,
+            -20.4 + epsilon / 2.0,
+            -6.8 - epsilon / 2.0,
+            -6.8 + epsilon / 2.0,
+            6.8 - epsilon / 2.0,
+            6.8 + epsilon / 2.0,
+            20.4 - epsilon / 2.0,
+            20.4 + epsilon / 2.0,
+        ]
+        evaluation = evaluate_lane_occupancy(
+            player_positions=[player(f"p{index}", y_m=y_m) for index, y_m in enumerate(values)]
+        )
+
+        self.assertEqual(PASS, evaluation.status)
+        assignments = {assignment.player_id: assignment.lane_id for assignment in evaluation.player_assignments}
+        for index, y_m in enumerate(values):
+            with self.subTest(y_m=y_m):
+                assigned_lane = assignments[f"p{index}"]
+                self.assertEqual(classify_lane_y(y_m), assigned_lane)
+                self.assertEqual(destination_lane(y_m), lane_family(assigned_lane))
+
+    def test_lane_model_is_mirror_symmetric(self) -> None:
+        mirrors = {
+            LEFT_WIDE: RIGHT_WIDE,
+            LEFT_HALF_SPACE: RIGHT_HALF_SPACE,
+            CENTRAL: CENTRAL,
+            RIGHT_HALF_SPACE: LEFT_HALF_SPACE,
+            RIGHT_WIDE: LEFT_WIDE,
+        }
+
+        for y_m in [-34.0, -30.0, -20.4, -10.0, -6.8, 0.0, 6.8, 10.0, 20.4, 30.0, 34.0]:
+            with self.subTest(y_m=y_m):
+                lane = classify_lane_y(y_m)
+                mirrored = classify_lane_y(-y_m)
+                self.assertEqual(mirrors[lane], mirrored)
 
     def test_record_order_does_not_affect_result(self) -> None:
         first = evaluate_lane_occupancy(
@@ -148,6 +209,47 @@ class LaneOccupancyKernelTest(unittest.TestCase):
 
         self.assertEqual(first.to_dict(), second.to_dict())
         self.assertEqual(PASS, first.status)
+
+    def test_lane_requirements_count_distinct_players_per_frame(self) -> None:
+        one_player_two_frames = evaluate_lane_occupancy(
+            player_positions=[
+                player("same", frame_id=100, y_m=0.0),
+                player("same", frame_id=105, y_m=0.0),
+            ],
+            frame_ids=[100, 105],
+            required_lane_counts={CENTRAL: 2},
+        )
+
+        self.assertEqual(FAIL, one_player_two_frames.status)
+        self.assertEqual(LaneOccupancyReason.REQUIREMENT_NOT_MET.value, one_player_two_frames.reason)
+        self.assertEqual(1, one_player_two_frames.lane_counts[CENTRAL])
+        self.assertEqual(
+            [1, 1],
+            [frame_counts.lane_counts[CENTRAL] for frame_counts in one_player_two_frames.frame_lane_counts],
+        )
+
+        two_players_one_frame = evaluate_lane_occupancy(
+            player_positions=[
+                player("a", frame_id=100, y_m=-1.0),
+                player("b", frame_id=100, y_m=1.0),
+            ],
+            frame_ids=[100],
+            required_lane_counts={CENTRAL: 2},
+        )
+
+        self.assertEqual(PASS, two_players_one_frame.status)
+        self.assertEqual(LaneOccupancyReason.REQUIREMENT_SATISFIED.value, two_players_one_frame.reason)
+
+    def test_missing_requested_frame_routes_requirement_to_unknown(self) -> None:
+        evaluation = evaluate_lane_occupancy(
+            player_positions=[player("a", frame_id=100, y_m=0.0)],
+            frame_ids=[100, 105],
+            required_occupied_lane_count=1,
+        )
+
+        self.assertEqual(UNKNOWN, evaluation.status)
+        self.assertEqual(LaneOccupancyReason.FRAME_COVERAGE_INSUFFICIENT.value, evaluation.reason)
+        self.assertEqual((105,), evaluation.missing_frame_ids)
 
     def test_left_right_lane_naming_is_stable_under_x_mirroring(self) -> None:
         forward = evaluate_lane_occupancy(

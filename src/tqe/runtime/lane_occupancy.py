@@ -4,10 +4,8 @@ This module classifies selected player position records into declared lateral
 pitch lanes. It does not infer player intention, support quality, tactical
 optimality, defensive-line breaks, or role semantics.
 
-The default model uses centered football pitch coordinates over a 68m width:
-``y_m=-34`` is the left touchline and ``y_m=34`` is the right touchline. Lane
-boundaries are lower-inclusive and upper-exclusive except the final lane, which
-includes the right touchline.
+The default model uses the shared runtime five-equal-lanes geometry over a 68m
+width. Boundary ties are mirror-symmetric and go toward the centerline.
 """
 
 from __future__ import annotations
@@ -19,19 +17,27 @@ from enum import Enum
 from math import isfinite
 from typing import Any
 
+from tqe.runtime.lane_geometry import (
+    BOUNDARY_POLICY,
+    CENTRAL,
+    COORDINATE_SYSTEM,
+    DEFAULT_LANE_IDS,
+    DEFAULT_PITCH_WIDTH_M,
+    DEFAULT_TIE_EPSILON_M,
+    LEFT_HALF_SPACE,
+    LEFT_WIDE,
+    RIGHT_HALF_SPACE,
+    RIGHT_WIDE,
+    classify_lane_y,
+    lane_bands,
+)
+
 
 PASS = "PASS"
 FAIL = "FAIL"
 UNKNOWN = "UNKNOWN"
 
-LEFT_WIDE = "LEFT_WIDE"
-LEFT_HALF_SPACE = "LEFT_HALF_SPACE"
-CENTRAL = "CENTRAL"
-RIGHT_HALF_SPACE = "RIGHT_HALF_SPACE"
-RIGHT_WIDE = "RIGHT_WIDE"
-
-DEFAULT_PITCH_WIDTH_M = 68.0
-DEFAULT_LANE_IDS = (LEFT_WIDE, LEFT_HALF_SPACE, CENTRAL, RIGHT_HALF_SPACE, RIGHT_WIDE)
+DEFAULT_REQUIREMENT_AGGREGATION = "all_frames"
 
 Status = str
 FrameId = int | str | None
@@ -60,6 +66,8 @@ class LaneOccupancyReason(str, Enum):
     INVALID_PLAYER_COORDINATES = "invalid_player_coordinates"
     DUPLICATE_PLAYER_POSITION_RECORDS = "duplicate_player_position_records"
     PLAYER_OUTSIDE_DEFINED_LANES = "player_outside_defined_lanes"
+    FRAME_COVERAGE_INSUFFICIENT = "frame_coverage_insufficient"
+    INVALID_REQUIREMENT_AGGREGATION = "invalid_requirement_aggregation"
 
 
 @dataclass(frozen=True)
@@ -76,7 +84,9 @@ class LaneDefinition:
 class LaneOccupancyConfig:
     pitch_width_m: float = DEFAULT_PITCH_WIDTH_M
     lane_definitions: tuple[LaneDefinition, ...] | None = None
-    coordinate_system: str = "centered_pitch_y_negative_left_positive_right"
+    coordinate_system: str = COORDINATE_SYSTEM
+    requirement_aggregation: str = DEFAULT_REQUIREMENT_AGGREGATION
+    tie_epsilon_m: float = DEFAULT_TIE_EPSILON_M
 
 
 @dataclass(frozen=True)
@@ -113,11 +123,13 @@ class LaneOccupancyEvaluation:
     invalid_player_ids: tuple[str, ...]
     invalid_coordinate_player_ids: tuple[str, ...]
     duplicate_player_ids: tuple[str, ...]
+    missing_frame_ids: tuple[FrameId, ...]
     outside_lane_player_ids: tuple[str, ...]
     unknown_lane_ids: tuple[str, ...]
     required_lane_ids: tuple[str, ...]
     required_lane_counts: dict[str, int]
     required_occupied_lane_count: int | None
+    requirement_aggregation: str
     selected_record_count: int
     evaluated_record_count: int
     invalid_record_count: int
@@ -126,6 +138,7 @@ class LaneOccupancyEvaluation:
     pitch_width_m: float | None
     coordinate_system: str
     boundary_policy: str
+    tie_epsilon_m: float
 
     def to_dict(self) -> dict[str, object]:
         return asdict(self)
@@ -160,9 +173,10 @@ def evaluate_lane_occupancy(
 
     ``target_player_ids`` and ``expected_player_ids`` are aliases. When neither
     is supplied, all valid supplied player records in the selected frame scope
-    are evaluated. Requirements are evaluated against aggregate selected
-    records; multi-frame callers should inspect ``frame_lane_counts`` when they
-    need per-frame evidence.
+    are evaluated. Requirements are evaluated per frame over distinct players
+    using ``LaneOccupancyConfig.requirement_aggregation``. The default
+    ``all_frames`` aggregation requires the requirement to hold in every
+    evaluated frame.
     """
 
     lane_definitions, lane_reason = _resolve_lane_definitions(config)
@@ -177,6 +191,9 @@ def evaluate_lane_occupancy(
     normalized_required_lane_ids = _normalize_lane_id_sequence(required_lane_ids)
     normalized_required_lane_counts, invalid_count_lanes = _normalize_required_lane_counts(required_lane_counts)
     normalized_required_occupied_lane_count = _normalize_required_occupied_lane_count(required_occupied_lane_count)
+    requirement_aggregation, requirement_aggregation_reason = _normalize_requirement_aggregation(
+        config.requirement_aggregation
+    )
 
     raw_records = list(player_positions or ())
     selected_raw_records = [
@@ -236,7 +253,16 @@ def evaluate_lane_occupancy(
     assignments: list[PlayerLaneAssignment] = []
     outside_lane_player_ids: list[str] = []
     for record in classifiable_records:
-        lane_id = _lane_id_for_y(record.y_m, lane_definitions) if record.y_m is not None else None
+        lane_id = (
+            _lane_id_for_y(
+                record.y_m,
+                lane_definitions,
+                pitch_width_m=config.pitch_width_m,
+                tie_epsilon_m=config.tie_epsilon_m,
+            )
+            if record.y_m is not None
+            else None
+        )
         if lane_id is None:
             outside_lane_player_ids.append(record.player_id)
             continue
@@ -258,6 +284,11 @@ def evaluate_lane_occupancy(
     occupied_lanes = tuple(definition.lane_id for definition in lane_definitions if lane_counts[definition.lane_id] > 0)
     frame_lane_counts = _frame_lane_counts(assignments_tuple, lane_definitions, requested_frame_ids)
     evaluated_player_ids = tuple(sorted({item.player_id for item in assignments_tuple}, key=_stable_sort_key))
+    missing_frame_ids = _missing_required_frame_ids(
+        selected_records=selected_records,
+        target_ids=target_ids,
+        requested_frame_ids=requested_frame_ids,
+    )
 
     known_lane_ids = set(lane_order)
     unknown_lane_ids = tuple(
@@ -295,18 +326,21 @@ def evaluate_lane_occupancy(
         "invalid_player_ids": invalid_player_ids,
         "invalid_coordinate_player_ids": invalid_coordinate_player_ids,
         "duplicate_player_ids": duplicate_player_ids,
+        "missing_frame_ids": missing_frame_ids,
         "outside_lane_player_ids": outside_lane_player_ids_tuple,
         "unknown_lane_ids": unknown_lane_ids,
         "required_lane_ids": normalized_required_lane_ids,
         "required_lane_counts": _ordered_lane_count_requirements(normalized_required_lane_counts, lane_definitions),
         "required_occupied_lane_count": normalized_required_occupied_lane_count,
+        "requirement_aggregation": requirement_aggregation,
         "selected_record_count": selected_record_count,
         "evaluated_record_count": len(assignments_tuple),
         "invalid_record_count": invalid_record_count,
         "lane_definitions": lane_definitions,
         "pitch_width_m": _pitch_width_or_none(config.pitch_width_m),
         "coordinate_system": str(config.coordinate_system),
-        "boundary_policy": "min_y_inclusive_max_y_exclusive_except_final_lane",
+        "boundary_policy": BOUNDARY_POLICY,
+        "tie_epsilon_m": float(config.tie_epsilon_m),
     }
 
     if lane_reason is not None:
@@ -325,6 +359,12 @@ def evaluate_lane_occupancy(
         return _evaluation(
             UNKNOWN,
             LaneOccupancyReason.INVALID_REQUIRED_LANE_COUNTS.value,
+            {**base, "coverage_status": UNKNOWN},
+        )
+    if requirement_aggregation_reason is not None:
+        return _evaluation(
+            UNKNOWN,
+            requirement_aggregation_reason,
             {**base, "coverage_status": UNKNOWN},
         )
     if unknown_lane_ids:
@@ -363,11 +403,19 @@ def evaluate_lane_occupancy(
         or normalized_required_lane_counts
         or normalized_required_occupied_lane_count is not None
     )
+    if requirement_declared and missing_frame_ids:
+        return _evaluation(
+            UNKNOWN,
+            LaneOccupancyReason.FRAME_COVERAGE_INSUFFICIENT.value,
+            {**base, "coverage_status": UNKNOWN},
+        )
     requirement_met = _requirements_met(
         lane_counts=lane_counts,
+        frame_lane_counts=frame_lane_counts,
         required_lane_ids=normalized_required_lane_ids,
         required_lane_counts=normalized_required_lane_counts,
         required_occupied_lane_count=normalized_required_occupied_lane_count,
+        requirement_aggregation=requirement_aggregation,
     )
     if requirement_declared and not requirement_met:
         return _evaluation(FAIL, LaneOccupancyReason.REQUIREMENT_NOT_MET.value, {**base, "coverage_status": "COMPLETE"})
@@ -382,23 +430,17 @@ def evaluate_lane_occupancy(
 def default_lane_definitions(pitch_width_m: float = DEFAULT_PITCH_WIDTH_M) -> tuple[LaneDefinition, ...]:
     """Return the default equal-width five-lane model for a centered pitch."""
 
-    half_width = float(pitch_width_m) / 2.0
-    lane_width = float(pitch_width_m) / len(DEFAULT_LANE_IDS)
-    definitions: list[LaneDefinition] = []
-    for ordinal, lane_id in enumerate(DEFAULT_LANE_IDS):
-        min_y = round(-half_width + ordinal * lane_width, 10)
-        max_y = round(-half_width + (ordinal + 1) * lane_width, 10)
-        definitions.append(
-            LaneDefinition(
-                lane_id=lane_id,
-                min_y_m=min_y,
-                max_y_m=max_y,
-                includes_min_y=True,
-                includes_max_y=ordinal == len(DEFAULT_LANE_IDS) - 1,
-                ordinal=ordinal,
-            )
+    return tuple(
+        LaneDefinition(
+            lane_id=band.lane_id,
+            min_y_m=band.min_y_m,
+            max_y_m=band.max_y_m,
+            includes_min_y=band.includes_min_y,
+            includes_max_y=band.includes_max_y,
+            ordinal=band.ordinal,
         )
-    return tuple(definitions)
+        for band in lane_bands(pitch_width_m)
+    )
 
 
 def _resolve_lane_definitions(config: LaneOccupancyConfig) -> tuple[tuple[LaneDefinition, ...], str | None]:
@@ -491,7 +533,57 @@ def _normalize_required_occupied_lane_count(value: object | None) -> int | None:
     return _non_negative_int(value)
 
 
+def _normalize_requirement_aggregation(value: object | None) -> tuple[str, str | None]:
+    if value is None:
+        return DEFAULT_REQUIREMENT_AGGREGATION, None
+    raw = str(value).strip()
+    if raw in {"all_frames", "any_frame"}:
+        return raw, None
+    if raw.startswith("min_frame_ratio:"):
+        try:
+            ratio = float(raw.split(":", 1)[1])
+        except (TypeError, ValueError):
+            return raw, LaneOccupancyReason.INVALID_REQUIREMENT_AGGREGATION.value
+        if 0.0 <= ratio <= 1.0:
+            return f"min_frame_ratio:{ratio}", None
+    return raw, LaneOccupancyReason.INVALID_REQUIREMENT_AGGREGATION.value
+
+
 def _requirements_met(
+    *,
+    lane_counts: Mapping[str, int],
+    frame_lane_counts: tuple[FrameLaneCounts, ...],
+    required_lane_ids: tuple[str, ...],
+    required_lane_counts: Mapping[str, int],
+    required_occupied_lane_count: int | None,
+    requirement_aggregation: str,
+) -> bool:
+    per_frame_results = tuple(
+        _single_frame_requirements_met(
+            lane_counts=item.lane_counts,
+            required_lane_ids=required_lane_ids,
+            required_lane_counts=required_lane_counts,
+            required_occupied_lane_count=required_occupied_lane_count,
+        )
+        for item in frame_lane_counts
+    )
+    if per_frame_results:
+        if requirement_aggregation == "all_frames":
+            return all(per_frame_results)
+        if requirement_aggregation == "any_frame":
+            return any(per_frame_results)
+        if requirement_aggregation.startswith("min_frame_ratio:"):
+            ratio = float(requirement_aggregation.split(":", 1)[1])
+            return (sum(1 for item in per_frame_results if item) / len(per_frame_results)) >= ratio
+    return _single_frame_requirements_met(
+        lane_counts=lane_counts,
+        required_lane_ids=required_lane_ids,
+        required_lane_counts=required_lane_counts,
+        required_occupied_lane_count=required_occupied_lane_count,
+    )
+
+
+def _single_frame_requirements_met(
     *,
     lane_counts: Mapping[str, int],
     required_lane_ids: tuple[str, ...],
@@ -511,9 +603,18 @@ def _requirements_met(
     return True
 
 
-def _lane_id_for_y(y_m: float | None, lane_definitions: tuple[LaneDefinition, ...]) -> str | None:
+def _lane_id_for_y(
+    y_m: float | None,
+    lane_definitions: tuple[LaneDefinition, ...],
+    *,
+    pitch_width_m: float,
+    tie_epsilon_m: float,
+) -> str | None:
     if y_m is None:
         return None
+    shared_lane_id = classify_lane_y(y_m, pitch_width_m=pitch_width_m, tie_epsilon_m=tie_epsilon_m)
+    if shared_lane_id in {definition.lane_id for definition in lane_definitions}:
+        return shared_lane_id
     y_value = float(y_m)
     for definition in lane_definitions:
         above_min = y_value >= definition.min_y_m if definition.includes_min_y else y_value > definition.min_y_m
@@ -527,8 +628,10 @@ def _lane_counts(
     assignments: tuple[PlayerLaneAssignment, ...],
     lane_definitions: tuple[LaneDefinition, ...],
 ) -> dict[str, int]:
-    counts = Counter(item.lane_id for item in assignments)
-    return {definition.lane_id: int(counts.get(definition.lane_id, 0)) for definition in lane_definitions}
+    players_by_lane: dict[str, set[str]] = {definition.lane_id: set() for definition in lane_definitions}
+    for item in assignments:
+        players_by_lane.setdefault(item.lane_id, set()).add(item.player_id)
+    return {definition.lane_id: len(players_by_lane.get(definition.lane_id, set())) for definition in lane_definitions}
 
 
 def _frame_lane_counts(
@@ -547,6 +650,28 @@ def _frame_lane_counts(
         occupied = tuple(definition.lane_id for definition in lane_definitions if counts[definition.lane_id] > 0)
         result.append(FrameLaneCounts(frame_id=frame_id, occupied_lanes=occupied, lane_counts=counts))
     return tuple(result)
+
+
+def _missing_required_frame_ids(
+    *,
+    selected_records: Sequence[_PlayerRecord],
+    target_ids: tuple[str, ...] | None,
+    requested_frame_ids: tuple[FrameId, ...] | None,
+) -> tuple[FrameId, ...]:
+    if requested_frame_ids is None:
+        return ()
+    if target_ids is None:
+        observed_frames = {record.frame_id for record in selected_records}
+        return tuple(
+            sorted(set(requested_frame_ids) - observed_frames, key=_stable_sort_key)
+        )
+    observed_pairs = {(record.frame_id, record.player_id) for record in selected_records}
+    missing_frames = {
+        frame_id
+        for frame_id in requested_frame_ids
+        if any((frame_id, player_id) not in observed_pairs for player_id in target_ids)
+    }
+    return tuple(sorted(missing_frames, key=_stable_sort_key))
 
 
 def _ordered_lane_count_requirements(

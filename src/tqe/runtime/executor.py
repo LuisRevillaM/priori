@@ -7533,12 +7533,15 @@ def lane_occupancy_anchor_record(
         "invalid_coordinate_player_ids": list(payload["invalid_coordinate_player_ids"]),
         "duplicate_player_ids": list(payload["duplicate_player_ids"]),
         "outside_lane_player_ids": list(payload["outside_lane_player_ids"]),
+        "missing_frame_ids": list(payload["missing_frame_ids"]),
         "required_occupied_lane_count": payload["required_occupied_lane_count"],
+        "requirement_aggregation": payload["requirement_aggregation"],
         "coverage_status": payload["coverage_status"],
         "lane_definitions": payload["lane_definitions"],
         "pitch_width_m": payload["pitch_width_m"],
         "coordinate_system": payload["coordinate_system"],
         "boundary_policy": payload["boundary_policy"],
+        "tie_epsilon_m": payload["tie_epsilon_m"],
         "observed_player_count": len(observed_positions),
     }
 
