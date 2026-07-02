@@ -28,6 +28,7 @@ from tqe.runtime.lane_geometry import (
     LEFT_WIDE,
     RIGHT_HALF_SPACE,
     RIGHT_WIDE,
+    classify_lane_y,
     lane_bands,
 )
 
@@ -252,7 +253,16 @@ def evaluate_lane_occupancy(
     assignments: list[PlayerLaneAssignment] = []
     outside_lane_player_ids: list[str] = []
     for record in classifiable_records:
-        lane_id = _lane_id_for_y(record.y_m, lane_definitions) if record.y_m is not None else None
+        lane_id = (
+            _lane_id_for_y(
+                record.y_m,
+                lane_definitions,
+                pitch_width_m=config.pitch_width_m,
+                tie_epsilon_m=config.tie_epsilon_m,
+            )
+            if record.y_m is not None
+            else None
+        )
         if lane_id is None:
             outside_lane_player_ids.append(record.player_id)
             continue
@@ -593,9 +603,18 @@ def _single_frame_requirements_met(
     return True
 
 
-def _lane_id_for_y(y_m: float | None, lane_definitions: tuple[LaneDefinition, ...]) -> str | None:
+def _lane_id_for_y(
+    y_m: float | None,
+    lane_definitions: tuple[LaneDefinition, ...],
+    *,
+    pitch_width_m: float,
+    tie_epsilon_m: float,
+) -> str | None:
     if y_m is None:
         return None
+    shared_lane_id = classify_lane_y(y_m, pitch_width_m=pitch_width_m, tie_epsilon_m=tie_epsilon_m)
+    if shared_lane_id in {definition.lane_id for definition in lane_definitions}:
+        return shared_lane_id
     y_value = float(y_m)
     for definition in lane_definitions:
         above_min = y_value >= definition.min_y_m if definition.includes_min_y else y_value > definition.min_y_m

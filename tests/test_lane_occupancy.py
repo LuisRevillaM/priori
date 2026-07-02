@@ -16,7 +16,7 @@ from tqe.runtime.lane_occupancy import (
     evaluate_lane_occupancy,
 )
 from tqe.runtime.executor import observed_outfield_positions_at_frame
-from tqe.runtime.lane_geometry import classify_lane_y
+from tqe.runtime.lane_geometry import DEFAULT_TIE_EPSILON_M, classify_lane_y, lane_family
 from tqe.runtime.relations import destination_lane, destination_region_bounds, destination_side
 
 
@@ -143,6 +143,30 @@ class LaneOccupancyKernelTest(unittest.TestCase):
                 self.assertEqual(side, destination_side(y_m))
                 self.assertEqual(family, destination_lane(y_m))
                 self.assertEqual(bounds, destination_region_bounds(side, family))
+
+    def test_lane_occupancy_uses_shared_epsilon_around_band_edges(self) -> None:
+        epsilon = DEFAULT_TIE_EPSILON_M
+        values = [
+            -20.4 - epsilon / 2.0,
+            -20.4 + epsilon / 2.0,
+            -6.8 - epsilon / 2.0,
+            -6.8 + epsilon / 2.0,
+            6.8 - epsilon / 2.0,
+            6.8 + epsilon / 2.0,
+            20.4 - epsilon / 2.0,
+            20.4 + epsilon / 2.0,
+        ]
+        evaluation = evaluate_lane_occupancy(
+            player_positions=[player(f"p{index}", y_m=y_m) for index, y_m in enumerate(values)]
+        )
+
+        self.assertEqual(PASS, evaluation.status)
+        assignments = {assignment.player_id: assignment.lane_id for assignment in evaluation.player_assignments}
+        for index, y_m in enumerate(values):
+            with self.subTest(y_m=y_m):
+                assigned_lane = assignments[f"p{index}"]
+                self.assertEqual(classify_lane_y(y_m), assigned_lane)
+                self.assertEqual(destination_lane(y_m), lane_family(assigned_lane))
 
     def test_lane_model_is_mirror_symmetric(self) -> None:
         mirrors = {
