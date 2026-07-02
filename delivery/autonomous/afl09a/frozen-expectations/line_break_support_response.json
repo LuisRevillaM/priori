@@ -1,7 +1,7 @@
 {
   "expectation_id": "afl09a.line_break_support_response.0_1_0",
   "expected": {
-    "bound_plan_hash": "00295567a43af9c545ec13d6bed4e3ebe8dabbf856c08826f7136adc052abcee",
+    "bound_plan_hash": "c5a1dfff459fa8921008a76e583e5e14d4550773b2528f334f187bb8990c503f",
     "compatibility_profile": "generic",
     "document_hash": "601db30ab673b6d054daa7ffe084170ebc79104040af342d7defe32dd949dcb7",
     "execution_status": "pass",
@@ -10,15 +10,15 @@
     "requested_evidence_failure_count": 0,
     "result_count": 1,
     "result_ids": [
-      "89ffbeed5c00944d"
+      "972b6bb4f8725ea5"
     ],
-    "result_signature_hash": "63f0b844675b269b99132a3cdb3cdb07d24eba0140d863c43781b4cf88dd1d90"
+    "result_signature_hash": "7a3e0e16c1ce3e32f4a83f3c9fef89f60f7e3b04fc16f2e219a3337172c35227"
   },
   "freeze_provenance": {
     "freeze_mechanism": "explicit_AFL09A_FREEZE_EXPECTATIONS=1",
     "review": "controller_self_verified_original_real_data_verifier",
     "runtime_semantics_dirty": false,
-    "source_commit": "3bdf3a18c3ae562d106c573ef87edf226438d406",
+    "source_commit": "80aa996fdcb55c2513cffbbd4b3d90a0b99fb180",
     "source_verifier": "tqe.verification.afl_line_break_support_response",
     "source_verifier_status": "PASS",
     "threshold_version": "line_break_support_response.experimental.v0.1.0",
