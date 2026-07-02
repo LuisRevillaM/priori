@@ -1,7 +1,7 @@
 {
   "expectation_id": "afl09a.substrate_q4.0_1_0",
   "expected": {
-    "bound_plan_hash": "3b6c5dadcecaf700732c01c46319c1c440de926754119850e016941fa4e2002d",
+    "bound_plan_hash": "e2d4a54717e5dfd02d3fd5a9ba3bed2ae77a82eff34343fcc41ccb5db6ce7c1f",
     "compatibility_profile": "generic",
     "document_hash": "13d8bcb92a3fec98926aa4b2773fbffa6f1208d5dd27f8359016fafc0a68e856",
     "execution_status": "pass",
@@ -10,16 +10,16 @@
     "requested_evidence_failure_count": 0,
     "result_count": 2,
     "result_ids": [
-      "bb17e46b0714311b",
-      "fb49be80f9f1b8de"
+      "5e9534c7c924a273",
+      "bf5c6f21a8fdfa14"
     ],
-    "result_signature_hash": "051831ebf05db4b6a55202bb0ff25cbfe120fb8c6259a2bdf28c9a0fcc35f323"
+    "result_signature_hash": "fff7fc74babbda18230b8ee4547cb98d80daf6fa7a40780c0a6c8e797b42ccaf"
   },
   "freeze_provenance": {
     "freeze_mechanism": "explicit_AFL09A_FREEZE_EXPECTATIONS=1",
     "review": "controller_self_verified_original_real_data_verifier",
     "runtime_semantics_dirty": false,
-    "source_commit": "ebb4b68b04b10525050e7cbf6883572cbe83e76c",
+    "source_commit": "dd0b3ca0934bac423122e65de2e868cb99df7c2d",
     "source_verifier": "tqe.verification.afl_substrate_q4",
     "source_verifier_status": "PASS",
     "threshold_version": "q4_compact_then_switch_partial.v0.1.0",
