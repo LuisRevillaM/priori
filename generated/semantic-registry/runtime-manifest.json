@@ -1159,8 +1159,7 @@
             "reception_ball_point",
             "release_passer_point",
             "reception_receiver_point",
-            "forward_progression_m",
-            "controlled_pass_status"
+            "forward_progression_m"
           ],
           "missing_data_semantics": "unknown",
           "name": "episodes",
@@ -7960,6 +7959,6 @@
       "unit": "none"
     }
   ],
-  "runtime_manifest_revision": "67d57df99aa41c0928c5c4a6f14015546b387436dd5ea0a38602a8864a0d4471",
+  "runtime_manifest_revision": "b389812bf8876da2da6088d466dc52fc5216aef15d8b0a4ec6657aa18f74a43d",
   "schema_version": "1.0"
 }

@@ -1784,8 +1784,7 @@
                 "reception_ball_point",
                 "release_passer_point",
                 "reception_receiver_point",
-                "forward_progression_m",
-                "controlled_pass_status"
+                "forward_progression_m"
               ],
               "missing_data_semantics": "unknown",
               "name": "episodes",
@@ -17210,8 +17209,7 @@
             "reception_ball_point",
             "release_passer_point",
             "reception_receiver_point",
-            "forward_progression_m",
-            "controlled_pass_status"
+            "forward_progression_m"
           ],
           "missing_data_semantics": "unknown",
           "name": "episodes",

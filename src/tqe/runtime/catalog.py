@@ -3027,7 +3027,6 @@ def default_primitives() -> list[CatalogEntry]:
                         "release_passer_point",
                         "reception_receiver_point",
                         "forward_progression_m",
-                        "controlled_pass_status",
                     ],
                 ),
                 output(
