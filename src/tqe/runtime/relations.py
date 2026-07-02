@@ -21,8 +21,16 @@ from typing import Any
 import pandas as pd
 import pyarrow.parquet as pq
 
+from tqe.runtime.lane_geometry import (
+    classify_lane_y,
+    lane_bounds,
+    lane_family,
+    lane_id_for_side_family,
+    lane_side,
+    partition_metadata,
+)
+
 FRAME_RATE_HZ = 25
-PITCH_HALF_WIDTH_M = 34.0
 DEFAULT_CANONICAL_ROOT = Path("data/canonical/v1")
 BALL_ENTITY_ID = "DFL-OBJ-0000XT"
 
@@ -63,7 +71,7 @@ def evaluate_geometric_progressive_corridors(
         attacking_outfield = outfield_player_ids(players, match_id, perspective_role)
         defending_outfield = outfield_player_ids(players, match_id, defending_role)
         if attack_x_sign is None:
-            counts = Counter({"UNKNOWN": 1})
+            counts: Counter[str] = Counter()
             anchor_evaluations.append(
                 anchor_evaluation_for_result(
                     result,
@@ -356,6 +364,24 @@ def corridor_state(
             minimum_clearance = clearance
             limiting_defender_id = str(defender.entity_id)
 
+    try:
+        target_destination_side = destination_side(destination["y_m"])
+        target_destination_lane = destination_lane(destination["y_m"])
+        target_destination_bounds = destination_region_bounds(target_destination_side, target_destination_lane)
+    except RuntimeError:
+        return {
+            **common,
+            "status": "INVALID",
+            "reason": "destination_outside_declared_lane_geometry",
+            "source_entity_id": BALL_ENTITY_ID,
+            "source_point": source,
+            "target_point": destination,
+            "forward_progression_m": round(forward_progression, 3),
+            "segment_length_m": round(segment_length, 3),
+            "minimum_clearance_m": round(minimum_clearance, 3),
+            "limiting_defender_id": limiting_defender_id,
+        }
+
     payload = {
         **common,
         "source_entity_id": BALL_ENTITY_ID,
@@ -365,15 +391,12 @@ def corridor_state(
         "segment_length_m": round(segment_length, 3),
         "minimum_clearance_m": round(minimum_clearance, 3),
         "limiting_defender_id": limiting_defender_id,
-        "destination_side": destination_side(destination["y_m"]),
-        "destination_lane": destination_lane(destination["y_m"]),
+        "destination_side": target_destination_side,
+        "destination_lane": target_destination_lane,
     }
     payload["destination_region"] = f"{payload['destination_side']}_{payload['destination_lane']}"
     payload["destination_region_type"] = "side_lane_band"
-    payload["destination_region_bounds"] = destination_region_bounds(
-        payload["destination_side"],
-        payload["destination_lane"],
-    )
+    payload["destination_region_bounds"] = target_destination_bounds
     if forward_progression < config.minimum_progression_m:
         return {**payload, "status": "FAIL", "failure_reason": "insufficient_forward_progression"}
     if segment_length < config.minimum_segment_length_m:
@@ -703,51 +726,25 @@ def point_segment_distance(px: float, py: float, ax: float, ay: float, bx: float
 
 
 def destination_side(y_m: float) -> str:
-    if y_m > 0:
-        return "right"
-    if y_m < 0:
-        return "left"
-    return "central"
+    lane_id = classify_lane_y(y_m)
+    if lane_id is None:
+        raise RuntimeError(f"Unsupported destination y_m {y_m}")
+    return lane_side(lane_id)
 
 
 def destination_lane(y_m: float) -> str:
-    absolute_y = abs(y_m)
-    if absolute_y >= PITCH_HALF_WIDTH_M * 0.66:
-        return "wide"
-    if absolute_y >= PITCH_HALF_WIDTH_M * 0.33:
-        return "half_space"
-    return "central"
+    lane_id = classify_lane_y(y_m)
+    if lane_id is None:
+        raise RuntimeError(f"Unsupported destination y_m {y_m}")
+    return lane_family(lane_id)
 
 
 def destination_region_bounds(destination_side: str, destination_lane: str) -> dict[str, float]:
-    if destination_lane == "wide":
-        minimum_abs_y = PITCH_HALF_WIDTH_M * 0.66
-        maximum_abs_y = PITCH_HALF_WIDTH_M
-    elif destination_lane == "half_space":
-        minimum_abs_y = PITCH_HALF_WIDTH_M * 0.33
-        maximum_abs_y = PITCH_HALF_WIDTH_M * 0.66
-    elif destination_lane == "central":
-        minimum_abs_y = 0.0
-        maximum_abs_y = PITCH_HALF_WIDTH_M * 0.33
-    else:
-        raise RuntimeError(f"Unsupported destination lane {destination_lane}")
+    return lane_bounds(lane_id_for_side_family(destination_side, destination_lane))
 
-    if destination_side == "left":
-        return {
-            "min_y_m": round(-maximum_abs_y, 3),
-            "max_y_m": round(-minimum_abs_y, 3),
-        }
-    if destination_side == "right":
-        return {
-            "min_y_m": round(minimum_abs_y, 3),
-            "max_y_m": round(maximum_abs_y, 3),
-        }
-    if destination_side == "central":
-        return {
-            "min_y_m": round(-maximum_abs_y, 3),
-            "max_y_m": round(maximum_abs_y, 3),
-        }
-    raise RuntimeError(f"Unsupported destination side {destination_side}")
+
+def destination_lane_partition() -> dict[str, object]:
+    return partition_metadata()
 
 
 def load_attack_x_sign(orientation: pd.DataFrame, match_id: str, period: str, team_role: str) -> int | None:

@@ -20,6 +20,14 @@ from tqe.runtime.ir import (
     Unit,
 )
 
+LANE_PARTITION_LIMITATION = (
+    "Lane outputs use the shared five-equal-lanes model on a 68m pitch: "
+    "LEFT_WIDE [-34.0,-20.4), LEFT_HALF_SPACE [-20.4,-6.8), "
+    "CENTRAL [-6.8,6.8], RIGHT_HALF_SPACE (6.8,20.4], "
+    "RIGHT_WIDE (20.4,34.0], with mirror-symmetric boundaries and ties toward center "
+    "(tie_epsilon_m=1e-9)."
+)
+
 
 def output(
     *,
@@ -3945,8 +3953,11 @@ def default_primitives() -> list[CatalogEntry]:
                         "lane_counts",
                         "player_lane_assignments",
                         "required_occupied_lane_count",
+                        "requirement_aggregation",
                         "coverage_status",
                         "lane_definitions",
+                        "boundary_policy",
+                        "tie_epsilon_m",
                     ],
                 ),
                 output(
@@ -3999,10 +4010,19 @@ def default_primitives() -> list[CatalogEntry]:
                 "occupied_lanes",
                 "occupied_lane_count",
                 "lane_counts",
+                "frame_lane_counts",
+                "required_occupied_lane_count",
+                "requirement_aggregation",
+                "coverage_status",
+                "lane_definitions",
+                "boundary_policy",
+                "tie_epsilon_m",
             ],
             limitations=[
                 "Classifies observed outfield players only; it does not prove complete active-player lane coverage.",
-                "Uses fixed lateral lane geometry and does not infer player intention, support quality, optimality, or role semantics.",
+                LANE_PARTITION_LIMITATION,
+                "Lane-count requirements use per-frame distinct-player counts with default all_frames aggregation; one player observed across multiple frames does not satisfy a multi-player count requirement.",
+                "Does not infer player intention, support quality, optimality, or role semantics.",
                 "Does not prove a line break, controlled support arrival, or causal effect.",
             ],
         ),
@@ -4231,6 +4251,7 @@ def default_primitives() -> list[CatalogEntry]:
             ],
             limitations=[
                 "Measures entry into relation destination geometry only.",
+                LANE_PARTITION_LIMITATION,
                 "No pass probability, optimality, decision-quality, intent, causation, or missed-opportunity claim.",
             ],
         ),
@@ -4308,6 +4329,7 @@ def default_primitives() -> list[CatalogEntry]:
             limitations=[
                 "Trusted recipe wrapper; agent-authored plans should use relation_destination_entry.",
                 "Requires an upstream relation episode set.",
+                LANE_PARTITION_LIMITATION,
                 "No pass probability, optimality, decision-quality, intent, or missed-opportunity claim.",
             ],
         ),
@@ -4490,9 +4512,11 @@ def default_relations() -> list[CatalogEntry]:
                 "No optimality or decision-quality claim.",
                 "No receiver body-orientation model.",
                 "No offside model in V1 acceptance.",
+                LANE_PARTITION_LIMITATION,
                 "`close_reason` is one of `closed_after_failures`, `closed_on_missing_evidence`, or `window_end`.",
                 "Coverage rule: with no witness relation, any UNKNOWN or INVALID state makes the anchor evaluation UNKNOWN rather than FAIL.",
                 "Missing evidence closes an open episode immediately and may reopen only after fresh configured PASS frames; observed FAIL closes only after close_after_frames.",
+                "Whole-missing-frame UNKNOWN emission is scoped to targets observed somewhere in the evaluated window; roster players never tracked in-window emit no corridor states.",
             ],
         ),
         relation(
@@ -5441,9 +5465,11 @@ def default_relations() -> list[CatalogEntry]:
                 "No optimality or decision-quality claim.",
                 "No player intent, causation, or missed-opportunity claim.",
                 "No receiver body-orientation or offside model.",
+                LANE_PARTITION_LIMITATION,
                 "`close_reason` is one of `closed_after_failures`, `closed_on_missing_evidence`, or `window_end`.",
                 "Coverage rule: with no witness relation, any UNKNOWN or INVALID state makes the anchor evaluation UNKNOWN rather than FAIL.",
                 "Missing evidence closes an open episode immediately and may reopen only after fresh configured PASS frames; observed FAIL closes only after close_after_frames.",
+                "Whole-missing-frame UNKNOWN emission is scoped to targets observed somewhere in the evaluated window; roster players never tracked in-window emit no corridor states.",
             ],
         )
     ]

@@ -226,6 +226,17 @@ class ControlledPassHonestyTest(unittest.TestCase):
             [(row["row_index"], row["event_type"]) for row in rows],
         )
 
+    def test_empty_event_filter_tuple_fails_closed(self) -> None:
+        events = pd.DataFrame(
+            [
+                event_row(1, "Play_Pass", "a", "b"),
+                event_row(2, "Play_Pass", "b", "c"),
+            ]
+        )
+
+        self.assertEqual([], candidate_pass_events(events, event_type_filter=()))
+        self.assertEqual([], adjacent_event_linked_passes(events, config=OneTouchRelayConfig(event_type_filter=())))
+
     def test_one_touch_default_filter_excludes_restart_pass_pairs(self) -> None:
         events = pd.DataFrame(
             [

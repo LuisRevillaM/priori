@@ -707,7 +707,9 @@ def event_type_allowed(
     if event_type_filter is None:
         return "Pass" in event_type
     allowed = {str(item) for item in event_type_filter}
-    if not allowed or "any" in allowed:
+    if not allowed:
+        return False
+    if "any" in allowed:
         return "Pass" in event_type
     return event_type in allowed
 
