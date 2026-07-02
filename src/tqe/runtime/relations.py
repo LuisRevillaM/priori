@@ -1,4 +1,12 @@
-"""Runtime relation implementations for M1.1."""
+"""Runtime relation implementations for M1.1.
+
+Progressive-corridor hysteresis only bridges observed PASS/FAIL states. Missing
+tracking evidence for the ball, target, or evaluated frame is emitted as
+UNKNOWN, closes any open episode as ``closed_on_missing_evidence``, and a new
+episode may reopen only after the configured consecutive PASS frames are seen
+again. Observed FAIL states close only after ``close_after_frames`` failures,
+so tracking gaps never masquerade as geometric failures.
+"""
 
 from __future__ import annotations
 
@@ -54,6 +62,18 @@ def evaluate_geometric_progressive_corridors(
         attack_x_sign = load_attack_x_sign(orientation, match_id, period, perspective_role)
         attacking_outfield = outfield_player_ids(players, match_id, perspective_role)
         defending_outfield = outfield_player_ids(players, match_id, defending_role)
+        if attack_x_sign is None:
+            counts = Counter({"UNKNOWN": 1})
+            anchor_evaluations.append(
+                anchor_evaluation_for_result(
+                    result,
+                    [],
+                    counts,
+                    unknown_reason="orientation_unavailable",
+                )
+            )
+            state_counts.update(counts)
+            continue
         relation_rows, negatives, counts = evaluate_result_window(
             result=result,
             positions=positions,
@@ -145,6 +165,12 @@ def evaluate_result_window(
     frame_ids = list(range(int(result["anchor_frame_id"]), min(outcome_end, max_end) + 1, step))
     scoped = positions[positions.frame_id.isin(frame_ids)]
     by_frame = {int(frame_id): frame.copy() for frame_id, frame in scoped.groupby("frame_id")}
+    target_mask = (
+        (scoped.entity_type == "player")
+        & (scoped.team_role == result["perspective_team_role"])
+        & (scoped.entity_id.astype(str).isin(attacking_outfield))
+    )
+    window_target_ids = set(scoped.loc[target_mask, "entity_id"].astype(str))
     states_by_target: dict[str, list[dict[str, Any]]] = defaultdict(list)
     state_counts: Counter[str] = Counter()
     negative_examples: list[dict[str, Any]] = []
@@ -152,7 +178,16 @@ def evaluate_result_window(
     for frame_id in frame_ids:
         frame = by_frame.get(frame_id)
         if frame is None:
-            state_counts["UNKNOWN"] += 1
+            for target_player_id in sorted(window_target_ids):
+                states_by_target[str(target_player_id)].append(
+                    unknown_corridor_state(
+                        result=result,
+                        frame_id=frame_id,
+                        target_player_id=str(target_player_id),
+                        reason="tracking_frame_unavailable",
+                    )
+                )
+                state_counts["UNKNOWN"] += 1
             continue
         ball = frame[frame.entity_type == "ball"]
         attackers = frame[
@@ -160,22 +195,27 @@ def evaluate_result_window(
             & (frame.team_role == result["perspective_team_role"])
             & (frame.entity_id.astype(str).isin(attacking_outfield))
         ]
+        attackers_by_id = {
+            str(attacker.entity_id): attacker._asdict()
+            for attacker in attackers.itertuples(index=False)
+        }
         defenders = frame[
             (frame.entity_type == "player")
             & (frame.team_role == result["defending_team_role"])
             & (frame.entity_id.astype(str).isin(defending_outfield))
         ]
-        for attacker in attackers.itertuples(index=False):
+        for target_player_id in sorted(window_target_ids):
             state = corridor_state(
                 result=result,
                 frame_id=frame_id,
                 ball=ball,
-                target=attacker._asdict(),
+                target=attackers_by_id.get(target_player_id),
+                target_player_id=target_player_id,
                 defenders=defenders,
                 attack_x_sign=attack_x_sign,
                 config=config,
             )
-            states_by_target[str(attacker.entity_id)].append(state)
+            states_by_target[target_player_id].append(state)
             state_counts[state["status"]] += 1
             if state["status"] == "FAIL" and state.get("failure_reason") == "clearance_below_threshold":
                 negative_examples.append(state)
@@ -190,10 +230,14 @@ def anchor_evaluation_for_result(
     result: dict[str, Any],
     relation_rows: list[dict[str, Any]],
     counts: Counter[str],
+    *,
+    unknown_reason: str | None = None,
 ) -> dict[str, Any]:
     total_states = sum(counts.values())
     known_states = counts.get("PASS", 0) + counts.get("FAIL", 0)
     unknown_states = counts.get("UNKNOWN", 0) + counts.get("INVALID", 0)
+    unknown_ratio = unknown_states / total_states if total_states else None
+    coverage_status = "UNKNOWN" if total_states == 0 or unknown_states > 0 else "PASS"
     base = {
         "relation": "geometric_progressive_corridor",
         "relation_version": "0.1.0",
@@ -206,6 +250,11 @@ def anchor_evaluation_for_result(
         "anchor_frame_id": int(result["anchor_frame_id"]),
         "relation_count": len(relation_rows),
         "state_counts": dict(sorted(counts.items())),
+        "total_state_count": total_states,
+        "known_state_count": known_states,
+        "unknown_state_count": unknown_states,
+        "unknown_state_ratio": None if unknown_ratio is None else round(unknown_ratio, 6),
+        "coverage_status": coverage_status,
     }
     if relation_rows:
         witness = relation_witness_episode(relation_rows)
@@ -220,9 +269,12 @@ def anchor_evaluation_for_result(
             **base,
             "evaluation_status": "UNKNOWN",
             "witness_relation_id": None,
-            "unknown_reason": "relation_evidence_unavailable"
-            if total_states == 0 or known_states == 0
-            else "mixed_relation_evidence_unavailable",
+            "unknown_reason": unknown_reason
+            or (
+                "relation_evidence_unavailable"
+                if total_states == 0 or known_states == 0
+                else "mixed_relation_evidence_unavailable"
+            ),
         }
     return {
         **base,
@@ -253,13 +305,14 @@ def corridor_state(
     defenders: pd.DataFrame | None,
     attack_x_sign: int,
     config: CorridorConfig,
+    target_player_id: str | None = None,
 ) -> dict[str, Any]:
     common = {
         "result_id": str(result["result_id"]),
         "match_id": str(result["match_id"]),
         "period": str(result["period"]),
         "frame_id": int(frame_id),
-        "target_player_id": str(target["entity_id"]) if target else None,
+        "target_player_id": str(target["entity_id"]) if target else target_player_id,
     }
     if ball is None or ball.empty:
         return {**common, "status": "UNKNOWN", "reason": "source_ball_unavailable"}
@@ -269,6 +322,10 @@ def corridor_state(
         return {**common, "status": "UNKNOWN", "reason": "defenders_unavailable"}
 
     ball_row = ball.iloc[0]
+    if not math.isfinite(float(ball_row.x_m)) or not math.isfinite(float(ball_row.y_m)):
+        return {**common, "status": "UNKNOWN", "reason": "source_ball_unavailable"}
+    if not math.isfinite(float(target["x_m"])) or not math.isfinite(float(target["y_m"])):
+        return {**common, "status": "UNKNOWN", "reason": "target_player_unavailable"}
     source = point_payload(float(ball_row.x_m), float(ball_row.y_m))
     destination = point_payload(float(target["x_m"]), float(target["y_m"]))
     dx = destination["x_m"] - source["x_m"]
@@ -328,6 +385,24 @@ def corridor_state(
     return {**payload, "status": "PASS"}
 
 
+def unknown_corridor_state(
+    *,
+    result: dict[str, Any],
+    frame_id: int,
+    target_player_id: str,
+    reason: str,
+) -> dict[str, Any]:
+    return {
+        "result_id": str(result["result_id"]),
+        "match_id": str(result["match_id"]),
+        "period": str(result["period"]),
+        "frame_id": int(frame_id),
+        "target_player_id": target_player_id,
+        "status": "UNKNOWN",
+        "reason": reason,
+    }
+
+
 def episodes_from_states(
     result: dict[str, Any],
     target_player_id: str,
@@ -347,9 +422,11 @@ def episodes_from_states(
         nonlocal open_state, open_confirm_frame_id, last_pass_state, episode_pass_states
         if open_state is None or last_pass_state is None:
             return
-        frame_count = len(episode_pass_states)
-        if frame_count < config.open_after_frames:
+        pass_frame_count = len(episode_pass_states)
+        if pass_frame_count < config.open_after_frames:
             return
+        open_frame_id = int(open_state["frame_id"])
+        close_frame_id = int(last_pass_state["frame_id"])
         minimum_clearance_state = min(
             episode_pass_states,
             key=lambda item: float(item["minimum_clearance_m"]),
@@ -357,8 +434,8 @@ def episodes_from_states(
         relation_id = relation_id_for(
             str(result["result_id"]),
             target_player_id,
-            int(open_state["frame_id"]),
-            int(last_pass_state["frame_id"]),
+            open_frame_id,
+            close_frame_id,
         )
         episodes.append(
             {
@@ -372,10 +449,11 @@ def episodes_from_states(
                 "perspective_team_role": str(result["perspective_team_role"]),
                 "source_entity_id": BALL_ENTITY_ID,
                 "target_player_id": target_player_id,
-                "open_frame_id": int(open_state["frame_id"]),
+                "open_frame_id": open_frame_id,
                 "open_confirm_frame_id": open_confirm_frame_id,
-                "close_frame_id": int(last_pass_state["frame_id"]),
-                "duration_seconds": round(frame_count / config.analysis_rate_hz, 3),
+                "close_frame_id": close_frame_id,
+                "duration_seconds": round(max(0, close_frame_id - open_frame_id) / FRAME_RATE_HZ, 3),
+                "pass_frame_count": pass_frame_count,
                 "minimum_clearance_m": minimum_clearance_state["minimum_clearance_m"],
                 "limiting_defender_id": minimum_clearance_state["limiting_defender_id"],
                 "forward_progression_m": open_state["forward_progression_m"],
@@ -395,7 +473,9 @@ def episodes_from_states(
                 "evidence_fields": [
                     "open_frame_id",
                     "close_frame_id",
+                    "close_reason",
                     "duration_seconds",
+                    "pass_frame_count",
                     "minimum_clearance_m",
                     "target_player_id",
                     "destination_side",
@@ -411,6 +491,17 @@ def episodes_from_states(
                 ],
             }
         )
+
+    def reset_episode_state() -> None:
+        nonlocal pass_count, fail_count, pending_start, open_state, open_confirm_frame_id, last_pass_state
+        nonlocal episode_pass_states
+        pass_count = 0
+        fail_count = 0
+        pending_start = None
+        open_state = None
+        open_confirm_frame_id = None
+        last_pass_state = None
+        episode_pass_states = []
 
     for state in states:
         if state["status"] == "PASS":
@@ -428,20 +519,26 @@ def episodes_from_states(
                     episode_pass_states.append(state)
             continue
 
-        if open_state is not None:
-            fail_count += 1
-            if fail_count >= config.close_after_frames:
-                close_episode("closed_after_failures")
-                open_state = None
-                open_confirm_frame_id = None
-                last_pass_state = None
-                episode_pass_states = []
+        if state["status"] == "FAIL":
+            if open_state is None:
                 pass_count = 0
                 fail_count = 0
                 pending_start = None
+                continue
+            fail_count += 1
+            if fail_count >= config.close_after_frames:
+                close_episode("closed_after_failures")
+                reset_episode_state()
+            continue
+
+        if state["status"] in {"UNKNOWN", "INVALID"}:
+            if open_state is not None:
+                close_episode("closed_on_missing_evidence")
+            reset_episode_state()
             continue
 
         pass_count = 0
+        fail_count = 0
         pending_start = None
 
     if open_state is not None and last_pass_state is not None:
@@ -653,14 +750,14 @@ def destination_region_bounds(destination_side: str, destination_lane: str) -> d
     raise RuntimeError(f"Unsupported destination side {destination_side}")
 
 
-def load_attack_x_sign(orientation: pd.DataFrame, match_id: str, period: str, team_role: str) -> int:
+def load_attack_x_sign(orientation: pd.DataFrame, match_id: str, period: str, team_role: str) -> int | None:
     selected = orientation[
         (orientation.match_id == match_id)
         & (orientation.period == period)
         & (orientation.team_role == team_role)
     ]
     if selected.empty:
-        raise RuntimeError(f"Missing orientation for {match_id} {period} {team_role}")
+        return None
     return int(selected.iloc[0].attack_x_sign)
 
 
