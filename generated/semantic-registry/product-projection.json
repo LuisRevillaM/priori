@@ -1458,9 +1458,11 @@
           "No optimality or decision-quality claim.",
           "No receiver body-orientation model.",
           "No offside model in V1 acceptance.",
+          "Lane outputs use the shared five-equal-lanes model on a 68m pitch: LEFT_WIDE [-34.0,-20.4), LEFT_HALF_SPACE [-20.4,-6.8), CENTRAL [-6.8,6.8], RIGHT_HALF_SPACE (6.8,20.4], RIGHT_WIDE (20.4,34.0], with mirror-symmetric boundaries and ties toward center (tie_epsilon_m=1e-9).",
           "`close_reason` is one of `closed_after_failures`, `closed_on_missing_evidence`, or `window_end`.",
           "Coverage rule: with no witness relation, any UNKNOWN or INVALID state makes the anchor evaluation UNKNOWN rather than FAIL.",
-          "Missing evidence closes an open episode immediately and may reopen only after fresh configured PASS frames; observed FAIL closes only after close_after_frames."
+          "Missing evidence closes an open episode immediately and may reopen only after fresh configured PASS frames; observed FAIL closes only after close_after_frames.",
+          "Whole-missing-frame UNKNOWN emission is scoped to targets observed somewhere in the evaluated window; roster players never tracked in-window emit no corridor states."
         ],
         "missing_data_semantics": "unknown",
         "name": "geometric_progressive_corridor",
@@ -1663,9 +1665,11 @@
           "No optimality or decision-quality claim.",
           "No player intent, causation, or missed-opportunity claim.",
           "No receiver body-orientation or offside model.",
+          "Lane outputs use the shared five-equal-lanes model on a 68m pitch: LEFT_WIDE [-34.0,-20.4), LEFT_HALF_SPACE [-20.4,-6.8), CENTRAL [-6.8,6.8], RIGHT_HALF_SPACE (6.8,20.4], RIGHT_WIDE (20.4,34.0], with mirror-symmetric boundaries and ties toward center (tie_epsilon_m=1e-9).",
           "`close_reason` is one of `closed_after_failures`, `closed_on_missing_evidence`, or `window_end`.",
           "Coverage rule: with no witness relation, any UNKNOWN or INVALID state makes the anchor evaluation UNKNOWN rather than FAIL.",
-          "Missing evidence closes an open episode immediately and may reopen only after fresh configured PASS frames; observed FAIL closes only after close_after_frames."
+          "Missing evidence closes an open episode immediately and may reopen only after fresh configured PASS frames; observed FAIL closes only after close_after_frames.",
+          "Whole-missing-frame UNKNOWN emission is scoped to targets observed somewhere in the evaluated window; roster players never tracked in-window emit no corridor states."
         ],
         "missing_data_semantics": "unknown",
         "name": "geometric_progressive_corridor_from_anchor_set",
@@ -1837,7 +1841,14 @@
           "lane_player_scope",
           "occupied_lanes",
           "occupied_lane_count",
-          "lane_counts"
+          "lane_counts",
+          "frame_lane_counts",
+          "required_occupied_lane_count",
+          "requirement_aggregation",
+          "coverage_status",
+          "lane_definitions",
+          "boundary_policy",
+          "tie_epsilon_m"
         ],
         "executable": true,
         "inputs": [
@@ -1854,7 +1865,9 @@
         "kind": "primitive",
         "limitations": [
           "Classifies observed outfield players only; it does not prove complete active-player lane coverage.",
-          "Uses fixed lateral lane geometry and does not infer player intention, support quality, optimality, or role semantics.",
+          "Lane outputs use the shared five-equal-lanes model on a 68m pitch: LEFT_WIDE [-34.0,-20.4), LEFT_HALF_SPACE [-20.4,-6.8), CENTRAL [-6.8,6.8], RIGHT_HALF_SPACE (6.8,20.4], RIGHT_WIDE (20.4,34.0], with mirror-symmetric boundaries and ties toward center (tie_epsilon_m=1e-9).",
+          "Lane-count requirements use per-frame distinct-player counts with default all_frames aggregation; one player observed across multiple frames does not satisfy a multi-player count requirement.",
+          "Does not infer player intention, support quality, optimality, or role semantics.",
           "Does not prove a line break, controlled support arrival, or causal effect."
         ],
         "missing_data_semantics": "unknown",
@@ -1875,8 +1888,11 @@
               "lane_counts",
               "player_lane_assignments",
               "required_occupied_lane_count",
+              "requirement_aggregation",
               "coverage_status",
-              "lane_definitions"
+              "lane_definitions",
+              "boundary_policy",
+              "tie_epsilon_m"
             ],
             "missing_data_semantics": "unknown",
             "name": "anchor_evaluations",
@@ -3640,6 +3656,7 @@
         "kind": "primitive",
         "limitations": [
           "Measures entry into relation destination geometry only.",
+          "Lane outputs use the shared five-equal-lanes model on a 68m pitch: LEFT_WIDE [-34.0,-20.4), LEFT_HALF_SPACE [-20.4,-6.8), CENTRAL [-6.8,6.8], RIGHT_HALF_SPACE (6.8,20.4], RIGHT_WIDE (20.4,34.0], with mirror-symmetric boundaries and ties toward center (tie_epsilon_m=1e-9).",
           "No pass probability, optimality, decision-quality, intent, causation, or missed-opportunity claim."
         ],
         "missing_data_semantics": "unknown",
@@ -3752,6 +3769,7 @@
         "limitations": [
           "Trusted recipe wrapper; agent-authored plans should use relation_destination_entry.",
           "Requires an upstream relation episode set.",
+          "Lane outputs use the shared five-equal-lanes model on a 68m pitch: LEFT_WIDE [-34.0,-20.4), LEFT_HALF_SPACE [-20.4,-6.8), CENTRAL [-6.8,6.8], RIGHT_HALF_SPACE (6.8,20.4], RIGHT_WIDE (20.4,34.0], with mirror-symmetric boundaries and ties toward center (tie_epsilon_m=1e-9).",
           "No pass probability, optimality, decision-quality, intent, or missed-opportunity claim."
         ],
         "missing_data_semantics": "unknown",
@@ -6155,16 +6173,16 @@
   ],
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "3dd448463c9bbc97eee7968c8cb026ff74a8d1b0385b74b7fefa8a247c8dc037",
+    "baseline_artifact_revision": "11b623168f366f50ff9c3067f0886fe50c1154dddcec5be56e2e4b3f730d7109",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "789a16b2898685932043e849689d2e1a100d28547fa658d4ca7d5915605fd654",
+    "lock_hash": "593daf076f6219657d7a1201f7b22d400fe0fc85a6b9c7fd63b7701fde0942e4",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
     "registry_revision": "7be6e088dd7ecac39e065cf88380a6c1d25c1711ff0baf16dc0a545834dd2a63",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "1700c5931180b2bb238821b1c51b739ea1da15384e0c4207fabd3d0b89bc9bb0",
+    "runtime_manifest_revision": "16398890d6986644040e39465f1205666205550cc315d2d760fab6b4f33ea16f",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"

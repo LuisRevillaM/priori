@@ -48,3 +48,22 @@ consumers (wire into contracts at regeneration or drop); the two J03WR9
 historical episodes now classifying INVALID
 `destination_outside_declared_lane_geometry` instead of coerced-"wide" are
 the fail-honest direction and handled at acceptance.
+
+---
+
+# F1-D Acceptance Review — Round 2: ACCEPTED
+
+Reviewed 2026-07-02, commits `5e896bc` + `54b36d5`, merged as `9d77b69`.
+R1 verified (occupancy classifier routes through the shared model; edge±ε
+regression coverage added); R2 report amended with both missed gates and
+the frozen-expectation entry; R3 suite table regenerated on the committed
+tree (337 tests, the expected 6 failures, hero row 11 != 12 correctly
+attributed as a real lane ripple).
+
+Director acceptance actions: contracts regenerated (parity PASS, 0
+findings); attested-hero contract re-pinned 11 -> 12 with the full
+genealogy (14 -> 11 duration honesty, 11 -> 12 unified destination
+geometry) documented at the assertion; line-break-support-response
+expectation re-frozen (hash-class drift, content verified). Phase F1 is
+complete with this merge: every reproduced truth defect from the
+2026-07-01 foundation audit is closed.
