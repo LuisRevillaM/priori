@@ -1793,9 +1793,15 @@ runtime_bindings:
       - name: reception_search_seconds
         type: {container: Scalar, value: Scalar, unit: second}
         required: false
-        default: {payload_type: number, value: 6.0, unit: second}
+        default: {payload_type: number, value: 4.0, unit: second}
         minimum: 0.2
-        maximum: 15.0
+        maximum: 10.0
+      - name: max_release_alignment_ms
+        type: {container: Scalar, value: Scalar, unit: millisecond}
+        required: false
+        default: {payload_type: number, value: 250.0, unit: millisecond}
+        minimum: 0.0
+        maximum: 1000.0
       - name: control_distance_m
         type: {container: Scalar, value: Scalar, unit: metre}
         required: false
@@ -1817,12 +1823,13 @@ runtime_bindings:
       - name: event_type_filter
         type: {container: Scalar, value: Enum, unit: none}
         required: false
-        default: {payload_type: enum, value: any, unit: none}
-        allowed_values: [any, Play_Pass, ThrowIn_Play_Pass, GoalKick_Play_Pass]
+        default: {payload_type: enum, value: Play_Pass, unit: none}
+        allowed_values: [any, Play_Pass, ThrowIn_Play_Pass, FreeKick_Play_Pass, GoalKick_Play_Pass, KickOff_Play_Pass]
     parameter_bindings:
       release_search_before_seconds: release_search_before_seconds
       release_search_after_seconds: release_search_after_seconds
       reception_search_seconds: reception_search_seconds
+      max_release_alignment_ms: max_release_alignment_ms
       control_distance_m: control_distance_m
       nearest_teammate_margin_m: nearest_teammate_margin_m
       minimum_receiver_dwell_seconds: minimum_receiver_dwell_seconds
@@ -2367,10 +2374,23 @@ runtime_bindings:
         default: {payload_type: number, value: 0.56, unit: second}
         minimum: 0.04
         maximum: 2.0
+      - name: event_type_filter
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: Play_Pass, unit: none}
+        allowed_values: [any, Play_Pass, ThrowIn_Play_Pass, FreeKick_Play_Pass, GoalKick_Play_Pass, KickOff_Play_Pass]
+      - name: max_release_alignment_ms
+        type: {container: Scalar, value: Scalar, unit: millisecond}
+        required: false
+        default: {payload_type: number, value: 250.0, unit: millisecond}
+        minimum: 0.0
+        maximum: 1000.0
     parameter_bindings:
       relay_max_event_gap_seconds: relay_max_event_gap_seconds
       relay_touch_distance_m: relay_touch_distance_m
       maximum_relay_dwell_seconds: maximum_relay_dwell_seconds
+      event_type_filter: event_type_filter
+      max_release_alignment_ms: max_release_alignment_ms
     uncovered_runtime_outputs: [episodes]
 
   - id: binding.primitive.receiver_line_transition_during_pass_leg.0_1_0

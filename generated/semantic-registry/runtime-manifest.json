@@ -1265,15 +1265,29 @@
           "default": {
             "payload_type": "number",
             "unit": "second",
-            "value": 6.0
+            "value": 4.0
           },
           "description": "Maximum release-to-controlled-reception search window.",
-          "maximum": 15.0,
+          "maximum": 10.0,
           "minimum": 0.2,
           "name": "reception_search_seconds",
           "payload_type": "number",
           "required": false,
           "unit": "second"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "millisecond",
+            "value": 250.0
+          },
+          "description": "Maximum absolute event-to-tracking release-frame alignment offset.",
+          "maximum": 1000.0,
+          "minimum": 0.0,
+          "name": "max_release_alignment_ms",
+          "payload_type": "number",
+          "required": false,
+          "unit": "millisecond"
         },
         {
           "default": {
@@ -1322,12 +1336,14 @@
             "any",
             "Play_Pass",
             "ThrowIn_Play_Pass",
-            "GoalKick_Play_Pass"
+            "FreeKick_Play_Pass",
+            "GoalKick_Play_Pass",
+            "KickOff_Play_Pass"
           ],
           "default": {
             "payload_type": "enum",
             "unit": "none",
-            "value": "any"
+            "value": "Play_Pass"
           },
           "description": "Optional provider event-type filter for controlled-pass anchors.",
           "name": "event_type_filter",
@@ -3162,6 +3178,40 @@
         }
       ],
       "parameters": [
+        {
+          "allowed_values": [
+            "any",
+            "Play_Pass",
+            "ThrowIn_Play_Pass",
+            "FreeKick_Play_Pass",
+            "GoalKick_Play_Pass",
+            "KickOff_Play_Pass"
+          ],
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "Play_Pass"
+          },
+          "description": "Optional provider event-type filter for event-linked relay pass anchors.",
+          "name": "event_type_filter",
+          "payload_type": "enum",
+          "required": false,
+          "unit": "none"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "millisecond",
+            "value": 250.0
+          },
+          "description": "Maximum absolute event-to-tracking release-frame alignment offset.",
+          "maximum": 1000.0,
+          "minimum": 0.0,
+          "name": "max_release_alignment_ms",
+          "payload_type": "number",
+          "required": false,
+          "unit": "millisecond"
+        },
         {
           "default": {
             "payload_type": "number",
@@ -7959,6 +8009,6 @@
       "unit": "none"
     }
   ],
-  "runtime_manifest_revision": "b389812bf8876da2da6088d466dc52fc5216aef15d8b0a4ec6657aa18f74a43d",
+  "runtime_manifest_revision": "fbb046a565021b7619edef821673a4111c5ae6c3a7d7e8835df2304f30aadefe",
   "schema_version": "1.0"
 }

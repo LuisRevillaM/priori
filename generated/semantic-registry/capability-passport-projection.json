@@ -1,6 +1,6 @@
 {
   "passport_count": 44,
-  "passport_revision": "935b5fa1ffedbd2861bfb58c35901223482e43af9777d9a282b60f827173047c",
+  "passport_revision": "b04c258bfc87e269729fc24f02482cdc1b8d9dcc2e7caee952cd4ba397e7647f",
   "passports": [
     {
       "binding": {
@@ -3788,6 +3788,7 @@
         "parameter_bindings": {
           "control_distance_m": "control_distance_m",
           "event_type_filter": "event_type_filter",
+          "max_release_alignment_ms": "max_release_alignment_ms",
           "minimum_receiver_dwell_seconds": "minimum_receiver_dwell_seconds",
           "nearest_teammate_margin_m": "nearest_teammate_margin_m",
           "reception_search_seconds": "reception_search_seconds",
@@ -3837,10 +3838,10 @@
             "default": {
               "payload_type": "number",
               "unit": "second",
-              "value": 6.0
+              "value": 4.0
             },
             "description": "",
-            "maximum": 15.0,
+            "maximum": 10.0,
             "minimum": 0.2,
             "name": "reception_search_seconds",
             "required": false,
@@ -3849,6 +3850,25 @@
               "nullable": true,
               "temporal_basis": "canonical_frame_time",
               "unit": "second",
+              "value": "Scalar"
+            }
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "millisecond",
+              "value": 250.0
+            },
+            "description": "",
+            "maximum": 1000.0,
+            "minimum": 0.0,
+            "name": "max_release_alignment_ms",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "millisecond",
               "value": "Scalar"
             }
           },
@@ -3914,12 +3934,14 @@
               "any",
               "Play_Pass",
               "ThrowIn_Play_Pass",
-              "GoalKick_Play_Pass"
+              "FreeKick_Play_Pass",
+              "GoalKick_Play_Pass",
+              "KickOff_Play_Pass"
             ],
             "default": {
               "payload_type": "enum",
               "unit": "none",
-              "value": "any"
+              "value": "Play_Pass"
             },
             "description": "",
             "name": "event_type_filter",
@@ -4181,7 +4203,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "25a6fc801c036cb7165e1ad401530c7960ee88abf389c8a5481352c8396ff10c",
+      "passport_hash": "76d78b44d384bfb4146e7e3deab552e0050c0503e8d1fd1ae7256ce3d9f56488",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -4348,15 +4370,29 @@
             "default": {
               "payload_type": "number",
               "unit": "second",
-              "value": 6.0
+              "value": 4.0
             },
             "description": "Maximum release-to-controlled-reception search window.",
-            "maximum": 15.0,
+            "maximum": 10.0,
             "minimum": 0.2,
             "name": "reception_search_seconds",
             "payload_type": "number",
             "required": false,
             "unit": "second"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "millisecond",
+              "value": 250.0
+            },
+            "description": "Maximum absolute event-to-tracking release-frame alignment offset.",
+            "maximum": 1000.0,
+            "minimum": 0.0,
+            "name": "max_release_alignment_ms",
+            "payload_type": "number",
+            "required": false,
+            "unit": "millisecond"
           },
           {
             "default": {
@@ -4405,12 +4441,14 @@
               "any",
               "Play_Pass",
               "ThrowIn_Play_Pass",
-              "GoalKick_Play_Pass"
+              "FreeKick_Play_Pass",
+              "GoalKick_Play_Pass",
+              "KickOff_Play_Pass"
             ],
             "default": {
               "payload_type": "enum",
               "unit": "none",
-              "value": "any"
+              "value": "Play_Pass"
             },
             "description": "Optional provider event-type filter for controlled-pass anchors.",
             "name": "event_type_filter",
@@ -9887,6 +9925,8 @@
           }
         },
         "parameter_bindings": {
+          "event_type_filter": "event_type_filter",
+          "max_release_alignment_ms": "max_release_alignment_ms",
           "maximum_relay_dwell_seconds": "maximum_relay_dwell_seconds",
           "relay_max_event_gap_seconds": "relay_max_event_gap_seconds",
           "relay_touch_distance_m": "relay_touch_distance_m"
@@ -9946,6 +9986,50 @@
               "nullable": true,
               "temporal_basis": "canonical_frame_time",
               "unit": "second",
+              "value": "Scalar"
+            }
+          },
+          {
+            "allowed_values": [
+              "any",
+              "Play_Pass",
+              "ThrowIn_Play_Pass",
+              "FreeKick_Play_Pass",
+              "GoalKick_Play_Pass",
+              "KickOff_Play_Pass"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "Play_Pass"
+            },
+            "description": "",
+            "name": "event_type_filter",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
+            }
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "millisecond",
+              "value": 250.0
+            },
+            "description": "",
+            "maximum": 1000.0,
+            "minimum": 0.0,
+            "name": "max_release_alignment_ms",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "millisecond",
               "value": "Scalar"
             }
           }
@@ -10214,7 +10298,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "451a8e5cbd0dbabf21988938cfa41c9366c02a6ebf77225f7b6cf15a4d60cfcd",
+      "passport_hash": "f28aacfe8d52c8f35f473658c73ccb2ff556b6516db7df10f9838f1e0063013d",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -10313,6 +10397,40 @@
           }
         ],
         "parameters": [
+          {
+            "allowed_values": [
+              "any",
+              "Play_Pass",
+              "ThrowIn_Play_Pass",
+              "FreeKick_Play_Pass",
+              "GoalKick_Play_Pass",
+              "KickOff_Play_Pass"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "Play_Pass"
+            },
+            "description": "Optional provider event-type filter for event-linked relay pass anchors.",
+            "name": "event_type_filter",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "millisecond",
+              "value": 250.0
+            },
+            "description": "Maximum absolute event-to-tracking release-frame alignment offset.",
+            "maximum": 1000.0,
+            "minimum": 0.0,
+            "name": "max_release_alignment_ms",
+            "payload_type": "number",
+            "required": false,
+            "unit": "millisecond"
+          },
           {
             "default": {
               "payload_type": "number",
@@ -23782,16 +23900,16 @@
   "projection_id": "priori.capability_passport_projection.afl08",
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "4cd793f3d2f1e7c38c810e313c012da2c0cf8153c9b57a8be62633cb8fd8b01c",
+    "baseline_artifact_revision": "40e874bae356b1e2e878a92546c3d442993f34d229a6e2fba6a982c3bfd0a5ba",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "c795a975ca631364a5b03bfdcca20abbed26778c50c9beba14cea497bde14af2",
+    "lock_hash": "1e42709ec489fffa5db847eb7abd51ade7b1c9d0c7b0e7bdb06e1a5f624d0050",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "ed43de9479dd432da6981f9dee43ea7a92f9ec02f63d691af7c7b239e26e3283",
+    "registry_revision": "7be6e088dd7ecac39e065cf88380a6c1d25c1711ff0baf16dc0a545834dd2a63",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "b389812bf8876da2da6088d466dc52fc5216aef15d8b0a4ec6657aa18f74a43d",
+    "runtime_manifest_revision": "fbb046a565021b7619edef821673a4111c5ae6c3a7d7e8835df2304f30aadefe",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"

@@ -76,3 +76,30 @@ the shared helper's signature, disclosed in the report).
 
 Resubmit on the same `packet/f1-b` branch (append commits; do not rewrite
 history). Same fences as the original packet apply.
+
+---
+
+# F1-B Acceptance Review — Round 2: ACCEPTED (with director follow-ups)
+
+Reviewed 2026-07-02, commit `7cd77f4`, merged as `9d515ec`. All five round-1
+requirements verified empirically by an independent adversarial pass:
+executor-path/module-path parity for all `event_type_filter` values (default
+563 = 408/84/71; any = 639 = 453/102/84; ThrowIn = 41), plan-level alignment
+overrides live in both node functions, q6 probe substrate restored (17
+first-half throw-in anchors, honest zero preserved), executor fallback
+aligned to 4.0, and the sparse-release reorder keeps PASS positively
+evidenced without moving any J03WOY number.
+
+**Disclosure (review finding F1, director-ratified):** the shared parser
+default also narrowed `successful_pass` action anchors to Play_Pass —
+J03WOH firstHalf anchors 285 → 248 (−17 ThrowIn, −10 FreeKick, −9 GoalKick,
+−1 KickOff) — drifting the `afl-substrate-q3` gate, unreported in both
+rounds. The 13 q3 results were proven content-identical (frozen result_ids
+reproduce exactly under the frozen plan hash); the narrowing is ratified as
+the same G9 semantics applied consistently. Re-frozen in the acceptance
+commits alongside q6 and the four AFL-09A gates re-drifted by the new
+declared parameters.
+
+Non-blocking findings carried to the backlog: `candidate_evaluations_records`
+internal-signal naming (F2), empty-filter-tuple fail-open unreachable via
+binder (F3), tests touching private executor internals (F4).

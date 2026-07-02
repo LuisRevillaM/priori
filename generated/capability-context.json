@@ -1610,18 +1610,47 @@
                     "any",
                     "Play_Pass",
                     "ThrowIn_Play_Pass",
-                    "GoalKick_Play_Pass"
+                    "FreeKick_Play_Pass",
+                    "GoalKick_Play_Pass",
+                    "KickOff_Play_Pass"
                   ],
                   "default": {
                     "payload_type": "enum",
                     "unit": "none",
-                    "value": "any"
+                    "value": "Play_Pass"
                   },
                   "description": "Optional provider event-type filter for controlled-pass anchors.",
                   "name": "event_type_filter",
                   "payload_type": "enum",
                   "required": false,
                   "unit": "none"
+                }
+              },
+              "max_release_alignment_ms": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "number",
+                    "unit": "millisecond",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "millisecond",
+                    "value": 250.0
+                  },
+                  "description": "Maximum absolute event-to-tracking release-frame alignment offset.",
+                  "maximum": 1000.0,
+                  "minimum": 0.0,
+                  "name": "max_release_alignment_ms",
+                  "payload_type": "number",
+                  "required": false,
+                  "unit": "millisecond"
                 }
               },
               "minimum_receiver_dwell_seconds": {
@@ -1694,10 +1723,10 @@
                   "default": {
                     "payload_type": "number",
                     "unit": "second",
-                    "value": 6.0
+                    "value": 4.0
                   },
                   "description": "Maximum release-to-controlled-reception search window.",
-                  "maximum": 15.0,
+                  "maximum": 10.0,
                   "minimum": 0.2,
                   "name": "reception_search_seconds",
                   "payload_type": "number",
@@ -1871,6 +1900,7 @@
             "release_search_before_seconds",
             "release_search_after_seconds",
             "reception_search_seconds",
+            "max_release_alignment_ms",
             "control_distance_m",
             "nearest_teammate_margin_m",
             "minimum_receiver_dwell_seconds",
@@ -5105,6 +5135,66 @@
             "kind": "primitive",
             "node_id": "<agent_chosen_lower_snake_id>",
             "parameters": {
+              "event_type_filter": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "enum",
+                    "unit": "none",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "allowed_values": [
+                    "any",
+                    "Play_Pass",
+                    "ThrowIn_Play_Pass",
+                    "FreeKick_Play_Pass",
+                    "GoalKick_Play_Pass",
+                    "KickOff_Play_Pass"
+                  ],
+                  "default": {
+                    "payload_type": "enum",
+                    "unit": "none",
+                    "value": "Play_Pass"
+                  },
+                  "description": "Optional provider event-type filter for event-linked relay pass anchors.",
+                  "name": "event_type_filter",
+                  "payload_type": "enum",
+                  "required": false,
+                  "unit": "none"
+                }
+              },
+              "max_release_alignment_ms": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "number",
+                    "unit": "millisecond",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "millisecond",
+                    "value": 250.0
+                  },
+                  "description": "Maximum absolute event-to-tracking release-frame alignment offset.",
+                  "maximum": 1000.0,
+                  "minimum": 0.0,
+                  "name": "max_release_alignment_ms",
+                  "payload_type": "number",
+                  "required": false,
+                  "unit": "millisecond"
+                }
+              },
               "maximum_relay_dwell_seconds": {
                 "accepted_forms": [
                   {
@@ -5262,6 +5352,8 @@
             "one_touch_relay_status"
           ],
           "valid_parameter_names": [
+            "event_type_filter",
+            "max_release_alignment_ms",
             "relay_max_event_gap_seconds",
             "relay_touch_distance_m",
             "maximum_relay_dwell_seconds"
@@ -17317,15 +17409,29 @@
           "default": {
             "payload_type": "number",
             "unit": "second",
-            "value": 6.0
+            "value": 4.0
           },
           "description": "Maximum release-to-controlled-reception search window.",
-          "maximum": 15.0,
+          "maximum": 10.0,
           "minimum": 0.2,
           "name": "reception_search_seconds",
           "payload_type": "number",
           "required": false,
           "unit": "second"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "millisecond",
+            "value": 250.0
+          },
+          "description": "Maximum absolute event-to-tracking release-frame alignment offset.",
+          "maximum": 1000.0,
+          "minimum": 0.0,
+          "name": "max_release_alignment_ms",
+          "payload_type": "number",
+          "required": false,
+          "unit": "millisecond"
         },
         {
           "default": {
@@ -17374,12 +17480,14 @@
             "any",
             "Play_Pass",
             "ThrowIn_Play_Pass",
-            "GoalKick_Play_Pass"
+            "FreeKick_Play_Pass",
+            "GoalKick_Play_Pass",
+            "KickOff_Play_Pass"
           ],
           "default": {
             "payload_type": "enum",
             "unit": "none",
-            "value": "any"
+            "value": "Play_Pass"
           },
           "description": "Optional provider event-type filter for controlled-pass anchors.",
           "name": "event_type_filter",
@@ -17480,6 +17588,40 @@
         }
       ],
       "parameters": [
+        {
+          "allowed_values": [
+            "any",
+            "Play_Pass",
+            "ThrowIn_Play_Pass",
+            "FreeKick_Play_Pass",
+            "GoalKick_Play_Pass",
+            "KickOff_Play_Pass"
+          ],
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "Play_Pass"
+          },
+          "description": "Optional provider event-type filter for event-linked relay pass anchors.",
+          "name": "event_type_filter",
+          "payload_type": "enum",
+          "required": false,
+          "unit": "none"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "millisecond",
+            "value": 250.0
+          },
+          "description": "Maximum absolute event-to-tracking release-frame alignment offset.",
+          "maximum": 1000.0,
+          "minimum": 0.0,
+          "name": "max_release_alignment_ms",
+          "payload_type": "number",
+          "required": false,
+          "unit": "millisecond"
+        },
         {
           "default": {
             "payload_type": "number",

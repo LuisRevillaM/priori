@@ -1109,15 +1109,29 @@
             "default": {
               "payload_type": "number",
               "unit": "second",
-              "value": 6.0
+              "value": 4.0
             },
             "description": "Maximum release-to-controlled-reception search window.",
-            "maximum": 15.0,
+            "maximum": 10.0,
             "minimum": 0.2,
             "name": "reception_search_seconds",
             "payload_type": "number",
             "required": false,
             "unit": "second"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "millisecond",
+              "value": 250.0
+            },
+            "description": "Maximum absolute event-to-tracking release-frame alignment offset.",
+            "maximum": 1000.0,
+            "minimum": 0.0,
+            "name": "max_release_alignment_ms",
+            "payload_type": "number",
+            "required": false,
+            "unit": "millisecond"
           },
           {
             "default": {
@@ -1166,12 +1180,14 @@
               "any",
               "Play_Pass",
               "ThrowIn_Play_Pass",
-              "GoalKick_Play_Pass"
+              "FreeKick_Play_Pass",
+              "GoalKick_Play_Pass",
+              "KickOff_Play_Pass"
             ],
             "default": {
               "payload_type": "enum",
               "unit": "none",
-              "value": "any"
+              "value": "Play_Pass"
             },
             "description": "Optional provider event-type filter for controlled-pass anchors.",
             "name": "event_type_filter",
@@ -2364,6 +2380,40 @@
           }
         ],
         "parameters": [
+          {
+            "allowed_values": [
+              "any",
+              "Play_Pass",
+              "ThrowIn_Play_Pass",
+              "FreeKick_Play_Pass",
+              "GoalKick_Play_Pass",
+              "KickOff_Play_Pass"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "Play_Pass"
+            },
+            "description": "Optional provider event-type filter for event-linked relay pass anchors.",
+            "name": "event_type_filter",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "millisecond",
+              "value": 250.0
+            },
+            "description": "Maximum absolute event-to-tracking release-frame alignment offset.",
+            "maximum": 1000.0,
+            "minimum": 0.0,
+            "name": "max_release_alignment_ms",
+            "payload_type": "number",
+            "required": false,
+            "unit": "millisecond"
+          },
           {
             "default": {
               "payload_type": "number",
@@ -6081,16 +6131,16 @@
   ],
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "4cd793f3d2f1e7c38c810e313c012da2c0cf8153c9b57a8be62633cb8fd8b01c",
+    "baseline_artifact_revision": "40e874bae356b1e2e878a92546c3d442993f34d229a6e2fba6a982c3bfd0a5ba",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "c795a975ca631364a5b03bfdcca20abbed26778c50c9beba14cea497bde14af2",
+    "lock_hash": "1e42709ec489fffa5db847eb7abd51ade7b1c9d0c7b0e7bdb06e1a5f624d0050",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "ed43de9479dd432da6981f9dee43ea7a92f9ec02f63d691af7c7b239e26e3283",
+    "registry_revision": "7be6e088dd7ecac39e065cf88380a6c1d25c1711ff0baf16dc0a545834dd2a63",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "b389812bf8876da2da6088d466dc52fc5216aef15d8b0a4ec6657aa18f74a43d",
+    "runtime_manifest_revision": "fbb046a565021b7619edef821673a4111c5ae6c3a7d7e8835df2304f30aadefe",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"
