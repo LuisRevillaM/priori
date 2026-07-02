@@ -49,14 +49,18 @@
     },
     {
       "details": {
-        "AFL_PROTECTED_SUITE_HASH_present": false,
-        "self_verified_expected": true
+        "finding_categories": [
+          "not_running_under_protected_ci",
+          "protected_suite_hash_missing",
+          "signing_key_missing"
+        ],
+        "simulated_suite_hash_deleted": true
       },
       "name": "deleted_hidden_suite_blocks_promotion",
       "status": "PASS"
     }
   ],
-  "generated_at": "2026-06-24T04:17:46Z",
+  "generated_at": "2026-07-02T03:27:41Z",
   "schema_version": "1.0",
   "status": "PASS"
 }

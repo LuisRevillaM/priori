@@ -465,14 +465,16 @@ def run_canaries(write: bool = True) -> dict[str, Any]:
         )
     )
 
-    protected_suite_available = bool(os.environ.get("AFL_PROTECTED_SUITE_HASH"))
+    simulated_inputs = protected_inputs()
+    simulated_inputs["protected_suite_hash"] = ""
+    simulated_categories = {item.category for item in identity_findings(simulated_inputs)}
     canaries.append(
         canary_result(
             "deleted_hidden_suite_blocks_promotion",
-            not protected_suite_available,
+            "protected_suite_hash_missing" in simulated_categories,
             {
-                "self_verified_expected": True,
-                "AFL_PROTECTED_SUITE_HASH_present": protected_suite_available,
+                "simulated_suite_hash_deleted": True,
+                "finding_categories": sorted(simulated_categories),
             },
         )
     )
@@ -495,6 +497,38 @@ def protected_inputs() -> dict[str, Any]:
         "protected_suite_hash": os.environ.get("AFL_PROTECTED_SUITE_HASH", ""),
         "signing_key_present": bool(os.environ.get("AFL_GATE_SIGNING_KEY")),
     }
+
+
+def identity_findings(inputs: dict[str, Any]) -> list[GateFinding]:
+    """Findings that block promotion when the protected gate identity is incomplete.
+
+    Shared by the real gate evaluation and the deleted-hidden-suite canary so the
+    canary exercises the same code path it guards.
+    """
+    findings: list[GateFinding] = []
+    if inputs["protection_level"] != "PROTECTED_CI":
+        findings.append(
+            GateFinding(
+                "protected_boundary",
+                "not_running_under_protected_ci",
+                "critical",
+                "AFL_GATE_PROTECTION_LEVEL",
+            )
+        )
+    if not inputs["protected_suite_hash"]:
+        findings.append(
+            GateFinding(
+                "protected_suite",
+                "protected_suite_hash_missing",
+                "critical",
+                "AFL_PROTECTED_SUITE_HASH",
+            )
+        )
+    if not inputs["signing_key_present"]:
+        findings.append(
+            GateFinding("promotion_signature", "signing_key_missing", "critical", "AFL_GATE_SIGNING_KEY")
+        )
+    return findings
 
 
 def build_gate_result(candidate_root: Path, public_report: dict[str, Any], canary_report: dict[str, Any]) -> dict[str, Any]:
@@ -522,28 +556,7 @@ def build_gate_result(candidate_root: Path, public_report: dict[str, Any], canar
         findings.append(
             GateFinding("review_packet", "required_artifacts_missing", "critical", ",".join(missing))
         )
-    if inputs["protection_level"] != "PROTECTED_CI":
-        findings.append(
-            GateFinding(
-                "protected_boundary",
-                "not_running_under_protected_ci",
-                "critical",
-                "AFL_GATE_PROTECTION_LEVEL",
-            )
-        )
-    if not inputs["protected_suite_hash"]:
-        findings.append(
-            GateFinding(
-                "protected_suite",
-                "protected_suite_hash_missing",
-                "critical",
-                "AFL_PROTECTED_SUITE_HASH",
-            )
-        )
-    if not inputs["signing_key_present"]:
-        findings.append(
-            GateFinding("promotion_signature", "signing_key_missing", "critical", "AFL_GATE_SIGNING_KEY")
-        )
+    findings.extend(identity_findings(inputs))
 
     result = "PROMOTED" if not findings else "BLOCKED"
     gate_runner_hash = file_sha256(Path(__file__))
