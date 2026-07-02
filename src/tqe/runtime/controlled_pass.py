@@ -345,18 +345,6 @@ def detect_physical_release(event: dict[str, Any], context: PeriodControlContext
             release_player_xy=None,
             release_ball_distance_m=None,
         )
-    missing_count = sum(1 for state in states if state.missing)
-    if states and (missing_count / len(states)) > context.config.max_missing_frame_ratio:
-        return ReleaseDetection(
-            status="UNKNOWN",
-            reason="missing_tracking",
-            event_anchor_frame_id=int(event_anchor_frame_id),
-            physical_release_frame_id=None,
-            event_to_release_offset_ms=None,
-            release_ball_xy=None,
-            release_player_xy=None,
-            release_ball_distance_m=None,
-        )
     transitions: list[FrameControlState] = []
     for index, state in enumerate(states):
         if state.missing or not state.controls or state.distance_m is None:
@@ -373,6 +361,18 @@ def detect_physical_release(event: dict[str, Any], context: PeriodControlContext
             continue
         transitions.append(state)
     if not transitions:
+        missing_count = sum(1 for state in states if state.missing)
+        if states and (missing_count / len(states)) > context.config.max_missing_frame_ratio:
+            return ReleaseDetection(
+                status="UNKNOWN",
+                reason="missing_tracking",
+                event_anchor_frame_id=int(event_anchor_frame_id),
+                physical_release_frame_id=None,
+                event_to_release_offset_ms=None,
+                release_ball_xy=None,
+                release_player_xy=None,
+                release_ball_distance_m=None,
+            )
         if any(state.controls for state in states):
             reason = "unique_release_transition_not_found"
             status = "UNKNOWN"

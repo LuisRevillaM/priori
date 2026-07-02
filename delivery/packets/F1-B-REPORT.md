@@ -516,3 +516,150 @@ pre-existing unrelated untracked file:
 
 No tracked frozen expectations, semantic projections, delivery evidence, or
 artifacts were modified by this packet.
+
+## Round 2 review response
+
+Review source: `delivery/packets/F1-B-REVIEW.md` on frontier commit `4125c20`.
+
+The round 1 behavioral fixes were accepted at the football/module level, but
+the packet was rejected at the executor boundary. Round 2 fixes the boundary:
+
+- `controlled_pass_episode` executor wiring now passes the bound
+  `event_type_filter`, `max_release_alignment_ms`, and
+  `reception_search_seconds` into `ControlledPassConfig`.
+- The executor no longer performs a second exact-match event-type post-filter
+  after the controlled-pass module has already applied the declared filter.
+- The executor fallback for `reception_search_seconds` is now `4.0`, matching
+  the catalog and module default.
+- `one_touch_relay_episode` executor wiring now passes the bound
+  `event_type_filter` and `max_release_alignment_ms` into
+  `OneTouchRelayConfig`.
+- `action_event_anchor` now requests `ThrowIn_Play_Pass` explicitly when its
+  action type is `throw_in_successful_pass`; otherwise the shared pass parser's
+  new `Play_Pass` default silently filtered out throw-in action anchors.
+- Release-side sparse tracking now fails closed only when no physical release
+  transition was positively observed. A proven release transition is not
+  downgraded to UNKNOWN by unrelated sparse frames elsewhere in the search
+  window.
+
+### Executor-path parameter checks
+
+Added coverage in `tests/test_controlled_pass_honesty.py`:
+
+- executor `event_type_filter="any"` restores the widened J03WOY candidate
+  distribution:
+
+```text
+Candidates: 639
+PASS:       453
+FAIL:       102
+UNKNOWN:     84
+```
+
+- executor `event_type_filter="ThrowIn_Play_Pass"` restores J03WOY throw-in
+  candidates:
+
+```text
+Candidates: 41
+PASS:       27
+FAIL:       10
+UNKNOWN:     4
+```
+
+- controlled-pass executor config spy confirms:
+
+```text
+event_type_filter=("any",)
+max_release_alignment_ms=375.0
+reception_search_seconds=4.0
+```
+
+- one-touch executor config spy confirms:
+
+```text
+event_type_filter=("FreeKick_Play_Pass",)
+max_release_alignment_ms=375.0
+```
+
+Implementation note: two widened `any` J03WOY candidates are
+`KickOff_Play_Pass` alignment UNKNOWNs with no anchor frame. They are preserved
+in the executor's internal `candidate_evaluations_records` for audit/testing,
+but cannot become emitted anchor records because there is no frame to anchor.
+
+### Q6 gate restoration
+
+`make afl-substrate-q6-verify` was run after the executor fixes.
+
+Functional checks are restored:
+
+```text
+generic_execution:                 true
+q6_compiles_end_to_end:             true
+requested_evidence_complete:        true
+throw_in_action_clause_exercised:   true
+slice_4_velocity_exercised:         true
+slice_5_pressure_exercised:         true
+result_or_honest_zero:              true
+execution.status:                   pass
+result_count:                       0
+result_mode:                        HONEST_ZERO
+requested_evidence_failure_count:   0
+```
+
+First-period probe:
+
+```text
+match_id:              J03WOH
+period:                firstHalf
+throw_in_action_count: 17
+throw_in_pass_count:   17
+velocity_count:        17
+pressure_count:        17
+line_transition_count: 17
+```
+
+The make target still exits nonzero because the validation factory reports the
+expected frozen expectation drift:
+
+```text
+bound_plan_hash:
+  expected 78069091c494a36415e390a68d7d6ee55d62436c3dbac259427d48d6d533f352
+  actual   3f1fe004bc16bb029f82635a80f26c2a2e8865de4ec7d1490d943fb1c36c81b5
+```
+
+No frozen expectations were refreshed in this packet.
+
+### Round 2 verification commands
+
+```text
+PYTHONPATH=src .venv/bin/python -m unittest tests.test_controlled_pass_honesty
+```
+
+Result:
+
+```text
+Ran 18 tests in 31.798s
+OK
+```
+
+```text
+PYTHONPATH=src .venv/bin/python -m unittest \
+  tests.test_m2a_controlled_pass \
+  tests.test_m2a_pass_bypass \
+  tests.test_m2a_high_bypass_pass \
+  tests.test_one_touch_pass_chain
+```
+
+Result:
+
+```text
+Ran 26 tests in 80.654s
+OK
+```
+
+```text
+make afl-substrate-q6-verify
+```
+
+Result: FAIL only for expected frozen expectation drift; all q6 functional
+checks are true and the probe substrate is restored.

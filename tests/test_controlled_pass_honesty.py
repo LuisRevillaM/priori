@@ -1,11 +1,17 @@
 import json
 import unittest
+from collections import Counter
 from datetime import timedelta
+from pathlib import Path
+from unittest.mock import patch
 
+import numpy as np
 import pandas as pd
 
+from tqe.runtime.binder import bind_document
 from tqe.runtime.controlled_pass import (
     ControlledPassConfig,
+    ControlledPassOutput,
     PeriodControlContext,
     ReleaseDetection,
     align_event_to_frame,
@@ -14,7 +20,18 @@ from tqe.runtime.controlled_pass import (
     detect_physical_release,
     evaluate_candidate,
 )
-from tqe.runtime.one_touch import OneTouchRelayConfig, adjacent_event_linked_passes
+from tqe.runtime.executor import (
+    PeriodState,
+    RuntimeParameters,
+    TacticalQueryExecutor,
+    primitive_controlled_pass_episode,
+    primitive_one_touch_relay_episode,
+    runtime_parameters,
+)
+from tqe.runtime.ir import TacticalQueryDocument
+from tqe.runtime.one_touch import OneTouchRelayConfig, OneTouchRelayOutput, adjacent_event_linked_passes
+
+from tests.support.canonical_data import requires_canonical_data
 
 
 class ControlledPassHonestyTest(unittest.TestCase):
@@ -130,6 +147,53 @@ class ControlledPassHonestyTest(unittest.TestCase):
         self.assertEqual("PASS", release.status)
         self.assertEqual(0, release.physical_release_frame_id)
 
+    def test_observed_release_transition_survives_sparse_search_window(self) -> None:
+        ball = {0: (0.0, 0.0), **{frame_id: (4.0, 0.0) for frame_id in range(1, 50)}}
+        players = {
+            "passer": {
+                frame_id: ("home", 0.0, 0.0)
+                for frame_id in range(50)
+                if frame_id not in {20, 30}
+            }
+        }
+        context = fixture_context(
+            frame_count=50,
+            ball=ball,
+            players=players,
+            config=ControlledPassConfig(
+                release_search_before_seconds=0.0,
+                release_search_after_seconds=1.96,
+                departure_frames=1,
+                max_missing_frame_ratio=0.02,
+            ),
+        )
+
+        release = detect_physical_release(fixture_event(), context)
+
+        self.assertEqual("PASS", release.status)
+        self.assertEqual(0, release.physical_release_frame_id)
+
+    def test_truncated_reception_window_with_contradiction_stays_fail(self) -> None:
+        ball = {frame_id: (5.0, 0.0) for frame_id in range(10)}
+        players = {
+            "receiver": {frame_id: ("home", 20.0, 0.0) for frame_id in range(10)},
+            "opponent": {frame_id: ("away", 5.0, 0.0) for frame_id in range(8, 10)},
+        }
+        context = fixture_context(
+            frame_count=10,
+            ball=ball,
+            players=players,
+            config=ControlledPassConfig(
+                reception_search_seconds=0.4,
+                minimum_receiver_dwell_seconds=0.08,
+            ),
+        )
+
+        reception = detect_controlled_reception(fixture_event(), context, release_at(7))
+
+        self.assertEqual("FAIL", reception.status)
+        self.assertEqual("possession_definitively_broke", reception.reason)
+
     def test_default_event_filter_excludes_restart_passes_from_denominator(self) -> None:
         rows = candidate_pass_events(
             pd.DataFrame(
@@ -212,6 +276,97 @@ class ControlledPassHonestyTest(unittest.TestCase):
 
         self.assertEqual("UNKNOWN", evaluation["release_detection_status"])
         self.assertEqual("release_frame_alignment_failed", evaluation["release_detection_reason"])
+
+
+@requires_canonical_data
+class ControlledPassExecutorParameterTest(unittest.TestCase):
+    def test_executor_any_filter_restores_widened_distribution(self) -> None:
+        records = executor_controlled_pass_candidate_records("any")
+
+        self.assertEqual(639, len(records))
+        self.assertEqual(
+            {"PASS": 453, "FAIL": 102, "UNKNOWN": 84},
+            dict(Counter(str(record["controlled_pass_status"]) for record in records)),
+        )
+        self.assertEqual(
+            {
+                "Play_Pass": 563,
+                "ThrowIn_Play_Pass": 41,
+                "FreeKick_Play_Pass": 17,
+                "GoalKick_Play_Pass": 12,
+                "KickOff_Play_Pass": 6,
+            },
+            dict(Counter(str(record["event_type"]) for record in records)),
+        )
+
+    def test_executor_throw_in_filter_restores_throw_in_candidates(self) -> None:
+        records = executor_controlled_pass_candidate_records("ThrowIn_Play_Pass")
+
+        self.assertEqual(41, len(records))
+        self.assertEqual({"ThrowIn_Play_Pass"}, {str(record["event_type"]) for record in records})
+        self.assertEqual({"PASS": 27, "FAIL": 10, "UNKNOWN": 4}, dict(Counter(str(record["controlled_pass_status"]) for record in records)))
+
+    def test_executor_passes_declared_controlled_pass_config(self) -> None:
+        node = bound_probe_node(
+            controlled_pass_probe_document(
+                "any",
+                max_release_alignment_ms=375.0,
+                reception_search_seconds=4.0,
+            )
+        )
+        captured: dict[str, ControlledPassConfig] = {}
+
+        def fake_evaluate_controlled_passes(**kwargs: object) -> ControlledPassOutput:
+            captured["config"] = kwargs["config"]  # type: ignore[assignment]
+            return ControlledPassOutput(
+                schema_version="m2a.controlled_pass_episode.v1",
+                capability="controlled_pass_episode",
+                capability_version="0.1.0",
+                status="pass",
+                accepted_scope={},
+                config={},
+                summary={},
+                episodes=[],
+                anchor_evaluations=[],
+                non_match_examples=[],
+            )
+
+        with patch("tqe.runtime.executor.evaluate_controlled_passes", side_effect=fake_evaluate_controlled_passes):
+            primitive_controlled_pass_episode(fake_period_state(), node)
+
+        self.assertEqual(("any",), captured["config"].event_type_filter)
+        self.assertEqual(375.0, captured["config"].max_release_alignment_ms)
+        self.assertEqual(4.0, captured["config"].reception_search_seconds)
+
+    def test_executor_passes_declared_one_touch_config(self) -> None:
+        node = bound_probe_node(
+            one_touch_probe_document(
+                "FreeKick_Play_Pass",
+                max_release_alignment_ms=375.0,
+            )
+        )
+        captured: dict[str, OneTouchRelayConfig] = {}
+
+        def fake_evaluate_one_touch_relays(**kwargs: object) -> OneTouchRelayOutput:
+            captured["config"] = kwargs["config"]  # type: ignore[assignment]
+            return OneTouchRelayOutput(
+                schema_version="afl08.one_touch_relay_episode.v1",
+                capability="one_touch_relay_episode",
+                capability_version="0.1.0",
+                status="pass",
+                accepted_scope={},
+                config={},
+                summary={},
+                anchor_evaluations=[],
+                episodes=[],
+                non_match_examples=[],
+            )
+
+        with patch("tqe.runtime.executor.evaluate_one_touch_relays", side_effect=fake_evaluate_one_touch_relays):
+            primitive_one_touch_relay_episode(fake_period_state(), node)
+
+        self.assertEqual(("FreeKick_Play_Pass",), captured["config"].event_type_filter)
+        self.assertEqual(375.0, captured["config"].max_release_alignment_ms)
 
 
 def fixture_context(
@@ -326,6 +481,170 @@ def event_row(
             }
         ),
     }
+
+
+def executor_controlled_pass_candidate_records(event_type_filter: str) -> list[dict[str, object]]:
+    bound = bind_document(TacticalQueryDocument.model_validate(controlled_pass_probe_document(event_type_filter)))
+    params = runtime_parameters(bound)
+    executor = TacticalQueryExecutor(enable_node_cache=False)
+    records: list[dict[str, object]] = []
+    for period in bound.periods:
+        state = executor._execute_period(
+            bound_plan=bound,
+            match_id="J03WOY",
+            period=period,
+            params=params,
+        )
+        records.extend(state.signals["controlled"]["candidate_evaluations_records"])
+    return records
+
+
+def bound_probe_node(payload: dict[str, object]):
+    bound = bind_document(TacticalQueryDocument.model_validate(payload))
+    return bound.nodes[0]
+
+
+def controlled_pass_probe_document(
+    event_type_filter: str,
+    *,
+    max_release_alignment_ms: float | None = None,
+    reception_search_seconds: float | None = None,
+) -> dict[str, object]:
+    parameters: dict[str, dict[str, object]] = {
+        "event_type_filter": {"payload_type": "enum", "unit": "none", "value": event_type_filter},
+    }
+    if max_release_alignment_ms is not None:
+        parameters["max_release_alignment_ms"] = {
+            "payload_type": "number",
+            "unit": "millisecond",
+            "value": max_release_alignment_ms,
+        }
+    if reception_search_seconds is not None:
+        parameters["reception_search_seconds"] = {
+            "payload_type": "number",
+            "unit": "second",
+            "value": reception_search_seconds,
+        }
+    return single_primitive_probe_document(
+        catalog_ref="controlled_pass_episode",
+        node_id="controlled",
+        status_output="controlled_pass_status",
+        anchor_output="anchors",
+        parameters=parameters,
+    )
+
+
+def one_touch_probe_document(
+    event_type_filter: str,
+    *,
+    max_release_alignment_ms: float | None = None,
+) -> dict[str, object]:
+    parameters: dict[str, dict[str, object]] = {
+        "event_type_filter": {"payload_type": "enum", "unit": "none", "value": event_type_filter},
+    }
+    if max_release_alignment_ms is not None:
+        parameters["max_release_alignment_ms"] = {
+            "payload_type": "number",
+            "unit": "millisecond",
+            "value": max_release_alignment_ms,
+        }
+    return single_primitive_probe_document(
+        catalog_ref="one_touch_relay_episode",
+        node_id="relay",
+        status_output="one_touch_relay_status",
+        anchor_output="anchor_evaluations",
+        parameters=parameters,
+    )
+
+
+def single_primitive_probe_document(
+    *,
+    catalog_ref: str,
+    node_id: str,
+    status_output: str,
+    anchor_output: str,
+    parameters: dict[str, dict[str, object]],
+) -> dict[str, object]:
+    return {
+        "schema_version": "1.0",
+        "recipe": {
+            "schema_version": "1.0",
+            "recipe_id": "executor_parameter_probe_v1",
+            "recipe_version": "0.0.0-test",
+            "display_name": "Executor Parameter Probe",
+            "description": "Test-only executor parameter probe.",
+            "default_unknown_evidence_policy": "include_with_warning",
+            "allowed_claims": [],
+            "disallowed_claims": [],
+            "limitations": [],
+            "output_classifications": ["STATUS_PASS"],
+            "parameters": [],
+        },
+        "default_invocation": {
+            "schema_version": "1.0",
+            "invocation_id": "executor_parameter_probe",
+            "match_ids": ["J03WOY"],
+            "periods": ["firstHalf", "secondHalf"],
+            "perspective_team_role": "home",
+            "parameters": {},
+            "max_results": 100,
+            "execution_mode": "execute",
+        },
+        "draft_plan": {
+            "schema_version": "1.0",
+            "plan_id": "executor_parameter_probe",
+            "plan_version": "0.0.0-test",
+            "recipe_id": "executor_parameter_probe_v1",
+            "recipe_version": "0.0.0-test",
+            "status": "experimental",
+            "unknown_evidence_policy": "include_with_warning",
+            "classification_mode": "partial_declared",
+            "nodes": [
+                {
+                    "kind": "primitive",
+                    "node_id": node_id,
+                    "catalog_ref": catalog_ref,
+                    "version": "0.1.0",
+                    "parameters": parameters,
+                },
+                {
+                    "kind": "predicate",
+                    "node_id": "status_pass",
+                    "input": {"source_node_id": node_id, "output_name": status_output},
+                    "operator": {"name": "eq", "version": "1.0.0"},
+                    "compare": {"payload_type": "enum", "unit": "none", "value": "PASS"},
+                },
+            ],
+            "classification_rules": [
+                {"label": "STATUS_PASS", "predicate_ids": ["status_pass"], "description": "Status is PASS."}
+            ],
+            "anchor_source": {"source_node_id": node_id, "output_name": anchor_output},
+            "requested_evidence": [],
+        },
+    }
+
+
+def fake_period_state() -> PeriodState:
+    return PeriodState(
+        match_id="J03WOY",
+        period="firstHalf",
+        params=RuntimeParameters(values={}),
+        recipe_id="executor_parameter_probe_v1",
+        recipe_version="0.0.0-test",
+        perspective_team_role="home",
+        perspective_team_id="home",
+        defending_team_role="away",
+        defending_team_id="away",
+        canonical_root=Path("data/canonical/v1"),
+        raw_tracking=Path("data/raw"),
+        positions=pd.DataFrame(),
+        frame_ids=np.array([], dtype=int),
+        ball_y=np.array([], dtype=float),
+        possession_role=np.array([], dtype=object),
+        ball_alive=np.array([], dtype=bool),
+        defender_count=pd.Series(dtype=int),
+        defender_centroid_y=pd.Series(dtype=float),
+    )
 
 
 if __name__ == "__main__":
