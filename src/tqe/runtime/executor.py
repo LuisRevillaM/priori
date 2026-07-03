@@ -785,7 +785,7 @@ def file_content_hash(path: Path, *, schema_version: str) -> str:
 
 def shared_catalog_node_cache_key(state: PeriodState, node: BoundCatalogNode, node_cache_key: str) -> str:
     manifest_hash = getattr(state, "canonical_data_manifest_hash", None)
-    if manifest_hash is None:
+    if not manifest_hash:
         manifest_hash = canonical_data_manifest_hash(state.canonical_root)
     return stable_hash(
         {
@@ -1141,7 +1141,6 @@ def project_requested_evidence_from_runtime(
             anchor=anchor,
             bound_plan=bound_plan,
             source_node_id=request.source.source_node_id,
-            output_name=request.source.output_name,
         )
         projected[key] = evidence_value_for_anchor(
             runtime_value=runtime_value,
@@ -1187,7 +1186,6 @@ def selected_relation_id_for_anchor(
     state: PeriodState,
     anchor: RuntimeAnchor,
     source_node_id: str | None = None,
-    output_name: str | None = None,
 ) -> str | None:
     if source_node_id is None:
         return None
@@ -1206,13 +1204,12 @@ def selected_relation_id_for_evidence_request(
     anchor: RuntimeAnchor,
     bound_plan: BoundQueryPlan,
     source_node_id: str | None = None,
-    output_name: str | None = None,
 ) -> str | None:
+    del bound_plan
     return selected_relation_id_for_anchor(
         state=state,
         anchor=anchor,
         source_node_id=source_node_id,
-        output_name=output_name,
     )
 
 

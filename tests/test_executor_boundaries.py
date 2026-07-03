@@ -147,7 +147,6 @@ class ExecutorRegistryBoundaryTests(unittest.TestCase):
                 state=state,
                 anchor=anchor,
                 source_node_id="progressive_corridor",
-                output_name="episodes",
             )
         )
 
@@ -220,6 +219,7 @@ class ExecutorRegistryBoundaryTests(unittest.TestCase):
                 perspective_team_role="home",
                 defending_team_role="away",
                 params=SimpleNamespace(values={}),
+                canonical_data_manifest_hash="",
             )
             first = executor.shared_catalog_node_cache_key(state, node, "node-cache-key")
             (root / "manifest.json").write_text('{"version": 2}\n', encoding="utf-8")
