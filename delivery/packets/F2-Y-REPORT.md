@@ -1,30 +1,152 @@
-# F2-Y Report — Round 2
+# F2-Y Report - Round 2
 
-Branch: `packet/f2-y`  
-Base round-1 implementation tip: `467a5b3`  
-Review packet: `delivery/packets/F2-Y-REVIEW.md`  
+Branch: `packet/f2-y`
+Round-1 implementation tip: `467a5b3`
+Review packet: `delivery/packets/F2-Y-REVIEW.md`
 Push: no push, per direct-channel protocol.
 
-## Round-2 Scope
+## Scope
 
-Review outcome: round 1 rejected. T5, T6, V8, and V9(a-c) were verified excellent and are intentionally untouched. Round 2 addresses:
+Round 1 was rejected only for the review findings below. T5, T6, V8, and
+V9(a-c) remain untouched.
 
-- R1: commit this report from the first round-2 commit and keep it updated.
-- R2: redo T7 so UNKNOWN requires coverage evidence; observed non-satisfaction remains FAIL; escalate rather than silently choosing if plain episode sets are indistinguishable.
-- R3: record `_predicate_status` disposition with proof.
-- R4: hygiene (`output_name` dead parameter, manifest hash empty-string guard, count-field/multiplicity note).
-
-## Implementation Ledger
-
-| Step | Status | Evidence |
+| Review item | Status | Evidence |
 | --- | --- | --- |
-| R1 report first commit | IN_PROGRESS | This file is the first round-2 artifact and will be updated per item. |
-| R2 T7 redo | PENDING | Not started. |
-| R3 `_predicate_status` disposition | PENDING | Not started. |
-| R4 hygiene | PENDING | Not started. |
-| Verification | PENDING | Not started. |
+| R1 report first commit | PASS | `6b0a901` created this report before code changes, per L1. |
+| R2 T7 truth contract | PASS | `be9f43f` restores observed episode non-match to FAIL, preserves explicit UNKNOWN, and leaves coverage-evidenced frame-signal gaps as UNKNOWN. |
+| R3 `_predicate_status` disposition | PASS | Not retired. It remains live in the legacy witness chain; see disposition below. |
+| R4 hygiene | PASS | `c145d19` removes the dead witness `output_name` parameter, hardens empty-string manifest hashing, and records the count-field/multiplicity caveat. |
 
-## Verification Table
+## Commits
 
-Pending.
+| Commit | Purpose |
+| --- | --- |
+| `6b0a901` | Start F2-Y round 2 report. |
+| `be9f43f` | Correct episode trace UNKNOWN contract. |
+| `c145d19` | Clean up witness and cache boundary hygiene. |
 
+## R2 - T7 Contract
+
+The rejected round-1 branch made plain episode non-match UNKNOWN via a
+fabricated `episode_trace_anchor_uncovered` reason. That made FAIL unreachable
+for list-backed episode predicates and wiped out existing reachable rows.
+
+Round 2 changes only the T7 branch:
+
+- Frame-signal missing anchor remains UNKNOWN with coverage evidence:
+  `anchor_frame_missing_from_predicate_signal`.
+- Explicit temporal UNKNOWN inside a matched episode remains UNKNOWN.
+- Explicit temporal FAIL inside a matched episode remains FAIL.
+- Plain episode-set non-match is FAIL.
+- Temporal episode-set non-match is FAIL unless a matched episode explicitly
+  carries UNKNOWN.
+
+No escalation hook was added because the list-backed non-match branch has no
+coverage evidence to justify UNKNOWN. The implementation fails closed to
+observed non-satisfaction there; coverage-evidenced UNKNOWN still exists only
+where the runtime has actual coverage evidence.
+
+Targeted unit coverage:
+
+- `test_episode_trace_plain_episode_non_match_is_fail`
+- `test_episode_trace_temporal_unknown_remains_unknown`
+- `test_episode_trace_explicit_temporal_fail_remains_fail`
+- `test_episode_trace_temporal_records_no_match_is_fail`
+
+## Corpus Delta
+
+The legacy row removals remain visible, but their mechanism is now the
+authorized one: frame-signal predicate coverage gaps, not fabricated episode
+trace gaps.
+
+| Probe | Prior reference | Round-2 committed tree | Attribution |
+| --- | ---: | ---: | --- |
+| `execute_default_plan` legacy rows | 180 rows / 900 PASS traces | 0 rows / 180 UNKNOWN traces | All sampled traces are `not_stoppage` UNKNOWN with `anchor_frame_missing_from_predicate_signal`. |
+| `opposite_corridor_after_shift` generic rows | 9 rows | 0 rows / 792 UNKNOWN traces | Coverage-evidenced frame-signal gaps: `not_stoppage` 313, `destination_region_entered` 313, `has_opposite_corridor` 166. |
+| `opposite_corridor_after_shift` legacy profile | 32 rows | 32 rows, traces `PASS:50`, `FAIL:14` | FAIL remains reachable; classifications remain `DESTINATION_ENTERED:18`, `CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY:14`. |
+
+Representative evidence for the row wipeout:
+
+```text
+trace_source: not_stoppage.predicate
+anchor_frame_id: 11580
+reason: anchor_frame_missing_from_predicate_signal
+```
+
+## R3 - `_predicate_status` Disposition
+
+`_predicate_status` was not removed. It is still a live side channel for the
+legacy parity chain, not a quarantine-only artifact.
+
+Current consumers/writers:
+
+- `src/tqe/runtime/executor.py` writes candidate predicate status in
+  `record_candidate_predicate`.
+- `src/tqe/runtime/capabilities/teamshape_family.py` copies
+  `_predicate_status` from source episodes into derived candidates.
+- `src/tqe/runtime/capabilities/possession_family.py` carries candidate
+  `_predicate_status` into possession-family results.
+- `src/tqe/runtime/legacy_m1.py` writes and consumes `_predicate_status` for
+  legacy M1 parity.
+
+Disposition: leave standing. Retiring it would be a behavior change outside
+this round-two review fix.
+
+## R4 - Hygiene
+
+- Removed the dead `output_name` parameter from the selected-relation witness
+  helper path. The wrapper still accepts the bound plan for API shape but
+  deletes it immediately because the helper no longer needs it.
+- Changed `shared_catalog_node_cache_key` to treat an empty manifest hash
+  string like a missing hash and recompute from canonical data. A regression
+  test now sets `canonical_data_manifest_hash=""` to cover the guard.
+- Count-field/multiplicity caveat: the current V9 complexity enforcement
+  treats declared numeric count fields such as `relation_count` and
+  `opponents_bypassed_count` as relation-multiplicity signals. That remains
+  intentionally reported as a future limits review item, not fixed here.
+
+## Verification
+
+Commands were run on the committed tree after `c145d19`.
+
+| Check | Result | Notes |
+| --- | --- | --- |
+| `PYTHONPATH=src .venv/bin/python -m unittest tests.test_predicate_truth_series` | PASS | 11 tests. |
+| `PYTHONPATH=src .venv/bin/python -m unittest tests.test_executor_boundaries` | PASS | 14 tests. |
+| `git diff --check` | PASS | No whitespace errors. |
+| `make PYTHON=.venv/bin/python test` | FAIL | 369 tests, 9 failures. Failures are frozen/generated drift from the intentional tri-state behavior and generated artifact locks fenced for director handling. |
+
+Full-suite failures observed:
+
+- `test_m1_1_binder.M11BinderTests.test_generated_artifacts_are_current`
+- `test_m1_1_runtime.M11RuntimeTests.test_runtime_selected_results_match_frozen_baseline`
+- `test_m1_1_runtime.M11RuntimeTests.test_plan_path_helper_defaults_to_generic_execution`
+- `test_m1_1_runtime.M11RuntimeTests.test_max_results_is_honored_deterministically`
+- `test_m1_1_runtime.M11RuntimeTests.test_runtime_emits_full_predicate_traces_for_results`
+- `test_m1_1_runtime.M11RuntimeTests.test_geometric_progressive_corridor_relation_has_real_episode_breadth`
+- `test_scp0_semantic_registry.SCP0SemanticRegistryTests.test_checked_in_lock_and_parity_report_match_fresh_regeneration`
+- `test_verifier_write_mode.CheckModeIsReadOnlyTests.test_scp0_verifier_check_mode_leaves_tracked_files_untouched`
+- `test_workbench_beta0_contract.WorkbenchBeta0ContractTests.test_attested_novel_composition_requires_verified_plan_hash`
+
+## Pinned Gates
+
+| Gate | Result | Attribution |
+| --- | --- | --- |
+| `n1d1-verify` | PASS | Attestation verified; no blocking reasons. |
+| `afl-substrate-q4-verify` | FAIL | Runtime execution still PASS with 2 results and 0 evidence failures; frozen `bound_plan_hash`, `result_ids`, and `result_signature_hash` drift. |
+| `afl-substrate-q6-verify` | FAIL | Runtime execution still PASS honest-zero with 0 evidence failures; frozen `bound_plan_hash` drift. |
+| `afl-line-break-support-response-verify` | FAIL | Runtime execution still PASS with 1 result and 0 evidence failures; frozen `bound_plan_hash`, `result_ids`, and `result_signature_hash` drift. |
+| `afl-lane-occupancy-verify` | PASS | Verification report PASS; lane occupancy unit suite passed. |
+| `afl-09a-verify` | FAIL | Bootstrap factory gate reports Q4/Q8 drift from dependent frozen gates. |
+| `scp-0-verify` | PASS | Verification report PASS; no findings. |
+| `afl-passport-verify` | FAIL | Stored capability passport projection and registry lock drift against freshly generated projection. |
+
+Generated artifacts, semantic registry locks, frozen expectations, delivery
+attestations, and artifacts remain fenced. They were not regenerated or
+re-pinned in this packet.
+
+## Working Tree
+
+Tracked files are clean after the report commit. The unrelated untracked file
+`docs/visual-explainers/tactical-compilation-concept.png` was present before
+this round and was not touched.
