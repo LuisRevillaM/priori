@@ -187,6 +187,10 @@ class NodeExecutionResult:
     provenance: dict[str, Any] = field(default_factory=dict)
 
 
+class UndeclaredNodeParameterError(RuntimeError):
+    """Raised when an implementation reads a parameter absent from the bound node."""
+
+
 @dataclass(frozen=True)
 class TemporalPredicateResult:
     episodes: list[dict[str, Any]]
@@ -2217,10 +2221,10 @@ def primitive_possession_segment(state: PeriodState, node: BoundCatalogNode) -> 
 
 
 def primitive_transition_anchor(state: PeriodState, node: BoundCatalogNode) -> None:
-    transition_type = node_parameter_text(node, "transition_type", "regain")
-    minimum_prior_possession_seconds = node_parameter_number(node, "minimum_prior_possession_seconds", 0.4)
-    zone_filter = node_parameter_text(node, "zone_filter", "any")
-    zone_boundary_buffer_m = node_parameter_number(node, "zone_boundary_buffer_m", 0.5)
+    transition_type = node_parameter_text(node, "transition_type")
+    minimum_prior_possession_seconds = node_parameter_number(node, "minimum_prior_possession_seconds")
+    zone_filter = node_parameter_text(node, "zone_filter")
+    zone_boundary_buffer_m = node_parameter_number(node, "zone_boundary_buffer_m")
     if transition_type not in {"regain", "loss"}:
         raise RuntimeError(f"Unsupported transition_type {transition_type}")
     if zone_filter not in {"any", "own_half", "attacking_half", "middle_third", "final_third", "defensive_third"}:
@@ -2324,9 +2328,9 @@ def primitive_transition_anchor(state: PeriodState, node: BoundCatalogNode) -> N
 def primitive_structured_zone(state: PeriodState, node: BoundCatalogNode) -> None:
     anchor_value = catalog_input_value(state, node, "anchors")
     anchors = runtime_records(anchor_value)
-    frame_field = node_parameter_text(node, "frame_field", "anchor_frame_id")
-    zone_name = node_parameter_text(node, "zone_name", "own_half")
-    zone_boundary_buffer_m = node_parameter_number(node, "zone_boundary_buffer_m", 0.5)
+    frame_field = node_parameter_text(node, "frame_field")
+    zone_name = node_parameter_text(node, "zone_name")
+    zone_boundary_buffer_m = node_parameter_number(node, "zone_boundary_buffer_m")
     orientation = parquet_rows(state.canonical_root / "orientation.parquet")
     attack_x_sign = attack_x_sign_for(
         orientation,
@@ -2384,14 +2388,14 @@ def primitive_structured_zone(state: PeriodState, node: BoundCatalogNode) -> Non
 def primitive_space_region_generation(state: PeriodState, node: BoundCatalogNode) -> None:
     anchor_value = catalog_input_value(state, node, "anchors")
     anchors = runtime_records(anchor_value)
-    frame_field = node_parameter_text(node, "frame_field", "anchor_frame_id")
-    zone_scope = node_parameter_text(node, "zone_scope", "any")
-    grid_step_m = node_parameter_number(node, "grid_step_m", 8.0)
-    minimum_opponent_distance_m = node_parameter_number(node, "minimum_opponent_distance_m", 8.0)
-    minimum_teammate_distance_m = node_parameter_number(node, "minimum_teammate_distance_m", 4.0)
-    minimum_open_points = node_parameter_integer(node, "minimum_open_points", 1)
-    maximum_candidate_points = node_parameter_integer(node, "maximum_candidate_points", 5)
-    minimum_observed_players_per_team = node_parameter_integer(node, "minimum_observed_players_per_team", 6)
+    frame_field = node_parameter_text(node, "frame_field")
+    zone_scope = node_parameter_text(node, "zone_scope")
+    grid_step_m = node_parameter_number(node, "grid_step_m")
+    minimum_opponent_distance_m = node_parameter_number(node, "minimum_opponent_distance_m")
+    minimum_teammate_distance_m = node_parameter_number(node, "minimum_teammate_distance_m")
+    minimum_open_points = node_parameter_integer(node, "minimum_open_points")
+    maximum_candidate_points = node_parameter_integer(node, "maximum_candidate_points")
+    minimum_observed_players_per_team = node_parameter_integer(node, "minimum_observed_players_per_team")
     records = [
         space_region_generation_anchor_record(
             state=state,
@@ -2457,10 +2461,10 @@ def primitive_space_region_generation(state: PeriodState, node: BoundCatalogNode
 def primitive_outcome_window(state: PeriodState, node: BoundCatalogNode) -> None:
     anchor_value = catalog_input_value(state, node, "anchors")
     anchors = runtime_records(anchor_value)
-    maximum_window_seconds = node_parameter_number(node, "maximum_window_seconds", 8.0)
-    minimum_settled_possession_seconds = node_parameter_number(node, "minimum_settled_possession_seconds", 4.0)
-    required_anchor_status_field = node_parameter_text(node, "required_anchor_status_field", "transition_status")
-    required_anchor_status_value = node_parameter_text(node, "required_anchor_status_value", "PASS")
+    maximum_window_seconds = node_parameter_number(node, "maximum_window_seconds")
+    minimum_settled_possession_seconds = node_parameter_number(node, "minimum_settled_possession_seconds")
+    required_anchor_status_field = node_parameter_text(node, "required_anchor_status_field")
+    required_anchor_status_value = node_parameter_text(node, "required_anchor_status_value")
     records = [
         outcome_window_anchor_record(
             state=state,
@@ -2938,7 +2942,7 @@ def analysis_frame_index(state: PeriodState) -> dict[int, int]:
 
 
 def primitive_action_event_anchor(state: PeriodState, node: BoundCatalogNode) -> None:
-    action_type = node_parameter_text(node, "action_type", "successful_pass")
+    action_type = node_parameter_text(node, "action_type")
     events = parquet_rows(
         state.canonical_root / "events" / f"match_id={state.match_id}.parquet",
         EVENT_COLUMNS,
@@ -3010,7 +3014,7 @@ def primitive_action_event_anchor(state: PeriodState, node: BoundCatalogNode) ->
 
 
 def primitive_set_piece_structure(state: PeriodState, node: BoundCatalogNode) -> None:
-    minimum_observed = node_parameter_integer(node, "minimum_observed_outfield_players", 6)
+    minimum_observed = node_parameter_integer(node, "minimum_observed_outfield_players")
     events = parquet_rows(
         state.canonical_root / "events" / f"match_id={state.match_id}.parquet",
         EVENT_COLUMNS,
@@ -3233,8 +3237,8 @@ def set_piece_team_shape_summary(
 def primitive_action_chain(state: PeriodState, node: BoundCatalogNode) -> None:
     action_value = catalog_input_value(state, node, "actions")
     actions = runtime_records(action_value)
-    max_gap_seconds = node_parameter_number(node, "maximum_action_gap_seconds", 5.0)
-    chain_length = int(round(node_parameter_number(node, "chain_length", 2)))
+    max_gap_seconds = node_parameter_number(node, "maximum_action_gap_seconds")
+    chain_length = int(round(node_parameter_number(node, "chain_length")))
     if chain_length != 2:
         raise RuntimeError("action_chain v0.1 supports chain_length=2")
     records: list[dict[str, Any]] = []
@@ -3321,11 +3325,11 @@ def primitive_team_compactness(state: PeriodState, node: BoundCatalogNode) -> No
     anchors = anchor_value.value
     if not isinstance(anchors, list):
         raise RuntimeError(f"{node.node_id} requires anchor records")
-    frame_field = node_parameter_text(node, "frame_field", "anchor_frame_id")
-    player_scope = node_parameter_text(node, "player_scope", "defending_outfield")
-    maximum_team_width_m = node_parameter_number(node, "maximum_team_width_m", 45.0)
-    maximum_team_depth_m = node_parameter_number(node, "maximum_team_depth_m", 35.0)
-    minimum_observed_players = node_parameter_integer(node, "minimum_observed_players", 8)
+    frame_field = node_parameter_text(node, "frame_field")
+    player_scope = node_parameter_text(node, "player_scope")
+    maximum_team_width_m = node_parameter_number(node, "maximum_team_width_m")
+    maximum_team_depth_m = node_parameter_number(node, "maximum_team_depth_m")
+    minimum_observed_players = node_parameter_integer(node, "minimum_observed_players")
     if player_scope not in {"defending_outfield", "perspective_outfield"}:
         raise RuntimeError(f"Unsupported team_compactness player_scope {player_scope}")
     records = [
@@ -3438,10 +3442,10 @@ def primitive_switch_of_play(state: PeriodState, node: BoundCatalogNode) -> None
     anchors = anchor_value.value
     if not isinstance(anchors, list):
         raise RuntimeError(f"{node.node_id} requires anchor records")
-    minimum_lateral_displacement_m = node_parameter_number(node, "minimum_lateral_displacement_m", 25.0)
-    minimum_start_lateral_m = node_parameter_number(node, "minimum_start_lateral_m", 12.0)
-    minimum_end_lateral_m = node_parameter_number(node, "minimum_end_lateral_m", 12.0)
-    maximum_duration_seconds = node_parameter_number(node, "maximum_duration_seconds", 8.0)
+    minimum_lateral_displacement_m = node_parameter_number(node, "minimum_lateral_displacement_m")
+    minimum_start_lateral_m = node_parameter_number(node, "minimum_start_lateral_m")
+    minimum_end_lateral_m = node_parameter_number(node, "minimum_end_lateral_m")
+    maximum_duration_seconds = node_parameter_number(node, "maximum_duration_seconds")
     records = [
         switch_of_play_anchor_record(
             state=state,
@@ -3563,14 +3567,14 @@ def primitive_change_across_anchor(state: PeriodState, node: BoundCatalogNode) -
         raise RuntimeError(f"{node.node_id} requires anchor records")
     before_records = records_by_anchor_id(runtime_records(before_value))
     after_records = records_by_anchor_id(runtime_records(after_value))
-    before_value_field = node_parameter_text(node, "before_value_field", "line_compactness_m")
-    after_value_field = node_parameter_text(node, "after_value_field", "line_compactness_m")
-    before_status_field = node_parameter_text(node, "before_status_field", "line_status")
-    after_status_field = node_parameter_text(node, "after_status_field", "line_status")
-    required_status_value = node_parameter_text(node, "required_status_value", "PASS")
-    change_mode = node_parameter_text(node, "change_mode", "increase_at_least")
-    minimum_change_m = node_parameter_number(node, "minimum_change_m", 4.0)
-    maximum_before_value_m = node_parameter_number(node, "maximum_before_value_m", 12.0)
+    before_value_field = node_parameter_text(node, "before_value_field")
+    after_value_field = node_parameter_text(node, "after_value_field")
+    before_status_field = node_parameter_text(node, "before_status_field")
+    after_status_field = node_parameter_text(node, "after_status_field")
+    required_status_value = node_parameter_text(node, "required_status_value")
+    change_mode = node_parameter_text(node, "change_mode")
+    minimum_change_m = node_parameter_number(node, "minimum_change_m")
+    maximum_before_value_m = node_parameter_number(node, "maximum_before_value_m")
     records = [
         change_across_anchor_record(
             state=state,
@@ -3687,7 +3691,7 @@ def change_across_anchor_record(
 
 def primitive_tracking_quality(state: PeriodState, node: BoundCatalogNode) -> None:
     anchor_value = catalog_input_value(state, node, "anchors")
-    frame_field = node_parameter_text(node, "frame_field", "anchor_frame_id")
+    frame_field = node_parameter_text(node, "frame_field")
     records = [
         tracking_quality_anchor_record(state=state, anchor=record, frame_field=frame_field)
         for record in runtime_records(anchor_value)
@@ -3714,10 +3718,10 @@ def primitive_tracking_quality(state: PeriodState, node: BoundCatalogNode) -> No
 
 def primitive_pairwise_distance(state: PeriodState, node: BoundCatalogNode) -> None:
     anchor_value = catalog_input_value(state, node, "anchors")
-    frame_field = node_parameter_text(node, "frame_field", "anchor_frame_id")
-    entity_a_field = node_parameter_text(node, "entity_a_field", "receiver_id")
-    entity_b_field = node_parameter_text(node, "entity_b_field", "ball")
-    maximum_distance_m = node_parameter_number(node, "maximum_distance_m", 10.0)
+    frame_field = node_parameter_text(node, "frame_field")
+    entity_a_field = node_parameter_text(node, "entity_a_field")
+    entity_b_field = node_parameter_text(node, "entity_b_field")
+    maximum_distance_m = node_parameter_number(node, "maximum_distance_m")
     records = [
         pairwise_distance_anchor_record(
             state=state,
@@ -3759,11 +3763,11 @@ def primitive_pairwise_distance(state: PeriodState, node: BoundCatalogNode) -> N
 
 def primitive_marking(state: PeriodState, node: BoundCatalogNode) -> None:
     anchor_value = catalog_input_value(state, node, "anchors")
-    frame_field = node_parameter_text(node, "frame_field", "anchor_frame_id")
-    target_player_id_field = node_parameter_text(node, "target_player_id_field", "receiver_id")
-    candidate_scope = node_parameter_text(node, "candidate_scope", "opposition_outfield_to_anchor_team")
-    maximum_marking_distance_m = node_parameter_number(node, "maximum_marking_distance_m", 3.0)
-    minimum_observed_marker_candidates = node_parameter_integer(node, "minimum_observed_marker_candidates", 6)
+    frame_field = node_parameter_text(node, "frame_field")
+    target_player_id_field = node_parameter_text(node, "target_player_id_field")
+    candidate_scope = node_parameter_text(node, "candidate_scope")
+    maximum_marking_distance_m = node_parameter_number(node, "maximum_marking_distance_m")
+    minimum_observed_marker_candidates = node_parameter_integer(node, "minimum_observed_marker_candidates")
     records = [
         marking_anchor_record(
             state=state,
@@ -3819,13 +3823,13 @@ def primitive_marking(state: PeriodState, node: BoundCatalogNode) -> None:
 
 def primitive_cover_shadow(state: PeriodState, node: BoundCatalogNode) -> None:
     anchor_value = catalog_input_value(state, node, "anchors")
-    frame_field = node_parameter_text(node, "frame_field", "anchor_frame_id")
-    target_entity_field = node_parameter_text(node, "target_entity_field", "receiver_id")
-    candidate_scope = node_parameter_text(node, "candidate_scope", "opposition_outfield_to_anchor_team")
-    maximum_lane_distance_m = node_parameter_number(node, "maximum_lane_distance_m", 2.0)
-    minimum_projection_fraction = node_parameter_number(node, "minimum_projection_fraction", 0.05)
-    minimum_lane_length_m = node_parameter_number(node, "minimum_lane_length_m", 5.0)
-    minimum_observed_defenders = node_parameter_integer(node, "minimum_observed_defenders", 6)
+    frame_field = node_parameter_text(node, "frame_field")
+    target_entity_field = node_parameter_text(node, "target_entity_field")
+    candidate_scope = node_parameter_text(node, "candidate_scope")
+    maximum_lane_distance_m = node_parameter_number(node, "maximum_lane_distance_m")
+    minimum_projection_fraction = node_parameter_number(node, "minimum_projection_fraction")
+    minimum_lane_length_m = node_parameter_number(node, "minimum_lane_length_m")
+    minimum_observed_defenders = node_parameter_integer(node, "minimum_observed_defenders")
     records = [
         cover_shadow_anchor_record(
             state=state,
@@ -3889,9 +3893,9 @@ def primitive_cover_shadow(state: PeriodState, node: BoundCatalogNode) -> None:
 
 def primitive_velocity(state: PeriodState, node: BoundCatalogNode) -> None:
     anchor_value = catalog_input_value(state, node, "anchors")
-    frame_field = node_parameter_text(node, "frame_field", "anchor_frame_id")
-    entity_id_field = node_parameter_text(node, "entity_id_field", "receiver_id")
-    lookback_seconds = node_parameter_number(node, "lookback_seconds", 0.4)
+    frame_field = node_parameter_text(node, "frame_field")
+    entity_id_field = node_parameter_text(node, "entity_id_field")
+    lookback_seconds = node_parameter_number(node, "lookback_seconds")
     records = [
         velocity_anchor_record(
             state=state,
@@ -3932,13 +3936,13 @@ def primitive_velocity(state: PeriodState, node: BoundCatalogNode) -> None:
 
 def primitive_acceleration(state: PeriodState, node: BoundCatalogNode) -> None:
     anchor_value = catalog_input_value(state, node, "anchors")
-    frame_field = node_parameter_text(node, "frame_field", "anchor_frame_id")
-    entity_id_field = node_parameter_text(node, "entity_id_field", "receiver_id")
-    lookback_seconds = node_parameter_number(node, "lookback_seconds", 0.4)
-    minimum_abs_delta_speed_mps = node_parameter_number(node, "minimum_abs_delta_speed_mps", 0.4)
-    minimum_abs_acceleration_mps2 = node_parameter_number(node, "minimum_abs_acceleration_mps2", 0.75)
-    maximum_player_speed_mps = node_parameter_number(node, "maximum_player_speed_mps", 10.0)
-    maximum_abs_acceleration_mps2 = node_parameter_number(node, "maximum_abs_acceleration_mps2", 12.0)
+    frame_field = node_parameter_text(node, "frame_field")
+    entity_id_field = node_parameter_text(node, "entity_id_field")
+    lookback_seconds = node_parameter_number(node, "lookback_seconds")
+    minimum_abs_delta_speed_mps = node_parameter_number(node, "minimum_abs_delta_speed_mps")
+    minimum_abs_acceleration_mps2 = node_parameter_number(node, "minimum_abs_acceleration_mps2")
+    maximum_player_speed_mps = node_parameter_number(node, "maximum_player_speed_mps")
+    maximum_abs_acceleration_mps2 = node_parameter_number(node, "maximum_abs_acceleration_mps2")
     records = [
         acceleration_anchor_record(
             state=state,
@@ -3996,14 +4000,14 @@ def primitive_acceleration(state: PeriodState, node: BoundCatalogNode) -> None:
 
 def primitive_off_ball_run(state: PeriodState, node: BoundCatalogNode) -> None:
     anchor_value = catalog_input_value(state, node, "anchors")
-    frame_field = node_parameter_text(node, "frame_field", "anchor_frame_id")
-    candidate_scope = node_parameter_text(node, "candidate_scope", "same_team_outfield_as_anchor")
-    lookahead_seconds = node_parameter_number(node, "lookahead_seconds", 1.2)
-    minimum_run_displacement_m = node_parameter_number(node, "minimum_run_displacement_m", 4.0)
-    minimum_run_speed_mps = node_parameter_number(node, "minimum_run_speed_mps", 3.0)
-    minimum_ball_distance_m = node_parameter_number(node, "minimum_ball_distance_m", 5.0)
-    minimum_observed_candidates = node_parameter_integer(node, "minimum_observed_candidates", 6)
-    maximum_missing_candidate_ratio = node_parameter_number(node, "maximum_missing_candidate_ratio", 0.35)
+    frame_field = node_parameter_text(node, "frame_field")
+    candidate_scope = node_parameter_text(node, "candidate_scope")
+    lookahead_seconds = node_parameter_number(node, "lookahead_seconds")
+    minimum_run_displacement_m = node_parameter_number(node, "minimum_run_displacement_m")
+    minimum_run_speed_mps = node_parameter_number(node, "minimum_run_speed_mps")
+    minimum_ball_distance_m = node_parameter_number(node, "minimum_ball_distance_m")
+    minimum_observed_candidates = node_parameter_integer(node, "minimum_observed_candidates")
+    maximum_missing_candidate_ratio = node_parameter_number(node, "maximum_missing_candidate_ratio")
     records = [
         off_ball_run_anchor_record(
             state=state,
@@ -4050,9 +4054,9 @@ def primitive_off_ball_run(state: PeriodState, node: BoundCatalogNode) -> None:
 
 def primitive_off_ball_run_type(state: PeriodState, node: BoundCatalogNode) -> None:
     run_value = catalog_input_value(state, node, "runs")
-    minimum_forward_progression_m = node_parameter_number(node, "minimum_forward_progression_m", 4.0)
-    minimum_lateral_displacement_m = node_parameter_number(node, "minimum_lateral_displacement_m", 2.0)
-    minimum_observed_defenders = node_parameter_integer(node, "minimum_observed_defenders", 6)
+    minimum_forward_progression_m = node_parameter_number(node, "minimum_forward_progression_m")
+    minimum_lateral_displacement_m = node_parameter_number(node, "minimum_lateral_displacement_m")
+    minimum_observed_defenders = node_parameter_integer(node, "minimum_observed_defenders")
     records = [
         off_ball_run_type_anchor_record(
             state=state,
@@ -4110,15 +4114,15 @@ def primitive_off_ball_run_type(state: PeriodState, node: BoundCatalogNode) -> N
 
 def primitive_time_to_arrival(state: PeriodState, node: BoundCatalogNode) -> None:
     anchor_value = catalog_input_value(state, node, "anchors")
-    frame_field = node_parameter_text(node, "frame_field", "anchor_frame_id")
-    target_mode = node_parameter_text(node, "target_mode", "entity")
-    target_entity_field = node_parameter_text(node, "target_entity_field", "receiver_id")
-    target_x_field = node_parameter_text(node, "target_x_field", "reception_ball_x_m")
-    target_y_field = node_parameter_text(node, "target_y_field", "reception_ball_y_m")
-    candidate_scope = node_parameter_text(node, "candidate_scope", "defending_outfield")
-    maximum_arrival_seconds = node_parameter_number(node, "maximum_arrival_seconds", 2.0)
-    maximum_player_speed_mps = node_parameter_number(node, "maximum_player_speed_mps", 7.0)
-    minimum_observed_candidates = node_parameter_integer(node, "minimum_observed_candidates", 1)
+    frame_field = node_parameter_text(node, "frame_field")
+    target_mode = node_parameter_text(node, "target_mode")
+    target_entity_field = node_parameter_text(node, "target_entity_field")
+    target_x_field = node_parameter_text(node, "target_x_field")
+    target_y_field = node_parameter_text(node, "target_y_field")
+    candidate_scope = node_parameter_text(node, "candidate_scope")
+    maximum_arrival_seconds = node_parameter_number(node, "maximum_arrival_seconds")
+    maximum_player_speed_mps = node_parameter_number(node, "maximum_player_speed_mps")
+    minimum_observed_candidates = node_parameter_integer(node, "minimum_observed_candidates")
     records = [
         time_to_arrival_anchor_record(
             state=state,
@@ -4168,13 +4172,13 @@ def primitive_controlled_pass_episode(state: PeriodState, node: BoundCatalogNode
     event_type_filter = node_parameter_event_type_filter(node)
     config = ControlledPassConfig(
         event_type_filter=event_type_filter,
-        max_release_alignment_ms=node_parameter_number(node, "max_release_alignment_ms", 250.0),
-        release_search_before_seconds=node_parameter_number(node, "release_search_before_seconds", 1.0),
-        release_search_after_seconds=node_parameter_number(node, "release_search_after_seconds", 3.0),
-        reception_search_seconds=node_parameter_number(node, "reception_search_seconds", 4.0),
-        control_distance_m=node_parameter_number(node, "control_distance_m", 2.5),
-        nearest_teammate_margin_m=node_parameter_number(node, "nearest_teammate_margin_m", 1.0),
-        minimum_receiver_dwell_seconds=node_parameter_number(node, "minimum_receiver_dwell_seconds", 0.24),
+        max_release_alignment_ms=node_parameter_number(node, "max_release_alignment_ms"),
+        release_search_before_seconds=node_parameter_number(node, "release_search_before_seconds"),
+        release_search_after_seconds=node_parameter_number(node, "release_search_after_seconds"),
+        reception_search_seconds=node_parameter_number(node, "reception_search_seconds"),
+        control_distance_m=node_parameter_number(node, "control_distance_m"),
+        nearest_teammate_margin_m=node_parameter_number(node, "nearest_teammate_margin_m"),
+        minimum_receiver_dwell_seconds=node_parameter_number(node, "minimum_receiver_dwell_seconds"),
     )
     output = evaluate_controlled_passes(
         canonical_root=state.canonical_root,
@@ -5534,18 +5538,17 @@ def primitive_carry_episode(state: PeriodState, node: BoundCatalogNode) -> None:
                 state.period,
                 str(start_pass.get("team_role") or state.perspective_team_role),
             ),
-            maximum_carry_seconds=node_parameter_number(node, "maximum_carry_seconds", 10.0),
-            minimum_displacement_m=node_parameter_number(node, "minimum_displacement_m", 3.0),
-            control_distance_m=node_parameter_number(node, "control_distance_m", 2.5),
-            nearest_teammate_margin_m=node_parameter_number(node, "nearest_teammate_margin_m", 1.0),
+            maximum_carry_seconds=node_parameter_number(node, "maximum_carry_seconds"),
+            minimum_displacement_m=node_parameter_number(node, "minimum_displacement_m"),
+            control_distance_m=node_parameter_number(node, "control_distance_m"),
+            nearest_teammate_margin_m=node_parameter_number(node, "nearest_teammate_margin_m"),
             maximum_ball_player_speed_delta_mps=node_parameter_number(
                 node,
-                "maximum_ball_player_speed_delta_mps",
-                10.0,
+                "maximum_ball_player_speed_delta_mps"
             ),
-            minimum_controlled_frame_ratio=node_parameter_number(node, "minimum_controlled_frame_ratio", 1.0),
-            minimum_comoving_frame_ratio=node_parameter_number(node, "minimum_comoving_frame_ratio", 0.75),
-            maximum_missing_frame_ratio=node_parameter_number(node, "maximum_missing_frame_ratio", 0.02),
+            minimum_controlled_frame_ratio=node_parameter_number(node, "minimum_controlled_frame_ratio"),
+            minimum_comoving_frame_ratio=node_parameter_number(node, "minimum_comoving_frame_ratio"),
+            maximum_missing_frame_ratio=node_parameter_number(node, "maximum_missing_frame_ratio"),
         )
         for start_pass in pass_records
     ]
@@ -5591,17 +5594,17 @@ def primitive_carry_episode(state: PeriodState, node: BoundCatalogNode) -> None:
 def primitive_join_episode_sets(state: PeriodState, node: BoundCatalogNode) -> None:
     left_records = runtime_records(catalog_input_value(state, node, "left_episodes"))
     right_records = runtime_records(catalog_input_value(state, node, "right_episodes"))
-    left_key_field = node_parameter_text(node, "left_key_field", "anchor_id")
-    right_key_field = node_parameter_text(node, "right_key_field", "anchor_id")
-    left_status_field = node_parameter_text(node, "left_status_field", "none")
-    right_status_field = node_parameter_text(node, "right_status_field", "none")
-    required_status_value = node_parameter_text(node, "required_status_value", "PASS")
-    temporal_relation = node_parameter_text(node, "temporal_relation", "none")
-    left_time_field = node_parameter_text(node, "left_time_field", "anchor_frame_id")
-    right_time_field = node_parameter_text(node, "right_time_field", "anchor_frame_id")
-    maximum_gap_seconds = node_parameter_number(node, "maximum_gap_seconds", 999.0)
-    distinct_entity_fields = node_parameter_text(node, "distinct_entity_fields", "none")
-    same_entity_fields = node_parameter_text(node, "same_entity_fields", "none")
+    left_key_field = node_parameter_text(node, "left_key_field")
+    right_key_field = node_parameter_text(node, "right_key_field")
+    left_status_field = node_parameter_text(node, "left_status_field")
+    right_status_field = node_parameter_text(node, "right_status_field")
+    required_status_value = node_parameter_text(node, "required_status_value")
+    temporal_relation = node_parameter_text(node, "temporal_relation")
+    left_time_field = node_parameter_text(node, "left_time_field")
+    right_time_field = node_parameter_text(node, "right_time_field")
+    maximum_gap_seconds = node_parameter_number(node, "maximum_gap_seconds")
+    distinct_entity_fields = node_parameter_text(node, "distinct_entity_fields")
+    same_entity_fields = node_parameter_text(node, "same_entity_fields")
 
     right_by_key: dict[str, list[dict[str, Any]]] = {}
     for right in right_records:
@@ -6310,10 +6313,10 @@ def point_distance(a: dict[str, float] | None, b: dict[str, float] | None) -> fl
 def primitive_one_touch_relay_episode(state: PeriodState, node: BoundCatalogNode) -> None:
     config = OneTouchRelayConfig(
         event_type_filter=node_parameter_event_type_filter(node),
-        max_release_alignment_ms=node_parameter_number(node, "max_release_alignment_ms", 250.0),
-        relay_max_event_gap_seconds=node_parameter_number(node, "relay_max_event_gap_seconds", 3.0),
-        relay_touch_distance_m=node_parameter_number(node, "relay_touch_distance_m", 2.75),
-        maximum_relay_dwell_seconds=node_parameter_number(node, "maximum_relay_dwell_seconds", 0.56),
+        max_release_alignment_ms=node_parameter_number(node, "max_release_alignment_ms"),
+        relay_max_event_gap_seconds=node_parameter_number(node, "relay_max_event_gap_seconds"),
+        relay_touch_distance_m=node_parameter_number(node, "relay_touch_distance_m"),
+        maximum_relay_dwell_seconds=node_parameter_number(node, "maximum_relay_dwell_seconds"),
     )
     output = evaluate_one_touch_relays(
         canonical_root=state.canonical_root,
@@ -6389,11 +6392,11 @@ def primitive_defensive_line_model(state: PeriodState, node: BoundCatalogNode) -
     if not isinstance(anchors, list):
         raise RuntimeError(f"{node.node_id} requires anchor records")
     config = DefensiveLineConfig(
-        goal_side_buffer_m=node_parameter_number(node, "goal_side_buffer_m", 1.0),
-        line_band_width_m=node_parameter_number(node, "line_band_width_m", 2.0),
-        minimum_defenders=int(round(node_parameter_number(node, "minimum_line_defenders", 4))),
+        goal_side_buffer_m=node_parameter_number(node, "goal_side_buffer_m"),
+        line_band_width_m=node_parameter_number(node, "line_band_width_m"),
+        minimum_defenders=int(round(node_parameter_number(node, "minimum_line_defenders"))),
     )
-    anchor_frame_field = node_parameter_text(node, "anchor_frame_field", "anchor_frame_id")
+    anchor_frame_field = node_parameter_text(node, "anchor_frame_field")
     orientation = parquet_rows(state.canonical_root / "orientation.parquet")
     attack_x_sign = attack_x_sign_for(
         orientation,
@@ -6443,11 +6446,11 @@ def primitive_multi_line_model(state: PeriodState, node: BoundCatalogNode) -> No
     anchors = anchors_value.value
     if not isinstance(anchors, list):
         raise RuntimeError(f"{node.node_id} requires anchor records")
-    goal_side_buffer_m = node_parameter_number(node, "goal_side_buffer_m", 1.0)
-    line_band_width_m = node_parameter_number(node, "line_band_width_m", 2.0)
-    minimum_line_defenders = int(round(node_parameter_number(node, "minimum_line_defenders", 3)))
-    target_line_rank = int(round(node_parameter_number(node, "target_line_rank", 2)))
-    anchor_frame_field = node_parameter_text(node, "anchor_frame_field", "physical_release_frame_id")
+    goal_side_buffer_m = node_parameter_number(node, "goal_side_buffer_m")
+    line_band_width_m = node_parameter_number(node, "line_band_width_m")
+    minimum_line_defenders = int(round(node_parameter_number(node, "minimum_line_defenders")))
+    target_line_rank = int(round(node_parameter_number(node, "target_line_rank")))
+    anchor_frame_field = node_parameter_text(node, "anchor_frame_field")
     orientation = parquet_rows(state.canonical_root / "orientation.parquet")
     attack_x_sign = attack_x_sign_for(
         orientation,
@@ -6943,14 +6946,13 @@ def primitive_relative_position_to_line(state: PeriodState, node: BoundCatalogNo
         for record in entity_records
         if isinstance(record, dict) and record.get("anchor_id") is not None
     }
-    entity_id_field = node_parameter_text(node, "entity_id_field", "receiver_id")
+    entity_id_field = node_parameter_text(node, "entity_id_field")
     entity_frame_field = node_parameter_text(
         node,
-        "entity_frame_field",
-        "controlled_reception_frame_id",
+        "entity_frame_field"
     )
     config = RelativePositionToLineConfig(
-        buffer_m=node_parameter_number(node, "line_buffer_m", 0.5)
+        buffer_m=node_parameter_number(node, "line_buffer_m")
     )
     records = [
         relative_position_to_line_anchor_record(
@@ -7280,7 +7282,7 @@ def primitive_controlled_line_break_episode(state: PeriodState, node: BoundCatal
     release_by_anchor_id = record_by_anchor_id(release_records)
     reception_by_anchor_id = record_by_anchor_id(reception_records)
     config = ControlledLineBreakConfig(
-        line_buffer_m=node_parameter_number(node, "line_buffer_m", 0.5)
+        line_buffer_m=node_parameter_number(node, "line_buffer_m")
     )
     records = [
         controlled_line_break_anchor_record(
@@ -7386,12 +7388,11 @@ def primitive_lane_occupancy(state: PeriodState, node: BoundCatalogNode) -> None
     anchor_records = anchor_value.value
     if not isinstance(anchor_records, list):
         raise RuntimeError(f"{node.node_id} requires anchor records")
-    frame_field = node_parameter_text(node, "frame_field", "anchor_frame_id")
-    player_scope = node_parameter_text(node, "player_scope", "perspective_outfield")
+    frame_field = node_parameter_text(node, "frame_field")
+    player_scope = node_parameter_text(node, "player_scope")
     required_occupied_lane_count = node_parameter_integer(
         node,
-        "required_occupied_lane_count",
-        0,
+        "required_occupied_lane_count"
     )
     records = [
         lane_occupancy_anchor_record(
@@ -7561,15 +7562,15 @@ def relation_support_arrival(state: PeriodState, node: BoundCatalogNode) -> None
     anchor_records = anchor_value.value
     if not isinstance(anchor_records, list):
         raise RuntimeError(f"{node.node_id} requires anchor records")
-    anchor_frame_field = node_parameter_text(node, "anchor_frame_field", "controlled_reception_frame_id")
-    candidate_scope = node_parameter_text(node, "candidate_scope", "perspective_outfield")
-    support_region_mode = node_parameter_text(node, "support_region_mode", "WITHIN_DISTANCE_OF_REFERENCE_POINT")
-    maximum_arrival_seconds = node_parameter_number(node, "maximum_arrival_seconds", 2.0)
-    minimum_duration_seconds = node_parameter_number(node, "minimum_duration_seconds", 0.4)
-    maximum_support_distance_m = node_parameter_number(node, "maximum_support_distance_m", 8.0)
-    minimum_supporting_players = node_parameter_integer(node, "minimum_supporting_players", 1)
-    required_anchor_status_field = node_parameter_text(node, "required_anchor_status_field", "none")
-    required_anchor_status_value = node_parameter_text(node, "required_anchor_status_value", "PASS")
+    anchor_frame_field = node_parameter_text(node, "anchor_frame_field")
+    candidate_scope = node_parameter_text(node, "candidate_scope")
+    support_region_mode = node_parameter_text(node, "support_region_mode")
+    maximum_arrival_seconds = node_parameter_number(node, "maximum_arrival_seconds")
+    minimum_duration_seconds = node_parameter_number(node, "minimum_duration_seconds")
+    maximum_support_distance_m = node_parameter_number(node, "maximum_support_distance_m")
+    minimum_supporting_players = node_parameter_integer(node, "minimum_supporting_players")
+    required_anchor_status_field = node_parameter_text(node, "required_anchor_status_field")
+    required_anchor_status_value = node_parameter_text(node, "required_anchor_status_value")
     orientation = parquet_rows(state.canonical_root / "orientation.parquet")
     attack_x_sign = attack_x_sign_for(
         orientation,
@@ -7964,14 +7965,14 @@ def relation_pressure_on_carrier(state: PeriodState, node: BoundCatalogNode) -> 
     anchor_records = anchor_value.value
     if not isinstance(anchor_records, list):
         raise RuntimeError(f"{node.node_id} requires anchor records")
-    frame_field = node_parameter_text(node, "frame_field", "controlled_reception_frame_id")
-    carrier_id_field = node_parameter_text(node, "carrier_id_field", "receiver_id")
-    maximum_pressure_distance_m = node_parameter_number(node, "maximum_pressure_distance_m", 4.0)
-    minimum_closing_speed_mps = node_parameter_number(node, "minimum_closing_speed_mps", 0.2)
-    maximum_approach_angle_degrees = node_parameter_number(node, "maximum_approach_angle_degrees", 100.0)
-    minimum_pressure_duration_seconds = node_parameter_number(node, "minimum_pressure_duration_seconds", 0.0)
-    lookback_seconds = node_parameter_number(node, "lookback_seconds", 0.4)
-    candidate_scope = node_parameter_text(node, "candidate_scope", "defending_outfield")
+    frame_field = node_parameter_text(node, "frame_field")
+    carrier_id_field = node_parameter_text(node, "carrier_id_field")
+    maximum_pressure_distance_m = node_parameter_number(node, "maximum_pressure_distance_m")
+    minimum_closing_speed_mps = node_parameter_number(node, "minimum_closing_speed_mps")
+    maximum_approach_angle_degrees = node_parameter_number(node, "maximum_approach_angle_degrees")
+    minimum_pressure_duration_seconds = node_parameter_number(node, "minimum_pressure_duration_seconds")
+    lookback_seconds = node_parameter_number(node, "lookback_seconds")
+    candidate_scope = node_parameter_text(node, "candidate_scope")
     if candidate_scope != "defending_outfield":
         raise RuntimeError("pressure_on_carrier v0.1 supports candidate_scope=defending_outfield")
     known_outfield_ids = outfield_player_ids(state.canonical_root, state.match_id, state.defending_team_role)
@@ -8016,16 +8017,16 @@ def relation_team_press(state: PeriodState, node: BoundCatalogNode) -> None:
     anchor_records = anchor_value.value
     if not isinstance(anchor_records, list):
         raise RuntimeError(f"{node.node_id} requires anchor records")
-    frame_field = node_parameter_text(node, "frame_field", "anchor_frame_id")
-    carrier_id_field = node_parameter_text(node, "carrier_id_field", "receiver_id")
-    maximum_press_distance_m = node_parameter_number(node, "maximum_press_distance_m", 7.0)
-    minimum_closing_speed_mps = node_parameter_number(node, "minimum_closing_speed_mps", 0.0)
-    maximum_approach_angle_degrees = node_parameter_number(node, "maximum_approach_angle_degrees", 135.0)
-    minimum_pressing_defenders = node_parameter_integer(node, "minimum_pressing_defenders", 2)
-    minimum_angle_spread_degrees = node_parameter_number(node, "minimum_angle_spread_degrees", 30.0)
-    minimum_observed_defenders = node_parameter_integer(node, "minimum_observed_defenders", 6)
-    lookback_seconds = node_parameter_number(node, "lookback_seconds", 0.4)
-    candidate_scope = node_parameter_text(node, "candidate_scope", "defending_outfield")
+    frame_field = node_parameter_text(node, "frame_field")
+    carrier_id_field = node_parameter_text(node, "carrier_id_field")
+    maximum_press_distance_m = node_parameter_number(node, "maximum_press_distance_m")
+    minimum_closing_speed_mps = node_parameter_number(node, "minimum_closing_speed_mps")
+    maximum_approach_angle_degrees = node_parameter_number(node, "maximum_approach_angle_degrees")
+    minimum_pressing_defenders = node_parameter_integer(node, "minimum_pressing_defenders")
+    minimum_angle_spread_degrees = node_parameter_number(node, "minimum_angle_spread_degrees")
+    minimum_observed_defenders = node_parameter_integer(node, "minimum_observed_defenders")
+    lookback_seconds = node_parameter_number(node, "lookback_seconds")
+    candidate_scope = node_parameter_text(node, "candidate_scope")
     if candidate_scope != "defending_outfield":
         raise RuntimeError("team_press v0.1 supports candidate_scope=defending_outfield")
     known_outfield_ids = outfield_player_ids(state.canonical_root, state.match_id, state.defending_team_role)
@@ -8521,11 +8522,11 @@ def relation_local_number(state: PeriodState, node: BoundCatalogNode) -> None:
     anchor_records = anchor_value.value
     if not isinstance(anchor_records, list):
         raise RuntimeError(f"{node.node_id} requires anchor records")
-    frame_field = node_parameter_text(node, "frame_field", "controlled_reception_frame_id")
-    radius_m = node_parameter_number(node, "radius_m", 10.0)
-    minimum_difference = node_parameter_integer(node, "minimum_difference", 1)
-    minimum_perspective_players = node_parameter_integer(node, "minimum_perspective_players", 0)
-    maximum_defending_players = node_parameter_integer(node, "maximum_defending_players", 99)
+    frame_field = node_parameter_text(node, "frame_field")
+    radius_m = node_parameter_number(node, "radius_m")
+    minimum_difference = node_parameter_integer(node, "minimum_difference")
+    minimum_perspective_players = node_parameter_integer(node, "minimum_perspective_players")
+    maximum_defending_players = node_parameter_integer(node, "maximum_defending_players")
     records = [
         local_number_anchor_record(
             state=state,
@@ -8986,8 +8987,8 @@ def relation_opponents_bypassed_by_action(state: PeriodState, node: BoundCatalog
         match_ids=(state.match_id,),
         periods=(state.period,),
         config=PassBypassConfig(
-            goal_side_buffer_m=node_parameter_number(node, "goal_side_buffer_m", 1.0),
-            bypassed_buffer_m=node_parameter_number(node, "bypassed_buffer_m", 1.0),
+            goal_side_buffer_m=node_parameter_number(node, "goal_side_buffer_m"),
+            bypassed_buffer_m=node_parameter_number(node, "bypassed_buffer_m"),
         ),
     )
     episodes_by_id = {str(item.get("pass_episode_id")): item for item in episodes if isinstance(item, dict)}
@@ -9122,13 +9123,13 @@ def relation_geometric_progressive_corridor(state: PeriodState, node: BoundCatal
 
     config = CorridorConfig(
         analysis_rate_hz=state.params.integer("analysis_rate_hz"),
-        max_window_seconds=node_parameter_number(node, "max_window_seconds", 4.0),
-        minimum_progression_m=node_parameter_number(node, "minimum_progression_m", 8.0),
-        minimum_segment_length_m=node_parameter_number(node, "minimum_segment_length_m", 8.0),
-        maximum_segment_length_m=node_parameter_number(node, "maximum_segment_length_m", 45.0),
-        minimum_clearance_m=node_parameter_number(node, "minimum_clearance_m", 5.0),
-        open_after_frames=node_parameter_integer(node, "open_after_frames", 2),
-        close_after_frames=node_parameter_integer(node, "close_after_frames", 2),
+        max_window_seconds=node_parameter_number(node, "max_window_seconds"),
+        minimum_progression_m=node_parameter_number(node, "minimum_progression_m"),
+        minimum_segment_length_m=node_parameter_number(node, "minimum_segment_length_m"),
+        maximum_segment_length_m=node_parameter_number(node, "maximum_segment_length_m"),
+        minimum_clearance_m=node_parameter_number(node, "minimum_clearance_m"),
+        open_after_frames=node_parameter_integer(node, "open_after_frames"),
+        close_after_frames=node_parameter_integer(node, "close_after_frames"),
     )
     relation_report = evaluate_geometric_progressive_corridors(
         results=source_results,
@@ -9136,8 +9137,8 @@ def relation_geometric_progressive_corridor(state: PeriodState, node: BoundCatal
         config=config,
     )
     episodes = relation_report["episodes"]
-    side_filter = node_parameter_text(node, "side_filter", "any")
-    minimum_duration_seconds = node_parameter_number(node, "minimum_duration_seconds", 0.0)
+    side_filter = node_parameter_text(node, "side_filter")
+    minimum_duration_seconds = node_parameter_number(node, "minimum_duration_seconds")
     source_by_result_id = {str(result["result_id"]): result for result in source_results}
     filtered = [
         {
@@ -9379,13 +9380,12 @@ def primitive_relation_destination_entry_classification(
         episodes_by_result[source_result_id].append(episode)
         source_results_by_id.setdefault(source_result_id, source_result)
 
-    horizon_seconds = node_parameter_number(node, "destination_entry_horizon_seconds", 6.0)
+    horizon_seconds = node_parameter_number(node, "destination_entry_horizon_seconds")
     result_seed = node.resolved_parameters.get("result_id_seed")
     seed = str(result_seed.value) if result_seed is not None else state.params.text("result_id_seed_hash")
     episode_selection = node_parameter_text(
         node,
-        "episode_selection",
-        "entry_first_then_progression" if generic_entry_output else "first_by_duration_clearance",
+        "episode_selection"
     )
     source_results = list(source_results_by_id.values())
 
@@ -10491,30 +10491,38 @@ def typed_enum(value: str) -> TypedValue:
     return TypedValue(payload_type=PayloadType.ENUM, value=value, unit=Unit.NONE)
 
 
-def node_parameter_number(node: BoundCatalogNode, name: str, default: float) -> float:
-    value = node.resolved_parameters.get(name)
-    if value is None:
-        return default
+def node_parameter_number(node: BoundCatalogNode, name: str) -> float:
+    value = required_node_parameter(node, name)
     if value.payload_type != PayloadType.NUMBER:
-        raise RuntimeError(f"{node.node_id}.{name} must be numeric")
+        raise RuntimeError(f"{node.catalog_ref}.{node.node_id}.{name} must be numeric")
     return float(value.value)
 
 
-def node_parameter_integer(node: BoundCatalogNode, name: str, default: int) -> int:
-    return int(round(node_parameter_number(node, name, float(default))))
+def node_parameter_integer(node: BoundCatalogNode, name: str) -> int:
+    return int(round(node_parameter_number(node, name)))
 
 
-def node_parameter_text(node: BoundCatalogNode, name: str, default: str) -> str:
-    value = node.resolved_parameters.get(name)
-    if value is None:
-        return default
+def node_parameter_text(node: BoundCatalogNode, name: str) -> str:
+    value = required_node_parameter(node, name)
     if value.payload_type not in {PayloadType.ENUM, PayloadType.RELATION_REF}:
-        raise RuntimeError(f"{node.node_id}.{name} must be textual")
+        raise RuntimeError(f"{node.catalog_ref}.{node.node_id}.{name} must be textual")
     return str(value.value)
 
 
+def required_node_parameter(node: BoundCatalogNode, name: str) -> TypedValue:
+    value = node.resolved_parameters.get(name)
+    if value is None:
+        raise UndeclaredNodeParameterError(
+            (
+                f"{node.catalog_ref}.{node.node_id} read undeclared parameter {name}; "
+                "binder did not resolve a catalog declaration or default"
+            )
+        )
+    return value
+
+
 def node_parameter_event_type_filter(node: BoundCatalogNode) -> tuple[str, ...]:
-    return (node_parameter_text(node, "event_type_filter", "Play_Pass"),)
+    return (node_parameter_text(node, "event_type_filter"),)
 
 
 def relation_side_matches(
