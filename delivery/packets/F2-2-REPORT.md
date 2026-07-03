@@ -11,6 +11,11 @@ Protocol: local commit only; no push.
   - `primitive_controlled_pass_episode`
   - `primitive_one_touch_relay_episode`
   - `relation_opponents_bypassed_by_action`
+- Pass-bypass / high-bypass registry mapping: no catalog node named
+  `pass_bypass` or `high_bypass_completed_pass` has its own executor
+  implementation. The runtime relation implementation is
+  `relation_opponents_bypassed_by_action`, registered for catalog capability
+  `opponents_bypassed_by_action`; high-bypass recipes consume that relation.
 - Relocated pass-only helpers:
   - `controlled_pass_anchor_record`
   - `controlled_pass_episode_record`
@@ -65,8 +70,38 @@ Pure relocation only. These were observed but deliberately deferred:
 
 ## Pinned-gate drift proof
 
-To be filled after committed-tree verification.
+Committed-tree verification was run from a clean temporary checkout of commit
+`4a3986f` with the workspace data roots mounted read-only. The final local
+commit after this verification is report-only; no runtime, test, catalog,
+generated, frozen, N1D, or artifact file changed after the verified code tree.
+
+| Gate | Result | Drift proof |
+|---|---|---|
+| `n1d1-verify` | PASS | `attestation_status=VERIFIED`, `blocking_reasons=[]`. |
+| `afl-substrate-q4-verify` | PASS | Frozen expectation unchanged; result count `2`; result signature `89cc48842fc6b9852fc6941fc56e2147e524de7a2d3ae7fe718d29c96d382199`; expectation hash `a2ff7342e6ff113cdcf77acc4d70c0046bebcc9564bcf395b74aaf5639e7bd51`. |
+| `afl-substrate-q6-verify` | PASS | Frozen expectation unchanged; result count `0`; result signature `4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945`; expectation hash `4fefcf35c221923db4ae83c5bd7dad85f1ae8bb43b23aa1938567de22a2c2496`. |
+| `afl-line-break-support-response-verify` | PASS | Factory comparison PASS; result signature `7a3e0e16c1ce3e32f4a83f3c9fef89f60f7e3b04fc16f2e219a3337172c35227`; expectation hash `b114d793eba25a481b0e2563abd1430f79cd371bb69cc1c8d54a8d77be83816f`. |
+| `afl-lane-occupancy-verify` | PASS | Verifier PASS; accompanying `tests.test_lane_occupancy` PASS, 17 tests. |
+| `afl-09a-verify` | PASS | Verifier PASS; accompanying `tests.test_afl_validation_factory` PASS, 4 tests. |
+| `scp-0-verify` | PASS | Verifier PASS; accompanying `tests.test_scp0_semantic_registry` PASS, 58 tests. |
+| `afl-passport-verify` | PASS | `scp0_parity_status=PASS`; generated hash equals stored hash: `95b09da225ca4ba0673497ec2cd72d67016f57c97ff32b6010aed349b33212ad`; accompanying `tests.test_scp0_semantic_registry` PASS, 58 tests. |
+
+Changed-file audit relative to the packet base is limited to the relocation,
+registry wiring, boundary tests, controlled-pass test import updates, and this
+report:
+
+- `delivery/packets/F2-2-REPORT.md`
+- `src/tqe/runtime/capabilities/__init__.py`
+- `src/tqe/runtime/capabilities/pass_family.py`
+- `src/tqe/runtime/executor.py`
+- `tests/test_controlled_pass_honesty.py`
+- `tests/test_executor_boundaries.py`
 
 ## Full-suite table
 
-To be filled after committed-tree verification.
+| Command | Result |
+|---|---|
+| `PYTHONPATH=src .venv/bin/python -m py_compile src/tqe/runtime/executor.py src/tqe/runtime/capabilities/__init__.py src/tqe/runtime/capabilities/pass_family.py tests/test_executor_boundaries.py tests/test_controlled_pass_honesty.py` | PASS |
+| `PYTHONPATH=src .venv/bin/python -m unittest tests.test_executor_boundaries tests.test_controlled_pass_honesty` | PASS, 25 tests in 29.407s |
+| `make PYTHON=/Users/luisrevilla/code/priori/.venv/bin/python n1d1-verify afl-substrate-q4-verify afl-substrate-q6-verify afl-line-break-support-response-verify afl-lane-occupancy-verify afl-09a-verify scp-0-verify afl-passport-verify` | PASS on clean committed-tree checkout |
+| `make PYTHON=/Users/luisrevilla/code/priori/.venv/bin/python test` | PASS, 351 tests in 323.777s on clean committed-tree checkout |
