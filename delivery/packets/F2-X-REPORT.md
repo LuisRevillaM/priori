@@ -112,7 +112,9 @@ Proof:
 Disclosure:
 
 - `make m1-verify` is not runnable in the verification worktree because `artifacts/m1/gate-c/evaluation-report.json` is absent.
-- `make m1-1-gate-s3-verify` still fails stale approved-plan/near-miss parity assertions (`result_count=119`, `trace_count=747` against older pins), but its candidate-state independence check reports `uses_state_candidates: false`; S3R is green and is the stronger temporal/profile gate for this packet.
+- `make m1-1-gate-r3-verify` is red on the final committed tree: `8` pass, `2` fail (`fail 2/10`). The failures are stale approved-plan/profile parity effects around the older approved-plan shape (`result_count=119`, `trace_count=747`), not a new F2-X behavior regression. Base-state evidence establishes pre-existence: on base `fb37e70`, Gate R3 crashed through the duplicate dead predicate copy (`Unsupported persists_for source for wide_entry_persists`) before it could table this red.
+- `make m1-1-gate-s2-verify` is red on the final committed tree: `3` pass, `1` fail (`fail 1/4`). The single failure is the approved-plan frozen-parity check (`result_count=119`, `trace_count=747` against the older `180`/`900` pin). Base `fb37e70` failed identically at `119`/`747`, so this is a pre-existing stale pin, not an F2-X regression.
+- `make m1-1-gate-s3-verify` still fails stale approved-plan/near-miss parity assertions (`result_count=119`, `trace_count=747` against older pins), but its candidate-state independence check reports `uses_state_candidates: false`; S3R is green and is the stronger temporal/profile gate for this packet. Base Gate S3 also crashed through the same duplicate dead predicate copy, so the final S3 red is an unmasked pre-existing gate issue rather than a runtime deletion regression.
 
 ## Pinned-Gate Drift Proof
 
@@ -140,6 +142,8 @@ Executed on the same final git-backed worktree at `a8146e0`.
 | `make PYTHON=/Users/luisrevilla/code/priori/.venv/bin/python n1d1-verify afl-substrate-q4-verify afl-substrate-q6-verify afl-line-break-support-response-verify afl-lane-occupancy-verify afl-09a-verify scp-0-verify afl-passport-verify` | PASS |
 | `make PYTHON=/Users/luisrevilla/code/priori/.venv/bin/python m1-1-gate-r1-verify` | PASS, 56 checks |
 | `make PYTHON=/Users/luisrevilla/code/priori/.venv/bin/python m1-1-gate-b-verify m1-1-gate-c-verify` | PASS, Gate B 14 checks; Gate C 10 checks |
+| `make PYTHON=/Users/luisrevilla/code/priori/.venv/bin/python m1-1-gate-r3-verify` | FAIL, 8 pass / 2 fail (`fail 2/10`); stale approved-plan/profile parity red unmasked after base R3's dead-predicate crash. |
+| `make PYTHON=/Users/luisrevilla/code/priori/.venv/bin/python m1-1-gate-s2-verify` | FAIL, 3 pass / 1 fail (`fail 1/4`); base failed identically at `result_count=119`, `trace_count=747`. |
 | `make PYTHON=/Users/luisrevilla/code/priori/.venv/bin/python m1-1-gate-s3r-verify` | PASS, 13 checks |
 | `make PYTHON=/Users/luisrevilla/code/priori/.venv/bin/python test` | PASS, 356 tests in 320.226s; attestation `VERIFIED` |
 
