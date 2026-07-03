@@ -45,3 +45,16 @@ F2-Y replaces them with a typed status domain. Warn-mode paths that can
 raise (`envelope.py:289,318`) should become crash-proof when F2-1 starts
 leaning on shadow mode. Findings counts are per-record (~23 distinct
 mismatch classes) — report tables should say so.
+
+---
+
+# F2-0 Acceptance Review — Round 2: ACCEPTED
+
+Reviewed 2026-07-02, commit `4187f48`, merged as `54c1d1b`. R1: aux tier
+preserves values (verified by hand on nested payloads) under an explicit
+non-evidentiary contract; R2: env/logger restoration fixed with tests (the
+default-off invariant holds inside the suite process); R3: detection-universe
+disclosure plus a second exact-count freeze list for the non-catalog leak
+surfaces. Suite 348 green under independent invocation. Phase F2 is open:
+the envelope exists, the census (2544 findings) is the map, the ratchets
+only tighten from here.
