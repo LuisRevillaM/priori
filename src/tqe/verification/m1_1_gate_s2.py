@@ -13,6 +13,7 @@ from tqe.runtime.capabilities.corridor_family import (
     primitive_relation_destination_entry_classification,
     relation_anchor_results,
 )
+from tqe.runtime.capabilities.teamshape_family import primitive_signed_lateral_shift
 from tqe.runtime.executor import (
     TacticalQueryExecutor,
     catalog_input_value,
@@ -25,7 +26,6 @@ from tqe.runtime.executor import (
     predicate_neq,
     predicate_persists_for,
     primitive_outcome_classification,
-    primitive_signed_lateral_shift,
     record_runtime_values,
     runtime_parameters,
 )

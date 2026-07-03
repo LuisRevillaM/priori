@@ -112,6 +112,15 @@ RELOCATED_IMPLEMENTATION_MODULES: dict[str, str] = {
     "primitive_off_ball_run_type": "tqe.runtime.capabilities.offball_family",
     "primitive_time_to_arrival": "tqe.runtime.capabilities.offball_family",
     "relation_support_arrival": "tqe.runtime.capabilities.offball_family",
+    "primitive_team_compactness": "tqe.runtime.capabilities.teamshape_family",
+    "primitive_change_across_anchor": "tqe.runtime.capabilities.teamshape_family",
+    "primitive_cover_shadow": "tqe.runtime.capabilities.teamshape_family",
+    "primitive_ball_lateral_fraction": "tqe.runtime.capabilities.teamshape_family",
+    "primitive_defensive_outfield_centroid": "tqe.runtime.capabilities.teamshape_family",
+    "primitive_signed_lateral_shift": "tqe.runtime.capabilities.teamshape_family",
+    "relation_pressure_on_carrier": "tqe.runtime.capabilities.teamshape_family",
+    "relation_team_press": "tqe.runtime.capabilities.teamshape_family",
+    "relation_local_number": "tqe.runtime.capabilities.teamshape_family",
 }
 
 

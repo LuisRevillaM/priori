@@ -15,12 +15,12 @@ from pathlib import Path
 from typing import Any
 
 from tqe.runtime.binder import bind_document
+from tqe.runtime.capabilities.teamshape_family import cover_shadow_anchor_record
 from tqe.runtime.executor import (
     DEFAULT_CANONICAL_ROOT,
     DEFAULT_RAW_ROOT,
     GENERIC_EXECUTION_PROFILE,
     TacticalQueryExecutor,
-    cover_shadow_anchor_record,
     execution_result_rows,
     runtime_parameters,
 )
