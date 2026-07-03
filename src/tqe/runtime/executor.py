@@ -26,6 +26,11 @@ from lxml import etree
 
 from tqe.idsse.source_lock import SOURCE_VERSION
 from tqe.runtime.binder import HOST_RUNTIME_PARAMETER_DEFAULTS, bind_document_from_path
+from tqe.runtime.capabilities import (
+    build_predicate_registry,
+    build_primitive_registry,
+    build_relation_registry,
+)
 from tqe.runtime.controlled_line_break import (
     ControlledLineBreakConfig,
     evaluate_controlled_line_break_episode,
@@ -84,6 +89,7 @@ from tqe.runtime.pass_bypass import (
     evaluate_pass_bypass_measurements,
 )
 from tqe.runtime.values import FrameSignal, RuntimeValue, canonical_anchor_record_id, runtime_value_from_raw
+from tqe.runtime.envelope import conformance_enabled, shadow_check_legacy_outputs
 from tqe.runtime.relations import (
     CorridorConfig,
     destination_region_bounds,
@@ -247,68 +253,10 @@ class TacticalQueryExecutor:
             if progress_log is None
             else progress_log
         )
-        self.primitives: dict[str, PrimitiveImplementation] = {
-            "possession_segment": primitive_possession_segment,
-            "transition_anchor": primitive_transition_anchor,
-            "structured_zone": primitive_structured_zone,
-            "space_region_generation": primitive_space_region_generation,
-            "outcome_window": primitive_outcome_window,
-            "action_event_anchor": primitive_action_event_anchor,
-            "action_chain": primitive_action_chain,
-            "tracking_quality": primitive_tracking_quality,
-            "pairwise_distance": primitive_pairwise_distance,
-            "marking": primitive_marking,
-            "cover_shadow": primitive_cover_shadow,
-            "velocity": primitive_velocity,
-            "acceleration": primitive_acceleration,
-            "off_ball_run": primitive_off_ball_run,
-            "off_ball_run_type": primitive_off_ball_run_type,
-            "set_piece_structure": primitive_set_piece_structure,
-            "time_to_arrival": primitive_time_to_arrival,
-            "carry_episode": primitive_carry_episode,
-            "join_episode_sets": primitive_join_episode_sets,
-            "team_compactness": primitive_team_compactness,
-            "switch_of_play": primitive_switch_of_play,
-            "change_across_anchor": primitive_change_across_anchor,
-            "controlled_pass_episode": primitive_controlled_pass_episode,
-            "one_touch_relay_episode": primitive_one_touch_relay_episode,
-            "defensive_line_model": primitive_defensive_line_model,
-            "multi_line_model": primitive_multi_line_model,
-            "relative_position_to_line": primitive_relative_position_to_line,
-            "receiver_line_transition_during_pass_leg": primitive_receiver_line_transition_during_pass_leg,
-            "pass_chain_episode": primitive_pass_chain_episode,
-            "controlled_line_break_episode": primitive_controlled_line_break_episode,
-            "lane_occupancy": primitive_lane_occupancy,
-            "ball_lateral_fraction": primitive_ball_lateral_fraction,
-            "defensive_outfield_centroid": primitive_defensive_outfield_centroid,
-            "signed_lateral_shift": primitive_signed_lateral_shift,
-            "outcome_classification": primitive_outcome_classification,
-            "relation_destination_entry": primitive_relation_destination_entry_classification,
-            "relation_destination_entry_classification": primitive_relation_destination_entry_classification,
-            "wide_channel_dwell": primitive_noop,
-            "shift_persistence": primitive_noop,
-            "robust_team_width": primitive_noop,
-            "analysis_rate": primitive_noop,
-        }
-        self.relations: dict[str, RelationImplementation] = {
-            "geometric_progressive_corridor": relation_geometric_progressive_corridor,
-            "geometric_progressive_corridor_from_anchor_set": relation_geometric_progressive_corridor,
-            "opponents_bypassed_by_action": relation_opponents_bypassed_by_action,
-            "support_arrival_relation": relation_support_arrival,
-            "pressure_on_carrier": relation_pressure_on_carrier,
-            "team_press": relation_team_press,
-            "local_number_relation": relation_local_number,
-        }
-        self.predicates: dict[str, PredicateImplementation] = {
-            "gt": predicate_gt,
-            "gte": predicate_gte,
-            "lte": predicate_lte,
-            "eq": predicate_eq,
-            "neq": predicate_neq,
-            "persists_for": predicate_persists_for,
-            "exists": predicate_exists,
-            "count_at_least": predicate_count_at_least,
-        }
+        registry_namespace = globals()
+        self.primitives: dict[str, PrimitiveImplementation] = build_primitive_registry(registry_namespace)
+        self.relations: dict[str, RelationImplementation] = build_relation_registry(registry_namespace)
+        self.predicates: dict[str, PredicateImplementation] = build_predicate_registry(registry_namespace)
 
     def execute(self, bound_plan: BoundQueryPlan) -> QueryExecution:
         if bound_plan.execution_mode == ExecutionMode.BIND_ONLY:
@@ -730,6 +678,12 @@ class TacticalQueryExecutor:
         else:
             raise RuntimeError(f"Unsupported bound node {node}")
         runtime_values = record_runtime_values(state, node)
+        if isinstance(node, BoundCatalogNode) and conformance_enabled():
+            shadow_check_legacy_outputs(
+                node=node,
+                raw_outputs=state.signals.get(node.node_id, {}),
+                runtime_values=runtime_values,
+            )
         self._record_progress(
             state,
             {
