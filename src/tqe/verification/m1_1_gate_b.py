@@ -22,9 +22,9 @@ from tqe.runtime.executor import (
     execution_result_rows,
     execute_default_plan,
     runtime_parameters,
-    select_proof_results,
     summarize_results,
 )
+from tqe.runtime.legacy_m1 import select_proof_results
 from tqe.verification.m1_1_gate_a import build_report as build_gate_a_report
 
 DEFAULT_CONFIG_PATH = Path("config/queries/ball_side_block_shift.v1.yaml")

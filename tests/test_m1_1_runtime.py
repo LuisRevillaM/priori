@@ -20,9 +20,9 @@ from tqe.runtime.executor import (
     execution_result_rows,
     execute_default_plan,
     runtime_parameters,
-    select_proof_results,
 )
 from tqe.runtime.ir import EvaluationTarget, ExecutionMode, ExecutionStatus, PlanStatus, TacticalQueryDocument
+from tqe.runtime.legacy_m1 import select_proof_results
 from tqe.runtime.relations import evaluate_geometric_progressive_corridors
 
 from tests.support.canonical_data import requires_canonical_data

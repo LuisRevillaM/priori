@@ -258,13 +258,6 @@ EXPECTED_SHARED_HELPER_MENTION_COUNTS = {
     'frame_id=optional_int(record.get("destination_entry_frame_id"))': 1,
     'or optional_int(record.get("outcome_frame_id"))': 1,
     'or optional_int(record.get("anchor_frame_id"))': 1,
-    # Experimental trace fabricator body.
-    # select_proof_results selection labels.
-    "def select_proof_results": 1,
-    '"proof_selected": True': 1,
-    '"SWITCHED"': 1,
-    '"RETAINED_NO_SWITCH"': 1,
-    '"LOST_BEFORE_SWITCH"': 1,
 }
 
 

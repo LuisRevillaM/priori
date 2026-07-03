@@ -15,8 +15,8 @@ from tqe.runtime.executor import (
     execute_legacy_m1_plan_from_path,
     execution_result_rows,
     runtime_parameters,
-    select_proof_results,
 )
+from tqe.runtime.legacy_m1 import select_proof_results
 from tqe.runtime.ir import model_payload, stable_hash
 
 APPROVED_PLAN_PATH = DEFAULT_PLAN_PATH
