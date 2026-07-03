@@ -215,36 +215,49 @@ class ExecutorRegistryBoundaryTests(unittest.TestCase):
             self.assertEqual("tqe.runtime.capabilities.teamshape_family", implementation.__module__)
 
 
+    def test_final_sweep_leaves_no_registered_inline_capability_implementations(self) -> None:
+        primitive_registry = build_primitive_registry(vars(executor))
+        relation_registry = build_relation_registry(vars(executor))
+        relocated_names = set(RELOCATED_IMPLEMENTATION_MODULES)
+
+        inline_primitives = {
+            implementation_name
+            for capability_name, implementation_name in PRIMITIVE_IMPLEMENTATION_NAMES
+            if capability_name not in LEGACY_NOOP_CAPABILITIES
+            and implementation_name not in relocated_names
+        }
+        inline_relations = {
+            implementation_name
+            for _capability_name, implementation_name in RELATION_IMPLEMENTATION_NAMES
+            if implementation_name not in relocated_names
+        }
+
+        self.assertEqual(set(), inline_primitives)
+        self.assertEqual(set(), inline_relations)
+        self.assertEqual({("primitive_noop", executor.primitive_noop)}, {
+            (implementation.__name__, implementation)
+            for capability_name, implementation in primitive_registry.items()
+            if capability_name in LEGACY_NOOP_CAPABILITIES
+        })
+        for capability_name, implementation in primitive_registry.items():
+            if capability_name in LEGACY_NOOP_CAPABILITIES:
+                continue
+            self.assertNotEqual("tqe.runtime.executor", implementation.__module__, capability_name)
+        for capability_name, implementation in relation_registry.items():
+            self.assertNotEqual("tqe.runtime.executor", implementation.__module__, capability_name)
+
+
 # This is the F2-0 freeze line, not a cleanup.  Destination-entry lines are the
-# V8/V10 audit leaks named in ADR 0012; the import/helper lines are existing
-# capability-family code still outside primitive_/relation_ bodies until later
-# extraction packets move those families out of executor.py.  This guard only
-# sees catalog identifiers; non-catalog helper leaks are frozen separately below.
+# V8/V10 audit leaks named in ADR 0012; the time-to-arrival line is a shared
+# helper leak that remains after the final extraction sweep and feeds the F2-X
+# kill-list census.  This guard only sees catalog identifiers; non-catalog
+# helper leaks are frozen separately below.
 EXPECTED_SHARED_CAPABILITY_MENTIONS = {
-    "acceleration": {
-        '"UNKNOWN if either velocity window lacks tracking endpoints or if observed speed/acceleration "',
-        "acceleration = delta_speed / dt_seconds",
-        "if abs(acceleration) > maximum_abs_acceleration_mps2:",
-        '\"acceleration_mps2\": round(float(acceleration), 3),',
-        "if abs(delta_speed) < minimum_abs_delta_speed_mps or abs(acceleration) < minimum_abs_acceleration_mps2:",
-    },
-    "join_episode_sets": {
-        'raise RuntimeError(f"Unsupported join_episode_sets temporal_relation={temporal_relation}")',
-    },
-    "lane_occupancy": {
-        "from tqe.runtime.lane_occupancy import LaneOccupancyConfig, evaluate_lane_occupancy",
-    },
-    "marking": {
-        '"no routine, role, marking scheme, planned play, intent, quality, or causation claim."',
-    },
     "relation_destination_entry": {
         'if node.catalog_ref != "relation_destination_entry":',
     },
     "time_to_arrival": {
         'raise RuntimeError(f"Unsupported time_to_arrival candidate_scope: {candidate_scope}")',
-    },
-    "velocity": {
-        '"UNKNOWN if either velocity window lacks tracking endpoints or if observed speed/acceleration "',
     },
 }
 
@@ -258,9 +271,9 @@ EXPECTED_SHARED_HELPER_MENTION_COUNTS = {
     # select_proof_results selection labels.
     "def select_proof_results": 1,
     '"proof_selected": True': 1,
-    '"SWITCHED"': 2,
-    '"RETAINED_NO_SWITCH"': 2,
-    '"LOST_BEFORE_SWITCH"': 3,
+    '"SWITCHED"': 1,
+    '"RETAINED_NO_SWITCH"': 1,
+    '"LOST_BEFORE_SWITCH"': 1,
 }
 
 
@@ -358,4 +371,7 @@ def implementation_source_paths() -> tuple[Path, ...]:
         Path(executor.__file__).resolve().parent / "capabilities" / "lines_family.py",
         Path(executor.__file__).resolve().parent / "capabilities" / "offball_family.py",
         Path(executor.__file__).resolve().parent / "capabilities" / "teamshape_family.py",
+        Path(executor.__file__).resolve().parent / "capabilities" / "possession_family.py",
+        Path(executor.__file__).resolve().parent / "capabilities" / "sequence_family.py",
+        Path(executor.__file__).resolve().parent / "capabilities" / "kinematics_family.py",
     )
