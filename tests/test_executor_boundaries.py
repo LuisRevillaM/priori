@@ -181,6 +181,40 @@ class ExecutorRegistryBoundaryTests(unittest.TestCase):
             self.assertEqual("tqe.runtime.capabilities.offball_family", implementation.__module__)
 
 
+    def test_teamshape_family_relocation_is_registry_only(self) -> None:
+        source = Path(executor.__file__).resolve().read_text(encoding="utf-8")
+        self.assertNotIn("teamshape_family", source)
+
+        primitive_registry = build_primitive_registry(vars(executor))
+        relation_registry = build_relation_registry(vars(executor))
+        relocated_capabilities = {
+            "team_compactness": primitive_registry["team_compactness"],
+            "change_across_anchor": primitive_registry["change_across_anchor"],
+            "cover_shadow": primitive_registry["cover_shadow"],
+            "ball_lateral_fraction": primitive_registry["ball_lateral_fraction"],
+            "defensive_outfield_centroid": primitive_registry["defensive_outfield_centroid"],
+            "signed_lateral_shift": primitive_registry["signed_lateral_shift"],
+            "pressure_on_carrier": relation_registry["pressure_on_carrier"],
+            "team_press": relation_registry["team_press"],
+            "local_number_relation": relation_registry["local_number_relation"],
+        }
+
+        for implementation_name in (
+            "primitive_team_compactness",
+            "primitive_change_across_anchor",
+            "primitive_cover_shadow",
+            "primitive_ball_lateral_fraction",
+            "primitive_defensive_outfield_centroid",
+            "primitive_signed_lateral_shift",
+            "relation_pressure_on_carrier",
+            "relation_team_press",
+            "relation_local_number",
+        ):
+            self.assertFalse(hasattr(executor, implementation_name), implementation_name)
+        for implementation in relocated_capabilities.values():
+            self.assertEqual("tqe.runtime.capabilities.teamshape_family", implementation.__module__)
+
+
 # This is the F2-0 freeze line, not a cleanup.  Destination-entry lines are the
 # V8/V10 audit leaks named in ADR 0012; the import/helper lines are existing
 # capability-family code still outside primitive_/relation_ bodies until later
@@ -199,9 +233,6 @@ EXPECTED_SHARED_CAPABILITY_MENTIONS = {
     },
     "lane_occupancy": {
         "from tqe.runtime.lane_occupancy import LaneOccupancyConfig, evaluate_lane_occupancy",
-    },
-    "local_number_relation": {
-        "from tqe.runtime.local_number_relation import (",
     },
     "marking": {
         '"no routine, role, marking scheme, planned play, intent, quality, or causation claim."',
@@ -326,4 +357,5 @@ def implementation_source_paths() -> tuple[Path, ...]:
         Path(executor.__file__).resolve().parent / "capabilities" / "corridor_family.py",
         Path(executor.__file__).resolve().parent / "capabilities" / "lines_family.py",
         Path(executor.__file__).resolve().parent / "capabilities" / "offball_family.py",
+        Path(executor.__file__).resolve().parent / "capabilities" / "teamshape_family.py",
     )
