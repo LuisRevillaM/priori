@@ -128,6 +128,33 @@ class ExecutorRegistryBoundaryTests(unittest.TestCase):
             self.assertEqual("tqe.runtime.capabilities.corridor_family", implementation.__module__)
 
 
+    def test_lines_family_relocation_is_registry_only(self) -> None:
+        source = Path(executor.__file__).resolve().read_text(encoding="utf-8")
+        self.assertNotIn("lines_family", source)
+
+        primitive_registry = build_primitive_registry(vars(executor))
+        relocated_capabilities = {
+            "defensive_line_model": primitive_registry["defensive_line_model"],
+            "multi_line_model": primitive_registry["multi_line_model"],
+            "relative_position_to_line": primitive_registry["relative_position_to_line"],
+            "receiver_line_transition_during_pass_leg": primitive_registry[
+                "receiver_line_transition_during_pass_leg"
+            ],
+            "controlled_line_break_episode": primitive_registry["controlled_line_break_episode"],
+        }
+
+        for implementation_name in (
+            "primitive_defensive_line_model",
+            "primitive_multi_line_model",
+            "primitive_relative_position_to_line",
+            "primitive_receiver_line_transition_during_pass_leg",
+            "primitive_controlled_line_break_episode",
+        ):
+            self.assertFalse(hasattr(executor, implementation_name), implementation_name)
+        for implementation in relocated_capabilities.values():
+            self.assertEqual("tqe.runtime.capabilities.lines_family", implementation.__module__)
+
+
 # This is the F2-0 freeze line, not a cleanup.  Destination-entry lines are the
 # V8/V10 audit leaks named in ADR 0012; the import/helper lines are existing
 # capability-family code still outside primitive_/relation_ bodies until later
@@ -156,9 +183,6 @@ EXPECTED_SHARED_CAPABILITY_MENTIONS = {
     },
     "relation_destination_entry": {
         'if node.catalog_ref != "relation_destination_entry":',
-    },
-    "relative_position_to_line": {
-        "from tqe.runtime.relative_position_to_line import (",
     },
     "time_to_arrival": {
         'raise RuntimeError(f"Unsupported time_to_arrival candidate_scope: {candidate_scope}")',
@@ -275,4 +299,5 @@ def implementation_source_paths() -> tuple[Path, ...]:
         Path(executor.__file__).resolve(),
         Path(executor.__file__).resolve().parent / "capabilities" / "pass_family.py",
         Path(executor.__file__).resolve().parent / "capabilities" / "corridor_family.py",
+        Path(executor.__file__).resolve().parent / "capabilities" / "lines_family.py",
     )

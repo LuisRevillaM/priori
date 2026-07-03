@@ -102,6 +102,11 @@ RELOCATED_IMPLEMENTATION_MODULES: dict[str, str] = {
     "relation_opponents_bypassed_by_action": "tqe.runtime.capabilities.pass_family",
     "relation_geometric_progressive_corridor": "tqe.runtime.capabilities.corridor_family",
     "primitive_relation_destination_entry_classification": "tqe.runtime.capabilities.corridor_family",
+    "primitive_defensive_line_model": "tqe.runtime.capabilities.lines_family",
+    "primitive_multi_line_model": "tqe.runtime.capabilities.lines_family",
+    "primitive_relative_position_to_line": "tqe.runtime.capabilities.lines_family",
+    "primitive_receiver_line_transition_during_pass_leg": "tqe.runtime.capabilities.lines_family",
+    "primitive_controlled_line_break_episode": "tqe.runtime.capabilities.lines_family",
 }
 
 
