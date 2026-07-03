@@ -659,6 +659,15 @@ class Binder:
                 ),
                 f"{path}.required_entity_scope",
             )
+        if signature.name in {"exists", "count_at_least"} and not _is_anchor_evaluation_output(input_type):
+            self._issue(
+                "operator_requires_anchor_evaluations",
+                (
+                    f"{signature.name} only accepts declared anchor-evaluation outputs; "
+                    f"got {node.input.source_node_id}.{node.input.output_name}"
+                ),
+                f"{path}.input",
+            )
         if signature.compare_required and compare is None:
             self._issue(
                 "missing_compare_value",
@@ -935,6 +944,15 @@ def bind_error_codes(error: BindError) -> set[str]:
 
 def validation_error_codes(error: ValidationError) -> set[str]:
     return {str(issue["type"]) for issue in error.errors()}
+
+
+def _is_anchor_evaluation_output(output: CatalogOutput) -> bool:
+    return (
+        output.name == "anchor_evaluations"
+        and output.temporal_type == TemporalContainer.EPISODE_SET
+        and output.cardinality == Cardinality.COLLECTION
+        and output.entity_scope == EntityScope.ANCHOR
+    )
 
 
 def _duration_seconds(value: TypedValue) -> float | None:

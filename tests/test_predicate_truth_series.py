@@ -170,6 +170,61 @@ class ComparisonTruthSeriesTest(unittest.TestCase):
         self.assertEqual(0, persistence["start_frame_id"])
         self.assertEqual(1, persistence["end_frame_id"])
 
+    def test_exists_runtime_rejects_plain_episode_sets_instead_of_bool_fallback(self) -> None:
+        input_type = CatalogOutput(
+            name="episodes",
+            temporal_type=TemporalContainer.EPISODE_SET,
+            payload_type=PayloadType.BOOLEAN,
+            cardinality=Cardinality.COLLECTION,
+            unit=Unit.NONE,
+            entity_scope=EntityScope.POSSESSION,
+            missing_data_semantics=MissingDataSemantics.UNKNOWN,
+        )
+        output_type = CatalogOutput(
+            name="predicate",
+            temporal_type=TemporalContainer.FRAME_SIGNAL,
+            payload_type=PayloadType.BOOLEAN,
+            cardinality=Cardinality.SINGLE,
+            unit=Unit.NONE,
+            missing_data_semantics=MissingDataSemantics.UNKNOWN,
+        )
+        node = BoundPredicateNode(
+            node_id="plain_episode_exists",
+            input=SignalRef(source_node_id="possession", output_name="episodes"),
+            input_type=input_type,
+            operator=OperatorRef(name="exists", version="1.0.0"),
+            operator_signature=OperatorSignature(
+                name="exists",
+                version="1.0.0",
+                purpose="test exists",
+                input_temporal_types=[TemporalContainer.EPISODE_SET],
+                input_payload_types=[PayloadType.BOOLEAN],
+                input_cardinalities=[Cardinality.COLLECTION],
+                output_temporal_type=TemporalContainer.FRAME_SIGNAL,
+                output_payload_type=PayloadType.BOOLEAN,
+                output_cardinality=Cardinality.SINGLE,
+            ),
+            output=output_type,
+        )
+        runtime_value = RuntimeValue(
+            output=input_type,
+            value=[{"anchor_frame_id": 100}],
+            records=[{"anchor_frame_id": 100}],
+        )
+
+        with self.assertRaisesRegex(RuntimeError, "expected declared anchor-evaluation records"):
+            execute_predicate_with_resolved_inputs(
+                context=MatchContext(
+                    match_id="synthetic",
+                    period="firstHalf",
+                    frame_ids=(100,),
+                    params=RuntimeParameters(values={"analysis_rate_hz": 5}),
+                ),
+                node=node,
+                inputs={"episodes": runtime_value},
+                parameters={},
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

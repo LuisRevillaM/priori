@@ -1644,49 +1644,11 @@ def execute_predicate_with_resolved_inputs(
         source = runtime_value.value
         if isinstance(source, list):
             records = [record for record in source if isinstance(record, dict)]
-            coverage = relation_anchor_evaluation_records(records)
-            if coverage:
-                return exists_from_anchor_evaluations(
-                    node=node,
-                    records=coverage,
-                )
-            frame_ids = [
-                source_record_frame_id(record)
-                for record in records
-            ]
-            usable = [
-                (record, int(frame_id))
-                for record, frame_id in zip(records, frame_ids, strict=False)
-                if frame_id is not None
-            ]
-            if usable:
-                return {
-                    "predicate": FrameSignal(
-                        frame_ids=[frame_id for _record, frame_id in usable],
-                        values=[True for _record, _frame_id in usable],
-                        unknown_mask=[False for _record, _frame_id in usable],
-                        unit=node.output.unit,
-                        entity_scope=node.output.entity_scope,
-                    ),
-                    "predicate_records": [
-                        predicate_record_for_source_record(
-                            source_record=record,
-                            node=node,
-                            status="PASS",
-                            value=TypedValue(payload_type=PayloadType.BOOLEAN, value=True, unit=Unit.NONE),
-                            threshold=None,
-                            unit=Unit.NONE,
-                            frame_id=frame_id,
-                            source_evidence={
-                                "source_node_id": node.input.source_node_id,
-                                "source_output_name": node.input.output_name,
-                            },
-                        )
-                        for record, frame_id in usable
-                    ],
-                    "episodes": source,
-                }
-            return {"predicate": bool(source), "episodes": source}
+            coverage = require_anchor_evaluation_records(node=node, records=records)
+            return exists_from_anchor_evaluations(
+                node=node,
+                records=coverage,
+            )
         raise RuntimeError(f"Unsupported exists source for {node.node_id}")
     if node.operator.name == "count_at_least":
         source = runtime_value.value
@@ -1694,15 +1656,26 @@ def execute_predicate_with_resolved_inputs(
         if compare is None or not isinstance(source, list):
             raise RuntimeError(f"Unsupported count_at_least source for {node.node_id}")
         records = [record for record in source if isinstance(record, dict)]
-        coverage = relation_anchor_evaluation_records(records)
-        if coverage:
-            return count_at_least_from_anchor_evaluations(
-                node=node,
-                records=coverage,
-                threshold=int(round(float(compare.value))),
-            )
-        return {"predicate": len(source) >= int(round(float(compare.value)))}
+        coverage = require_anchor_evaluation_records(node=node, records=records)
+        return count_at_least_from_anchor_evaluations(
+            node=node,
+            records=coverage,
+            threshold=int(round(float(compare.value))),
+        )
     raise RuntimeError(f"Unsupported predicate operator {node.operator.name}")
+
+
+def require_anchor_evaluation_records(
+    *,
+    node: BoundPredicateNode,
+    records: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    coverage = relation_anchor_evaluation_records(records)
+    if len(coverage) != len(records):
+        raise RuntimeError(
+            f"{node.node_id} expected declared anchor-evaluation records for {node.operator.name}"
+        )
+    return coverage
 
 
 def relation_anchor_evaluation_records(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
