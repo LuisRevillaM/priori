@@ -102,6 +102,32 @@ class ExecutorRegistryBoundaryTests(unittest.TestCase):
             self.assertEqual("tqe.runtime.capabilities.pass_family", implementation.__module__)
 
 
+    def test_corridor_family_relocation_is_registry_only(self) -> None:
+        source = Path(executor.__file__).resolve().read_text(encoding="utf-8")
+        self.assertNotIn("corridor_family", source)
+
+        primitive_registry = build_primitive_registry(vars(executor))
+        relation_registry = build_relation_registry(vars(executor))
+        relocated_capabilities = {
+            "geometric_progressive_corridor": relation_registry["geometric_progressive_corridor"],
+            "geometric_progressive_corridor_from_anchor_set": relation_registry[
+                "geometric_progressive_corridor_from_anchor_set"
+            ],
+            "relation_destination_entry": primitive_registry["relation_destination_entry"],
+            "relation_destination_entry_classification": primitive_registry[
+                "relation_destination_entry_classification"
+            ],
+        }
+
+        for implementation_name in (
+            "relation_geometric_progressive_corridor",
+            "primitive_relation_destination_entry_classification",
+        ):
+            self.assertFalse(hasattr(executor, implementation_name), implementation_name)
+        for implementation in relocated_capabilities.values():
+            self.assertEqual("tqe.runtime.capabilities.corridor_family", implementation.__module__)
+
+
 # This is the F2-0 freeze line, not a cleanup.  Destination-entry lines are the
 # V8/V10 audit leaks named in ADR 0012; the import/helper lines are existing
 # capability-family code still outside primitive_/relation_ bodies until later
@@ -131,9 +157,6 @@ EXPECTED_SHARED_CAPABILITY_MENTIONS = {
     "relation_destination_entry": {
         'if node.catalog_ref != "relation_destination_entry":',
     },
-    "relation_destination_entry_classification": {
-        '"source_node_id": "relation_destination_entry_classification",',
-    },
     "relative_position_to_line": {
         "from tqe.runtime.relative_position_to_line import (",
     },
@@ -152,11 +175,6 @@ EXPECTED_SHARED_HELPER_MENTION_COUNTS = {
     'or optional_int(record.get("outcome_frame_id"))': 1,
     'or optional_int(record.get("anchor_frame_id"))': 1,
     # Experimental trace fabricator body.
-    "def experimental_predicate_traces_for_result": 1,
-    'predicate_id="has_opposite_corridor"': 1,
-    'predicate_id="destination_region_entered"': 1,
-    '"experimental_plan_status": "experimental"': 3,
-    '"source_node_id": "relation_destination_entry_classification"': 1,
     # select_proof_results selection labels.
     "def select_proof_results": 1,
     '"proof_selected": True': 1,
@@ -256,4 +274,5 @@ def implementation_source_paths() -> tuple[Path, ...]:
     return (
         Path(executor.__file__).resolve(),
         Path(executor.__file__).resolve().parent / "capabilities" / "pass_family.py",
+        Path(executor.__file__).resolve().parent / "capabilities" / "corridor_family.py",
     )

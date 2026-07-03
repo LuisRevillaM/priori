@@ -10,11 +10,11 @@ import numpy as np
 import pandas as pd
 
 from tqe.runtime.binder import bind_document
+from tqe.runtime.capabilities.corridor_family import ball_entry_evaluation_into_destination_region
 from tqe.runtime.executor import (
     LEGACY_M1_PARITY_PROFILE,
     PeriodState,
     TacticalQueryExecutor,
-    ball_entry_evaluation_into_destination_region,
     execute_legacy_m1_plan_from_path,
     execute_plan_from_path,
     execution_result_rows,

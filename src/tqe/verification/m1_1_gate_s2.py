@@ -9,6 +9,10 @@ from pathlib import Path
 from typing import Any
 
 from tqe.runtime.binder import bind_document_from_path
+from tqe.runtime.capabilities.corridor_family import (
+    primitive_relation_destination_entry_classification,
+    relation_anchor_results,
+)
 from tqe.runtime.executor import (
     TacticalQueryExecutor,
     catalog_input_value,
@@ -21,10 +25,8 @@ from tqe.runtime.executor import (
     predicate_neq,
     predicate_persists_for,
     primitive_outcome_classification,
-    primitive_relation_destination_entry_classification,
     primitive_signed_lateral_shift,
     record_runtime_values,
-    relation_anchor_results,
     runtime_parameters,
 )
 from tqe.runtime.ir import BoundCatalogNode, NodeKind

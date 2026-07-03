@@ -100,6 +100,8 @@ RELOCATED_IMPLEMENTATION_MODULES: dict[str, str] = {
     "primitive_controlled_pass_episode": "tqe.runtime.capabilities.pass_family",
     "primitive_one_touch_relay_episode": "tqe.runtime.capabilities.pass_family",
     "relation_opponents_bypassed_by_action": "tqe.runtime.capabilities.pass_family",
+    "relation_geometric_progressive_corridor": "tqe.runtime.capabilities.corridor_family",
+    "primitive_relation_destination_entry_classification": "tqe.runtime.capabilities.corridor_family",
 }
 
 

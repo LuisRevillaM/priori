@@ -13,10 +13,12 @@ import numpy as np
 import pandas as pd
 
 from tqe.runtime.binder import HOST_RUNTIME_PARAMETER_DEFAULTS, bind_document
+from tqe.runtime.capabilities.corridor_family import (
+    primitive_relation_destination_entry_classification,
+)
 from tqe.runtime.executor import (
     PeriodState,
     RuntimeParameters,
-    primitive_relation_destination_entry_classification,
 )
 from tqe.runtime.ir import BoundCatalogNode, TacticalQueryDocument
 from tqe.runtime.values import RuntimeValue
