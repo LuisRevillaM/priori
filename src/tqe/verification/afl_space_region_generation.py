@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from tqe.runtime.binder import bind_document
+from tqe.runtime.capabilities.possession_family import space_region_generation_anchor_record
 from tqe.runtime.executor import (
     DEFAULT_CANONICAL_ROOT,
     DEFAULT_RAW_ROOT,
@@ -20,7 +21,6 @@ from tqe.runtime.executor import (
     TacticalQueryExecutor,
     execution_result_rows,
     runtime_parameters,
-    space_region_generation_anchor_record,
 )
 from tqe.runtime.ir import ExecutionStatus, TacticalQueryDocument, stable_hash
 from tqe.semantic_registry.generate import generate_scp0_artifacts
