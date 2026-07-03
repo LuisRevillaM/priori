@@ -1,6 +1,7 @@
 """Verify M1.1S Gate S3R: explicit anchors and generic temporal semantics."""
 
 from __future__ import annotations
+from tqe.runtime.legacy_m1 import LEGACY_M1_PARITY_PROFILE
 
 import inspect
 import json
@@ -21,7 +22,6 @@ from tqe.runtime.executor import (
     RuntimeParameters,
     TacticalQueryExecutor,
     GENERIC_EXECUTION_PROFILE,
-    LEGACY_M1_PARITY_PROFILE,
     anchor_record_id,
     duration_to_frames,
     evaluate_target_in_state,

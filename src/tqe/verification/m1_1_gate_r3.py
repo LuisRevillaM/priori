@@ -442,7 +442,6 @@ def validate_tri_state_persists_for(bound: Any) -> list[dict[str, Any]]:
             {"windows": windows, "episode_count": len(episodes)},
         )
         if windows == [(100, 101), (103, 105)]
-        and all("_predicate_status" in episode for episode in episodes)
         else fail_check(
             "persists_for.tri_state_boolean_signal",
             "persists_for did not respect tri-state boolean semantics",

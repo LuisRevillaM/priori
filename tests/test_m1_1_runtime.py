@@ -1,4 +1,5 @@
 from __future__ import annotations
+from tqe.runtime.legacy_m1 import LEGACY_M1_PARITY_PROFILE, execute_default_plan, execute_legacy_m1_plan_from_path, select_proof_results
 
 import ast
 import json
@@ -12,17 +13,13 @@ import pandas as pd
 from tqe.runtime.binder import bind_document
 from tqe.runtime.capabilities.corridor_family import ball_entry_evaluation_into_destination_region
 from tqe.runtime.executor import (
-    LEGACY_M1_PARITY_PROFILE,
     PeriodState,
     TacticalQueryExecutor,
-    execute_legacy_m1_plan_from_path,
     execute_plan_from_path,
     execution_result_rows,
-    execute_default_plan,
     runtime_parameters,
 )
 from tqe.runtime.ir import EvaluationTarget, ExecutionMode, ExecutionStatus, PlanStatus, TacticalQueryDocument
-from tqe.runtime.legacy_m1 import select_proof_results
 from tqe.runtime.relations import evaluate_geometric_progressive_corridors
 
 from tests.support.canonical_data import requires_canonical_data

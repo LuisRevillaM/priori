@@ -1,6 +1,7 @@
 """Verify M1.1S Gate S3: anchor and predicate trace core."""
 
 from __future__ import annotations
+from tqe.runtime.legacy_m1 import accepted_predicate_traces
 
 import inspect
 import json
@@ -11,7 +12,6 @@ from typing import Any
 from tqe.runtime.binder import bind_document_from_path
 from tqe.runtime.executor import (
     TacticalQueryExecutor,
-    accepted_predicate_traces,
     execution_result_rows,
     runtime_anchors,
     runtime_parameters,

@@ -1,6 +1,7 @@
 """Verify M1.1S Gate S4: rule-driven generic result emission."""
 
 from __future__ import annotations
+from tqe.runtime.legacy_m1 import execute_default_plan
 
 import json
 from collections import Counter
@@ -13,7 +14,6 @@ from tqe.runtime.binder import bind_document
 from tqe.runtime.executor import (
     TacticalQueryExecutor,
     emit_generic_results_from_rules,
-    execute_default_plan,
     execute_plan_from_path,
     execution_result_rows,
     runtime_parameters,

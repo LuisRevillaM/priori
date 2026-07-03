@@ -1,6 +1,7 @@
 """Verify M1.1 Gate C: predicate traces and non-match evaluation."""
 
 from __future__ import annotations
+from tqe.runtime.legacy_m1 import LEGACY_M1_PARITY_PROFILE, execute_default_plan
 
 import json
 from collections import defaultdict
@@ -14,10 +15,8 @@ from tqe.runtime.binder import BindError, bind_document
 from tqe.runtime.executor import (
     DEFAULT_CANONICAL_ROOT,
     DEFAULT_PLAN_PATH,
-    LEGACY_M1_PARITY_PROFILE,
     TacticalQueryExecutor,
     execution_result_rows,
-    execute_default_plan,
 )
 from tqe.runtime.ir import BoundPredicateNode, EvaluationTarget, TacticalQueryDocument
 from tqe.verification.m1_1_gate_b import build_report as build_gate_b_report

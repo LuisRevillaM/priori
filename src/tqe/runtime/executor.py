@@ -49,6 +49,7 @@ from tqe.runtime.ir import (
     UnknownEvidencePolicy,
     stable_hash,
 )
+from tqe.runtime import legacy_m1
 from tqe.runtime.values import FrameSignal, RuntimeValue, canonical_anchor_record_id, runtime_value_from_raw
 from tqe.runtime.envelope import conformance_enabled, shadow_check_legacy_outputs
 
@@ -63,7 +64,6 @@ DEFAULT_PLAN_PATH = Path("config/query-plans/ball_side_block_shift.ir.v1.json")
 DEFAULT_CANONICAL_ROOT = Path(os.environ.get("TQE_DATA_ROOT", "data/canonical/v1"))
 DEFAULT_RAW_ROOT = Path(os.environ.get("TQE_RAW_ROOT", str(Path("data/raw/idsse") / SOURCE_VERSION)))
 GENERIC_EXECUTION_PROFILE = "generic"
-LEGACY_M1_PARITY_PROFILE = "legacy_m1_parity"
 SUPPORTED_PREDICATE_OPERATORS = frozenset(
     {
         "gt",
@@ -209,7 +209,7 @@ class TacticalQueryExecutor:
     ) -> None:
         self.canonical_root = canonical_root
         self.raw_root = raw_root
-        if compatibility_profile not in {GENERIC_EXECUTION_PROFILE, LEGACY_M1_PARITY_PROFILE}:
+        if compatibility_profile not in {GENERIC_EXECUTION_PROFILE, legacy_m1.LEGACY_M1_PARITY_PROFILE}:
             raise RuntimeError(f"Unsupported compatibility profile {compatibility_profile}")
         self.compatibility_profile = compatibility_profile
         self.enable_node_cache = (
@@ -403,10 +403,10 @@ class TacticalQueryExecutor:
                 params=params,
                 compatibility_profile=compatibility_profile,
             )
-            if compatibility_profile == LEGACY_M1_PARITY_PROFILE:
+            if compatibility_profile == legacy_m1.LEGACY_M1_PARITY_PROFILE:
                 accepted.extend(state.accepted)
                 traces.extend(
-                    accepted_predicate_traces(
+                    legacy_m1.accepted_predicate_traces(
                         state,
                         bound_plan=bound_plan,
                         compatibility_profile=compatibility_profile,
@@ -423,15 +423,8 @@ class TacticalQueryExecutor:
             runtime_value_count += sum(len(outputs) for outputs in state.runtime_values.values())
             progress_events.extend(state.progress_events)
             node_cache_summary.update(state.node_cache_summary)
-        if compatibility_profile == LEGACY_M1_PARITY_PROFILE:
-            accepted.sort(
-                key=lambda item: (
-                    -float(item["block_shift_score"]),
-                    item["match_id"],
-                    item["period"],
-                    item["wide_entry_frame_id"],
-                )
-            )
+        if compatibility_profile == legacy_m1.LEGACY_M1_PARITY_PROFILE:
+            accepted.sort(key=legacy_m1.legacy_m1_result_key)
         else:
             accepted.sort(
                 key=lambda item: (
@@ -588,50 +581,17 @@ class TacticalQueryExecutor:
         elif isinstance(node, BoundPredicateNode):
             if node.operator.name not in SUPPORTED_PREDICATE_OPERATORS:
                 raise RuntimeError(f"No predicate implementation for {node.operator.name}")
-            if profile == LEGACY_M1_PARITY_PROFILE and node.operator.name == "persists_for" and legacy_m1_record_persists_for_adapter(
+            legacy_result = legacy_m1.legacy_m1_predicate_node_result(
                 state=state,
                 node=node,
-            ):
-                runtime_values = record_runtime_values(state, node)
-                self._record_progress(
-                    state,
-                    {
-                        "event": "node_complete",
-                        **progress_base,
-                        "cache_status": "bypassed",
-                        "output_names": sorted(runtime_values),
-                    },
-                )
-                return NodeExecutionResult(
-                    node_id=node.node_id,
-                    inputs=inputs,
-                    parameters=parameters,
-                    outputs=state.signals.get(node.node_id, {}),
-                    runtime_values=runtime_values,
-                    provenance={"node_kind": node.kind.value, "compatibility_profile": profile, "adapter": "legacy_m1_record_persists_for"},
-                )
-            if profile == LEGACY_M1_PARITY_PROFILE and node.operator.name == "persists_for" and legacy_m1_frame_signal_persists_for_adapter(
-                state=state,
-                node=node,
-            ):
-                runtime_values = record_runtime_values(state, node)
-                self._record_progress(
-                    state,
-                    {
-                        "event": "node_complete",
-                        **progress_base,
-                        "cache_status": "bypassed",
-                        "output_names": sorted(runtime_values),
-                    },
-                )
-                return NodeExecutionResult(
-                    node_id=node.node_id,
-                    inputs=inputs,
-                    parameters=parameters,
-                    outputs=state.signals.get(node.node_id, {}),
-                    runtime_values=runtime_values,
-                    provenance={"node_kind": node.kind.value, "compatibility_profile": profile, "adapter": "legacy_m1_frame_signal_persists_for"},
-                )
+                profile=profile,
+                inputs=inputs,
+                parameters=parameters,
+                progress_base=progress_base,
+                record_progress=self._record_progress,
+            )
+            if legacy_result is not None:
+                return legacy_result
             context = MatchContext(
                 match_id=state.match_id,
                 period=state.period,
@@ -821,11 +781,7 @@ def evaluate_target_in_state(
         key=lambda anchor: abs(anchor.anchor_frame_id - target_frame_id),
     )
     anchor_record = closest.attributes
-    result = (
-        anchor_record.get("_runtime_result")
-        if compatibility_profile == LEGACY_M1_PARITY_PROFILE
-        else None
-    ) or generic_target_result(anchor_record)
+    result = legacy_m1.legacy_m1_target_result(anchor_record, compatibility_profile) or generic_target_result(anchor_record)
     traces = predicate_traces_for_anchor(
         state,
         closest,
@@ -1504,129 +1460,6 @@ def record_persistence_evidence(
     if not isinstance(series, pd.Series):
         return {"persistent": False, "duration_seconds": None, "start_frame_id": None, "end_frame_id": None}
     return boolean_persistence_evidence(series, minimum_frames, analysis_rate_hz)
-
-
-def legacy_m1_record_persists_for_adapter(*, state: PeriodState, node: BoundPredicateNode) -> bool:
-    duration_seconds = float(node.duration.value) if isinstance(node.duration, TypedValue) else None
-    if duration_seconds is None:
-        raise RuntimeError(f"{node.node_id} requires duration")
-    runtime_value = source_runtime_value(state, node)
-    values = runtime_frame_values(runtime_value)
-    if not isinstance(values, list):
-        return False
-    records = runtime_records(runtime_value)
-    if not (
-        records
-        and len(records) == len(values)
-        and all(
-            isinstance(record.get("truth_series"), pd.Series)
-            and isinstance(record.get("measure_series"), pd.Series)
-            for record in records
-        )
-    ):
-        return False
-    analysis_rate_hz = state.params.integer("analysis_rate_hz")
-    minimum_frames = int(round(duration_seconds * analysis_rate_hz))
-    accepted_records: list[dict[str, Any]] = []
-    for record, source_status in zip(records, values, strict=True):
-        persistence = record_persistence_evidence(
-            record=record,
-            minimum_frames=minimum_frames,
-            analysis_rate_hz=analysis_rate_hz,
-        )
-        persistent = bool(persistence["persistent"])
-        record["predicate_persistent"] = persistent
-        record["predicate_persistence_seconds"] = persistence["duration_seconds"]
-        record["predicate_persistence_start_frame_id"] = persistence["start_frame_id"]
-        record["predicate_persistence_end_frame_id"] = persistence["end_frame_id"]
-        record["predicate_gate_passed"] = bool(source_status is True and persistent)
-        record_candidate_predicate(
-            candidate=record,
-            node=node,
-            status="PASS" if persistent else "FAIL",
-            value=(
-                typed_number(float(persistence["duration_seconds"]), Unit.SECOND)
-                if persistence["duration_seconds"] is not None
-                else None
-            ),
-            threshold=typed_number(duration_seconds, Unit.SECOND),
-            unit=Unit.SECOND,
-            window={
-                "start_frame_id": persistence["start_frame_id"],
-                "end_frame_id": persistence["end_frame_id"],
-            },
-            source_evidence={
-                "source_node_id": node.input.source_node_id,
-                "source_output_name": node.input.output_name,
-                "adapter": "legacy_m1_record_persists_for",
-            },
-        )
-        if record["predicate_gate_passed"]:
-            accepted_records.append(record)
-    state.signals[node.node_id] = {
-        "predicate": accepted_records,
-        "episodes": accepted_records,
-        "predicate_records": accepted_records,
-    }
-    return True
-
-
-def legacy_m1_frame_signal_persists_for_adapter(*, state: PeriodState, node: BoundPredicateNode) -> bool:
-    duration_seconds = float(node.duration.value) if isinstance(node.duration, TypedValue) else None
-    if duration_seconds is None:
-        raise RuntimeError(f"{node.node_id} requires duration")
-    runtime_value = source_runtime_value(state, node)
-    values = runtime_frame_values(runtime_value)
-    if not isinstance(values, list) or not all(value is None or isinstance(value, bool) for value in values):
-        return False
-    source_facts = runtime_records(runtime_value)
-    if not source_facts:
-        return False
-    if any(isinstance(record.get("measure_series"), pd.Series) for record in source_facts):
-        return False
-    if not all(isinstance(record, dict) and "status" in record for record in source_facts):
-        return False
-    analysis_rate_hz = state.params.integer("analysis_rate_hz")
-    minimum_frames = int(round(duration_seconds * analysis_rate_hz))
-    frame_ids = frame_ids_for_runtime_value(
-        runtime_value,
-        MatchContext(
-            match_id=state.match_id,
-            period=state.period,
-            frame_ids=tuple(int(frame_id) for frame_id in state.frame_ids),
-            params=state.params,
-        ),
-    )
-    episodes = episode_records_from_frame_ids_and_mask(
-        frame_ids=frame_ids,
-        mask=np.asarray([value is True for value in values], dtype=bool),
-        minimum_frames=minimum_frames,
-    )
-    for episode in episodes:
-        episode.setdefault("_predicate_status", {})
-        start_index = int(episode["start_index"])
-        if start_index < len(source_facts):
-            episode["_predicate_status"][node.input.source_node_id] = source_facts[start_index]
-        duration = (int(episode["end_index"]) - start_index + 1) / analysis_rate_hz
-        record_candidate_predicate(
-            candidate=episode,
-            node=node,
-            status="PASS",
-            value=typed_number(round(float(duration), 3), Unit.SECOND),
-            threshold=typed_number(duration_seconds, Unit.SECOND),
-            unit=Unit.SECOND,
-            window={
-                "start_frame_id": int(episode["start_frame_id"]),
-                "end_frame_id": int(episode["end_frame_id"]),
-            },
-            source_evidence={
-                "source_node_id": node.input.source_node_id,
-                "source_output_name": node.input.output_name,
-                "adapter": "legacy_m1_frame_signal_persists_for",
-            },
-        )
-    state.signals[node.node_id] = {"predicate": episodes, "episodes": episodes}
-    return True
 
 
 def record_runtime_values(state: PeriodState, node: BoundPlanNode) -> dict[str, RuntimeValue]:
@@ -2895,86 +2728,6 @@ def frame_match_time_ms(state: PeriodState, frame_id: int | None) -> int | None:
     return int(round((int(frame_id) - first_frame_id) / FRAME_RATE_HZ * 1000))
 
 
-def accepted_predicate_traces(
-    state: PeriodState,
-    *,
-    bound_plan: BoundQueryPlan | None = None,
-    compatibility_profile: str = LEGACY_M1_PARITY_PROFILE,
-) -> list[PredicateTrace]:
-    if state.predicate_traces:
-        return state.predicate_traces
-    traces: list[PredicateTrace] = []
-    for result in state.accepted:
-        anchor = runtime_anchor_from_record(
-            state=state,
-            node_id="accepted_results",
-            output_name="result",
-            index=len(traces),
-            record=result,
-        )
-        if anchor is not None:
-            traces.extend(
-                predicate_traces_for_anchor(
-                    state,
-                    anchor,
-                    result,
-                    bound_plan=bound_plan,
-                    compatibility_profile=compatibility_profile,
-                )
-            )
-    return traces
-
-
-def predicate_traces_from_status_records(
-    *,
-    state: PeriodState,
-    anchor: RuntimeAnchor,
-    result: dict[str, Any],
-) -> list[PredicateTrace]:
-    anchor_record = anchor.attributes
-    records = anchor_record.get("_predicate_status") or result.get("_predicate_status") or {}
-    if not isinstance(records, dict) or not records:
-        return []
-    result_id = str(result.get("result_id") or anchor.anchor_id)
-    common = {
-        "result_id": result_id,
-        "candidate_key": anchor.anchor_id,
-        "anchor_id": anchor.anchor_id,
-        "match_id": anchor.match_id,
-        "period": anchor.period,
-        "anchor_frame_id": anchor.anchor_frame_id,
-    }
-    traces: list[PredicateTrace] = []
-    for predicate_id, record in records.items():
-        if not isinstance(record, dict):
-            continue
-        source_evidence = {
-            **common,
-            **{
-                key: value
-                for key, value in dict(record.get("source_evidence") or {}).items()
-                if value is not None
-            },
-        }
-        traces.append(
-            PredicateTrace(
-                predicate_id=str(predicate_id),
-                status=record["status"],
-                value=TypedValue.model_validate(record["value"])
-                if record.get("value") is not None
-                else None,
-                threshold=TypedValue.model_validate(record["threshold"])
-                if record.get("threshold") is not None
-                else None,
-                unit=Unit(record.get("unit", Unit.NONE.value)),
-                frame_id=record.get("frame_id"),
-                window=record.get("window"),
-                source_evidence=source_evidence,
-            )
-        )
-    return traces
-
-
 def predicate_traces_for_anchor(
     state: PeriodState,
     anchor: RuntimeAnchor,
@@ -2982,39 +2735,22 @@ def predicate_traces_for_anchor(
     bound_plan: BoundQueryPlan | None = None,
     compatibility_profile: str = GENERIC_EXECUTION_PROFILE,
 ) -> list[PredicateTrace]:
-    runtime_traces = (
-        predicate_traces_from_declared_runtime_outputs(
+    if compatibility_profile == legacy_m1.LEGACY_M1_PARITY_PROFILE:
+        return legacy_m1.predicate_traces_for_anchor(
+            state,
+            anchor,
+            result,
             bound_plan=bound_plan,
-            state=state,
-            anchor=anchor,
-            result=result,
+            compatibility_profile=compatibility_profile,
         )
-        if bound_plan is not None
-        else []
+    if bound_plan is None:
+        return []
+    return predicate_traces_from_declared_runtime_outputs(
+        bound_plan=bound_plan,
+        state=state,
+        anchor=anchor,
+        result=result,
     )
-    legacy_traces = (
-        predicate_traces_from_status_records(
-            state=state,
-            anchor=anchor,
-            result=result,
-        )
-        if compatibility_profile == LEGACY_M1_PARITY_PROFILE
-        else []
-    )
-    if runtime_traces:
-        legacy_by_id = {trace.predicate_id: trace for trace in legacy_traces}
-        merged: list[PredicateTrace] = []
-        for trace in runtime_traces:
-            legacy = legacy_by_id.pop(trace.predicate_id, None)
-            if legacy is not None and compatibility_profile == LEGACY_M1_PARITY_PROFILE:
-                merged.append(legacy)
-            elif legacy is not None and trace.status == "UNKNOWN":
-                merged.append(legacy)
-            else:
-                merged.append(trace)
-        merged.extend(legacy_by_id.values())
-        return merged
-    return legacy_traces
 
 
 def predicate_traces_from_declared_runtime_outputs(
@@ -3320,21 +3056,6 @@ def summarize_results(results: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def execute_default_plan(
-    *,
-    canonical_root: Path = DEFAULT_CANONICAL_ROOT,
-    raw_root: Path = DEFAULT_RAW_ROOT,
-    plan_path: Path = DEFAULT_PLAN_PATH,
-) -> tuple[BoundQueryPlan, QueryExecution]:
-    bound = bind_document_from_path(plan_path)
-    execution = TacticalQueryExecutor(
-        canonical_root=canonical_root,
-        raw_root=raw_root,
-        compatibility_profile=LEGACY_M1_PARITY_PROFILE,
-    ).execute(bound)
-    return bound, execution
-
-
 def execute_plan_from_path(
     plan_path: Path,
     *,
@@ -3345,21 +3066,6 @@ def execute_plan_from_path(
     execution = TacticalQueryExecutor(
         canonical_root=canonical_root,
         raw_root=raw_root,
-    ).execute(bound)
-    return bound, execution
-
-
-def execute_legacy_m1_plan_from_path(
-    plan_path: Path,
-    *,
-    canonical_root: Path = DEFAULT_CANONICAL_ROOT,
-    raw_root: Path = DEFAULT_RAW_ROOT,
-) -> tuple[BoundQueryPlan, QueryExecution]:
-    bound = bind_document_from_path(plan_path)
-    execution = TacticalQueryExecutor(
-        canonical_root=canonical_root,
-        raw_root=raw_root,
-        compatibility_profile=LEGACY_M1_PARITY_PROFILE,
     ).execute(bound)
     return bound, execution
 

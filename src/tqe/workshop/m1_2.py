@@ -5,6 +5,7 @@ client of this surface, but S0/S1 keep every operation usable without an agent.
 """
 
 from __future__ import annotations
+from tqe.runtime.legacy_m1 import LEGACY_M1_PARITY_PROFILE, execute_legacy_m1_plan_from_path
 
 import json
 import os
@@ -30,9 +31,7 @@ from tqe.runtime.executor import (
     DEFAULT_RAW_ROOT,
     FRAME_RATE_HZ,
     GENERIC_EXECUTION_PROFILE,
-    LEGACY_M1_PARITY_PROFILE,
     TacticalQueryExecutor,
-    execute_legacy_m1_plan_from_path,
     execute_plan_from_path,
     execution_result_rows,
 )

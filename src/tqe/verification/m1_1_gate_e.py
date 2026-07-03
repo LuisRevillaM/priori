@@ -1,6 +1,7 @@
 """Verify M1.1 Gate E: no-code experimental composition proof."""
 
 from __future__ import annotations
+from tqe.runtime.legacy_m1 import execute_legacy_m1_plan_from_path
 
 import ast
 import hashlib
@@ -15,7 +16,6 @@ import pyarrow.parquet as pq
 from tqe.runtime.executor import (
     DEFAULT_CANONICAL_ROOT,
     FRAME_RATE_HZ,
-    execute_legacy_m1_plan_from_path,
     execution_result_rows,
     summarize_results,
 )
