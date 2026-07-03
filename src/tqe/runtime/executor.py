@@ -1135,44 +1135,14 @@ def selected_relation_id_for_anchor(
     source_node_id: str | None = None,
     output_name: str | None = None,
 ) -> str | None:
-    for node_id, outputs in state.runtime_values.items():
-        for runtime_value in outputs.values():
-            for record in runtime_records(runtime_value):
-                if record.get("predicate_id") is None:
-                    continue
-                source_record = record.get("source_record") if isinstance(record.get("source_record"), dict) else record
-                if not record_matches_anchor(source_record, anchor):
-                    continue
-                source_evidence = record.get("source_evidence")
-                if not witness_source_matches(
-                    source_evidence=source_evidence,
-                    requested_source_node_id=source_node_id,
-                    requested_output_name=output_name,
-                ):
-                    continue
-                if isinstance(source_evidence, dict) and source_evidence.get("witness_relation_id") is not None:
-                    return str(source_evidence["witness_relation_id"])
-    for node_id, outputs in state.runtime_values.items():
-        if source_node_id is not None and node_id != source_node_id:
-            continue
-        runtime_value = outputs.get("anchor_evaluations")
-        if runtime_value is None:
-            continue
-        for record in runtime_records(runtime_value):
-            if record_matches_anchor(record, anchor) and record.get("witness_relation_id") is not None:
-                return str(record["witness_relation_id"])
-    fallback_output_names = [output_name] if output_name is not None else []
-    fallback_output_names.extend(name for name in ("classification", "entry_status") if name not in fallback_output_names)
-    for node_id, outputs in state.runtime_values.items():
-        if source_node_id is not None and node_id != source_node_id:
-            continue
-        for fallback_output_name in fallback_output_names:
-            runtime_value = outputs.get(fallback_output_name)
-            if runtime_value is None:
-                continue
-            for record in runtime_records(runtime_value):
-                if record_matches_anchor(record, anchor) and record.get("relation_id") is not None:
-                    return str(record["relation_id"])
+    if source_node_id is None:
+        return None
+    runtime_value = state.runtime_values.get(source_node_id, {}).get("anchor_evaluations")
+    if runtime_value is None:
+        return None
+    for record in runtime_records(runtime_value):
+        if record_matches_anchor(record, anchor) and record.get("witness_relation_id") is not None:
+            return str(record["witness_relation_id"])
     return None
 
 
@@ -1184,68 +1154,12 @@ def selected_relation_id_for_evidence_request(
     source_node_id: str | None = None,
     output_name: str | None = None,
 ) -> str | None:
-    destination_relation_id = destination_entry_relation_id_for_source(
-        state=state,
-        anchor=anchor,
-        bound_plan=bound_plan,
-        source_node_id=source_node_id,
-        output_name=output_name,
-    )
-    if destination_relation_id is not None:
-        return destination_relation_id
     return selected_relation_id_for_anchor(
         state=state,
         anchor=anchor,
         source_node_id=source_node_id,
         output_name=output_name,
     )
-
-
-def destination_entry_relation_id_for_source(
-    *,
-    state: PeriodState,
-    anchor: RuntimeAnchor,
-    bound_plan: BoundQueryPlan,
-    source_node_id: str | None,
-    output_name: str | None,
-) -> str | None:
-    if source_node_id is None or output_name != "episodes":
-        return None
-    for node in bound_plan.nodes:
-        if not isinstance(node, BoundCatalogNode):
-            continue
-        if node.catalog_ref != "relation_destination_entry":
-            continue
-        source_ref = node.inputs.get("relation_episodes")
-        if source_ref is None:
-            continue
-        if source_ref.source_node_id != source_node_id or source_ref.output_name != output_name:
-            continue
-        runtime_value = state.runtime_values.get(node.node_id, {}).get("entry_status")
-        if runtime_value is None:
-            continue
-        for record in runtime_records(runtime_value):
-            if record_matches_anchor(record, anchor) and record.get("relation_id") is not None:
-                return str(record["relation_id"])
-    return None
-
-
-def witness_source_matches(
-    *,
-    source_evidence: Any,
-    requested_source_node_id: str | None,
-    requested_output_name: str | None,
-) -> bool:
-    if requested_source_node_id is None or not isinstance(source_evidence, dict):
-        return True
-    if source_evidence.get("source_node_id") != requested_source_node_id:
-        return False
-    source_output = source_evidence.get("source_output_name")
-    if requested_output_name in {None, source_output}:
-        return True
-    if requested_output_name == "episodes" and source_output == "anchor_evaluations":
-        return True
-    return False
 
 
 def evidence_value_for_anchor(
@@ -1280,8 +1194,6 @@ def record_matches_anchor(record: dict[str, Any], anchor: RuntimeAnchor) -> bool
     if not isinstance(record, dict):
         return False
     if str(record.get("anchor_id") or "") == anchor.anchor_id:
-        return True
-    if optional_int(record.get("anchor_frame_id")) == anchor.anchor_frame_id:
         return True
     source = record.get("source_result")
     if isinstance(source, dict) and record_matches_anchor(source, anchor):
@@ -1606,9 +1518,7 @@ def execute_predicate_with_resolved_inputs(
                         value=typed_enum(str(value)) if value is not None else None,
                         threshold=typed_enum(str(compare_value)),
                         unit=Unit.NONE,
-                        frame_id=optional_int(record.get("destination_entry_frame_id"))
-                        or optional_int(record.get("outcome_frame_id"))
-                        or optional_int(record.get("anchor_frame_id")),
+                        frame_id=source_record_frame_id(record),
                         source_evidence={
                             "source_node_id": node.input.source_node_id,
                             "source_output_name": node.input.output_name,
@@ -2032,7 +1942,7 @@ def persistence_status_at_index(
 
 
 
-def time_to_arrival_candidates(
+def arrival_candidates(
     *,
     state: PeriodState,
     anchor: dict[str, Any],
@@ -2067,7 +1977,7 @@ def time_to_arrival_candidates(
             team_role = "away" if anchor_team_role == "home" else "home"
         known_ids = outfield_player_ids(state.canonical_root, state.match_id, team_role)
         return player_records_at_frame_for_team(state, frame_id, team_role), known_ids
-    raise RuntimeError(f"Unsupported time_to_arrival candidate_scope: {candidate_scope}")
+    raise RuntimeError(f"Unsupported arrival candidate_scope: {candidate_scope}")
 
 
 

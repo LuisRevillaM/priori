@@ -4,6 +4,7 @@ import ast
 import re
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 
 from tqe.runtime import executor
 from tqe.runtime.capabilities import (
@@ -15,6 +16,7 @@ from tqe.runtime.capabilities import (
 )
 from tqe.runtime.catalog import default_catalog
 from tqe.runtime.ir import BoundCatalogNode, NodeKind
+from tqe.runtime.values import RuntimeValue
 
 
 class ExecutorRegistryBoundaryTests(unittest.TestCase):
@@ -81,6 +83,55 @@ class ExecutorRegistryBoundaryTests(unittest.TestCase):
             "sample_capability.sample_node read undeclared parameter missing_parameter",
         ):
             executor.node_parameter_number(node, "missing_parameter")
+
+    def test_witness_selection_requires_exact_anchor_id_not_same_frame(self) -> None:
+        catalog = default_catalog()
+        anchor_output = next(
+            output
+            for entry in catalog.relations
+            if entry.name == "geometric_progressive_corridor"
+            for output in entry.outputs
+            if output.name == "anchor_evaluations"
+        )
+        state = SimpleNamespace(
+            runtime_values={
+                "progressive_corridor": {
+                    "anchor_evaluations": RuntimeValue(
+                        output=anchor_output,
+                        value=[
+                            {
+                                "anchor_id": "other_anchor",
+                                "anchor_frame_id": 100,
+                                "evaluation_status": "PASS",
+                                "relation_count": 1,
+                                "witness_relation_id": "wrong_relation",
+                            }
+                        ],
+                    )
+                }
+            }
+        )
+        anchor = executor.RuntimeAnchor(
+            anchor_id="wanted_anchor",
+            semantic_key="wanted_anchor",
+            match_id="synthetic",
+            period="firstHalf",
+            anchor_frame_id=100,
+            source_node_id="anchors",
+            output_name="anchor_evaluations",
+            start_frame_id=100,
+            end_frame_id=100,
+            attributes={"anchor_id": "wanted_anchor", "anchor_frame_id": 100},
+        )
+
+        self.assertIsNone(
+            executor.selected_relation_id_for_anchor(
+                state=state,
+                anchor=anchor,
+                source_node_id="progressive_corridor",
+                output_name="episodes",
+            )
+        )
 
     def test_pass_family_relocation_is_registry_only(self) -> None:
         source = Path(executor.__file__).resolve().read_text(encoding="utf-8")
@@ -238,27 +289,10 @@ class ExecutorRegistryBoundaryTests(unittest.TestCase):
             self.assertNotEqual("tqe.runtime.executor", implementation.__module__, capability_name)
 
 
-# This is the F2-0 freeze line, not a cleanup.  Destination-entry lines are the
-# V8/V10 audit leaks named in ADR 0012; the time-to-arrival line is a shared
-# helper leak that remains after the final extraction sweep and feeds the F2-X
-# kill-list census.  This guard only sees catalog identifiers; non-catalog
-# helper leaks are frozen separately below.
-EXPECTED_SHARED_CAPABILITY_MENTIONS = {
-    "relation_destination_entry": {
-        'if node.catalog_ref != "relation_destination_entry":',
-    },
-    "time_to_arrival": {
-        'raise RuntimeError(f"Unsupported time_to_arrival candidate_scope: {candidate_scope}")',
-    },
-}
+EXPECTED_SHARED_CAPABILITY_MENTIONS = {}
 
 
-EXPECTED_SHARED_HELPER_MENTION_COUNTS = {
-    # V8-style frame-id fallback inside eq/neq predicate traces.
-    'frame_id=optional_int(record.get("destination_entry_frame_id"))': 1,
-    'or optional_int(record.get("outcome_frame_id"))': 1,
-    'or optional_int(record.get("anchor_frame_id"))': 1,
-}
+EXPECTED_SHARED_HELPER_MENTION_COUNTS = {}
 
 
 def shared_executor_capability_mentions() -> dict[str, set[str]]:
