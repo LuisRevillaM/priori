@@ -209,6 +209,9 @@ EXPECTED_SHARED_CAPABILITY_MENTIONS = {
     "relation_destination_entry": {
         'if node.catalog_ref != "relation_destination_entry":',
     },
+    "time_to_arrival": {
+        'raise RuntimeError(f"Unsupported time_to_arrival candidate_scope: {candidate_scope}")',
+    },
     "velocity": {
         '"UNKNOWN if either velocity window lacks tracking endpoints or if observed speed/acceleration "',
     },

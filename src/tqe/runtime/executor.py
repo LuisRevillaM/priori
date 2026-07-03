@@ -4084,6 +4084,43 @@ def lane_projection(
     }
 
 
+
+def time_to_arrival_candidates(
+    *,
+    state: PeriodState,
+    anchor: dict[str, Any],
+    frame_id: int,
+    candidate_scope: str,
+) -> tuple[list[dict[str, Any]], set[str]]:
+    if candidate_scope == "defending_outfield":
+        team_role = state.defending_team_role
+        known_ids = outfield_player_ids(state.canonical_root, state.match_id, team_role)
+        return player_records_at_frame_for_team(state, frame_id, team_role), known_ids
+    if candidate_scope == "perspective_outfield":
+        team_role = state.perspective_team_role
+        known_ids = outfield_player_ids(state.canonical_root, state.match_id, team_role)
+        return player_records_at_frame_for_team(state, frame_id, team_role), known_ids
+    if candidate_scope == "all_outfield":
+        perspective = outfield_player_ids(state.canonical_root, state.match_id, state.perspective_team_role)
+        defending = outfield_player_ids(state.canonical_root, state.match_id, state.defending_team_role)
+        known_ids = perspective | defending
+        records = [
+            record
+            for record in player_records_at_frame(state, frame_id).values()
+            if str(record.get("player_id")) in known_ids
+        ]
+        return records, known_ids
+    if candidate_scope in {"opposition_outfield_to_anchor_team", "same_team_outfield_as_anchor"}:
+        anchor_team_role = str(anchor.get("team_role") or "")
+        if anchor_team_role not in {"home", "away"}:
+            return [], set()
+        if candidate_scope == "same_team_outfield_as_anchor":
+            team_role = anchor_team_role
+        else:
+            team_role = "away" if anchor_team_role == "home" else "home"
+        known_ids = outfield_player_ids(state.canonical_root, state.match_id, team_role)
+        return player_records_at_frame_for_team(state, frame_id, team_role), known_ids
+    raise RuntimeError(f"Unsupported time_to_arrival candidate_scope: {candidate_scope}")
 def velocity_anchor_record(
     *,
     state: PeriodState,
