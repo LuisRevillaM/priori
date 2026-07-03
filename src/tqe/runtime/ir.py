@@ -346,6 +346,14 @@ class CatalogInput(StrictModel):
     required: bool = True
 
 
+class CoverageDeclaration(StrictModel):
+    status_field: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
+    count_field: str | None = Field(default=None, pattern=r"^[a-z][a-z0-9_]*$")
+    pass_values: list[str] = Field(default_factory=lambda: ["PASS"])
+    fail_values: list[str] = Field(default_factory=lambda: ["FAIL"])
+    unknown_values: list[str] = Field(default_factory=lambda: ["UNKNOWN"])
+
+
 class CatalogOutput(StrictModel):
     name: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
     temporal_type: TemporalContainer
@@ -356,11 +364,18 @@ class CatalogOutput(StrictModel):
     missing_data_semantics: MissingDataSemantics
     evidence_fields: list[str] = Field(default_factory=list)
     allowed_values: list[str] | None = None
+    coverage: CoverageDeclaration | None = None
 
     @model_validator(mode="after")
     def validate_allowed_values(self) -> "CatalogOutput":
         if self.allowed_values is not None and self.payload_type != PayloadType.ENUM:
             raise ValueError("allowed_values can only be declared for enum outputs")
+        if self.coverage is not None:
+            fields = set(self.evidence_fields)
+            if self.coverage.status_field not in fields:
+                raise ValueError("coverage status_field must be declared as output evidence")
+            if self.coverage.count_field is not None and self.coverage.count_field not in fields:
+                raise ValueError("coverage count_field must be declared as output evidence")
         return self
 
 

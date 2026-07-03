@@ -659,12 +659,25 @@ class Binder:
                 ),
                 f"{path}.required_entity_scope",
             )
-        if signature.name in {"exists", "count_at_least"} and not _is_anchor_evaluation_output(input_type):
+        if signature.name in {"exists", "count_at_least"} and not _has_anchor_evaluation_coverage(input_type):
             self._issue(
                 "operator_requires_anchor_evaluations",
                 (
                     f"{signature.name} only accepts declared anchor-evaluation outputs; "
                     f"got {node.input.source_node_id}.{node.input.output_name}"
+                ),
+                f"{path}.input",
+            )
+        if (
+            signature.name == "count_at_least"
+            and input_type.coverage is not None
+            and input_type.coverage.count_field is None
+        ):
+            self._issue(
+                "operator_requires_count_coverage",
+                (
+                    f"count_at_least requires a declared count_field on "
+                    f"{node.input.source_node_id}.{node.input.output_name}"
                 ),
                 f"{path}.input",
             )
@@ -946,9 +959,10 @@ def validation_error_codes(error: ValidationError) -> set[str]:
     return {str(issue["type"]) for issue in error.errors()}
 
 
-def _is_anchor_evaluation_output(output: CatalogOutput) -> bool:
+def _has_anchor_evaluation_coverage(output: CatalogOutput) -> bool:
     return (
-        output.name == "anchor_evaluations"
+        output.coverage is not None
+        and output.name == "anchor_evaluations"
         and output.temporal_type == TemporalContainer.EPISODE_SET
         and output.cardinality == Cardinality.COLLECTION
         and output.entity_scope == EntityScope.ANCHOR

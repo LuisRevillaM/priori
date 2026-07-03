@@ -63,7 +63,11 @@ class CoverageChannel:
 
     output_name: str
     status_field: str | None = None
+    count_field: str | None = None
     reason_field: str | None = None
+    pass_values: tuple[str, ...] = ()
+    fail_values: tuple[str, ...] = ()
+    unknown_values: tuple[str, ...] = ()
     value: Any = None
 
 
@@ -159,6 +163,7 @@ def legacy_envelope_from_runtime_values(
             kind=_channel_kind(output_name, runtime_value),
             value=runtime_value.value,
             evidence=channel_evidence,
+            coverage=_coverage_channel_for_runtime_value(output_name, runtime_value),
         )
 
     declared_like = set(channels)
@@ -338,6 +343,23 @@ def _infer_channel_kind(value: Any) -> ChannelKind:
     if isinstance(value, list):
         return ChannelKind.EPISODE_SET
     return ChannelKind.SCALAR
+
+
+def _coverage_channel_for_runtime_value(
+    output_name: str,
+    runtime_value: RuntimeValue,
+) -> CoverageChannel | None:
+    coverage = runtime_value.output.coverage
+    if coverage is None:
+        return None
+    return CoverageChannel(
+        output_name=output_name,
+        status_field=coverage.status_field,
+        count_field=coverage.count_field,
+        pass_values=tuple(coverage.pass_values),
+        fail_values=tuple(coverage.fail_values),
+        unknown_values=tuple(coverage.unknown_values),
+    )
 
 
 def _records_for_output(

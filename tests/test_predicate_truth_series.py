@@ -21,6 +21,7 @@ from tqe.runtime.executor import (
 from tqe.runtime.ir import (
     Cardinality,
     CatalogOutput,
+    CoverageDeclaration,
     EntityScope,
     MissingDataSemantics,
     OperatorRef,
@@ -104,6 +105,75 @@ def execute_comparison(operator_name: str) -> dict:
         node=node,
         inputs={"measure": runtime_value},
         parameters={"compare": node.compare},
+    )
+
+
+def anchor_evaluation_node(
+    *,
+    operator_name: str,
+    status_field: str,
+    count_field: str | None = None,
+) -> BoundPredicateNode:
+    evidence_fields = ["anchor_id", "anchor_frame_id", status_field]
+    if count_field is not None:
+        evidence_fields.append(count_field)
+    input_type = CatalogOutput(
+        name="anchor_evaluations",
+        temporal_type=TemporalContainer.EPISODE_SET,
+        payload_type=PayloadType.BOOLEAN,
+        cardinality=Cardinality.COLLECTION,
+        unit=Unit.NONE,
+        entity_scope=EntityScope.ANCHOR,
+        missing_data_semantics=MissingDataSemantics.UNKNOWN,
+        evidence_fields=evidence_fields,
+        coverage=CoverageDeclaration(status_field=status_field, count_field=count_field),
+    )
+    output_type = CatalogOutput(
+        name="predicate",
+        temporal_type=TemporalContainer.FRAME_SIGNAL,
+        payload_type=PayloadType.BOOLEAN,
+        cardinality=Cardinality.SINGLE,
+        unit=Unit.NONE,
+        missing_data_semantics=MissingDataSemantics.UNKNOWN,
+    )
+    return BoundPredicateNode(
+        node_id=f"{operator_name}_{status_field}",
+        input=SignalRef(source_node_id="source_node", output_name="anchor_evaluations"),
+        input_type=input_type,
+        operator=OperatorRef(name=operator_name, version="1.0.0"),
+        operator_signature=OperatorSignature(
+            name=operator_name,
+            version="1.0.0",
+            purpose="test anchor coverage",
+            input_temporal_types=[TemporalContainer.EPISODE_SET],
+            input_payload_types=[PayloadType.BOOLEAN],
+            input_cardinalities=[Cardinality.COLLECTION],
+            compare_payload_types=[PayloadType.NUMBER] if operator_name == "count_at_least" else [],
+            compare_required=operator_name == "count_at_least",
+            output_temporal_type=TemporalContainer.FRAME_SIGNAL,
+            output_payload_type=PayloadType.BOOLEAN,
+            output_cardinality=Cardinality.SINGLE,
+        ),
+        compare=TypedValue(payload_type=PayloadType.NUMBER, value=2, unit=Unit.COUNT)
+        if operator_name == "count_at_least"
+        else None,
+        output=output_type,
+    )
+
+
+def execute_anchor_evaluation_predicate(node: BoundPredicateNode, records: list[dict]) -> dict:
+    runtime_value = RuntimeValue(output=node.input_type, value=records, records=records)
+    parameters = {"compare": node.compare} if node.compare is not None else {}
+    return execute_predicate_with_resolved_inputs(
+        context=MatchContext(
+            match_id="synthetic",
+            period="firstHalf",
+            frame_ids=tuple(record["anchor_frame_id"] for record in records),
+            params=RuntimeParameters(values={"analysis_rate_hz": 5}),
+        ),
+        node=node,
+        inputs={"anchor_evaluations": runtime_value},
+        parameters=parameters,
     )
 
 
@@ -212,7 +282,7 @@ class ComparisonTruthSeriesTest(unittest.TestCase):
             records=[{"anchor_frame_id": 100}],
         )
 
-        with self.assertRaisesRegex(RuntimeError, "expected declared anchor-evaluation records"):
+        with self.assertRaisesRegex(RuntimeError, "source lacks declared anchor-evaluation coverage"):
             execute_predicate_with_resolved_inputs(
                 context=MatchContext(
                     match_id="synthetic",
@@ -224,6 +294,58 @@ class ComparisonTruthSeriesTest(unittest.TestCase):
                 inputs={"episodes": runtime_value},
                 parameters={},
             )
+
+    def test_exists_uses_declared_coverage_status_fields(self) -> None:
+        for status_field in ("team_press_status", "open_space_status", "evaluation_status"):
+            with self.subTest(status_field=status_field):
+                node = anchor_evaluation_node(operator_name="exists", status_field=status_field)
+                output = execute_anchor_evaluation_predicate(
+                    node,
+                    [
+                        {"anchor_id": "a", "anchor_frame_id": 100, status_field: "PASS"},
+                        {"anchor_id": "b", "anchor_frame_id": 101, status_field: "FAIL"},
+                        {"anchor_id": "c", "anchor_frame_id": 102, status_field: "UNKNOWN"},
+                    ],
+                )
+
+                self.assertEqual([True, False, None], output["predicate"].values)
+                self.assertEqual([False, False, True], output["predicate"].unknown_mask)
+
+    def test_count_at_least_uses_declared_count_field(self) -> None:
+        node = anchor_evaluation_node(
+            operator_name="count_at_least",
+            status_field="evaluation_status",
+            count_field="opponents_bypassed_count",
+        )
+        output = execute_anchor_evaluation_predicate(
+            node,
+            [
+                {
+                    "anchor_id": "a",
+                    "anchor_frame_id": 100,
+                    "evaluation_status": "PASS",
+                    "opponents_bypassed_count": 3,
+                },
+                {
+                    "anchor_id": "b",
+                    "anchor_frame_id": 101,
+                    "evaluation_status": "PASS",
+                    "opponents_bypassed_count": 1,
+                },
+                {
+                    "anchor_id": "c",
+                    "anchor_frame_id": 102,
+                    "evaluation_status": "UNKNOWN",
+                    "opponents_bypassed_count": None,
+                },
+            ],
+        )
+
+        self.assertEqual([True, False, None], output["predicate"].values)
+        self.assertEqual(
+            ["opponents_bypassed_count"] * 3,
+            [record["source_evidence"]["coverage_count_field"] for record in output["predicate_records"]],
+        )
 
 
 if __name__ == "__main__":

@@ -36,6 +36,7 @@ from tqe.runtime.ir import (
     BoundQueryPlan,
     BoundPlanNode,
     ClassificationRule,
+    CoverageDeclaration,
     EvaluationTarget,
     ExecutionMode,
     ExecutionStatus,
@@ -1670,7 +1671,7 @@ def require_anchor_evaluation_records(
     node: BoundPredicateNode,
     records: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
-    coverage = relation_anchor_evaluation_records(records)
+    coverage = declared_anchor_evaluation_records(node=node, records=records)
     if len(coverage) != len(records):
         raise RuntimeError(
             f"{node.node_id} expected declared anchor-evaluation records for {node.operator.name}"
@@ -1678,13 +1679,19 @@ def require_anchor_evaluation_records(
     return coverage
 
 
-def relation_anchor_evaluation_records(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def declared_anchor_evaluation_records(
+    *,
+    node: BoundPredicateNode,
+    records: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    coverage = node.input_type.coverage
+    if coverage is None:
+        raise RuntimeError(f"{node.node_id} source lacks declared anchor-evaluation coverage")
     return [
         record
         for record in records
-        if record.get("evaluation_status") in {"PASS", "FAIL", "UNKNOWN"}
+        if anchor_evaluation_status_label(record, coverage) in {"PASS", "FAIL", "UNKNOWN"}
         and "anchor_frame_id" in record
-        and "relation_count" in record
     ]
 
 
@@ -1693,7 +1700,10 @@ def exists_from_anchor_evaluations(
     node: BoundPredicateNode,
     records: list[dict[str, Any]],
 ) -> dict[str, Any]:
-    statuses = [anchor_evaluation_status(record) for record in records]
+    coverage = node.input_type.coverage
+    if coverage is None:
+        raise RuntimeError(f"{node.node_id} exists source lacks declared coverage")
+    statuses = [anchor_evaluation_status(record, coverage) for record in records]
     return predicate_output_from_anchor_evaluations(
         node=node,
         records=records,
@@ -1709,14 +1719,17 @@ def count_at_least_from_anchor_evaluations(
     records: list[dict[str, Any]],
     threshold: int,
 ) -> dict[str, Any]:
+    coverage = node.input_type.coverage
+    if coverage is None or coverage.count_field is None:
+        raise RuntimeError(f"{node.node_id} count_at_least source lacks declared count coverage")
     statuses: list[bool | None] = []
     values: list[int | None] = []
     for record in records:
-        if str(record.get("evaluation_status")) == "UNKNOWN":
+        if anchor_evaluation_status_label(record, coverage) == "UNKNOWN":
             statuses.append(None)
             values.append(None)
             continue
-        count = optional_int(record.get("relation_count"))
+        count = optional_int(record.get(coverage.count_field))
         if count is None:
             statuses.append(None)
             values.append(None)
@@ -1732,13 +1745,25 @@ def count_at_least_from_anchor_evaluations(
     )
 
 
-def anchor_evaluation_status(record: dict[str, Any]) -> bool | None:
-    status = str(record.get("evaluation_status"))
+def anchor_evaluation_status(record: dict[str, Any], coverage: CoverageDeclaration) -> bool | None:
+    status = anchor_evaluation_status_label(record, coverage)
     if status == "PASS":
         return True
     if status == "FAIL":
         return False
     return None
+
+
+def anchor_evaluation_status_label(record: dict[str, Any], coverage: CoverageDeclaration) -> str:
+    raw = record.get(coverage.status_field)
+    status = "" if raw is None else str(raw)
+    if status in set(coverage.pass_values):
+        return "PASS"
+    if status in set(coverage.fail_values):
+        return "FAIL"
+    if status in set(coverage.unknown_values):
+        return "UNKNOWN"
+    return "UNKNOWN"
 
 
 def predicate_output_from_anchor_evaluations(
@@ -1759,7 +1784,10 @@ def predicate_output_from_anchor_evaluations(
         if frame_id is not None
     ]
     predicate_records: list[dict[str, Any]] = []
+    coverage = node.input_type.coverage
     for record, status, value, frame_id in usable:
+        status_label = anchor_evaluation_status_label(record, coverage) if coverage is not None else None
+        count_value = record.get(coverage.count_field) if coverage is not None and coverage.count_field is not None else None
         predicate_records.append(
             predicate_record_for_source_record(
                 source_record=record,
@@ -1773,8 +1801,10 @@ def predicate_output_from_anchor_evaluations(
                     "source_node_id": node.input.source_node_id,
                     "source_output_name": node.input.output_name,
                     "witness_relation_id": record.get("witness_relation_id"),
-                    "relation_count": record.get("relation_count"),
-                    "evaluation_status": record.get("evaluation_status"),
+                    "relation_count": count_value,
+                    "evaluation_status": status_label,
+                    "coverage_status_field": coverage.status_field if coverage is not None else None,
+                    "coverage_count_field": coverage.count_field if coverage is not None else None,
                     "unknown_reason": record.get("unknown_reason"),
                 },
             )
