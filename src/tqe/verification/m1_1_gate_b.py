@@ -1,6 +1,7 @@
 """Verify M1.1 Gate B: runtime execution parity with the frozen M1 oracle."""
 
 from __future__ import annotations
+from tqe.runtime.legacy_m1 import execute_default_plan, select_proof_results
 
 import ast
 import hashlib
@@ -20,9 +21,7 @@ from tqe.runtime.executor import (
     DEFAULT_CANONICAL_ROOT,
     DEFAULT_RAW_ROOT,
     execution_result_rows,
-    execute_default_plan,
     runtime_parameters,
-    select_proof_results,
     summarize_results,
 )
 from tqe.verification.m1_1_gate_a import build_report as build_gate_a_report

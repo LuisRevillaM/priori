@@ -1,6 +1,7 @@
 """Verify M1.1 Gate D: dynamic geometric relation proof."""
 
 from __future__ import annotations
+from tqe.runtime.legacy_m1 import execute_default_plan
 
 import json
 from datetime import UTC, datetime
@@ -10,7 +11,7 @@ from typing import Any
 import pyarrow.parquet as pq
 
 from tqe.runtime.catalog import default_catalog
-from tqe.runtime.executor import DEFAULT_CANONICAL_ROOT, execution_result_rows, execute_default_plan
+from tqe.runtime.executor import DEFAULT_CANONICAL_ROOT, execution_result_rows
 from tqe.runtime.relations import (
     CorridorConfig,
     evaluate_geometric_progressive_corridors,

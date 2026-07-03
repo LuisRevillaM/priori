@@ -53,10 +53,6 @@ PRIMITIVE_IMPLEMENTATION_NAMES: tuple[tuple[str, str], ...] = (
     ("outcome_classification", "primitive_outcome_classification"),
     ("relation_destination_entry", "primitive_relation_destination_entry_classification"),
     ("relation_destination_entry_classification", "primitive_relation_destination_entry_classification"),
-    ("wide_channel_dwell", "primitive_noop"),
-    ("shift_persistence", "primitive_noop"),
-    ("robust_team_width", "primitive_noop"),
-    ("analysis_rate", "primitive_noop"),
 )
 
 
@@ -68,30 +64,6 @@ RELATION_IMPLEMENTATION_NAMES: tuple[tuple[str, str], ...] = (
     ("pressure_on_carrier", "relation_pressure_on_carrier"),
     ("team_press", "relation_team_press"),
     ("local_number_relation", "relation_local_number"),
-)
-
-
-PREDICATE_IMPLEMENTATION_NAMES: tuple[tuple[str, str], ...] = (
-    ("gt", "predicate_gt"),
-    ("gte", "predicate_gte"),
-    ("lte", "predicate_lte"),
-    ("eq", "predicate_eq"),
-    ("neq", "predicate_neq"),
-    ("persists_for", "predicate_persists_for"),
-    ("exists", "predicate_exists"),
-    ("count_at_least", "predicate_count_at_least"),
-)
-
-
-# Known V10 debt: these legacy names remain dispatchable noops even though
-# they are not catalog capabilities.  F2-X deletes or quarantines them.
-LEGACY_NOOP_CAPABILITIES: frozenset[str] = frozenset(
-    {
-        "wide_channel_dwell",
-        "shift_persistence",
-        "robust_team_width",
-        "analysis_rate",
-    }
 )
 
 
@@ -147,10 +119,6 @@ def build_primitive_registry(namespace: Mapping[str, Any]) -> dict[str, Implemen
 
 def build_relation_registry(namespace: Mapping[str, Any]) -> dict[str, Implementation]:
     return _build_registry(RELATION_IMPLEMENTATION_NAMES, namespace)
-
-
-def build_predicate_registry(namespace: Mapping[str, Any]) -> dict[str, Implementation]:
-    return _build_registry(PREDICATE_IMPLEMENTATION_NAMES, namespace)
 
 
 def _build_registry(

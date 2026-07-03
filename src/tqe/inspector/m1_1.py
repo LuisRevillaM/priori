@@ -1,6 +1,7 @@
 """Build static M1.1 developer inspector artifacts."""
 
 from __future__ import annotations
+from tqe.runtime.legacy_m1 import execute_default_plan, execute_legacy_m1_plan_from_path, select_proof_results
 
 import json
 from collections import Counter, defaultdict
@@ -11,11 +12,8 @@ from typing import Any
 from tqe.runtime.binder import bind_document_from_path
 from tqe.runtime.executor import (
     DEFAULT_PLAN_PATH,
-    execute_default_plan,
-    execute_legacy_m1_plan_from_path,
     execution_result_rows,
     runtime_parameters,
-    select_proof_results,
 )
 from tqe.runtime.ir import model_payload, stable_hash
 

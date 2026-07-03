@@ -1,6 +1,7 @@
 """Verify M1.1R Gate R5: architecture proof and parity."""
 
 from __future__ import annotations
+from tqe.runtime.legacy_m1 import LEGACY_M1_PARITY_PROFILE
 
 import json
 from collections import Counter
@@ -17,7 +18,6 @@ from tqe.runtime.binder import (
 )
 from tqe.runtime.catalog import default_catalog
 from tqe.runtime.executor import (
-    LEGACY_M1_PARITY_PROFILE,
     TacticalQueryExecutor,
     apply_result_semantics,
     execution_result_rows,

@@ -1,6 +1,7 @@
 """Verify M1.1S Gate S7: final architecture proof and packet readiness."""
 
 from __future__ import annotations
+from tqe.runtime.legacy_m1 import execute_default_plan
 
 import json
 import shutil
@@ -10,7 +11,6 @@ from pathlib import Path
 from typing import Any
 
 from tqe.runtime.executor import (
-    execute_default_plan,
     execute_plan_from_path,
     execution_result_rows,
 )

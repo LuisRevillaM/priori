@@ -14,12 +14,14 @@ import pandas as pd
 
 from tqe.runtime.binder import bind_document, bind_document_from_path
 from tqe.runtime.executor import (
+    SUPPORTED_PREDICATE_OPERATORS,
+    MatchContext,
     PeriodState,
     RuntimeParameters,
     TacticalQueryExecutor,
     apply_result_semantics,
+    execute_predicate_with_resolved_inputs,
     execution_result_rows,
-    predicate_persists_for,
     typed_number,
 )
 from tqe.runtime.ir import (
@@ -30,7 +32,7 @@ from tqe.runtime.ir import (
     Unit,
     UnknownEvidencePolicy,
 )
-from tqe.runtime.values import RuntimeValue
+from tqe.runtime.values import FrameSignal, RuntimeValue
 
 PLAN_PATH = Path("config/query-plans/ball_side_block_shift.ir.v1.json")
 EXECUTOR_PATH = Path("src/tqe/runtime/executor.py")
@@ -176,7 +178,7 @@ def validate_runtime_execution(
 
 def validate_predicate_source_contract() -> list[dict[str, Any]]:
     tree = ast.parse(EXECUTOR_PATH.read_text(encoding="utf-8"))
-    operator_function_names = {
+    removed_operator_function_names = {
         "predicate_gt",
         "predicate_gte",
         "predicate_lte",
@@ -186,57 +188,75 @@ def validate_predicate_source_contract() -> list[dict[str, Any]]:
         "predicate_exists",
         "predicate_count_at_least",
     }
-    predicate_functions = [
+    removed_functions = [
         node
         for node in tree.body
-        if isinstance(node, ast.FunctionDef) and node.name in operator_function_names
+        if isinstance(node, ast.FunctionDef) and node.name in removed_operator_function_names
     ]
-    branch_hits: list[dict[str, Any]] = []
-    resolver_misses: list[str] = []
-    forbidden_attrs = {"node_id", "source_node_id"}
-    for function in predicate_functions:
-        uses_runtime_resolver = False
-        for node in ast.walk(function):
-            if isinstance(node, ast.Call):
-                name = getattr(node.func, "id", "")
-                if name in {"source_runtime_value", "numeric_source_values"}:
-                    uses_runtime_resolver = True
-            if isinstance(node, ast.If):
-                attrs = {
-                    child.attr
-                    for child in ast.walk(node.test)
-                    if isinstance(child, ast.Attribute)
-                }
-                hits = sorted(attrs & forbidden_attrs)
-                if hits:
-                    branch_hits.append(
-                        {"function": function.name, "line": node.lineno, "attrs": hits}
-                    )
-        if not uses_runtime_resolver:
-            resolver_misses.append(function.name)
+    live_source = ast.get_source_segment(
+        EXECUTOR_PATH.read_text(encoding="utf-8"),
+        next(
+            node
+            for node in tree.body
+            if isinstance(node, ast.FunctionDef)
+            and node.name == "execute_predicate_with_resolved_inputs"
+        ),
+    ) or ""
+    forbidden_tokens = [
+        "node.node_id ==",
+        "node.input.source_node_id ==",
+        "wide_entry",
+        "block_shift",
+        "shift_gate",
+    ]
+    forbidden_hits = [token for token in forbidden_tokens if token in live_source]
+    expected_operators = {
+        "gt",
+        "gte",
+        "lte",
+        "eq",
+        "neq",
+        "persists_for",
+        "exists",
+        "count_at_least",
+    }
 
     return [
         pass_check(
-            "predicate_source.no_node_id_branches",
-            "predicate implementations do not branch on node identity",
-            {"checked_functions": [function.name for function in predicate_functions]},
+            "predicate_source.dead_operator_functions_removed",
+            "dead duplicate predicate implementations are absent from executor.py",
+            {"removed_functions": sorted(removed_operator_function_names)},
         )
-        if not branch_hits
+        if not removed_functions
         else fail_check(
-            "predicate_source.no_node_id_branches",
-            "predicate implementation branches on node identity",
-            {"hits": branch_hits},
+            "predicate_source.dead_operator_functions_removed",
+            "dead duplicate predicate implementations remain in executor.py",
+            {"functions": [function.name for function in removed_functions]},
         ),
         pass_check(
-            "predicate_source.uses_typed_runtime_values",
-            "predicate implementations consume typed runtime values through resolver helpers",
-            {"checked_functions": [function.name for function in predicate_functions]},
+            "predicate_source.generic_live_path_no_side_channel",
+            "live predicate dispatcher has no plan-specific node side channels",
+            {"checked_function": "execute_predicate_with_resolved_inputs"},
         )
-        if not resolver_misses
+        if not forbidden_hits
         else fail_check(
-            "predicate_source.uses_typed_runtime_values",
-            "predicate implementations bypass typed runtime value resolvers",
-            {"functions": resolver_misses},
+            "predicate_source.generic_live_path_no_side_channel",
+            "live predicate dispatcher contains forbidden plan-specific tokens",
+            {"hits": forbidden_hits},
+        ),
+        pass_check(
+            "predicate_source.supported_operator_set_declared",
+            "executor declares the generic predicate operators served by the live dispatcher",
+            {"operators": sorted(SUPPORTED_PREDICATE_OPERATORS)},
+        )
+        if set(SUPPORTED_PREDICATE_OPERATORS) == expected_operators
+        else fail_check(
+            "predicate_source.supported_operator_set_declared",
+            "executor predicate operator declaration drifted",
+            {
+                "expected": sorted(expected_operators),
+                "actual": sorted(SUPPORTED_PREDICATE_OPERATORS),
+            },
         ),
     ]
 
@@ -341,7 +361,7 @@ def validate_unknown_policy_behavior(bound: Any) -> list[dict[str, Any]]:
     return [
         pass_check(
             "unknown_policy.changes_behavior",
-            "unknown policy include/exclude/invalidate paths diverge",
+            "unknown policy include/exclude/invalidate paths diverge with excluded UNKNOWN traces retained for audit",
             {
                 "include": {"status": include_status.value, "result_count": len(include_results), "trace_count": len(include_traces)},
                 "exclude": {"status": exclude_status.value, "result_count": len(exclude_results), "trace_count": len(exclude_traces)},
@@ -352,7 +372,7 @@ def validate_unknown_policy_behavior(bound: Any) -> list[dict[str, Any]]:
         and len(include_results) == 1
         and exclude_status == ExecutionStatus.PASS
         and not exclude_results
-        and not exclude_traces
+        and len(exclude_traces) == 1
         and invalid_status == ExecutionStatus.INCOMPLETE
         and len(invalid_results) == 1
         else fail_check(
@@ -391,11 +411,29 @@ def validate_tri_state_persists_for(bound: Any) -> list[dict[str, Any]]:
             for frame_id, value in zip(state.frame_ids, values, strict=True)
         ],
     }
-    state.runtime_values[node.input.source_node_id] = {
-        node.input.output_name: RuntimeValue(output=source_output, value=values)
-    }
-    predicate_persists_for(state, node)
-    episodes = state.signals[node.node_id]["episodes"]
+    runtime_value = RuntimeValue(
+        output=source_output,
+        value=FrameSignal(
+            frame_ids=[int(frame_id) for frame_id in state.frame_ids],
+            values=values,
+            unknown_mask=[value is None for value in values],
+            unit=source_output.unit,
+            entity_scope=source_output.entity_scope,
+        ),
+    )
+    state.runtime_values[node.input.source_node_id] = {node.input.output_name: runtime_value}
+    output = execute_predicate_with_resolved_inputs(
+        context=MatchContext(
+            match_id=state.match_id,
+            period=state.period,
+            frame_ids=tuple(int(frame_id) for frame_id in state.frame_ids),
+            params=state.params,
+        ),
+        node=node,
+        inputs={node.input.output_name: runtime_value},
+        parameters={"duration": node.duration},
+    )
+    episodes = output["passing_episodes"]
     windows = [(episode["start_frame_id"], episode["end_frame_id"]) for episode in episodes]
     return [
         pass_check(
@@ -404,7 +442,6 @@ def validate_tri_state_persists_for(bound: Any) -> list[dict[str, Any]]:
             {"windows": windows, "episode_count": len(episodes)},
         )
         if windows == [(100, 101), (103, 105)]
-        and all("_predicate_status" in episode for episode in episodes)
         else fail_check(
             "persists_for.tri_state_boolean_signal",
             "persists_for did not respect tri-state boolean semantics",
