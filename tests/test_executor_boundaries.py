@@ -45,11 +45,17 @@ class ExecutorRegistryBoundaryTests(unittest.TestCase):
 
         self.assertEqual(EXPECTED_SHARED_CAPABILITY_MENTIONS, observed)
 
+    def test_non_catalog_shared_helper_leaks_are_frozen(self) -> None:
+        observed = shared_executor_helper_mentions(EXPECTED_SHARED_HELPER_MENTION_COUNTS)
+
+        self.assertEqual(EXPECTED_SHARED_HELPER_MENTION_COUNTS, observed)
+
 
 # This is the F2-0 freeze line, not a cleanup.  Destination-entry lines are the
 # V8/V10 audit leaks named in ADR 0012; the import/helper lines are existing
 # capability-family code still outside primitive_/relation_ bodies until later
-# extraction packets move those families out of executor.py.
+# extraction packets move those families out of executor.py.  This guard only
+# sees catalog identifiers; non-catalog helper leaks are frozen separately below.
 EXPECTED_SHARED_CAPABILITY_MENTIONS = {
     "acceleration": {
         '"UNKNOWN if either velocity window lacks tracking endpoints or if observed speed/acceleration "',
@@ -89,8 +95,48 @@ EXPECTED_SHARED_CAPABILITY_MENTIONS = {
 }
 
 
+EXPECTED_SHARED_HELPER_MENTION_COUNTS = {
+    # V8-style frame-id fallback inside eq/neq predicate traces.
+    'frame_id=optional_int(record.get("destination_entry_frame_id"))': 1,
+    'or optional_int(record.get("outcome_frame_id"))': 1,
+    'or optional_int(record.get("anchor_frame_id"))': 1,
+    # Experimental trace fabricator body.
+    "def experimental_predicate_traces_for_result": 1,
+    'predicate_id="has_opposite_corridor"': 1,
+    'predicate_id="destination_region_entered"': 1,
+    '"experimental_plan_status": "experimental"': 3,
+    '"source_node_id": "relation_destination_entry_classification"': 1,
+    # select_proof_results selection labels.
+    "def select_proof_results": 1,
+    '"proof_selected": True': 1,
+    '"SWITCHED"': 2,
+    '"RETAINED_NO_SWITCH"': 2,
+    '"LOST_BEFORE_SWITCH"': 3,
+}
+
+
 def shared_executor_capability_mentions() -> dict[str, set[str]]:
-    source_path = Path("src/tqe/runtime/executor.py")
+    source, lines, shared_source = shared_executor_source()
+    del source
+    capability_names = {
+        entry.name for entry in default_catalog().primitives + default_catalog().relations
+    }
+    observed: dict[str, set[str]] = {}
+    for name in sorted(capability_names):
+        pattern = re.compile(rf"(?<![A-Za-z0-9_]){re.escape(name)}(?![A-Za-z0-9_])")
+        for match in pattern.finditer(shared_source):
+            line_number = shared_source[: match.start()].count("\n") + 1
+            observed.setdefault(name, set()).add(lines[line_number - 1].strip())
+    return observed
+
+
+def shared_executor_helper_mentions(expected: dict[str, int]) -> dict[str, int]:
+    _source, _lines, shared_source = shared_executor_source()
+    return {needle: shared_source.count(needle) for needle in expected}
+
+
+def shared_executor_source() -> tuple[str, list[str], str]:
+    source_path = Path(executor.__file__).resolve()
     source = source_path.read_text(encoding="utf-8")
     lines = source.splitlines()
     module = ast.parse(source)
@@ -105,13 +151,4 @@ def shared_executor_capability_mentions() -> dict[str, set[str]]:
         "" if line_number in implementation_lines else line
         for line_number, line in enumerate(lines, start=1)
     )
-    capability_names = {
-        entry.name for entry in default_catalog().primitives + default_catalog().relations
-    }
-    observed: dict[str, set[str]] = {}
-    for name in sorted(capability_names):
-        pattern = re.compile(rf"(?<![A-Za-z0-9_]){re.escape(name)}(?![A-Za-z0-9_])")
-        for match in pattern.finditer(shared_source):
-            line_number = shared_source[: match.start()].count("\n") + 1
-            observed.setdefault(name, set()).add(lines[line_number - 1].strip())
-    return observed
+    return source, lines, shared_source

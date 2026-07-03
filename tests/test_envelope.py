@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import json
+import os
 import tempfile
 import unittest
 from contextlib import redirect_stdout
 from io import StringIO
 from pathlib import Path
+from unittest.mock import patch
 
 from scripts.runtime.envelope_conformance_report import main as conformance_report_main
 from tqe.runtime.catalog import output, primitive
@@ -13,7 +15,9 @@ from tqe.runtime.envelope import (
     CapabilityChannel,
     CapabilityEnvelope,
     ChannelKind,
+    CONFORMANCE_ENV_VAR,
     check_envelope_conformance,
+    conformance_enabled,
     legacy_envelope_from_runtime_values,
 )
 from tqe.runtime.ir import Cardinality, EntityScope, PayloadType, TemporalContainer, Unit
@@ -129,24 +133,59 @@ class EnvelopeConformanceTests(unittest.TestCase):
         self.assertEqual(1, len(envelope.evidence_records))
         self.assertEqual(10, envelope.witness_refs[0].frame_id)
 
-    def test_conformance_report_script_smoke_writes_json(self) -> None:
-        with tempfile.TemporaryDirectory() as tmpdir:
-            output_path = Path(tmpdir) / "envelope-report.json"
-            with redirect_stdout(StringIO()):
-                exit_code = conformance_report_main(
-                    [
-                        "--plan",
-                        "config/query-plans/q6_throw_in_first_action_under_pressure.experimental.v1.json",
-                        "--match-id",
-                        "J03WOH",
-                        "--period",
-                        "firstHalf",
-                        "--output",
-                        str(output_path),
-                    ]
-                )
+    def test_legacy_envelope_preserves_aux_values_outside_channels(self) -> None:
+        value = runtime_value("status", ["PASS"])
+        raw_outputs = {
+            "status": value.value,
+            "summary": {"episode_count": 2},
+            "source_results": [{"result_id": "r1"}],
+            "anchor_source": "anchors",
+            "predicate_facts": [{"predicate_id": "p1"}],
+            "candidate_evaluations_records": [{"anchor_id": "a1"}],
+        }
 
-            payload = json.loads(output_path.read_text(encoding="utf-8"))
+        envelope = legacy_envelope_from_runtime_values(
+            capability_name="sample_status",
+            node_id="n1",
+            raw_outputs=raw_outputs,
+            runtime_values={"status": value},
+        )
+
+        self.assertEqual(["status"], sorted(envelope.channels))
+        self.assertEqual(
+            {
+                "summary",
+                "source_results",
+                "anchor_source",
+                "predicate_facts",
+                "candidate_evaluations_records",
+            },
+            set(envelope.aux),
+        )
+        self.assertEqual({"episode_count": 2}, envelope.aux["summary"])
+
+    def test_conformance_report_script_smoke_writes_json(self) -> None:
+        with patch.dict(os.environ, {CONFORMANCE_ENV_VAR: "off"}):
+            with tempfile.TemporaryDirectory() as tmpdir:
+                output_path = Path(tmpdir) / "envelope-report.json"
+                with redirect_stdout(StringIO()):
+                    exit_code = conformance_report_main(
+                        [
+                            "--plan",
+                            "config/query-plans/q6_throw_in_first_action_under_pressure.experimental.v1.json",
+                            "--match-id",
+                            "J03WOH",
+                            "--period",
+                            "firstHalf",
+                            "--output",
+                            str(output_path),
+                        ]
+                    )
+
+                payload = json.loads(output_path.read_text(encoding="utf-8"))
+
+            self.assertFalse(conformance_enabled())
+            self.assertEqual("off", os.environ[CONFORMANCE_ENV_VAR])
 
         self.assertEqual(0, exit_code)
         self.assertEqual("f2_0.envelope_conformance_report.v1", payload["schema_version"])

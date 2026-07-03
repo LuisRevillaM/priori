@@ -4,6 +4,12 @@ F2-0 introduces the shape of the future capability contract without changing
 runtime behavior.  The helpers here can view today's legacy ``state.signals``
 payloads as envelopes, validate them against catalog declarations, and report
 findings in shadow mode only.
+
+Auxiliary payloads preserve legacy runtime metadata values such as ``summary``,
+``source_results``, and ``anchor_source`` without promoting them to declared
+outputs.  Aux is non-evidentiary, never product-visible, and never consulted by
+trace or evidence projection.  Each extraction packet must explicitly promote
+family-specific aux data to a declared channel or leave it aux.
 """
 
 from __future__ import annotations
@@ -85,6 +91,7 @@ class CapabilityEnvelope:
     capability_name: str
     node_id: str
     channels: dict[str, CapabilityChannel]
+    aux: dict[str, Any] = field(default_factory=dict)
     evidence_records: tuple[EvidenceRecord, ...] = ()
     witness_refs: tuple[WitnessRef, ...] = ()
     raw_keys: tuple[str, ...] = ()
@@ -155,8 +162,14 @@ def legacy_envelope_from_runtime_values(
         )
 
     declared_like = set(channels)
+    aux: dict[str, Any] = {}
     for key, value in raw_outputs.items():
-        if key in declared_like or _is_record_or_metadata_key(key):
+        if key in declared_like:
+            continue
+        if _is_aux_key(key):
+            aux[key] = value
+            continue
+        if _is_record_key(key):
             continue
         channels[key] = CapabilityChannel(name=key, kind=_infer_channel_kind(value), value=value)
 
@@ -164,6 +177,7 @@ def legacy_envelope_from_runtime_values(
         capability_name=capability_name,
         node_id=node_id,
         channels=channels,
+        aux=aux,
         evidence_records=tuple(evidence_records),
         witness_refs=tuple(witness_refs),
         raw_keys=tuple(sorted(str(key) for key in raw_outputs)),
@@ -378,19 +392,18 @@ def _first_text(record: dict[str, Any], names: tuple[str, ...]) -> str | None:
     return None
 
 
-def _is_record_or_metadata_key(key: str) -> bool:
-    return (
-        key.endswith("_records")
-        or key.endswith("_facts")
-        or key
-        in {
-            "anchor_source",
-            "summary",
-            "source_results",
-            "candidate_evaluations_records",
-            "predicate_facts",
-        }
-    )
+def _is_record_key(key: str) -> bool:
+    return key.endswith("_records")
+
+
+def _is_aux_key(key: str) -> bool:
+    return key.endswith("_facts") or key in {
+        "anchor_source",
+        "summary",
+        "source_results",
+        "candidate_evaluations_records",
+        "predicate_facts",
+    }
 
 
 def _observed_enum_values(value: Any) -> set[str]:

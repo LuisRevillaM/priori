@@ -1,7 +1,12 @@
 # F2-0 Report — Capability Envelope Scaffolding
 
 Branch: `packet/f2-0`  
-Implementation commit: `4baafe3` (`Add F2 envelope scaffolding`)  
+Implementation commits:
+
+- `4baafe3` (`Add F2 envelope scaffolding`)
+- `17ed7f7` (`Report F2 envelope scaffolding`)
+- round-2 review commit on this branch
+
 Protocol: local commit only; no push.
 
 ## Scope outcome
@@ -16,6 +21,14 @@ Implemented F2-0 scaffolding only:
 
 No catalog declarations, primitive semantics, generated artifacts, frozen expectations, N1D artifacts, or semantic-registry files were changed.
 
+## Round 2 review fixes
+
+Addressed `delivery/packets/F2-0-REVIEW.md`:
+
+- **R1 — aux slot with values.** `CapabilityEnvelope` now has an explicit `aux` payload slot for legacy non-claim-bearing runtime metadata values. `summary`, `source_results`, `anchor_source`, `predicate_facts`, and `candidate_evaluations_records` are preserved with values outside declared output channels. The module contract states that aux is non-evidentiary, never product-visible, never consulted by trace/evidence projection, and must be explicitly promoted or deliberately left aux by later extraction packets.
+- **R2 — env-var leak fixed.** The conformance report script now saves and restores `TQE_ENVELOPE_CONFORMANCE` and the envelope logger level around its in-process warn-mode run. The smoke test asserts the caller's `off` setting remains `off` after `main()` returns.
+- **R3 — boundary guard disclosure plus helper freeze.** The catalog-name guard now explicitly discloses that it only sees catalog identifiers. A second helper/label freeze list covers the non-catalog leaks named by the review: eq/neq frame-id fallbacks, the experimental trace fabricator body, and `select_proof_results` labels.
+
 ## Signals survey
 
 The envelope had to represent these current `state.signals` shapes:
@@ -26,7 +39,7 @@ The envelope had to represent these current `state.signals` shapes:
 - Output record sidecars using `<output>_records`; legacy predicate facts using `predicate_facts`.
 - Legacy metadata keys such as `source_results`, `summary`, `anchor_source`, and `candidate_evaluations_records`.
 
-The envelope can represent all of these without loss. Legacy metadata remains metadata, not declared output channels. Coverage is present as an optional slot only; F2-0 does not change coverage semantics.
+The envelope can represent all of these without loss. Legacy metadata values are preserved in `aux`, not emitted as declared output channels. Coverage is present as an optional slot only; F2-0 does not change coverage semantics.
 
 ## Shadow conformance report
 
@@ -63,6 +76,12 @@ Finding shape: current legacy emissions carry more evidence fields than the cata
 ## Frozen shared-code leak allowlist
 
 `tests/test_executor_boundaries.py` freezes the current capability-name mentions in shared executor code, excluding bodies of `primitive_*` and `relation_*` implementations. The allowlist is intentionally exact-line based so future packets can only shrink or explicitly amend it.
+
+This catalog-name guard has a declared boundary: it only detects shared-code leaks that include catalog identifiers. It does not see non-catalog helper and label leaks. Round 2 therefore adds a second exact-count freeze list for the review-named non-catalog surfaces:
+
+- eq/neq predicate trace frame-id fallback labels.
+- `experimental_predicate_traces_for_result` and its experimental trace labels.
+- `select_proof_results` and its selection labels.
 
 Frozen names:
 
@@ -119,9 +138,7 @@ Tracked git state was clean for the committed-tree after run. A pre-existing unr
 
 | Command | Result |
 |---|---|
-| `PYTHONPATH=src .venv/bin/python -m unittest tests.test_envelope tests.test_executor_boundaries` | PASS, 9 tests in 3.237s |
+| `PYTHONPATH=src .venv/bin/python -m unittest tests.test_envelope tests.test_executor_boundaries` | PASS, 11 tests |
 | `make envelope-conformance-report` | PASS, report written, 2544 shadow findings |
 | `make scp-0-verify afl-passport-verify afl-09a-verify n1d1-verify afl-substrate-q4-verify afl-substrate-q6-verify` | PASS on committed tree |
-| `make test` | PASS, 346 tests in 343.601s on final committed tree |
-
-The `make test` subprocess completed successfully; a shell wrapper used for tailing the saved log then failed on zsh's readonly `status` variable after the suite had already reported `OK`.
+| `make test` | PASS, 348 tests on committed tree |

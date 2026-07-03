@@ -90,27 +90,37 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     args = parser.parse_args(argv)
 
-    os.environ["TQE_ENVELOPE_CONFORMANCE"] = "warn"
-    logging.getLogger("tqe.runtime.envelope").setLevel(logging.ERROR)
-    plan_paths = tuple(args.plan or DEFAULT_PLANS)
-    reports = [
-        report_for_plan(plan_path, match_id=args.match_id, period=args.period)
-        for plan_path in plan_paths
-    ]
-    totals = Counter()
-    for report in reports:
-        totals.update(report["findings_count_by_capability"])
-    payload = {
-        "schema_version": "f2_0.envelope_conformance_report.v1",
-        "mode": "warn",
-        "plan_count": len(reports),
-        "finding_count": sum(report["finding_count"] for report in reports),
-        "findings_count_by_capability": dict(sorted(totals.items())),
-        "reports": reports,
-    }
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    print(json.dumps(payload, indent=2, sort_keys=True))
+    previous_mode = os.environ.get("TQE_ENVELOPE_CONFORMANCE")
+    envelope_logger = logging.getLogger("tqe.runtime.envelope")
+    previous_level = envelope_logger.level
+    try:
+        os.environ["TQE_ENVELOPE_CONFORMANCE"] = "warn"
+        envelope_logger.setLevel(logging.ERROR)
+        plan_paths = tuple(args.plan or DEFAULT_PLANS)
+        reports = [
+            report_for_plan(plan_path, match_id=args.match_id, period=args.period)
+            for plan_path in plan_paths
+        ]
+        totals = Counter()
+        for report in reports:
+            totals.update(report["findings_count_by_capability"])
+        payload = {
+            "schema_version": "f2_0.envelope_conformance_report.v1",
+            "mode": "warn",
+            "plan_count": len(reports),
+            "finding_count": sum(report["finding_count"] for report in reports),
+            "findings_count_by_capability": dict(sorted(totals.items())),
+            "reports": reports,
+        }
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        print(json.dumps(payload, indent=2, sort_keys=True))
+    finally:
+        if previous_mode is None:
+            os.environ.pop("TQE_ENVELOPE_CONFORMANCE", None)
+        else:
+            os.environ["TQE_ENVELOPE_CONFORMANCE"] = previous_mode
+        envelope_logger.setLevel(previous_level)
     return 0
 
 
