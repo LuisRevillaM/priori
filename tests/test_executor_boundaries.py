@@ -10,6 +10,7 @@ from tqe.runtime.capabilities import (
     LEGACY_NOOP_CAPABILITIES,
     PREDICATE_IMPLEMENTATION_NAMES,
     PRIMITIVE_IMPLEMENTATION_NAMES,
+    RELOCATED_IMPLEMENTATION_MODULES,
     RELATION_IMPLEMENTATION_NAMES,
     build_predicate_registry,
     build_primitive_registry,
@@ -81,6 +82,24 @@ class ExecutorRegistryBoundaryTests(unittest.TestCase):
             "sample_capability.sample_node read undeclared parameter missing_parameter",
         ):
             executor.node_parameter_number(node, "missing_parameter")
+
+    def test_pass_family_relocation_is_registry_only(self) -> None:
+        source = Path(executor.__file__).resolve().read_text(encoding="utf-8")
+        self.assertNotIn("pass_family", source)
+
+        primitive_registry = build_primitive_registry(vars(executor))
+        relation_registry = build_relation_registry(vars(executor))
+        relocated_capabilities = {
+            "action_event_anchor": primitive_registry["action_event_anchor"],
+            "controlled_pass_episode": primitive_registry["controlled_pass_episode"],
+            "one_touch_relay_episode": primitive_registry["one_touch_relay_episode"],
+            "opponents_bypassed_by_action": relation_registry["opponents_bypassed_by_action"],
+        }
+
+        for implementation_name in RELOCATED_IMPLEMENTATION_MODULES:
+            self.assertFalse(hasattr(executor, implementation_name), implementation_name)
+        for implementation in relocated_capabilities.values():
+            self.assertEqual("tqe.runtime.capabilities.pass_family", implementation.__module__)
 
 
 # This is the F2-0 freeze line, not a cleanup.  Destination-entry lines are the
@@ -187,19 +206,22 @@ def shared_executor_source() -> tuple[str, list[str], str]:
 
 
 def node_parameter_reads_by_capability() -> dict[str, set[str]]:
-    source, _lines, _shared_source = shared_executor_source()
-    module = ast.parse(source)
     capabilities_for_implementation: dict[str, set[str]] = {}
     for capability_name, implementation_name in (
         *PRIMITIVE_IMPLEMENTATION_NAMES,
         *RELATION_IMPLEMENTATION_NAMES,
     ):
         capabilities_for_implementation.setdefault(implementation_name, set()).add(capability_name)
-    implementation_spans = {
-        node.name: node
-        for node in module.body
-        if isinstance(node, ast.FunctionDef) and node.name in capabilities_for_implementation
-    }
+    implementation_spans: dict[str, ast.FunctionDef] = {}
+    for module_path in implementation_source_paths():
+        module = ast.parse(module_path.read_text(encoding="utf-8"))
+        implementation_spans.update(
+            {
+                node.name: node
+                for node in module.body
+                if isinstance(node, ast.FunctionDef) and node.name in capabilities_for_implementation
+            }
+        )
     reads: dict[str, set[str]] = {}
     for implementation_name, function_node in implementation_spans.items():
         capability_names = capabilities_for_implementation[implementation_name]
@@ -228,3 +250,10 @@ def node_parameter_reads_by_capability() -> dict[str, set[str]]:
             for capability_name in capability_names:
                 reads.setdefault(capability_name, set()).add(name_arg.value)
     return reads
+
+
+def implementation_source_paths() -> tuple[Path, ...]:
+    return (
+        Path(executor.__file__).resolve(),
+        Path(executor.__file__).resolve().parent / "capabilities" / "pass_family.py",
+    )

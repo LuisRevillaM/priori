@@ -24,9 +24,11 @@ from tqe.runtime.executor import (
     PeriodState,
     RuntimeParameters,
     TacticalQueryExecutor,
+    runtime_parameters,
+)
+from tqe.runtime.capabilities.pass_family import (
     primitive_controlled_pass_episode,
     primitive_one_touch_relay_episode,
-    runtime_parameters,
 )
 from tqe.runtime.ir import TacticalQueryDocument
 from tqe.runtime.one_touch import OneTouchRelayConfig, OneTouchRelayOutput, adjacent_event_linked_passes
@@ -342,7 +344,7 @@ class ControlledPassExecutorParameterTest(unittest.TestCase):
                 non_match_examples=[],
             )
 
-        with patch("tqe.runtime.executor.evaluate_controlled_passes", side_effect=fake_evaluate_controlled_passes):
+        with patch("tqe.runtime.capabilities.pass_family.evaluate_controlled_passes", side_effect=fake_evaluate_controlled_passes):
             primitive_controlled_pass_episode(fake_period_state(), node)
 
         self.assertEqual(("any",), captured["config"].event_type_filter)
@@ -373,7 +375,7 @@ class ControlledPassExecutorParameterTest(unittest.TestCase):
                 non_match_examples=[],
             )
 
-        with patch("tqe.runtime.executor.evaluate_one_touch_relays", side_effect=fake_evaluate_one_touch_relays):
+        with patch("tqe.runtime.capabilities.pass_family.evaluate_one_touch_relays", side_effect=fake_evaluate_one_touch_relays):
             primitive_one_touch_relay_episode(fake_period_state(), node)
 
         self.assertEqual(("FreeKick_Play_Pass",), captured["config"].event_type_filter)

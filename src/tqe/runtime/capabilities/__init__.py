@@ -9,6 +9,7 @@ tests can prove the dispatch surface is explicit and complete.
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping
+from importlib import import_module
 from typing import Any
 
 Implementation = Callable[..., None]
@@ -94,6 +95,14 @@ LEGACY_NOOP_CAPABILITIES: frozenset[str] = frozenset(
 )
 
 
+RELOCATED_IMPLEMENTATION_MODULES: dict[str, str] = {
+    "primitive_action_event_anchor": "tqe.runtime.capabilities.pass_family",
+    "primitive_controlled_pass_episode": "tqe.runtime.capabilities.pass_family",
+    "primitive_one_touch_relay_episode": "tqe.runtime.capabilities.pass_family",
+    "relation_opponents_bypassed_by_action": "tqe.runtime.capabilities.pass_family",
+}
+
+
 def build_primitive_registry(namespace: Mapping[str, Any]) -> dict[str, Implementation]:
     return _build_registry(PRIMITIVE_IMPLEMENTATION_NAMES, namespace)
 
@@ -112,10 +121,17 @@ def _build_registry(
 ) -> dict[str, Implementation]:
     registry: dict[str, Implementation] = {}
     for capability_name, implementation_name in mappings:
-        implementation = namespace.get(implementation_name)
+        implementation = _implementation_callable(implementation_name, namespace)
         if not callable(implementation):
             raise RuntimeError(f"Missing implementation callable {implementation_name}")
         if capability_name in registry:
             raise RuntimeError(f"Duplicate capability registration for {capability_name}")
         registry[capability_name] = implementation
     return registry
+
+
+def _implementation_callable(implementation_name: str, namespace: Mapping[str, Any]) -> Any:
+    module_name = RELOCATED_IMPLEMENTATION_MODULES.get(implementation_name)
+    if module_name is None:
+        return namespace.get(implementation_name)
+    return getattr(import_module(module_name), implementation_name)
