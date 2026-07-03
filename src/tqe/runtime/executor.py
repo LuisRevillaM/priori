@@ -1255,6 +1255,34 @@ def record_matches_anchor(record: dict[str, Any], anchor: RuntimeAnchor) -> bool
     return False
 
 
+def legacy_trace_record_matches_anchor(record: dict[str, Any], anchor: RuntimeAnchor) -> bool:
+    """Bridge legacy predicate trace records that predate explicit anchor IDs.
+
+    Witness selection must use strict ``record_matches_anchor`` semantics. Some
+    record-backed predicate traces, however, were minted before ``anchor_id``
+    was stamped onto trace source records. For that trace-only path, preserve
+    identity by result id when available, then by the match/period/frame triple
+    those legacy records already carry.
+    """
+    if record_matches_anchor(record, anchor):
+        return True
+    if not isinstance(record, dict) or "anchor_id" in record:
+        return False
+    source_evidence = record.get("source_evidence") if isinstance(record.get("source_evidence"), dict) else {}
+    anchor_result_id = anchor.attributes.get("result_id")
+    record_result_id = record.get("result_id") or source_evidence.get("result_id")
+    if anchor_result_id is not None and record_result_id is not None:
+        return str(record_result_id) == str(anchor_result_id)
+    record_match_id = record.get("match_id") or source_evidence.get("match_id")
+    record_period = record.get("period") or source_evidence.get("period")
+    record_frame_id = optional_int(record.get("anchor_frame_id") or source_evidence.get("anchor_frame_id"))
+    return (
+        str(record_match_id or "") == anchor.match_id
+        and str(record_period or "") == anchor.period
+        and record_frame_id == anchor.anchor_frame_id
+    )
+
+
 def catalog_input_value(
     state: PeriodState,
     node: BoundCatalogNode,
@@ -2904,7 +2932,7 @@ def predicate_trace_from_runtime_record(
         if record.get("predicate_id") != node.node_id:
             continue
         source_record = record.get("source_record") if isinstance(record.get("source_record"), dict) else record
-        if not record_matches_anchor(source_record, anchor):
+        if not legacy_trace_record_matches_anchor(source_record, anchor):
             continue
         return PredicateTrace(
             predicate_id=node.node_id,

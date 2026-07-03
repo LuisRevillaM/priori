@@ -202,7 +202,10 @@ def episode_predicate_node() -> BoundPredicateNode:
     )
 
 
-def runtime_anchor(frame_id: int = 100) -> RuntimeAnchor:
+def runtime_anchor(frame_id: int = 100, *, result_id: str | None = None) -> RuntimeAnchor:
+    attributes = {"anchor_id": "anchor_a", "anchor_frame_id": frame_id}
+    if result_id is not None:
+        attributes["result_id"] = result_id
     return RuntimeAnchor(
         anchor_id="anchor_a",
         semantic_key="anchor_a",
@@ -213,7 +216,7 @@ def runtime_anchor(frame_id: int = 100) -> RuntimeAnchor:
         output_name="anchor_evaluations",
         start_frame_id=frame_id,
         end_frame_id=frame_id,
-        attributes={"anchor_id": "anchor_a", "anchor_frame_id": frame_id},
+        attributes=attributes,
     )
 
 
@@ -482,6 +485,76 @@ class ComparisonTruthSeriesTest(unittest.TestCase):
         self.assertIsNotNone(trace)
         self.assertEqual("FAIL", trace.status)
         self.assertNotIn("reason", trace.source_evidence)
+
+    def test_anchorless_legacy_trace_records_bridge_by_identity(self) -> None:
+        node = episode_predicate_node()
+        cases = [
+            (
+                runtime_anchor(100, result_id="result-1"),
+                {"result_id": "result-1", "match_id": "other", "period": "secondHalf", "anchor_frame_id": 999},
+            ),
+            (
+                runtime_anchor(100),
+                {"match_id": "synthetic", "period": "firstHalf", "anchor_frame_id": 100},
+            ),
+        ]
+        for anchor, source_record in cases:
+            with self.subTest(source_record=source_record):
+                runtime_value = RuntimeValue(
+                    output=node.output,
+                    value=[],
+                    records=[
+                        {
+                            "predicate_id": node.node_id,
+                            "status": "PASS",
+                            "value": None,
+                            "threshold": None,
+                            "unit": Unit.NONE.value,
+                            "frame_id": 100,
+                            "window": None,
+                            "source_evidence": {},
+                            "source_record": source_record,
+                        }
+                    ],
+                )
+
+                trace = predicate_trace_from_runtime_value(
+                    node=node,
+                    runtime_value=runtime_value,
+                    anchor=anchor,
+                    result_id="result-1",
+                    common_evidence={"result_id": "result-1"},
+                )
+
+                self.assertIsNotNone(trace)
+                self.assertEqual("PASS", trace.status)
+                self.assertNotIn("reason", trace.source_evidence)
+
+    def test_uncovered_frame_signal_trace_is_unknown_with_reason(self) -> None:
+        node = comparison_node("gte")
+        runtime_value = RuntimeValue(
+            output=node.output,
+            value=FrameSignal(
+                frame_ids=[90],
+                values=[True],
+                unknown_mask=[False],
+                unit=Unit.NONE,
+                entity_scope=EntityScope.NONE,
+            ),
+            records=[],
+        )
+
+        trace = predicate_trace_from_runtime_value(
+            node=node,
+            runtime_value=runtime_value,
+            anchor=runtime_anchor(100),
+            result_id="result-1",
+            common_evidence={"result_id": "result-1"},
+        )
+
+        self.assertIsNotNone(trace)
+        self.assertEqual("UNKNOWN", trace.status)
+        self.assertEqual("anchor_frame_missing_from_predicate_signal", trace.source_evidence["reason"])
 
 
 if __name__ == "__main__":
