@@ -16,20 +16,17 @@ from tqe.runtime.capabilities.corridor_family import (
 from tqe.runtime.capabilities.possession_family import primitive_outcome_classification
 from tqe.runtime.capabilities.teamshape_family import primitive_signed_lateral_shift
 from tqe.runtime.executor import (
+    MatchContext,
     TacticalQueryExecutor,
     catalog_input_value,
+    execute_predicate_with_resolved_inputs,
     execution_result_rows,
-    predicate_eq,
-    predicate_exists,
-    predicate_gt,
-    predicate_gte,
-    predicate_lte,
-    predicate_neq,
-    predicate_persists_for,
     record_runtime_values,
+    resolved_node_inputs,
+    resolved_node_parameters,
     runtime_parameters,
 )
-from tqe.runtime.ir import BoundCatalogNode, NodeKind
+from tqe.runtime.ir import BoundCatalogNode, BoundPredicateNode, NodeKind
 from tqe.runtime.values import FrameSignal, RuntimeValue
 
 REPORT_PATH = Path("artifacts/m1.1/gate-s2-verification-report.json")
@@ -79,13 +76,7 @@ def build_report() -> dict[str, Any]:
 
 def validate_generic_operators_have_no_candidate_side_channel() -> list[dict[str, Any]]:
     operators = [
-        predicate_gt,
-        predicate_gte,
-        predicate_lte,
-        predicate_eq,
-        predicate_neq,
-        predicate_persists_for,
-        predicate_exists,
+        execute_predicate_with_resolved_inputs,
     ]
     forbidden = [
         "state.candidates",
@@ -107,7 +98,7 @@ def validate_generic_operators_have_no_candidate_side_channel() -> list[dict[str
         pass_check(
             "operators.no_query_specific_candidate_branches",
             "generic predicate operators do not branch on M1 candidate state or query-specific fields",
-            {"operator_count": len(operators)},
+            {"live_function_count": len(operators)},
         )
         if not violations
         else fail_check(
@@ -287,9 +278,22 @@ def execute_until_node(
             implementation = executor.primitives[node.catalog_ref]
         elif isinstance(node, BoundCatalogNode) and node.kind == NodeKind.RELATION:
             implementation = executor.relations[node.catalog_ref]
+        elif isinstance(node, BoundPredicateNode):
+            state.signals[node.node_id] = execute_predicate_with_resolved_inputs(
+                context=MatchContext(
+                    match_id=state.match_id,
+                    period=state.period,
+                    frame_ids=tuple(int(frame_id) for frame_id in state.frame_ids),
+                    params=state.params,
+                ),
+                node=node,
+                inputs=resolved_node_inputs(state, node),
+                parameters=resolved_node_parameters(node),
+            )
         else:
-            implementation = executor.predicates[node.operator.name]
-        implementation(state, node)
+            raise RuntimeError(f"unsupported node type {type(node).__name__}")
+        if isinstance(node, BoundCatalogNode):
+            implementation(state, node)
         record_runtime_values(state, node)
         if node.node_id == stop_after_node_id:
             return state

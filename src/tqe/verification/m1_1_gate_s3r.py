@@ -17,6 +17,7 @@ from tqe.runtime.executor import (
     FRAME_RATE_HZ,
     PeriodState,
     RuntimeAnchor,
+    MatchContext,
     RuntimeParameters,
     TacticalQueryExecutor,
     GENERIC_EXECUTION_PROFILE,
@@ -27,7 +28,6 @@ from tqe.runtime.executor import (
     execute_persists_for,
     execute_predicate_with_resolved_inputs,
     execution_result_rows,
-    predicate_persists_for,
     predicate_trace_from_runtime_value,
     runtime_anchors,
     runtime_parameters,
@@ -426,10 +426,9 @@ def validate_generic_temporal_semantics(bound: Any) -> list[dict[str, Any]]:
         result_id="outside_coverage",
         common_evidence={},
     )
-    source = inspect.getsource(predicate_persists_for)
     shared_source = inspect.getsource(execute_persists_for)
     forbidden = ["wide_entry", "block_shift", "shift_gate", "persistence_series", "quality_status", "runtime_records", "_predicate_status", "truth_series"]
-    hits = [token for token in forbidden if token in source + shared_source]
+    hits = [token for token in forbidden if token in shared_source]
     return [
         pass_check(
             "temporal.persists_for_generic_tri_state",
@@ -613,7 +612,7 @@ def validate_generic_source_no_forbidden_assumptions() -> list[dict[str, Any]]:
     functions = [
         runtime_anchors,
         evaluate_target_in_state,
-        predicate_persists_for,
+        execute_predicate_with_resolved_inputs,
     ]
     forbidden = ["wide_entry", "block_shift", "shift_gate"]
     hits: dict[str, list[str]] = {}

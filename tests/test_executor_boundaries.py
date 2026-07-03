@@ -7,11 +7,9 @@ from pathlib import Path
 
 from tqe.runtime import executor
 from tqe.runtime.capabilities import (
-    PREDICATE_IMPLEMENTATION_NAMES,
     PRIMITIVE_IMPLEMENTATION_NAMES,
     RELOCATED_IMPLEMENTATION_MODULES,
     RELATION_IMPLEMENTATION_NAMES,
-    build_predicate_registry,
     build_primitive_registry,
     build_relation_registry,
 )
@@ -35,11 +33,13 @@ class ExecutorRegistryBoundaryTests(unittest.TestCase):
 
         primitive_registry = build_primitive_registry(vars(executor))
         relation_registry = build_relation_registry(vars(executor))
-        predicate_registry = build_predicate_registry(vars(executor))
 
         self.assertEqual(set(primitive_names), set(primitive_registry))
         self.assertEqual(set(relation_names), set(relation_registry))
-        self.assertEqual({name for name, _ in PREDICATE_IMPLEMENTATION_NAMES}, set(predicate_registry))
+        self.assertEqual(
+            {operator.name for operator in catalog.operators},
+            set(executor.SUPPORTED_PREDICATE_OPERATORS),
+        )
 
     def test_shared_executor_capability_name_leaks_are_frozen(self) -> None:
         observed = shared_executor_capability_mentions()

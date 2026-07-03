@@ -67,18 +67,6 @@ RELATION_IMPLEMENTATION_NAMES: tuple[tuple[str, str], ...] = (
 )
 
 
-PREDICATE_IMPLEMENTATION_NAMES: tuple[tuple[str, str], ...] = (
-    ("gt", "predicate_gt"),
-    ("gte", "predicate_gte"),
-    ("lte", "predicate_lte"),
-    ("eq", "predicate_eq"),
-    ("neq", "predicate_neq"),
-    ("persists_for", "predicate_persists_for"),
-    ("exists", "predicate_exists"),
-    ("count_at_least", "predicate_count_at_least"),
-)
-
-
 RELOCATED_IMPLEMENTATION_MODULES: dict[str, str] = {
     "primitive_possession_segment": "tqe.runtime.capabilities.possession_family",
     "primitive_transition_anchor": "tqe.runtime.capabilities.possession_family",
@@ -131,10 +119,6 @@ def build_primitive_registry(namespace: Mapping[str, Any]) -> dict[str, Implemen
 
 def build_relation_registry(namespace: Mapping[str, Any]) -> dict[str, Implementation]:
     return _build_registry(RELATION_IMPLEMENTATION_NAMES, namespace)
-
-
-def build_predicate_registry(namespace: Mapping[str, Any]) -> dict[str, Implementation]:
-    return _build_registry(PREDICATE_IMPLEMENTATION_NAMES, namespace)
 
 
 def _build_registry(
