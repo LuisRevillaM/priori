@@ -1,7 +1,7 @@
 {
   "expectation_id": "afl09a.substrate_q6.0_1_0",
   "expected": {
-    "bound_plan_hash": "3f1fe004bc16bb029f82635a80f26c2a2e8865de4ec7d1490d943fb1c36c81b5",
+    "bound_plan_hash": "286ac3f2744d6d327b71fa1d6a5427d0a3fb6d9590236a5b9711493a8ed96a44",
     "compatibility_profile": "generic",
     "document_hash": "8e4efdfa27863b06bd08a7d6ef740b184b88c598ef1c7b69b026f3baf02cd074",
     "execution_status": "pass",
@@ -15,8 +15,8 @@
   "freeze_provenance": {
     "freeze_mechanism": "explicit_AFL09A_FREEZE_EXPECTATIONS=1",
     "review": "controller_self_verified_original_real_data_verifier",
-    "runtime_semantics_dirty": false,
-    "source_commit": "6634c2e09f26df1bbf615dda7a2230c791e5583e",
+    "runtime_semantics_dirty": true,
+    "source_commit": "882b7ced6cf8168ec8e11c4c51b843295de92df1",
     "source_verifier": "tqe.verification.afl_substrate_q6",
     "source_verifier_status": "PASS",
     "threshold_version": "q6_throw_in_first_action_under_pressure.v0.1.0",

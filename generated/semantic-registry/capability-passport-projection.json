@@ -1,6 +1,6 @@
 {
   "passport_count": 44,
-  "passport_revision": "e1a26b4369d928b8575f3b171bd406e8e359bd6e2b2c7822c68a53cc88913796",
+  "passport_revision": "29e8300418545eade16bb58614b579882327f56b80bece0ee1b646edf9907220",
   "passports": [
     {
       "binding": {
@@ -450,7 +450,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "2baa8cc5ddc1782b7a087eeedf6a75864a705ede4c45dcc04c425560aed29475",
+      "passport_hash": "69f09e5762f4a9f5062a63bd10097474d8932530233e853244302e4ea583af7b",
       "projection_membership": {
         "ai": false,
         "product": false
@@ -503,6 +503,18 @@
         "outputs": [
           {
             "cardinality": "collection",
+            "coverage": {
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "acceleration_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -989,7 +1001,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "bbc7de4328446a6ef546f66b486bd727a9213bd1aa0c9d3cc3201372cae9654f",
+      "passport_hash": "4be7729e156f18e123ee4cff4db7ea4258b0814666a137b0bfa21d1b5885cf19",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -1029,6 +1041,18 @@
         "outputs": [
           {
             "cardinality": "collection",
+            "coverage": {
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "action_chain_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -1367,7 +1391,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "1adef45abc7c040537d95db2cbca55bf9e8d21131a5c7f42ad538313a1806b0a",
+      "passport_hash": "956676556425a279b4a0b30caf283d7c06f3252091e2bf2139a50d157ed4d641",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -1401,6 +1425,18 @@
         "outputs": [
           {
             "cardinality": "collection",
+            "coverage": {
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "action_event_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -2243,7 +2279,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "be2e36ab8f6c8c1d1dc63f36cc862e0e2f085241b1815edc3a7282d5644147f9",
+      "passport_hash": "757582655a782b7b619a0f50eb7b4183da8d70a462c9dd679a00b55024cd32cd",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -2337,6 +2373,18 @@
           },
           {
             "cardinality": "collection",
+            "coverage": {
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "carry_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -3013,7 +3061,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "5832369df53de86a53b6e2ef29e1c16bc3e7df3df1b21ae4726070315fef47fa",
+      "passport_hash": "0a8ab9809d1ebb54cd44cf51f08091dffb5458958f58b4cd0122d7cc0e1785fc",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -3076,6 +3124,18 @@
         "outputs": [
           {
             "cardinality": "collection",
+            "coverage": {
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "change_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -3619,7 +3679,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "00edf55b1f682271c623def1194a4c0cd3c835549e074d8b41ae6eff43b67459",
+      "passport_hash": "7b60dd5975feb8541c2f85708aa12c170442ddc7c97b590e606fa10f38fd413c",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -3692,6 +3752,18 @@
         "outputs": [
           {
             "cardinality": "collection",
+            "coverage": {
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "line_break_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -4945,7 +5017,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "3c13e1c6f7f8665c6e92588e9d9b36d0338e90abfb0410e4dfd9b2cdbe8b5fbe",
+      "passport_hash": "daf8cd86f97b9dc3a552b263d89a6d724bb790718252135a757f9caa1fd6981b",
       "projection_membership": {
         "ai": false,
         "product": false
@@ -5005,6 +5077,18 @@
         "outputs": [
           {
             "cardinality": "collection",
+            "coverage": {
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "cover_shadow_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -5594,7 +5678,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "0584cc0e99c636fe86253d71d75afa1f2a4c4d7d194b8d437d759e6c810d7369",
+      "passport_hash": "10bd223f8609afc35af206c5c4a8e636187f4ef89f55c06232b31c564c5a35a9",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -5639,6 +5723,18 @@
         "outputs": [
           {
             "cardinality": "collection",
+            "coverage": {
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "line_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -6539,7 +6635,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "e8078a07b2dd2f92ddfa830a5886b53700b3d679114765694ac2e71dfeeee42c",
+      "passport_hash": "5ff1add23a3c408e0573929a73e63144797130c1969a8e36335203e30d032d35",
       "projection_membership": {
         "ai": false,
         "product": false
@@ -6600,6 +6696,18 @@
         "outputs": [
           {
             "cardinality": "collection",
+            "coverage": {
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "join_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -7236,7 +7344,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "fe8d7fe91e14d44dd61c3640504744a5e8b1007489dd5db06a3b73f9b77df891",
+      "passport_hash": "13c288ff7b52ad38175342aa27fa17bf77f606815cdc423efc0882b4c55fdc86",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -7290,6 +7398,18 @@
         "outputs": [
           {
             "cardinality": "collection",
+            "coverage": {
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "lane_occupancy_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -7807,7 +7927,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "65c2c8d57c1cb2706bda6394ea3f2d248fa897fada90461eb756bc5c34c0acae",
+      "passport_hash": "71c0e8fcea5da7b67c187460bd85c344e2b486b05f41f80b2a51212eee17b3cf",
       "projection_membership": {
         "ai": false,
         "product": false
@@ -7862,6 +7982,18 @@
         "outputs": [
           {
             "cardinality": "collection",
+            "coverage": {
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "marking_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -8434,7 +8566,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "508df5a0d52fa03beb997845ebd1ff2cfad8bf7f660e3124e9d5ae026c9b59b4",
+      "passport_hash": "a64dfe31478ef9a7f6a5e63d1a1de8548925af0402a853223aad032961673ba0",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -8477,6 +8609,18 @@
         "outputs": [
           {
             "cardinality": "collection",
+            "coverage": {
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "multi_line_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -9076,7 +9220,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "9005aaf036e99815b50c21240e5b62b230c2704642d7b71970d277d75d83c7cc",
+      "passport_hash": "b0321f3a9d7fbdbfbbd62f6dfbaf72f3e67dbf42613cc941b13e7bdb12e621c3",
       "projection_membership": {
         "ai": false,
         "product": false
@@ -9136,6 +9280,18 @@
         "outputs": [
           {
             "cardinality": "collection",
+            "coverage": {
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "off_ball_run_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -9704,7 +9860,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "bfdfc0b1f4d54477464065e61ba7988c61d953aa5c539a64a53aad42b6aeac3e",
+      "passport_hash": "625e1448a05b7b0d5067920599ab63de1e51738b1064cca47176b3c36d08502e",
       "projection_membership": {
         "ai": false,
         "product": false
@@ -9761,6 +9917,18 @@
         "outputs": [
           {
             "cardinality": "collection",
+            "coverage": {
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "off_ball_run_type_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -10310,7 +10478,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "f28aacfe8d52c8f35f473658c73ccb2ff556b6516db7df10f9838f1e0063013d",
+      "passport_hash": "b8d5212036122ee57007a5434f9e5ee74a7eceef6cfd54e67c9aae4aa3decffc",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -10348,6 +10516,18 @@
         "outputs": [
           {
             "cardinality": "collection",
+            "coverage": {
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "one_touch_relay_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -11181,7 +11361,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "fedc39e2d8661da219916ece037203812f677f110c94bd9a7824d6aaffb0597b",
+      "passport_hash": "763290139406b698ff023cc6d68b6ccc50e73de3366fe58914dafb979b482af0",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -11226,6 +11406,18 @@
         "outputs": [
           {
             "cardinality": "collection",
+            "coverage": {
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "outcome_window_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -11731,7 +11923,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "400cfdcbae04e1a025566084f043098fcb0d50cc889a16f3751c78779cccd5b5",
+      "passport_hash": "be6441e67d4d36a478db7831e9d2501731ea5622464e9e6570d509e0e0b55021",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -11773,6 +11965,18 @@
         "outputs": [
           {
             "cardinality": "collection",
+            "coverage": {
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "pairwise_distance_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -12194,7 +12398,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "6065c56a9acf4ea9119774251b97950c152191ce0e7d8e6dc4d4c892690507c0",
+      "passport_hash": "89c93a58b34d1d3f50682324980158be3b2d0e27067bcc72842d6dc50cdff888",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -12249,6 +12453,18 @@
         "outputs": [
           {
             "cardinality": "collection",
+            "coverage": {
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "pass_chain_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -12916,7 +13132,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "b9ac912b6f3f8bd803a863576486103cf2c8799db7583366204093778d28845a",
+      "passport_hash": "9412bf6b3a3eb711a7ce4889992d51bcaf210058d2da6f9194d06c0b092da911",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -12987,6 +13203,18 @@
         "outputs": [
           {
             "cardinality": "collection",
+            "coverage": {
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "receiver_line_transition_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -14183,7 +14411,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "f7f02decd406a494d4e56148a70e4143878be273b5f24f50187848171b7e9e34",
+      "passport_hash": "6535cf78b150b6d8f410f69130b2a651bdae57c5bd9918fed1c474f104e4a46b",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -14236,6 +14464,18 @@
         "outputs": [
           {
             "cardinality": "collection",
+            "coverage": {
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "relative_position_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -14608,7 +14848,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "d80793a798fc4989420febed0a5d38b43f77d29f587a6e7942ec44ebbcb301a3",
+      "passport_hash": "8cb67a954dfb59ca58c87e9e9135141427a8be36b8a6a0f8ab200a2d4a044285",
       "projection_membership": {
         "ai": false,
         "product": false
@@ -14650,6 +14890,18 @@
         "outputs": [
           {
             "cardinality": "collection",
+            "coverage": {
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "set_piece_structure_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -15566,7 +15818,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "2b0222e24f244d37c28c6a594c219050675564df5b349c8b755e31049aa226a6",
+      "passport_hash": "0a3eb6a06a19aa3021a1a757219a55f09b1a7b6ed4a6fbc2e0743bd6d1217d0b",
       "projection_membership": {
         "ai": false,
         "product": false
@@ -15619,6 +15871,18 @@
         "outputs": [
           {
             "cardinality": "collection",
+            "coverage": {
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "open_space_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -16164,7 +16428,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "691495f9b6207d365e4aae278ef6b576a31aa8c257e55460fe1404bc9d3394ff",
+      "passport_hash": "5fbe24785a6e37320a91a6e5eadb955a4b43e74f759811b63feeff97dcbfbf49",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -16207,6 +16471,18 @@
         "outputs": [
           {
             "cardinality": "collection",
+            "coverage": {
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "zone_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -16641,7 +16917,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "b214f957c9326391f5782ddda37cea49333bfa6654d0a122fa1a5f7ad9f93862",
+      "passport_hash": "a10b7c475d6e57e03962272ef98b301743f411521d30035f2e20772c00436efc",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -16687,6 +16963,18 @@
         "outputs": [
           {
             "cardinality": "collection",
+            "coverage": {
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "switch_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -17165,7 +17453,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "64c91648288f55acbec436c29aee692a18f8c31e2ef5d7a2c7976f0a4a03b2b9",
+      "passport_hash": "f8cac080068288f77ab3606daa5ce679faa37743f683ee51b39d9a07c2dde533",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -17211,6 +17499,18 @@
         "outputs": [
           {
             "cardinality": "collection",
+            "coverage": {
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "team_compactness_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -17835,7 +18135,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "08ecbfc9a2162d07d350478ce7583de78b9f9d9373981f73a3bef7728e2cc3bc",
+      "passport_hash": "83d4b57866fd1d10ebf89933c8ef08fea922d27fa009cca6cb390bc1ead9ff25",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -17888,6 +18188,18 @@
         "outputs": [
           {
             "cardinality": "collection",
+            "coverage": {
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "time_to_arrival_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -18382,7 +18694,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "7eb3d07a1274e8b4f6775f2460714ff61c9fb7aba76979c08475bb857bc8ec9f",
+      "passport_hash": "7e2df5fad5dc7d4c62546af9c8e1c7975d19cd48c84f765e13ab17b300bc883e",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -18423,6 +18735,18 @@
         "outputs": [
           {
             "cardinality": "collection",
+            "coverage": {
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "tracking_quality_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -18843,7 +19167,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "df7e615cbfb26eae9b416e69fe64ceee88400c7253c57c6900cc387b331c68bc",
+      "passport_hash": "80fe89aacd9f0920ce127feafd81887b97e87066efb4295b83c93f200e2853d9",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -18879,6 +19203,18 @@
         "outputs": [
           {
             "cardinality": "collection",
+            "coverage": {
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "transition_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -19347,7 +19683,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "e68ed8d690fb207ab93623c5a38a85f50caceb675a8ab10b2d0097f3e8345e52",
+      "passport_hash": "9a8553cbfd5c436d5dca5f805f17f465df7ef4aaf414864a7deb7a1142133a54",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -19392,6 +19728,18 @@
         "outputs": [
           {
             "cardinality": "collection",
+            "coverage": {
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "velocity_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -19923,7 +20271,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "13f77bcdd31ed78174e1aecba34ddb1457d4a567c99dbb9a89cf0ce37c2f9f9d",
+      "passport_hash": "2597052d226f947e08f1960eb568bcb4188cb0d1daab842cd95b860850b74c71",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -20015,6 +20363,19 @@
           },
           {
             "cardinality": "collection",
+            "coverage": {
+              "count_field": "relation_count",
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "evaluation_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -20597,7 +20958,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "834c04149e4f1db28e521070710b5d1095cba9a8b5845f862dc22dbc1aa91a73",
+      "passport_hash": "7a5b8d7b47a570f4318a00faae32e2bbe0157239f6995057ce3a9c193f6a46d6",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -20689,6 +21050,19 @@
           },
           {
             "cardinality": "collection",
+            "coverage": {
+              "count_field": "relation_count",
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "evaluation_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -21263,7 +21637,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "592bcf4a157f07fada844bb7498f7e307b888def9b0d1fe10cfded512fbb9f38",
+      "passport_hash": "d42620672a3d67debfb273fbda3e650ba78c950eca2a09436c3f3d5ebf9dc1fb",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -21314,6 +21688,19 @@
         "outputs": [
           {
             "cardinality": "collection",
+            "coverage": {
+              "count_field": "local_number_difference",
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "local_number_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -21744,7 +22131,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "1c6c216d65df228eecbac981671b5e8a9c3b3897cc77d4d119a1cbc370b26677",
+      "passport_hash": "8de3e3528cb6e9af08bc1fea2f4849947de1878d494bc6d010543cecd889f346",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -21806,6 +22193,19 @@
         "outputs": [
           {
             "cardinality": "collection",
+            "coverage": {
+              "count_field": "opponents_bypassed_count",
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "evaluation_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -22371,7 +22771,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "707cc9dd30360b6ec26e0d7b934e1a6dadce9bcb03b79b1355cc7cc0c55b6bdf",
+      "passport_hash": "48815e1342e33a788dd19879f573e28af7be7cc874ac012097cf1951e7a071f4",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -22418,6 +22818,18 @@
         "outputs": [
           {
             "cardinality": "collection",
+            "coverage": {
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "pressure_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -23081,7 +23493,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "af317b1a72a2c01d4649b42235b6d101e598da47190990fe100fb67fddf05eeb",
+      "passport_hash": "8a5d5e5c3f75660a4a3cd83abf39b81a82604eecd64a06bb4b3cf1906180f005",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -23139,6 +23551,18 @@
         "outputs": [
           {
             "cardinality": "collection",
+            "coverage": {
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "support_arrival_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -23857,7 +24281,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "b3b3a2dc237c8e8f725b1e6c959943f5265553fd1a4354d6ecb9994e67242d21",
+      "passport_hash": "aae0aa68dc85a569c113844b12b2e41f6d59d81d532cd14b6bff8192c9bd3483",
       "projection_membership": {
         "ai": false,
         "product": false
@@ -23915,6 +24339,19 @@
         "outputs": [
           {
             "cardinality": "collection",
+            "coverage": {
+              "count_field": "pressure_actor_count",
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "team_press_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
             "entity_scope": "anchor",
             "evidence_fields": [
               "anchor_id",
@@ -24162,16 +24599,16 @@
   "projection_id": "priori.capability_passport_projection.afl08",
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "a1ddd272950fe343c3a2a479cb25fe5dd64c28f8f38df7df4076a909c8bf31ee",
+    "baseline_artifact_revision": "5a95690b3b5f82ce85a6427b62d1a72a2efe2a0d9185aabb0d6cc69c3c107711",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "fcc6d33ebfcab514907326796285209fdaed9d629e93b78da08b89aa9728f82d",
+    "lock_hash": "667ac17a3745f0c763a925691a39c2049d8b5d96180b9f77c2b923d78b100afe",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
     "registry_revision": "e3643c2470ee1a965fb8b1ff953d98eb86d28e613a7c0352d48640a46bf01e90",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "3814c6dd5be57dc18716df6d805d8db19452b5297b3aa7890afe8b22e79200a0",
+    "runtime_manifest_revision": "ad57d70f9db86d60424d2006fa86cf8e2e356bf3135d9f971f9202b583f4c881",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"

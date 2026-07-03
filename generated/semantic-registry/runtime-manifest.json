@@ -43,6 +43,18 @@
       "outputs": [
         {
           "cardinality": "collection",
+          "coverage": {
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "acceleration_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -274,6 +286,18 @@
       "outputs": [
         {
           "cardinality": "collection",
+          "coverage": {
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "action_chain_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -369,6 +393,18 @@
       "outputs": [
         {
           "cardinality": "collection",
+          "coverage": {
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "action_event_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -548,6 +584,18 @@
         },
         {
           "cardinality": "collection",
+          "coverage": {
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "carry_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -802,6 +850,18 @@
       "outputs": [
         {
           "cardinality": "collection",
+          "coverage": {
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "change_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -1046,6 +1106,18 @@
       "outputs": [
         {
           "cardinality": "collection",
+          "coverage": {
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "line_break_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -1406,6 +1478,18 @@
       "outputs": [
         {
           "cardinality": "collection",
+          "coverage": {
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "cover_shadow_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -1652,6 +1736,18 @@
       "outputs": [
         {
           "cardinality": "collection",
+          "coverage": {
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "line_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -1846,6 +1942,18 @@
       "outputs": [
         {
           "cardinality": "collection",
+          "coverage": {
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "join_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -2180,6 +2288,18 @@
       "outputs": [
         {
           "cardinality": "collection",
+          "coverage": {
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "lane_occupancy_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -2322,6 +2442,18 @@
       "outputs": [
         {
           "cardinality": "collection",
+          "coverage": {
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "marking_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -2534,6 +2666,18 @@
       "outputs": [
         {
           "cardinality": "collection",
+          "coverage": {
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "multi_line_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -2704,6 +2848,18 @@
       "outputs": [
         {
           "cardinality": "collection",
+          "coverage": {
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "off_ball_run_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -2954,6 +3110,18 @@
       "outputs": [
         {
           "cardinality": "collection",
+          "coverage": {
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "off_ball_run_type_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -3129,6 +3297,18 @@
       "outputs": [
         {
           "cardinality": "collection",
+          "coverage": {
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "one_touch_relay_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -3360,6 +3540,18 @@
       "outputs": [
         {
           "cardinality": "collection",
+          "coverage": {
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "outcome_window_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -3521,6 +3713,18 @@
       "outputs": [
         {
           "cardinality": "collection",
+          "coverage": {
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "pairwise_distance_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -3693,6 +3897,18 @@
       "outputs": [
         {
           "cardinality": "collection",
+          "coverage": {
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "pass_chain_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -3851,6 +4067,18 @@
       "outputs": [
         {
           "cardinality": "collection",
+          "coverage": {
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "receiver_line_transition_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -4152,6 +4380,18 @@
       "outputs": [
         {
           "cardinality": "collection",
+          "coverage": {
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "relative_position_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -4285,6 +4525,18 @@
       "outputs": [
         {
           "cardinality": "collection",
+          "coverage": {
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "set_piece_structure_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -4486,6 +4738,18 @@
       "outputs": [
         {
           "cardinality": "collection",
+          "coverage": {
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "open_space_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -4729,6 +4993,18 @@
       "outputs": [
         {
           "cardinality": "collection",
+          "coverage": {
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "zone_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -4861,6 +5137,18 @@
       "outputs": [
         {
           "cardinality": "collection",
+          "coverage": {
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "switch_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -4997,6 +5285,18 @@
       "outputs": [
         {
           "cardinality": "collection",
+          "coverage": {
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "team_compactness_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -5159,6 +5459,18 @@
       "outputs": [
         {
           "cardinality": "collection",
+          "coverage": {
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "time_to_arrival_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -5403,6 +5715,18 @@
       "outputs": [
         {
           "cardinality": "collection",
+          "coverage": {
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "tracking_quality_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -5488,6 +5812,18 @@
       "outputs": [
         {
           "cardinality": "collection",
+          "coverage": {
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "transition_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -5641,6 +5977,18 @@
       "outputs": [
         {
           "cardinality": "collection",
+          "coverage": {
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "velocity_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -5830,6 +6178,19 @@
         },
         {
           "cardinality": "collection",
+          "coverage": {
+            "count_field": "relation_count",
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "evaluation_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -6069,6 +6430,19 @@
         },
         {
           "cardinality": "collection",
+          "coverage": {
+            "count_field": "relation_count",
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "evaluation_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -6267,6 +6641,19 @@
       "outputs": [
         {
           "cardinality": "collection",
+          "coverage": {
+            "count_field": "local_number_difference",
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "local_number_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -6445,6 +6832,19 @@
       "outputs": [
         {
           "cardinality": "collection",
+          "coverage": {
+            "count_field": "opponents_bypassed_count",
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "evaluation_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -6597,6 +6997,18 @@
       "outputs": [
         {
           "cardinality": "collection",
+          "coverage": {
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "pressure_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -6820,6 +7232,18 @@
       "outputs": [
         {
           "cardinality": "collection",
+          "coverage": {
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "support_arrival_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -7065,6 +7489,19 @@
       "outputs": [
         {
           "cardinality": "collection",
+          "coverage": {
+            "count_field": "pressure_actor_count",
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "team_press_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
           "entity_scope": "anchor",
           "evidence_fields": [
             "anchor_id",
@@ -8161,6 +8598,6 @@
       "unit": "none"
     }
   ],
-  "runtime_manifest_revision": "3814c6dd5be57dc18716df6d805d8db19452b5297b3aa7890afe8b22e79200a0",
+  "runtime_manifest_revision": "ad57d70f9db86d60424d2006fa86cf8e2e356bf3135d9f971f9202b583f4c881",
   "schema_version": "1.0"
 }

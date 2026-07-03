@@ -178,6 +178,7 @@ class WorkbenchBeta0ContractTests(unittest.TestCase):
         identity_failures = {
             "deploy_manifest_sha256",
             "knowledge_pack_sha256",
+            "source_file.runtime_binder",
             "source_file.runtime_catalog",
             "source_file.runtime_executor",
             "source_file.workshop_service",
