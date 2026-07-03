@@ -403,7 +403,7 @@ class ComparisonTruthSeriesTest(unittest.TestCase):
             [record["source_evidence"]["coverage_count_field"] for record in output["predicate_records"]],
         )
 
-    def test_episode_trace_uncovered_plain_episode_set_is_unknown(self) -> None:
+    def test_episode_trace_plain_episode_non_match_is_fail(self) -> None:
         node = episode_predicate_node()
         runtime_value = RuntimeValue(
             output=node.output,
@@ -420,8 +420,28 @@ class ComparisonTruthSeriesTest(unittest.TestCase):
         )
 
         self.assertIsNotNone(trace)
+        self.assertEqual("FAIL", trace.status)
+        self.assertNotIn("reason", trace.source_evidence)
+
+    def test_episode_trace_temporal_unknown_remains_unknown(self) -> None:
+        node = episode_predicate_node()
+        runtime_value = RuntimeValue(
+            output=node.output,
+            value=[{"start_frame_id": 90, "end_frame_id": 110, "temporal_status": "UNKNOWN"}],
+            records=[{"start_frame_id": 90, "end_frame_id": 110, "temporal_status": "UNKNOWN"}],
+        )
+
+        trace = predicate_trace_from_runtime_value(
+            node=node,
+            runtime_value=runtime_value,
+            anchor=runtime_anchor(100),
+            result_id="r1",
+            common_evidence={"result_id": "r1"},
+        )
+
+        self.assertIsNotNone(trace)
         self.assertEqual("UNKNOWN", trace.status)
-        self.assertEqual("episode_trace_anchor_uncovered", trace.source_evidence["reason"])
+        self.assertEqual({"start_frame_id": 90, "end_frame_id": 110}, trace.window)
 
     def test_episode_trace_explicit_temporal_fail_remains_fail(self) -> None:
         node = episode_predicate_node()
@@ -442,6 +462,26 @@ class ComparisonTruthSeriesTest(unittest.TestCase):
         self.assertIsNotNone(trace)
         self.assertEqual("FAIL", trace.status)
         self.assertEqual({"start_frame_id": 90, "end_frame_id": 110}, trace.window)
+
+    def test_episode_trace_temporal_records_no_match_is_fail(self) -> None:
+        node = episode_predicate_node()
+        runtime_value = RuntimeValue(
+            output=node.output,
+            value=[{"start_frame_id": 10, "end_frame_id": 20, "temporal_status": "FAIL"}],
+            records=[{"start_frame_id": 10, "end_frame_id": 20, "temporal_status": "FAIL"}],
+        )
+
+        trace = predicate_trace_from_runtime_value(
+            node=node,
+            runtime_value=runtime_value,
+            anchor=runtime_anchor(100),
+            result_id="r1",
+            common_evidence={"result_id": "r1"},
+        )
+
+        self.assertIsNotNone(trace)
+        self.assertEqual("FAIL", trace.status)
+        self.assertNotIn("reason", trace.source_evidence)
 
 
 if __name__ == "__main__":

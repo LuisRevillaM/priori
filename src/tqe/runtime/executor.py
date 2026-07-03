@@ -2865,17 +2865,17 @@ def predicate_trace_from_runtime_value(
                 break
         if has_temporal_status:
             if matched is None:
-                status = "UNKNOWN"
+                status = "FAIL"
                 matched_window = None
-                reason = "episode_trace_anchor_uncovered"
+                reason = None
             else:
                 status = str(matched.get("temporal_status") or "PASS")
                 matched_window = matched
                 reason = None
         else:
-            status = "PASS" if matched is not None else "UNKNOWN"
+            status = "PASS" if matched is not None else "FAIL"
             matched_window = matched
-            reason = None if matched is not None else "episode_trace_anchor_uncovered"
+            reason = None
         return PredicateTrace(
             predicate_id=node.node_id,
             status=status,
