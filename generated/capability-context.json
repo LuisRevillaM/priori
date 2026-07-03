@@ -2538,12 +2538,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "count",
+                    "value": 2.0
+                  },
                   "description": "Frames required before a corridor is considered closed.",
                   "maximum": 100.0,
                   "minimum": 1.0,
                   "name": "close_after_frames",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "count"
                 }
               },
@@ -2560,12 +2565,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "second",
+                    "value": 4.0
+                  },
                   "description": "Maximum relation search window after the anchor.",
                   "maximum": 15.0,
                   "minimum": 0.2,
                   "name": "max_window_seconds",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "second"
                 }
               },
@@ -2582,12 +2592,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "metre",
+                    "value": 45.0
+                  },
                   "description": "Maximum source-target segment length.",
                   "maximum": 100.0,
                   "minimum": 0.0,
                   "name": "maximum_segment_length_m",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "metre"
                 }
               },
@@ -2604,12 +2619,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "metre",
+                    "value": 5.0
+                  },
                   "description": "Minimum defender clearance from the source-target segment.",
                   "maximum": 40.0,
                   "minimum": 0.0,
                   "name": "minimum_clearance_m",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "metre"
                 }
               },
@@ -2626,12 +2646,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "second",
+                    "value": 0.0
+                  },
                   "description": "Minimum open duration retained in the relation output.",
                   "maximum": 15.0,
                   "minimum": 0.0,
                   "name": "minimum_duration_seconds",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "second"
                 }
               },
@@ -2648,12 +2673,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "metre",
+                    "value": 8.0
+                  },
                   "description": "Minimum forward progression from source to target.",
                   "maximum": 80.0,
                   "minimum": 0.0,
                   "name": "minimum_progression_m",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "metre"
                 }
               },
@@ -2670,12 +2700,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "metre",
+                    "value": 8.0
+                  },
                   "description": "Minimum source-target segment length.",
                   "maximum": 80.0,
                   "minimum": 0.0,
                   "name": "minimum_segment_length_m",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "metre"
                 }
               },
@@ -2692,12 +2727,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "count",
+                    "value": 2.0
+                  },
                   "description": "Frames required before a corridor is considered open.",
                   "maximum": 100.0,
                   "minimum": 1.0,
                   "name": "open_after_frames",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "count"
                 }
               },
@@ -2719,10 +2759,15 @@
                     "same_ball_side",
                     "opposite_ball_side"
                   ],
+                  "default": {
+                    "payload_type": "enum",
+                    "unit": "none",
+                    "value": "any"
+                  },
                   "description": "Retain corridors by relation destination side relative to the ball side.",
                   "name": "side_filter",
                   "payload_type": "enum",
-                  "required": true,
+                  "required": false,
                   "unit": "none"
                 }
               }
@@ -2852,12 +2897,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "count",
+                    "value": 2.0
+                  },
                   "description": "Frames required before a corridor is considered closed.",
                   "maximum": 100.0,
                   "minimum": 1.0,
                   "name": "close_after_frames",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "count"
                 }
               },
@@ -2874,12 +2924,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "second",
+                    "value": 4.0
+                  },
                   "description": "Maximum relation search window after the anchor.",
                   "maximum": 15.0,
                   "minimum": 0.2,
                   "name": "max_window_seconds",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "second"
                 }
               },
@@ -2896,12 +2951,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "metre",
+                    "value": 45.0
+                  },
                   "description": "Maximum source-target segment length.",
                   "maximum": 100.0,
                   "minimum": 0.0,
                   "name": "maximum_segment_length_m",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "metre"
                 }
               },
@@ -2918,12 +2978,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "metre",
+                    "value": 5.0
+                  },
                   "description": "Minimum defender clearance from the source-target segment.",
                   "maximum": 40.0,
                   "minimum": 0.0,
                   "name": "minimum_clearance_m",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "metre"
                 }
               },
@@ -2940,12 +3005,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "second",
+                    "value": 0.0
+                  },
                   "description": "Minimum open duration retained in the relation output.",
                   "maximum": 15.0,
                   "minimum": 0.0,
                   "name": "minimum_duration_seconds",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "second"
                 }
               },
@@ -2962,12 +3032,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "metre",
+                    "value": 8.0
+                  },
                   "description": "Minimum forward progression from source to target.",
                   "maximum": 80.0,
                   "minimum": 0.0,
                   "name": "minimum_progression_m",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "metre"
                 }
               },
@@ -2984,12 +3059,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "metre",
+                    "value": 8.0
+                  },
                   "description": "Minimum source-target segment length.",
                   "maximum": 80.0,
                   "minimum": 0.0,
                   "name": "minimum_segment_length_m",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "metre"
                 }
               },
@@ -3006,12 +3086,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "count",
+                    "value": 2.0
+                  },
                   "description": "Frames required before a corridor is considered open.",
                   "maximum": 100.0,
                   "minimum": 1.0,
                   "name": "open_after_frames",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "count"
                 }
               },
@@ -3033,10 +3118,15 @@
                     "same_ball_side",
                     "opposite_ball_side"
                   ],
+                  "default": {
+                    "payload_type": "enum",
+                    "unit": "none",
+                    "value": "any"
+                  },
                   "description": "Retain corridors by relation destination side relative to the ball side.",
                   "name": "side_filter",
                   "payload_type": "enum",
-                  "required": true,
+                  "required": false,
                   "unit": "none"
                 }
               }
@@ -6664,12 +6754,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "second",
+                    "value": 6.0
+                  },
                   "description": "Lookahead horizon for relation destination entry.",
                   "maximum": 30.0,
                   "minimum": 0.2,
                   "name": "destination_entry_horizon_seconds",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "second"
                 }
               },
@@ -6690,10 +6785,15 @@
                     "entry_first_then_progression",
                     "first_by_duration_clearance"
                   ],
+                  "default": {
+                    "payload_type": "enum",
+                    "unit": "none",
+                    "value": "entry_first_then_progression"
+                  },
                   "description": "Deterministic witness ordering when an anchor has multiple relation episodes.",
                   "name": "episode_selection",
                   "payload_type": "enum",
-                  "required": true,
+                  "required": false,
                   "unit": "none"
                 }
               },
@@ -10329,12 +10429,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "count",
+                    "value": 2.0
+                  },
                   "description": "Frames required before a corridor is considered closed.",
                   "maximum": 100.0,
                   "minimum": 1.0,
                   "name": "close_after_frames",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "count"
                 }
               },
@@ -10351,12 +10456,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "second",
+                    "value": 4.0
+                  },
                   "description": "Maximum relation search window after the anchor.",
                   "maximum": 15.0,
                   "minimum": 0.2,
                   "name": "max_window_seconds",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "second"
                 }
               },
@@ -10373,12 +10483,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "metre",
+                    "value": 45.0
+                  },
                   "description": "Maximum source-target segment length.",
                   "maximum": 100.0,
                   "minimum": 0.0,
                   "name": "maximum_segment_length_m",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "metre"
                 }
               },
@@ -10395,12 +10510,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "metre",
+                    "value": 5.0
+                  },
                   "description": "Minimum defender clearance from the source-target segment.",
                   "maximum": 40.0,
                   "minimum": 0.0,
                   "name": "minimum_clearance_m",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "metre"
                 }
               },
@@ -10417,12 +10537,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "second",
+                    "value": 0.0
+                  },
                   "description": "Minimum open duration retained in the relation output.",
                   "maximum": 15.0,
                   "minimum": 0.0,
                   "name": "minimum_duration_seconds",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "second"
                 }
               },
@@ -10439,12 +10564,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "metre",
+                    "value": 8.0
+                  },
                   "description": "Minimum forward progression from source to target.",
                   "maximum": 80.0,
                   "minimum": 0.0,
                   "name": "minimum_progression_m",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "metre"
                 }
               },
@@ -10461,12 +10591,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "metre",
+                    "value": 8.0
+                  },
                   "description": "Minimum source-target segment length.",
                   "maximum": 80.0,
                   "minimum": 0.0,
                   "name": "minimum_segment_length_m",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "metre"
                 }
               },
@@ -10483,12 +10618,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "count",
+                    "value": 2.0
+                  },
                   "description": "Frames required before a corridor is considered open.",
                   "maximum": 100.0,
                   "minimum": 1.0,
                   "name": "open_after_frames",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "count"
                 }
               },
@@ -10510,10 +10650,15 @@
                     "same_ball_side",
                     "opposite_ball_side"
                   ],
+                  "default": {
+                    "payload_type": "enum",
+                    "unit": "none",
+                    "value": "any"
+                  },
                   "description": "Retain corridors by relation destination side relative to the ball side.",
                   "name": "side_filter",
                   "payload_type": "enum",
-                  "required": true,
+                  "required": false,
                   "unit": "none"
                 }
               }
@@ -10690,12 +10835,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "second",
+                    "value": 6.0
+                  },
                   "description": "Lookahead horizon for relation destination entry.",
                   "maximum": 30.0,
                   "minimum": 0.2,
                   "name": "destination_entry_horizon_seconds",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "second"
                 }
               },
@@ -10716,10 +10866,15 @@
                     "entry_first_then_progression",
                     "first_by_duration_clearance"
                   ],
+                  "default": {
+                    "payload_type": "enum",
+                    "unit": "none",
+                    "value": "entry_first_then_progression"
+                  },
                   "description": "Deterministic witness ordering when an anchor has multiple relation episodes.",
                   "name": "episode_selection",
                   "payload_type": "enum",
-                  "required": true,
+                  "required": false,
                   "unit": "none"
                 }
               },
@@ -11126,12 +11281,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "count",
+                    "value": 2.0
+                  },
                   "description": "Frames required before a corridor is considered closed.",
                   "maximum": 100.0,
                   "minimum": 1.0,
                   "name": "close_after_frames",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "count"
                 }
               },
@@ -11148,12 +11308,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "second",
+                    "value": 4.0
+                  },
                   "description": "Maximum relation search window after the anchor.",
                   "maximum": 15.0,
                   "minimum": 0.2,
                   "name": "max_window_seconds",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "second"
                 }
               },
@@ -11170,12 +11335,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "metre",
+                    "value": 45.0
+                  },
                   "description": "Maximum source-target segment length.",
                   "maximum": 100.0,
                   "minimum": 0.0,
                   "name": "maximum_segment_length_m",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "metre"
                 }
               },
@@ -11192,12 +11362,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "metre",
+                    "value": 5.0
+                  },
                   "description": "Minimum defender clearance from the source-target segment.",
                   "maximum": 40.0,
                   "minimum": 0.0,
                   "name": "minimum_clearance_m",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "metre"
                 }
               },
@@ -11214,12 +11389,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "second",
+                    "value": 0.0
+                  },
                   "description": "Minimum open duration retained in the relation output.",
                   "maximum": 15.0,
                   "minimum": 0.0,
                   "name": "minimum_duration_seconds",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "second"
                 }
               },
@@ -11236,12 +11416,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "metre",
+                    "value": 8.0
+                  },
                   "description": "Minimum forward progression from source to target.",
                   "maximum": 80.0,
                   "minimum": 0.0,
                   "name": "minimum_progression_m",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "metre"
                 }
               },
@@ -11258,12 +11443,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "metre",
+                    "value": 8.0
+                  },
                   "description": "Minimum source-target segment length.",
                   "maximum": 80.0,
                   "minimum": 0.0,
                   "name": "minimum_segment_length_m",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "metre"
                 }
               },
@@ -11280,12 +11470,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "count",
+                    "value": 2.0
+                  },
                   "description": "Frames required before a corridor is considered open.",
                   "maximum": 100.0,
                   "minimum": 1.0,
                   "name": "open_after_frames",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "count"
                 }
               },
@@ -11307,10 +11502,15 @@
                     "same_ball_side",
                     "opposite_ball_side"
                   ],
+                  "default": {
+                    "payload_type": "enum",
+                    "unit": "none",
+                    "value": "any"
+                  },
                   "description": "Retain corridors by relation destination side relative to the ball side.",
                   "name": "side_filter",
                   "payload_type": "enum",
-                  "required": true,
+                  "required": false,
                   "unit": "none"
                 }
               }
@@ -11487,12 +11687,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "second",
+                    "value": 6.0
+                  },
                   "description": "Lookahead horizon for relation destination entry.",
                   "maximum": 30.0,
                   "minimum": 0.2,
                   "name": "destination_entry_horizon_seconds",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "second"
                 }
               },
@@ -11513,10 +11718,15 @@
                     "entry_first_then_progression",
                     "first_by_duration_clearance"
                   ],
+                  "default": {
+                    "payload_type": "enum",
+                    "unit": "none",
+                    "value": "entry_first_then_progression"
+                  },
                   "description": "Deterministic witness ordering when an anchor has multiple relation episodes.",
                   "name": "episode_selection",
                   "payload_type": "enum",
-                  "required": true,
+                  "required": false,
                   "unit": "none"
                 }
               },
@@ -18944,12 +19154,17 @@
       ],
       "parameters": [
         {
+          "default": {
+            "payload_type": "number",
+            "unit": "second",
+            "value": 6.0
+          },
           "description": "Lookahead horizon for relation destination entry.",
           "maximum": 30.0,
           "minimum": 0.2,
           "name": "destination_entry_horizon_seconds",
           "payload_type": "number",
-          "required": true,
+          "required": false,
           "unit": "second"
         },
         {
@@ -18964,10 +19179,15 @@
             "entry_first_then_progression",
             "first_by_duration_clearance"
           ],
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "entry_first_then_progression"
+          },
           "description": "Deterministic witness ordering when an anchor has multiple relation episodes.",
           "name": "episode_selection",
           "payload_type": "enum",
-          "required": true,
+          "required": false,
           "unit": "none"
         }
       ],
@@ -19036,12 +19256,17 @@
       ],
       "parameters": [
         {
+          "default": {
+            "payload_type": "number",
+            "unit": "second",
+            "value": 6.0
+          },
           "description": "Lookahead horizon for destination lane entry.",
           "maximum": 30.0,
           "minimum": 0.2,
           "name": "destination_entry_horizon_seconds",
           "payload_type": "number",
-          "required": true,
+          "required": false,
           "unit": "second"
         },
         {
@@ -19055,10 +19280,15 @@
           "allowed_values": [
             "first_by_duration_clearance"
           ],
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "first_by_duration_clearance"
+          },
           "description": "Deterministic selection strategy when an anchor has multiple relation episodes.",
           "name": "episode_selection",
           "payload_type": "enum",
-          "required": true,
+          "required": false,
           "unit": "none"
         }
       ],
@@ -19180,75 +19410,115 @@
       ],
       "parameters": [
         {
+          "default": {
+            "payload_type": "number",
+            "unit": "second",
+            "value": 4.0
+          },
           "description": "Maximum relation search window after the anchor.",
           "maximum": 15.0,
           "minimum": 0.2,
           "name": "max_window_seconds",
           "payload_type": "number",
-          "required": true,
+          "required": false,
           "unit": "second"
         },
         {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 8.0
+          },
           "description": "Minimum forward progression from source to target.",
           "maximum": 80.0,
           "minimum": 0.0,
           "name": "minimum_progression_m",
           "payload_type": "number",
-          "required": true,
+          "required": false,
           "unit": "metre"
         },
         {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 8.0
+          },
           "description": "Minimum source-target segment length.",
           "maximum": 80.0,
           "minimum": 0.0,
           "name": "minimum_segment_length_m",
           "payload_type": "number",
-          "required": true,
+          "required": false,
           "unit": "metre"
         },
         {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 45.0
+          },
           "description": "Maximum source-target segment length.",
           "maximum": 100.0,
           "minimum": 0.0,
           "name": "maximum_segment_length_m",
           "payload_type": "number",
-          "required": true,
+          "required": false,
           "unit": "metre"
         },
         {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 5.0
+          },
           "description": "Minimum defender clearance from the source-target segment.",
           "maximum": 40.0,
           "minimum": 0.0,
           "name": "minimum_clearance_m",
           "payload_type": "number",
-          "required": true,
+          "required": false,
           "unit": "metre"
         },
         {
+          "default": {
+            "payload_type": "number",
+            "unit": "count",
+            "value": 2.0
+          },
           "description": "Frames required before a corridor is considered open.",
           "maximum": 100.0,
           "minimum": 1.0,
           "name": "open_after_frames",
           "payload_type": "number",
-          "required": true,
+          "required": false,
           "unit": "count"
         },
         {
+          "default": {
+            "payload_type": "number",
+            "unit": "count",
+            "value": 2.0
+          },
           "description": "Frames required before a corridor is considered closed.",
           "maximum": 100.0,
           "minimum": 1.0,
           "name": "close_after_frames",
           "payload_type": "number",
-          "required": true,
+          "required": false,
           "unit": "count"
         },
         {
+          "default": {
+            "payload_type": "number",
+            "unit": "second",
+            "value": 0.0
+          },
           "description": "Minimum open duration retained in the relation output.",
           "maximum": 15.0,
           "minimum": 0.0,
           "name": "minimum_duration_seconds",
           "payload_type": "number",
-          "required": true,
+          "required": false,
           "unit": "second"
         },
         {
@@ -19257,10 +19527,15 @@
             "same_ball_side",
             "opposite_ball_side"
           ],
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "any"
+          },
           "description": "Retain corridors by relation destination side relative to the ball side.",
           "name": "side_filter",
           "payload_type": "enum",
-          "required": true,
+          "required": false,
           "unit": "none"
         }
       ],
@@ -20446,75 +20721,115 @@
       ],
       "parameters": [
         {
+          "default": {
+            "payload_type": "number",
+            "unit": "second",
+            "value": 4.0
+          },
           "description": "Maximum relation search window after the anchor.",
           "maximum": 15.0,
           "minimum": 0.2,
           "name": "max_window_seconds",
           "payload_type": "number",
-          "required": true,
+          "required": false,
           "unit": "second"
         },
         {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 8.0
+          },
           "description": "Minimum forward progression from source to target.",
           "maximum": 80.0,
           "minimum": 0.0,
           "name": "minimum_progression_m",
           "payload_type": "number",
-          "required": true,
+          "required": false,
           "unit": "metre"
         },
         {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 8.0
+          },
           "description": "Minimum source-target segment length.",
           "maximum": 80.0,
           "minimum": 0.0,
           "name": "minimum_segment_length_m",
           "payload_type": "number",
-          "required": true,
+          "required": false,
           "unit": "metre"
         },
         {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 45.0
+          },
           "description": "Maximum source-target segment length.",
           "maximum": 100.0,
           "minimum": 0.0,
           "name": "maximum_segment_length_m",
           "payload_type": "number",
-          "required": true,
+          "required": false,
           "unit": "metre"
         },
         {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 5.0
+          },
           "description": "Minimum defender clearance from the source-target segment.",
           "maximum": 40.0,
           "minimum": 0.0,
           "name": "minimum_clearance_m",
           "payload_type": "number",
-          "required": true,
+          "required": false,
           "unit": "metre"
         },
         {
+          "default": {
+            "payload_type": "number",
+            "unit": "count",
+            "value": 2.0
+          },
           "description": "Frames required before a corridor is considered open.",
           "maximum": 100.0,
           "minimum": 1.0,
           "name": "open_after_frames",
           "payload_type": "number",
-          "required": true,
+          "required": false,
           "unit": "count"
         },
         {
+          "default": {
+            "payload_type": "number",
+            "unit": "count",
+            "value": 2.0
+          },
           "description": "Frames required before a corridor is considered closed.",
           "maximum": 100.0,
           "minimum": 1.0,
           "name": "close_after_frames",
           "payload_type": "number",
-          "required": true,
+          "required": false,
           "unit": "count"
         },
         {
+          "default": {
+            "payload_type": "number",
+            "unit": "second",
+            "value": 0.0
+          },
           "description": "Minimum open duration retained in the relation output.",
           "maximum": 15.0,
           "minimum": 0.0,
           "name": "minimum_duration_seconds",
           "payload_type": "number",
-          "required": true,
+          "required": false,
           "unit": "second"
         },
         {
@@ -20523,10 +20838,15 @@
             "same_ball_side",
             "opposite_ball_side"
           ],
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "any"
+          },
           "description": "Retain corridors by relation destination side relative to the ball side.",
           "name": "side_filter",
           "payload_type": "enum",
-          "required": true,
+          "required": false,
           "unit": "none"
         }
       ],
@@ -20624,12 +20944,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "count",
+                    "value": 2.0
+                  },
                   "description": "Frames required before a corridor is considered closed.",
                   "maximum": 100.0,
                   "minimum": 1.0,
                   "name": "close_after_frames",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "count"
                 }
               },
@@ -20646,12 +20971,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "second",
+                    "value": 4.0
+                  },
                   "description": "Maximum relation search window after the anchor.",
                   "maximum": 15.0,
                   "minimum": 0.2,
                   "name": "max_window_seconds",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "second"
                 }
               },
@@ -20668,12 +20998,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "metre",
+                    "value": 45.0
+                  },
                   "description": "Maximum source-target segment length.",
                   "maximum": 100.0,
                   "minimum": 0.0,
                   "name": "maximum_segment_length_m",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "metre"
                 }
               },
@@ -20690,12 +21025,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "metre",
+                    "value": 5.0
+                  },
                   "description": "Minimum defender clearance from the source-target segment.",
                   "maximum": 40.0,
                   "minimum": 0.0,
                   "name": "minimum_clearance_m",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "metre"
                 }
               },
@@ -20712,12 +21052,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "second",
+                    "value": 0.0
+                  },
                   "description": "Minimum open duration retained in the relation output.",
                   "maximum": 15.0,
                   "minimum": 0.0,
                   "name": "minimum_duration_seconds",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "second"
                 }
               },
@@ -20734,12 +21079,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "metre",
+                    "value": 8.0
+                  },
                   "description": "Minimum forward progression from source to target.",
                   "maximum": 80.0,
                   "minimum": 0.0,
                   "name": "minimum_progression_m",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "metre"
                 }
               },
@@ -20756,12 +21106,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "metre",
+                    "value": 8.0
+                  },
                   "description": "Minimum source-target segment length.",
                   "maximum": 80.0,
                   "minimum": 0.0,
                   "name": "minimum_segment_length_m",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "metre"
                 }
               },
@@ -20778,12 +21133,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "count",
+                    "value": 2.0
+                  },
                   "description": "Frames required before a corridor is considered open.",
                   "maximum": 100.0,
                   "minimum": 1.0,
                   "name": "open_after_frames",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "count"
                 }
               },
@@ -20805,10 +21165,15 @@
                     "same_ball_side",
                     "opposite_ball_side"
                   ],
+                  "default": {
+                    "payload_type": "enum",
+                    "unit": "none",
+                    "value": "any"
+                  },
                   "description": "Retain corridors by relation destination side relative to the ball side.",
                   "name": "side_filter",
                   "payload_type": "enum",
-                  "required": true,
+                  "required": false,
                   "unit": "none"
                 }
               }
@@ -20985,12 +21350,17 @@
                   }
                 ],
                 "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "second",
+                    "value": 6.0
+                  },
                   "description": "Lookahead horizon for relation destination entry.",
                   "maximum": 30.0,
                   "minimum": 0.2,
                   "name": "destination_entry_horizon_seconds",
                   "payload_type": "number",
-                  "required": true,
+                  "required": false,
                   "unit": "second"
                 }
               },
@@ -21011,10 +21381,15 @@
                     "entry_first_then_progression",
                     "first_by_duration_clearance"
                   ],
+                  "default": {
+                    "payload_type": "enum",
+                    "unit": "none",
+                    "value": "entry_first_then_progression"
+                  },
                   "description": "Deterministic witness ordering when an anchor has multiple relation episodes.",
                   "name": "episode_selection",
                   "payload_type": "enum",
-                  "required": true,
+                  "required": false,
                   "unit": "none"
                 }
               },

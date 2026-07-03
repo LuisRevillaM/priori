@@ -1,6 +1,6 @@
 {
   "passport_count": 44,
-  "passport_revision": "2ab085ddba72e062d18a8b0d1e9adf7b93879482235fdc020f5891502612c13b",
+  "passport_revision": "e1a26b4369d928b8575f3b171bd406e8e359bd6e2b2c7822c68a53cc88913796",
   "passports": [
     {
       "binding": {
@@ -13058,11 +13058,16 @@
         },
         "semantic_parameters": [
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 6.0
+            },
             "description": "",
             "maximum": 30.0,
             "minimum": 0.2,
             "name": "destination_entry_horizon_seconds",
-            "required": true,
+            "required": false,
             "type": {
               "container": "Scalar",
               "nullable": true,
@@ -13088,9 +13093,14 @@
               "entry_first_then_progression",
               "first_by_duration_clearance"
             ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "entry_first_then_progression"
+            },
             "description": "",
             "name": "episode_selection",
-            "required": true,
+            "required": false,
             "type": {
               "container": "Scalar",
               "nullable": true,
@@ -13300,7 +13310,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "2c1fb5d4615988bf4a9aaaf584d72aa599e689ba0760fc4434c08e3dfa44859d",
+      "passport_hash": "f76c2ebc3f756845e4baba09f309a9ab6f1e66714309b898cd55cb6e83435051",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -13384,12 +13394,17 @@
         ],
         "parameters": [
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 6.0
+            },
             "description": "Lookahead horizon for relation destination entry.",
             "maximum": 30.0,
             "minimum": 0.2,
             "name": "destination_entry_horizon_seconds",
             "payload_type": "number",
-            "required": true,
+            "required": false,
             "unit": "second"
           },
           {
@@ -13404,10 +13419,15 @@
               "entry_first_then_progression",
               "first_by_duration_clearance"
             ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "entry_first_then_progression"
+            },
             "description": "Deterministic witness ordering when an anchor has multiple relation episodes.",
             "name": "episode_selection",
             "payload_type": "enum",
-            "required": true,
+            "required": false,
             "unit": "none"
           }
         ],
@@ -13443,11 +13463,16 @@
         },
         "semantic_parameters": [
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 6.0
+            },
             "description": "",
             "maximum": 30.0,
             "minimum": 0.2,
             "name": "destination_entry_horizon_seconds",
-            "required": true,
+            "required": false,
             "type": {
               "container": "Scalar",
               "nullable": true,
@@ -13472,9 +13497,14 @@
             "allowed_values": [
               "first_by_duration_clearance"
             ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "first_by_duration_clearance"
+            },
             "description": "",
             "name": "episode_selection",
-            "required": true,
+            "required": false,
             "type": {
               "container": "Scalar",
               "nullable": true,
@@ -13684,7 +13714,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "f1a6e91787a001e5dfeb9809ca7439fb71de754117295a29a6260ed38c675a73",
+      "passport_hash": "0cd6d2333aabeba51b37a238ce826b9ca27ccf101f5723d79ba11e3761db4aaf",
       "projection_membership": {
         "ai": false,
         "product": true
@@ -13752,12 +13782,17 @@
         ],
         "parameters": [
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 6.0
+            },
             "description": "Lookahead horizon for destination lane entry.",
             "maximum": 30.0,
             "minimum": 0.2,
             "name": "destination_entry_horizon_seconds",
             "payload_type": "number",
-            "required": true,
+            "required": false,
             "unit": "second"
           },
           {
@@ -13771,10 +13806,15 @@
             "allowed_values": [
               "first_by_duration_clearance"
             ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "first_by_duration_clearance"
+            },
             "description": "Deterministic selection strategy when an anchor has multiple relation episodes.",
             "name": "episode_selection",
             "payload_type": "enum",
-            "required": true,
+            "required": false,
             "unit": "none"
           }
         ],
@@ -19494,11 +19534,16 @@
         },
         "semantic_parameters": [
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 4.0
+            },
             "description": "",
             "maximum": 15.0,
             "minimum": 0.2,
             "name": "max_window_seconds",
-            "required": true,
+            "required": false,
             "type": {
               "container": "Scalar",
               "nullable": true,
@@ -19508,11 +19553,16 @@
             }
           },
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 8.0
+            },
             "description": "",
             "maximum": 80.0,
             "minimum": 0.0,
             "name": "minimum_progression_m",
-            "required": true,
+            "required": false,
             "type": {
               "container": "Scalar",
               "nullable": true,
@@ -19522,11 +19572,16 @@
             }
           },
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 8.0
+            },
             "description": "",
             "maximum": 80.0,
             "minimum": 0.0,
             "name": "minimum_segment_length_m",
-            "required": true,
+            "required": false,
             "type": {
               "container": "Scalar",
               "nullable": true,
@@ -19536,11 +19591,16 @@
             }
           },
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 45.0
+            },
             "description": "",
             "maximum": 100.0,
             "minimum": 0.0,
             "name": "maximum_segment_length_m",
-            "required": true,
+            "required": false,
             "type": {
               "container": "Scalar",
               "nullable": true,
@@ -19550,11 +19610,16 @@
             }
           },
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 5.0
+            },
             "description": "",
             "maximum": 40.0,
             "minimum": 0.0,
             "name": "minimum_clearance_m",
-            "required": true,
+            "required": false,
             "type": {
               "container": "Scalar",
               "nullable": true,
@@ -19564,11 +19629,16 @@
             }
           },
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "count",
+              "value": 2.0
+            },
             "description": "",
             "maximum": 100.0,
             "minimum": 1.0,
             "name": "open_after_frames",
-            "required": true,
+            "required": false,
             "type": {
               "container": "Scalar",
               "nullable": true,
@@ -19578,11 +19648,16 @@
             }
           },
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "count",
+              "value": 2.0
+            },
             "description": "",
             "maximum": 100.0,
             "minimum": 1.0,
             "name": "close_after_frames",
-            "required": true,
+            "required": false,
             "type": {
               "container": "Scalar",
               "nullable": true,
@@ -19592,11 +19667,16 @@
             }
           },
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 0.0
+            },
             "description": "",
             "maximum": 15.0,
             "minimum": 0.0,
             "name": "minimum_duration_seconds",
-            "required": true,
+            "required": false,
             "type": {
               "container": "Scalar",
               "nullable": true,
@@ -19611,9 +19691,14 @@
               "same_ball_side",
               "opposite_ball_side"
             ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "any"
+            },
             "description": "",
             "name": "side_filter",
-            "required": true,
+            "required": false,
             "type": {
               "container": "Scalar",
               "nullable": true,
@@ -19838,7 +19923,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "703c18a1dce92b348ae6b8ff3ef41ede950ea58efc396053dbc715cc080f24af",
+      "passport_hash": "13f77bcdd31ed78174e1aecba34ddb1457d4a567c99dbb9a89cf0ce37c2f9f9d",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -19954,75 +20039,115 @@
         ],
         "parameters": [
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 4.0
+            },
             "description": "Maximum relation search window after the anchor.",
             "maximum": 15.0,
             "minimum": 0.2,
             "name": "max_window_seconds",
             "payload_type": "number",
-            "required": true,
+            "required": false,
             "unit": "second"
           },
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 8.0
+            },
             "description": "Minimum forward progression from source to target.",
             "maximum": 80.0,
             "minimum": 0.0,
             "name": "minimum_progression_m",
             "payload_type": "number",
-            "required": true,
+            "required": false,
             "unit": "metre"
           },
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 8.0
+            },
             "description": "Minimum source-target segment length.",
             "maximum": 80.0,
             "minimum": 0.0,
             "name": "minimum_segment_length_m",
             "payload_type": "number",
-            "required": true,
+            "required": false,
             "unit": "metre"
           },
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 45.0
+            },
             "description": "Maximum source-target segment length.",
             "maximum": 100.0,
             "minimum": 0.0,
             "name": "maximum_segment_length_m",
             "payload_type": "number",
-            "required": true,
+            "required": false,
             "unit": "metre"
           },
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 5.0
+            },
             "description": "Minimum defender clearance from the source-target segment.",
             "maximum": 40.0,
             "minimum": 0.0,
             "name": "minimum_clearance_m",
             "payload_type": "number",
-            "required": true,
+            "required": false,
             "unit": "metre"
           },
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "count",
+              "value": 2.0
+            },
             "description": "Frames required before a corridor is considered open.",
             "maximum": 100.0,
             "minimum": 1.0,
             "name": "open_after_frames",
             "payload_type": "number",
-            "required": true,
+            "required": false,
             "unit": "count"
           },
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "count",
+              "value": 2.0
+            },
             "description": "Frames required before a corridor is considered closed.",
             "maximum": 100.0,
             "minimum": 1.0,
             "name": "close_after_frames",
             "payload_type": "number",
-            "required": true,
+            "required": false,
             "unit": "count"
           },
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 0.0
+            },
             "description": "Minimum open duration retained in the relation output.",
             "maximum": 15.0,
             "minimum": 0.0,
             "name": "minimum_duration_seconds",
             "payload_type": "number",
-            "required": true,
+            "required": false,
             "unit": "second"
           },
           {
@@ -20031,10 +20156,15 @@
               "same_ball_side",
               "opposite_ball_side"
             ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "any"
+            },
             "description": "Retain corridors by relation destination side relative to the ball side.",
             "name": "side_filter",
             "payload_type": "enum",
-            "required": true,
+            "required": false,
             "unit": "none"
           }
         ],
@@ -20077,11 +20207,16 @@
         },
         "semantic_parameters": [
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 4.0
+            },
             "description": "",
             "maximum": 15.0,
             "minimum": 0.2,
             "name": "max_window_seconds",
-            "required": true,
+            "required": false,
             "type": {
               "container": "Scalar",
               "nullable": true,
@@ -20091,11 +20226,16 @@
             }
           },
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 8.0
+            },
             "description": "",
             "maximum": 80.0,
             "minimum": 0.0,
             "name": "minimum_progression_m",
-            "required": true,
+            "required": false,
             "type": {
               "container": "Scalar",
               "nullable": true,
@@ -20105,11 +20245,16 @@
             }
           },
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 8.0
+            },
             "description": "",
             "maximum": 80.0,
             "minimum": 0.0,
             "name": "minimum_segment_length_m",
-            "required": true,
+            "required": false,
             "type": {
               "container": "Scalar",
               "nullable": true,
@@ -20119,11 +20264,16 @@
             }
           },
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 45.0
+            },
             "description": "",
             "maximum": 100.0,
             "minimum": 0.0,
             "name": "maximum_segment_length_m",
-            "required": true,
+            "required": false,
             "type": {
               "container": "Scalar",
               "nullable": true,
@@ -20133,11 +20283,16 @@
             }
           },
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 5.0
+            },
             "description": "",
             "maximum": 40.0,
             "minimum": 0.0,
             "name": "minimum_clearance_m",
-            "required": true,
+            "required": false,
             "type": {
               "container": "Scalar",
               "nullable": true,
@@ -20147,11 +20302,16 @@
             }
           },
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "count",
+              "value": 2.0
+            },
             "description": "",
             "maximum": 100.0,
             "minimum": 1.0,
             "name": "open_after_frames",
-            "required": true,
+            "required": false,
             "type": {
               "container": "Scalar",
               "nullable": true,
@@ -20161,11 +20321,16 @@
             }
           },
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "count",
+              "value": 2.0
+            },
             "description": "",
             "maximum": 100.0,
             "minimum": 1.0,
             "name": "close_after_frames",
-            "required": true,
+            "required": false,
             "type": {
               "container": "Scalar",
               "nullable": true,
@@ -20175,11 +20340,16 @@
             }
           },
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 0.0
+            },
             "description": "",
             "maximum": 15.0,
             "minimum": 0.0,
             "name": "minimum_duration_seconds",
-            "required": true,
+            "required": false,
             "type": {
               "container": "Scalar",
               "nullable": true,
@@ -20194,9 +20364,14 @@
               "same_ball_side",
               "opposite_ball_side"
             ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "any"
+            },
             "description": "",
             "name": "side_filter",
-            "required": true,
+            "required": false,
             "type": {
               "container": "Scalar",
               "nullable": true,
@@ -20422,7 +20597,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "1afa584ecb2f90e2ea8a55b9a6ed328c6f579b4d891bbaa72f97f18c794f5b77",
+      "passport_hash": "834c04149e4f1db28e521070710b5d1095cba9a8b5845f862dc22dbc1aa91a73",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -20538,75 +20713,115 @@
         ],
         "parameters": [
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 4.0
+            },
             "description": "Maximum relation search window after the anchor.",
             "maximum": 15.0,
             "minimum": 0.2,
             "name": "max_window_seconds",
             "payload_type": "number",
-            "required": true,
+            "required": false,
             "unit": "second"
           },
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 8.0
+            },
             "description": "Minimum forward progression from source to target.",
             "maximum": 80.0,
             "minimum": 0.0,
             "name": "minimum_progression_m",
             "payload_type": "number",
-            "required": true,
+            "required": false,
             "unit": "metre"
           },
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 8.0
+            },
             "description": "Minimum source-target segment length.",
             "maximum": 80.0,
             "minimum": 0.0,
             "name": "minimum_segment_length_m",
             "payload_type": "number",
-            "required": true,
+            "required": false,
             "unit": "metre"
           },
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 45.0
+            },
             "description": "Maximum source-target segment length.",
             "maximum": 100.0,
             "minimum": 0.0,
             "name": "maximum_segment_length_m",
             "payload_type": "number",
-            "required": true,
+            "required": false,
             "unit": "metre"
           },
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 5.0
+            },
             "description": "Minimum defender clearance from the source-target segment.",
             "maximum": 40.0,
             "minimum": 0.0,
             "name": "minimum_clearance_m",
             "payload_type": "number",
-            "required": true,
+            "required": false,
             "unit": "metre"
           },
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "count",
+              "value": 2.0
+            },
             "description": "Frames required before a corridor is considered open.",
             "maximum": 100.0,
             "minimum": 1.0,
             "name": "open_after_frames",
             "payload_type": "number",
-            "required": true,
+            "required": false,
             "unit": "count"
           },
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "count",
+              "value": 2.0
+            },
             "description": "Frames required before a corridor is considered closed.",
             "maximum": 100.0,
             "minimum": 1.0,
             "name": "close_after_frames",
             "payload_type": "number",
-            "required": true,
+            "required": false,
             "unit": "count"
           },
           {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 0.0
+            },
             "description": "Minimum open duration retained in the relation output.",
             "maximum": 15.0,
             "minimum": 0.0,
             "name": "minimum_duration_seconds",
             "payload_type": "number",
-            "required": true,
+            "required": false,
             "unit": "second"
           },
           {
@@ -20615,10 +20830,15 @@
               "same_ball_side",
               "opposite_ball_side"
             ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "any"
+            },
             "description": "Retain corridors by relation destination side relative to the ball side.",
             "name": "side_filter",
             "payload_type": "enum",
-            "required": true,
+            "required": false,
             "unit": "none"
           }
         ],
@@ -23942,16 +24162,16 @@
   "projection_id": "priori.capability_passport_projection.afl08",
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "11b623168f366f50ff9c3067f0886fe50c1154dddcec5be56e2e4b3f730d7109",
+    "baseline_artifact_revision": "a1ddd272950fe343c3a2a479cb25fe5dd64c28f8f38df7df4076a909c8bf31ee",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "593daf076f6219657d7a1201f7b22d400fe0fc85a6b9c7fd63b7701fde0942e4",
+    "lock_hash": "fcc6d33ebfcab514907326796285209fdaed9d629e93b78da08b89aa9728f82d",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "7be6e088dd7ecac39e065cf88380a6c1d25c1711ff0baf16dc0a545834dd2a63",
+    "registry_revision": "e3643c2470ee1a965fb8b1ff953d98eb86d28e613a7c0352d48640a46bf01e90",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "16398890d6986644040e39465f1205666205550cc315d2d760fab6b4f33ea16f",
+    "runtime_manifest_revision": "3814c6dd5be57dc18716df6d805d8db19452b5297b3aa7890afe8b22e79200a0",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"

@@ -50,3 +50,20 @@ acceptance).
 R3 — Census correction: add the `params=state.params` passthrough at
 executor.py:674 to the state.params census (and fix the row-count claim:
 191 + 26, not 242).
+
+---
+
+# F2-1 Acceptance Review — Round 2: ACCEPTED
+
+Reviewed 2026-07-03, commit `dedd0c1` (report-only, verified 1-file diff),
+merged as `41aead7`. All three disclosures landed; the director ruling was
+implemented as ruled (no code changes to the 22 declarations).
+
+Director acceptance actions: registry bindings for the four affected
+capabilities (destination-entry x2, corridor x2) updated mechanically from
+catalog truth — all 22 parameter signatures now optional-with-default in
+both homes; binder artifacts, knowledge pack, and SCP-0 projections
+regenerated; parity PASS, 0 findings. Zero frozen-expectation hashes moved
+(confirmed in review) — no re-freezes required. The shadow-default defect
+class is retired: parameters now have exactly one home, the catalog, and
+undeclared reads are typed hard errors.

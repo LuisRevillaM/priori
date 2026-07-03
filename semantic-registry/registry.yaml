@@ -3009,7 +3009,8 @@ runtime_bindings:
     semantic_parameters:
       - name: destination_entry_horizon_seconds
         type: {container: Scalar, value: Scalar, unit: second}
-        required: true
+        required: false
+        default: {payload_type: number, value: 6.0, unit: second}
         minimum: 0.2
         maximum: 30.0
       - name: result_id_seed
@@ -3017,7 +3018,8 @@ runtime_bindings:
         required: true
       - name: episode_selection
         type: {container: Scalar, value: Enum, unit: none}
-        required: true
+        required: false
+        default: {payload_type: enum, value: entry_first_then_progression, unit: none}
         allowed_values: [entry_first_then_progression, first_by_duration_clearance]
     parameter_bindings:
       destination_entry_horizon_seconds: destination_entry_horizon_seconds
@@ -3040,7 +3042,8 @@ runtime_bindings:
     semantic_parameters:
       - name: destination_entry_horizon_seconds
         type: {container: Scalar, value: Scalar, unit: second}
-        required: true
+        required: false
+        default: {payload_type: number, value: 6.0, unit: second}
         minimum: 0.2
         maximum: 30.0
       - name: result_id_seed
@@ -3048,7 +3051,8 @@ runtime_bindings:
         required: true
       - name: episode_selection
         type: {container: Scalar, value: Enum, unit: none}
-        required: true
+        required: false
+        default: {payload_type: enum, value: first_by_duration_clearance, unit: none}
         allowed_values: [first_by_duration_clearance]
     parameter_bindings:
       destination_entry_horizon_seconds: destination_entry_horizon_seconds
@@ -3071,47 +3075,56 @@ runtime_bindings:
     semantic_parameters:
       - name: max_window_seconds
         type: {container: Scalar, value: Scalar, unit: second}
-        required: true
+        required: false
+        default: {payload_type: number, value: 4.0, unit: second}
         minimum: 0.2
         maximum: 15.0
       - name: minimum_progression_m
         type: {container: Scalar, value: Scalar, unit: metre}
-        required: true
+        required: false
+        default: {payload_type: number, value: 8.0, unit: metre}
         minimum: 0.0
         maximum: 80.0
       - name: minimum_segment_length_m
         type: {container: Scalar, value: Scalar, unit: metre}
-        required: true
+        required: false
+        default: {payload_type: number, value: 8.0, unit: metre}
         minimum: 0.0
         maximum: 80.0
       - name: maximum_segment_length_m
         type: {container: Scalar, value: Scalar, unit: metre}
-        required: true
+        required: false
+        default: {payload_type: number, value: 45.0, unit: metre}
         minimum: 0.0
         maximum: 100.0
       - name: minimum_clearance_m
         type: {container: Scalar, value: Scalar, unit: metre}
-        required: true
+        required: false
+        default: {payload_type: number, value: 5.0, unit: metre}
         minimum: 0.0
         maximum: 40.0
       - name: open_after_frames
         type: {container: Scalar, value: Scalar, unit: count}
-        required: true
+        required: false
+        default: {payload_type: number, value: 2.0, unit: count}
         minimum: 1.0
         maximum: 100.0
       - name: close_after_frames
         type: {container: Scalar, value: Scalar, unit: count}
-        required: true
+        required: false
+        default: {payload_type: number, value: 2.0, unit: count}
         minimum: 1.0
         maximum: 100.0
       - name: minimum_duration_seconds
         type: {container: Scalar, value: Scalar, unit: second}
-        required: true
+        required: false
+        default: {payload_type: number, value: 0.0, unit: second}
         minimum: 0.0
         maximum: 15.0
       - name: side_filter
         type: {container: Scalar, value: Enum, unit: none}
-        required: true
+        required: false
+        default: {payload_type: enum, value: any, unit: none}
         allowed_values: [any, same_ball_side, opposite_ball_side]
     parameter_bindings:
       max_window_seconds: max_window_seconds
@@ -3140,47 +3153,56 @@ runtime_bindings:
     semantic_parameters:
       - name: max_window_seconds
         type: {container: Scalar, value: Scalar, unit: second}
-        required: true
+        required: false
+        default: {payload_type: number, value: 4.0, unit: second}
         minimum: 0.2
         maximum: 15.0
       - name: minimum_progression_m
         type: {container: Scalar, value: Scalar, unit: metre}
-        required: true
+        required: false
+        default: {payload_type: number, value: 8.0, unit: metre}
         minimum: 0.0
         maximum: 80.0
       - name: minimum_segment_length_m
         type: {container: Scalar, value: Scalar, unit: metre}
-        required: true
+        required: false
+        default: {payload_type: number, value: 8.0, unit: metre}
         minimum: 0.0
         maximum: 80.0
       - name: maximum_segment_length_m
         type: {container: Scalar, value: Scalar, unit: metre}
-        required: true
+        required: false
+        default: {payload_type: number, value: 45.0, unit: metre}
         minimum: 0.0
         maximum: 100.0
       - name: minimum_clearance_m
         type: {container: Scalar, value: Scalar, unit: metre}
-        required: true
+        required: false
+        default: {payload_type: number, value: 5.0, unit: metre}
         minimum: 0.0
         maximum: 40.0
       - name: open_after_frames
         type: {container: Scalar, value: Scalar, unit: count}
-        required: true
+        required: false
+        default: {payload_type: number, value: 2.0, unit: count}
         minimum: 1.0
         maximum: 100.0
       - name: close_after_frames
         type: {container: Scalar, value: Scalar, unit: count}
-        required: true
+        required: false
+        default: {payload_type: number, value: 2.0, unit: count}
         minimum: 1.0
         maximum: 100.0
       - name: minimum_duration_seconds
         type: {container: Scalar, value: Scalar, unit: second}
-        required: true
+        required: false
+        default: {payload_type: number, value: 0.0, unit: second}
         minimum: 0.0
         maximum: 15.0
       - name: side_filter
         type: {container: Scalar, value: Enum, unit: none}
-        required: true
+        required: false
+        default: {payload_type: enum, value: any, unit: none}
         allowed_values: [any, same_ball_side, opposite_ball_side]
     parameter_bindings:
       max_window_seconds: max_window_seconds
