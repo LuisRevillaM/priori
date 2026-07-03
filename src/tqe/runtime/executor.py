@@ -36,6 +36,7 @@ from tqe.runtime.ir import (
     BoundQueryPlan,
     BoundPlanNode,
     ClassificationRule,
+    CoverageDeclaration,
     EvaluationTarget,
     ExecutionMode,
     ExecutionStatus,
@@ -118,6 +119,7 @@ class PeriodState:
     ball_alive: np.ndarray
     defender_count: pd.Series
     defender_centroid_y: pd.Series
+    canonical_data_manifest_hash: str = ""
     signals: dict[str, Any] = field(default_factory=dict)
     runtime_values: dict[str, dict[str, RuntimeValue]] = field(default_factory=dict)
     candidates: list[dict[str, Any]] = field(default_factory=list)
@@ -209,6 +211,7 @@ class TacticalQueryExecutor:
     ) -> None:
         self.canonical_root = canonical_root
         self.raw_root = raw_root
+        self.canonical_data_manifest_hash = canonical_data_manifest_hash(canonical_root)
         if compatibility_profile not in {GENERIC_EXECUTION_PROFILE, legacy_m1.LEGACY_M1_PARITY_PROFILE}:
             raise RuntimeError(f"Unsupported compatibility profile {compatibility_profile}")
         self.compatibility_profile = compatibility_profile
@@ -683,6 +686,7 @@ class TacticalQueryExecutor:
             defending_team_id=team_id(self.canonical_root, match_id, defending_role),
             canonical_root=self.canonical_root,
             raw_tracking=raw_tracking,
+            canonical_data_manifest_hash=self.canonical_data_manifest_hash,
             positions=positions,
             frame_ids=frame_ids,
             ball_y=frame.y_m.to_numpy(dtype=float),
@@ -732,11 +736,62 @@ def catalog_node_cache_key(node: BoundCatalogNode) -> str:
     )
 
 
+def canonical_data_manifest_hash(canonical_root: Path) -> str:
+    root = canonical_root.resolve()
+    candidates = (
+        root / "manifest.json",
+        root / "canonical_manifest.json",
+        root / "canonical-manifest.json",
+    )
+    for candidate in candidates:
+        if candidate.is_file():
+            return file_content_hash(
+                candidate,
+                schema_version="canonical_data_manifest_file.v1",
+            )
+    if not root.exists():
+        return stable_hash(
+            {
+                "schema_version": "canonical_data_manifest_tree.v1",
+                "canonical_root": str(root),
+                "exists": False,
+            }
+        )
+    digest = hashlib.sha256()
+    digest.update(b"canonical_data_manifest_tree.v1\0")
+    digest.update(str(root).encode("utf-8"))
+    for path in sorted(item for item in root.rglob("*") if item.is_file()):
+        relative = path.relative_to(root).as_posix()
+        digest.update(b"\0path\0")
+        digest.update(relative.encode("utf-8"))
+        digest.update(b"\0content\0")
+        with path.open("rb") as handle:
+            for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                digest.update(chunk)
+    return digest.hexdigest()
+
+
+def file_content_hash(path: Path, *, schema_version: str) -> str:
+    digest = hashlib.sha256()
+    digest.update(schema_version.encode("utf-8"))
+    digest.update(b"\0")
+    digest.update(path.name.encode("utf-8"))
+    digest.update(b"\0")
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
 def shared_catalog_node_cache_key(state: PeriodState, node: BoundCatalogNode, node_cache_key: str) -> str:
+    manifest_hash = getattr(state, "canonical_data_manifest_hash", None)
+    if not manifest_hash:
+        manifest_hash = canonical_data_manifest_hash(state.canonical_root)
     return stable_hash(
         {
-            "schema_version": "shared_catalog_node_output_cache.v0",
+            "schema_version": "shared_catalog_node_output_cache.v1",
             "canonical_root": str(state.canonical_root.resolve()),
+            "canonical_data_manifest_hash": manifest_hash,
             "raw_tracking": str(state.raw_tracking.resolve()),
             "match_id": state.match_id,
             "period": state.period,
@@ -1086,7 +1141,6 @@ def project_requested_evidence_from_runtime(
             anchor=anchor,
             bound_plan=bound_plan,
             source_node_id=request.source.source_node_id,
-            output_name=request.source.output_name,
         )
         projected[key] = evidence_value_for_anchor(
             runtime_value=runtime_value,
@@ -1132,46 +1186,15 @@ def selected_relation_id_for_anchor(
     state: PeriodState,
     anchor: RuntimeAnchor,
     source_node_id: str | None = None,
-    output_name: str | None = None,
 ) -> str | None:
-    for node_id, outputs in state.runtime_values.items():
-        for runtime_value in outputs.values():
-            for record in runtime_records(runtime_value):
-                if record.get("predicate_id") is None:
-                    continue
-                source_record = record.get("source_record") if isinstance(record.get("source_record"), dict) else record
-                if not record_matches_anchor(source_record, anchor):
-                    continue
-                source_evidence = record.get("source_evidence")
-                if not witness_source_matches(
-                    source_evidence=source_evidence,
-                    requested_source_node_id=source_node_id,
-                    requested_output_name=output_name,
-                ):
-                    continue
-                if isinstance(source_evidence, dict) and source_evidence.get("witness_relation_id") is not None:
-                    return str(source_evidence["witness_relation_id"])
-    for node_id, outputs in state.runtime_values.items():
-        if source_node_id is not None and node_id != source_node_id:
-            continue
-        runtime_value = outputs.get("anchor_evaluations")
-        if runtime_value is None:
-            continue
-        for record in runtime_records(runtime_value):
-            if record_matches_anchor(record, anchor) and record.get("witness_relation_id") is not None:
-                return str(record["witness_relation_id"])
-    fallback_output_names = [output_name] if output_name is not None else []
-    fallback_output_names.extend(name for name in ("classification", "entry_status") if name not in fallback_output_names)
-    for node_id, outputs in state.runtime_values.items():
-        if source_node_id is not None and node_id != source_node_id:
-            continue
-        for fallback_output_name in fallback_output_names:
-            runtime_value = outputs.get(fallback_output_name)
-            if runtime_value is None:
-                continue
-            for record in runtime_records(runtime_value):
-                if record_matches_anchor(record, anchor) and record.get("relation_id") is not None:
-                    return str(record["relation_id"])
+    if source_node_id is None:
+        return None
+    runtime_value = state.runtime_values.get(source_node_id, {}).get("anchor_evaluations")
+    if runtime_value is None:
+        return None
+    for record in runtime_records(runtime_value):
+        if record_matches_anchor(record, anchor) and record.get("witness_relation_id") is not None:
+            return str(record["witness_relation_id"])
     return None
 
 
@@ -1181,70 +1204,13 @@ def selected_relation_id_for_evidence_request(
     anchor: RuntimeAnchor,
     bound_plan: BoundQueryPlan,
     source_node_id: str | None = None,
-    output_name: str | None = None,
 ) -> str | None:
-    destination_relation_id = destination_entry_relation_id_for_source(
-        state=state,
-        anchor=anchor,
-        bound_plan=bound_plan,
-        source_node_id=source_node_id,
-        output_name=output_name,
-    )
-    if destination_relation_id is not None:
-        return destination_relation_id
+    del bound_plan
     return selected_relation_id_for_anchor(
         state=state,
         anchor=anchor,
         source_node_id=source_node_id,
-        output_name=output_name,
     )
-
-
-def destination_entry_relation_id_for_source(
-    *,
-    state: PeriodState,
-    anchor: RuntimeAnchor,
-    bound_plan: BoundQueryPlan,
-    source_node_id: str | None,
-    output_name: str | None,
-) -> str | None:
-    if source_node_id is None or output_name != "episodes":
-        return None
-    for node in bound_plan.nodes:
-        if not isinstance(node, BoundCatalogNode):
-            continue
-        if node.catalog_ref != "relation_destination_entry":
-            continue
-        source_ref = node.inputs.get("relation_episodes")
-        if source_ref is None:
-            continue
-        if source_ref.source_node_id != source_node_id or source_ref.output_name != output_name:
-            continue
-        runtime_value = state.runtime_values.get(node.node_id, {}).get("entry_status")
-        if runtime_value is None:
-            continue
-        for record in runtime_records(runtime_value):
-            if record_matches_anchor(record, anchor) and record.get("relation_id") is not None:
-                return str(record["relation_id"])
-    return None
-
-
-def witness_source_matches(
-    *,
-    source_evidence: Any,
-    requested_source_node_id: str | None,
-    requested_output_name: str | None,
-) -> bool:
-    if requested_source_node_id is None or not isinstance(source_evidence, dict):
-        return True
-    if source_evidence.get("source_node_id") != requested_source_node_id:
-        return False
-    source_output = source_evidence.get("source_output_name")
-    if requested_output_name in {None, source_output}:
-        return True
-    if requested_output_name == "episodes" and source_output == "anchor_evaluations":
-        return True
-    return False
 
 
 def evidence_value_for_anchor(
@@ -1280,8 +1246,6 @@ def record_matches_anchor(record: dict[str, Any], anchor: RuntimeAnchor) -> bool
         return False
     if str(record.get("anchor_id") or "") == anchor.anchor_id:
         return True
-    if optional_int(record.get("anchor_frame_id")) == anchor.anchor_frame_id:
-        return True
     source = record.get("source_result")
     if isinstance(source, dict) and record_matches_anchor(source, anchor):
         return True
@@ -1289,6 +1253,34 @@ def record_matches_anchor(record: dict[str, Any], anchor: RuntimeAnchor) -> bool
         if isinstance(source_record, dict) and record_matches_anchor(source_record, anchor):
             return True
     return False
+
+
+def legacy_trace_record_matches_anchor(record: dict[str, Any], anchor: RuntimeAnchor) -> bool:
+    """Bridge legacy predicate trace records that predate explicit anchor IDs.
+
+    Witness selection must use strict ``record_matches_anchor`` semantics. Some
+    record-backed predicate traces, however, were minted before ``anchor_id``
+    was stamped onto trace source records. For that trace-only path, preserve
+    identity by result id when available, then by the match/period/frame triple
+    those legacy records already carry.
+    """
+    if record_matches_anchor(record, anchor):
+        return True
+    if not isinstance(record, dict) or "anchor_id" in record:
+        return False
+    source_evidence = record.get("source_evidence") if isinstance(record.get("source_evidence"), dict) else {}
+    anchor_result_id = anchor.attributes.get("result_id")
+    record_result_id = record.get("result_id") or source_evidence.get("result_id")
+    if anchor_result_id is not None and record_result_id is not None:
+        return str(record_result_id) == str(anchor_result_id)
+    record_match_id = record.get("match_id") or source_evidence.get("match_id")
+    record_period = record.get("period") or source_evidence.get("period")
+    record_frame_id = optional_int(record.get("anchor_frame_id") or source_evidence.get("anchor_frame_id"))
+    return (
+        str(record_match_id or "") == anchor.match_id
+        and str(record_period or "") == anchor.period
+        and record_frame_id == anchor.anchor_frame_id
+    )
 
 
 def catalog_input_value(
@@ -1317,19 +1309,36 @@ def enforce_runtime_complexity_limits(
     if not isinstance(node, BoundCatalogNode) or node.kind != NodeKind.RELATION:
         return
     limit = int(bound_plan.complexity_limits.max_relations_per_anchor)
-    runtime_value = state.runtime_values.get(node.node_id, {}).get("episodes")
-    if runtime_value is None:
-        return
+    runtime_outputs = state.runtime_values.get(node.node_id, {})
+    runtime_value = runtime_outputs.get("episodes")
+    anchor_evaluations = runtime_outputs.get("anchor_evaluations")
     counts: Counter[str] = Counter()
-    for record in runtime_records(runtime_value):
-        key = str(record.get("anchor_id") or record.get("result_id") or record.get("anchor_frame_id") or "")
-        if key:
-            counts[key] += 1
-    violations = {
+    if runtime_value is not None:
+        for record in runtime_records(runtime_value):
+            key = str(record.get("anchor_id") or record.get("result_id") or record.get("anchor_frame_id") or "")
+            if key:
+                counts[key] += 1
+    count_violations = {
         anchor_key: count
         for anchor_key, count in counts.items()
         if count > limit
     }
+    coverage_violations: dict[str, int] = {}
+    if anchor_evaluations is not None and anchor_evaluations.output.coverage is not None:
+        count_field = anchor_evaluations.output.coverage.count_field
+        if count_field is not None:
+            for record in runtime_records(anchor_evaluations):
+                raw_count = record.get(count_field)
+                if raw_count is None:
+                    continue
+                try:
+                    count = int(raw_count)
+                except (TypeError, ValueError):
+                    continue
+                if count > limit:
+                    key = str(record.get("anchor_id") or record.get("result_id") or record.get("anchor_frame_id") or "")
+                    coverage_violations[key or "<unknown>"] = count
+    violations = {**count_violations, **coverage_violations}
     if violations:
         sample_key, sample_count = sorted(violations.items(), key=lambda item: (-item[1], item[0]))[0]
         raise RuntimeError(
@@ -1605,9 +1614,7 @@ def execute_predicate_with_resolved_inputs(
                         value=typed_enum(str(value)) if value is not None else None,
                         threshold=typed_enum(str(compare_value)),
                         unit=Unit.NONE,
-                        frame_id=optional_int(record.get("destination_entry_frame_id"))
-                        or optional_int(record.get("outcome_frame_id"))
-                        or optional_int(record.get("anchor_frame_id")),
+                        frame_id=source_record_frame_id(record),
                         source_evidence={
                             "source_node_id": node.input.source_node_id,
                             "source_output_name": node.input.output_name,
@@ -1644,49 +1651,11 @@ def execute_predicate_with_resolved_inputs(
         source = runtime_value.value
         if isinstance(source, list):
             records = [record for record in source if isinstance(record, dict)]
-            coverage = relation_anchor_evaluation_records(records)
-            if coverage:
-                return exists_from_anchor_evaluations(
-                    node=node,
-                    records=coverage,
-                )
-            frame_ids = [
-                source_record_frame_id(record)
-                for record in records
-            ]
-            usable = [
-                (record, int(frame_id))
-                for record, frame_id in zip(records, frame_ids, strict=False)
-                if frame_id is not None
-            ]
-            if usable:
-                return {
-                    "predicate": FrameSignal(
-                        frame_ids=[frame_id for _record, frame_id in usable],
-                        values=[True for _record, _frame_id in usable],
-                        unknown_mask=[False for _record, _frame_id in usable],
-                        unit=node.output.unit,
-                        entity_scope=node.output.entity_scope,
-                    ),
-                    "predicate_records": [
-                        predicate_record_for_source_record(
-                            source_record=record,
-                            node=node,
-                            status="PASS",
-                            value=TypedValue(payload_type=PayloadType.BOOLEAN, value=True, unit=Unit.NONE),
-                            threshold=None,
-                            unit=Unit.NONE,
-                            frame_id=frame_id,
-                            source_evidence={
-                                "source_node_id": node.input.source_node_id,
-                                "source_output_name": node.input.output_name,
-                            },
-                        )
-                        for record, frame_id in usable
-                    ],
-                    "episodes": source,
-                }
-            return {"predicate": bool(source), "episodes": source}
+            coverage = require_anchor_evaluation_records(node=node, records=records)
+            return exists_from_anchor_evaluations(
+                node=node,
+                records=coverage,
+            )
         raise RuntimeError(f"Unsupported exists source for {node.node_id}")
     if node.operator.name == "count_at_least":
         source = runtime_value.value
@@ -1694,24 +1663,41 @@ def execute_predicate_with_resolved_inputs(
         if compare is None or not isinstance(source, list):
             raise RuntimeError(f"Unsupported count_at_least source for {node.node_id}")
         records = [record for record in source if isinstance(record, dict)]
-        coverage = relation_anchor_evaluation_records(records)
-        if coverage:
-            return count_at_least_from_anchor_evaluations(
-                node=node,
-                records=coverage,
-                threshold=int(round(float(compare.value))),
-            )
-        return {"predicate": len(source) >= int(round(float(compare.value)))}
+        coverage = require_anchor_evaluation_records(node=node, records=records)
+        return count_at_least_from_anchor_evaluations(
+            node=node,
+            records=coverage,
+            threshold=int(round(float(compare.value))),
+        )
     raise RuntimeError(f"Unsupported predicate operator {node.operator.name}")
 
 
-def relation_anchor_evaluation_records(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def require_anchor_evaluation_records(
+    *,
+    node: BoundPredicateNode,
+    records: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    coverage = declared_anchor_evaluation_records(node=node, records=records)
+    if len(coverage) != len(records):
+        raise RuntimeError(
+            f"{node.node_id} expected declared anchor-evaluation records for {node.operator.name}"
+        )
+    return coverage
+
+
+def declared_anchor_evaluation_records(
+    *,
+    node: BoundPredicateNode,
+    records: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    coverage = node.input_type.coverage
+    if coverage is None:
+        raise RuntimeError(f"{node.node_id} source lacks declared anchor-evaluation coverage")
     return [
         record
         for record in records
-        if record.get("evaluation_status") in {"PASS", "FAIL", "UNKNOWN"}
+        if anchor_evaluation_status_label(record, coverage) in {"PASS", "FAIL", "UNKNOWN"}
         and "anchor_frame_id" in record
-        and "relation_count" in record
     ]
 
 
@@ -1720,7 +1706,10 @@ def exists_from_anchor_evaluations(
     node: BoundPredicateNode,
     records: list[dict[str, Any]],
 ) -> dict[str, Any]:
-    statuses = [anchor_evaluation_status(record) for record in records]
+    coverage = node.input_type.coverage
+    if coverage is None:
+        raise RuntimeError(f"{node.node_id} exists source lacks declared coverage")
+    statuses = [anchor_evaluation_status(record, coverage) for record in records]
     return predicate_output_from_anchor_evaluations(
         node=node,
         records=records,
@@ -1736,14 +1725,17 @@ def count_at_least_from_anchor_evaluations(
     records: list[dict[str, Any]],
     threshold: int,
 ) -> dict[str, Any]:
+    coverage = node.input_type.coverage
+    if coverage is None or coverage.count_field is None:
+        raise RuntimeError(f"{node.node_id} count_at_least source lacks declared count coverage")
     statuses: list[bool | None] = []
     values: list[int | None] = []
     for record in records:
-        if str(record.get("evaluation_status")) == "UNKNOWN":
+        if anchor_evaluation_status_label(record, coverage) == "UNKNOWN":
             statuses.append(None)
             values.append(None)
             continue
-        count = optional_int(record.get("relation_count"))
+        count = optional_int(record.get(coverage.count_field))
         if count is None:
             statuses.append(None)
             values.append(None)
@@ -1759,13 +1751,25 @@ def count_at_least_from_anchor_evaluations(
     )
 
 
-def anchor_evaluation_status(record: dict[str, Any]) -> bool | None:
-    status = str(record.get("evaluation_status"))
+def anchor_evaluation_status(record: dict[str, Any], coverage: CoverageDeclaration) -> bool | None:
+    status = anchor_evaluation_status_label(record, coverage)
     if status == "PASS":
         return True
     if status == "FAIL":
         return False
     return None
+
+
+def anchor_evaluation_status_label(record: dict[str, Any], coverage: CoverageDeclaration) -> str:
+    raw = record.get(coverage.status_field)
+    status = "" if raw is None else str(raw)
+    if status in set(coverage.pass_values):
+        return "PASS"
+    if status in set(coverage.fail_values):
+        return "FAIL"
+    if status in set(coverage.unknown_values):
+        return "UNKNOWN"
+    return "UNKNOWN"
 
 
 def predicate_output_from_anchor_evaluations(
@@ -1786,7 +1790,10 @@ def predicate_output_from_anchor_evaluations(
         if frame_id is not None
     ]
     predicate_records: list[dict[str, Any]] = []
+    coverage = node.input_type.coverage
     for record, status, value, frame_id in usable:
+        status_label = anchor_evaluation_status_label(record, coverage) if coverage is not None else None
+        count_value = record.get(coverage.count_field) if coverage is not None and coverage.count_field is not None else None
         predicate_records.append(
             predicate_record_for_source_record(
                 source_record=record,
@@ -1800,8 +1807,10 @@ def predicate_output_from_anchor_evaluations(
                     "source_node_id": node.input.source_node_id,
                     "source_output_name": node.input.output_name,
                     "witness_relation_id": record.get("witness_relation_id"),
-                    "relation_count": record.get("relation_count"),
-                    "evaluation_status": record.get("evaluation_status"),
+                    "relation_count": count_value,
+                    "evaluation_status": status_label,
+                    "coverage_status_field": coverage.status_field if coverage is not None else None,
+                    "coverage_count_field": coverage.count_field if coverage is not None else None,
                     "unknown_reason": record.get("unknown_reason"),
                 },
             )
@@ -2029,7 +2038,7 @@ def persistence_status_at_index(
 
 
 
-def time_to_arrival_candidates(
+def arrival_candidates(
     *,
     state: PeriodState,
     anchor: dict[str, Any],
@@ -2064,7 +2073,7 @@ def time_to_arrival_candidates(
             team_role = "away" if anchor_team_role == "home" else "home"
         known_ids = outfield_player_ids(state.canonical_root, state.match_id, team_role)
         return player_records_at_frame_for_team(state, frame_id, team_role), known_ids
-    raise RuntimeError(f"Unsupported time_to_arrival candidate_scope: {candidate_scope}")
+    raise RuntimeError(f"Unsupported arrival candidate_scope: {candidate_scope}")
 
 
 
@@ -2881,14 +2890,17 @@ def predicate_trace_from_runtime_value(
                 break
         if has_temporal_status:
             if matched is None:
-                status = "UNKNOWN"
+                status = "FAIL"
                 matched_window = None
+                reason = None
             else:
                 status = str(matched.get("temporal_status") or "PASS")
                 matched_window = matched
+                reason = None
         else:
             status = "PASS" if matched is not None else "FAIL"
             matched_window = matched
+            reason = None
         return PredicateTrace(
             predicate_id=node.node_id,
             status=status,
@@ -2904,7 +2916,7 @@ def predicate_trace_from_runtime_value(
             }
             if isinstance(matched_window, dict)
             else None,
-            source_evidence=source_evidence,
+            source_evidence={**source_evidence, "reason": reason} if reason is not None else source_evidence,
         )
     return None
 
@@ -2920,7 +2932,7 @@ def predicate_trace_from_runtime_record(
         if record.get("predicate_id") != node.node_id:
             continue
         source_record = record.get("source_record") if isinstance(record.get("source_record"), dict) else record
-        if not record_matches_anchor(source_record, anchor):
+        if not legacy_trace_record_matches_anchor(source_record, anchor):
             continue
         return PredicateTrace(
             predicate_id=node.node_id,

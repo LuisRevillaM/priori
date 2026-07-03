@@ -20,7 +20,7 @@ from tqe.runtime.envelope import (
     conformance_enabled,
     legacy_envelope_from_runtime_values,
 )
-from tqe.runtime.ir import Cardinality, EntityScope, PayloadType, TemporalContainer, Unit
+from tqe.runtime.ir import Cardinality, CoverageDeclaration, EntityScope, PayloadType, TemporalContainer, Unit
 from tqe.runtime.values import FrameSignal, runtime_value_from_raw
 
 
@@ -132,6 +132,45 @@ class EnvelopeConformanceTests(unittest.TestCase):
         self.assertEqual(["status"], sorted(envelope.channels))
         self.assertEqual(1, len(envelope.evidence_records))
         self.assertEqual(10, envelope.witness_refs[0].frame_id)
+
+    def test_legacy_envelope_preserves_declared_coverage_channel(self) -> None:
+        anchor_output = output(
+            name="anchor_evaluations",
+            temporal_type=TemporalContainer.EPISODE_SET,
+            payload_type=PayloadType.BOOLEAN,
+            cardinality=Cardinality.COLLECTION,
+            entity_scope=EntityScope.ANCHOR,
+            evidence_fields=["anchor_id", "anchor_frame_id", "team_press_status", "pressure_actor_count"],
+            coverage=CoverageDeclaration(
+                status_field="team_press_status",
+                count_field="pressure_actor_count",
+            ),
+        )
+        value = runtime_value_from_raw(
+            node_id="n1",
+            output=anchor_output,
+            raw_value=[
+                {
+                    "anchor_id": "a1",
+                    "anchor_frame_id": 10,
+                    "team_press_status": "PASS",
+                    "pressure_actor_count": 3,
+                }
+            ],
+            frame_ids=[10],
+        )
+
+        envelope = legacy_envelope_from_runtime_values(
+            capability_name="team_press",
+            node_id="n1",
+            raw_outputs={"anchor_evaluations": value.value, "anchor_evaluations_records": value.records},
+            runtime_values={"anchor_evaluations": value},
+        )
+
+        coverage = envelope.channels["anchor_evaluations"].coverage
+        self.assertIsNotNone(coverage)
+        self.assertEqual("team_press_status", coverage.status_field)
+        self.assertEqual("pressure_actor_count", coverage.count_field)
 
     def test_legacy_envelope_preserves_aux_values_outside_channels(self) -> None:
         value = runtime_value("status", ["PASS"])

@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import ast
 import re
+import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 
 from tqe.runtime import executor
 from tqe.runtime.capabilities import (
@@ -14,7 +16,25 @@ from tqe.runtime.capabilities import (
     build_relation_registry,
 )
 from tqe.runtime.catalog import default_catalog
-from tqe.runtime.ir import BoundCatalogNode, NodeKind
+from tqe.runtime.ir import (
+    BoundCatalogNode,
+    BoundQueryPlan,
+    Cardinality,
+    CatalogOutput,
+    ClassificationMode,
+    ComplexityLimits,
+    CoverageDeclaration,
+    EntityScope,
+    ExecutionMode,
+    MissingDataSemantics,
+    NodeKind,
+    PayloadType,
+    PlanStatus,
+    TemporalContainer,
+    Unit,
+    UnknownEvidencePolicy,
+)
+from tqe.runtime.values import RuntimeValue
 
 
 class ExecutorRegistryBoundaryTests(unittest.TestCase):
@@ -81,6 +101,131 @@ class ExecutorRegistryBoundaryTests(unittest.TestCase):
             "sample_capability.sample_node read undeclared parameter missing_parameter",
         ):
             executor.node_parameter_number(node, "missing_parameter")
+
+    def test_witness_selection_requires_exact_anchor_id_not_same_frame(self) -> None:
+        catalog = default_catalog()
+        anchor_output = next(
+            output
+            for entry in catalog.relations
+            if entry.name == "geometric_progressive_corridor"
+            for output in entry.outputs
+            if output.name == "anchor_evaluations"
+        )
+        state = SimpleNamespace(
+            runtime_values={
+                "progressive_corridor": {
+                    "anchor_evaluations": RuntimeValue(
+                        output=anchor_output,
+                        value=[
+                            {
+                                "anchor_id": "other_anchor",
+                                "anchor_frame_id": 100,
+                                "evaluation_status": "PASS",
+                                "relation_count": 1,
+                                "witness_relation_id": "wrong_relation",
+                            }
+                        ],
+                    )
+                }
+            }
+        )
+        anchor = executor.RuntimeAnchor(
+            anchor_id="wanted_anchor",
+            semantic_key="wanted_anchor",
+            match_id="synthetic",
+            period="firstHalf",
+            anchor_frame_id=100,
+            source_node_id="anchors",
+            output_name="anchor_evaluations",
+            start_frame_id=100,
+            end_frame_id=100,
+            attributes={"anchor_id": "wanted_anchor", "anchor_frame_id": 100},
+        )
+
+        self.assertIsNone(
+            executor.selected_relation_id_for_anchor(
+                state=state,
+                anchor=anchor,
+                source_node_id="progressive_corridor",
+            )
+        )
+
+    def test_anchor_evaluation_counts_obey_relation_complexity_limit(self) -> None:
+        output = CatalogOutput(
+            name="anchor_evaluations",
+            temporal_type=TemporalContainer.EPISODE_SET,
+            payload_type=PayloadType.ENUM,
+            cardinality=Cardinality.COLLECTION,
+            unit=Unit.NONE,
+            entity_scope=EntityScope.ANCHOR,
+            missing_data_semantics=MissingDataSemantics.UNKNOWN,
+            evidence_fields=["evaluation_status", "relation_count"],
+            coverage=CoverageDeclaration(
+                status_field="evaluation_status",
+                count_field="relation_count",
+            ),
+        )
+        node = BoundCatalogNode(
+            kind=NodeKind.RELATION,
+            node_id="corridor_relation",
+            catalog_ref="geometric_progressive_corridor",
+            version="0.1.0",
+            outputs=[output],
+            resolved_parameters={},
+        )
+        state = SimpleNamespace(
+            runtime_values={
+                "corridor_relation": {
+                    "anchor_evaluations": RuntimeValue(
+                        output=output,
+                        value=[
+                            {
+                                "anchor_id": "anchor-1",
+                                "evaluation_status": "PASS",
+                                "relation_count": 2,
+                            }
+                        ],
+                    )
+                }
+            }
+        )
+
+        with self.assertRaisesRegex(RuntimeError, "max_relations_per_anchor=1"):
+            executor.enforce_runtime_complexity_limits(
+                state=state,
+                node=node,
+                bound_plan=minimal_bound_plan(max_relations_per_anchor=1),
+            )
+
+    def test_shared_cache_key_changes_with_canonical_manifest_hash(self) -> None:
+        node = BoundCatalogNode(
+            kind=NodeKind.PRIMITIVE,
+            node_id="sample_node",
+            catalog_ref="sample_capability",
+            version="0.1.0",
+            outputs=[],
+            resolved_parameters={},
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "manifest.json").write_text('{"version": 1}\n', encoding="utf-8")
+            raw_tracking = root / "tracking.xml"
+            raw_tracking.write_text("<tracking />\n", encoding="utf-8")
+            state = SimpleNamespace(
+                canonical_root=root,
+                raw_tracking=raw_tracking,
+                match_id="synthetic",
+                period="firstHalf",
+                perspective_team_role="home",
+                defending_team_role="away",
+                params=SimpleNamespace(values={}),
+                canonical_data_manifest_hash="",
+            )
+            first = executor.shared_catalog_node_cache_key(state, node, "node-cache-key")
+            (root / "manifest.json").write_text('{"version": 2}\n', encoding="utf-8")
+            second = executor.shared_catalog_node_cache_key(state, node, "node-cache-key")
+
+        self.assertNotEqual(first, second)
 
     def test_pass_family_relocation_is_registry_only(self) -> None:
         source = Path(executor.__file__).resolve().read_text(encoding="utf-8")
@@ -238,27 +383,35 @@ class ExecutorRegistryBoundaryTests(unittest.TestCase):
             self.assertNotEqual("tqe.runtime.executor", implementation.__module__, capability_name)
 
 
-# This is the F2-0 freeze line, not a cleanup.  Destination-entry lines are the
-# V8/V10 audit leaks named in ADR 0012; the time-to-arrival line is a shared
-# helper leak that remains after the final extraction sweep and feeds the F2-X
-# kill-list census.  This guard only sees catalog identifiers; non-catalog
-# helper leaks are frozen separately below.
-EXPECTED_SHARED_CAPABILITY_MENTIONS = {
-    "relation_destination_entry": {
-        'if node.catalog_ref != "relation_destination_entry":',
-    },
-    "time_to_arrival": {
-        'raise RuntimeError(f"Unsupported time_to_arrival candidate_scope: {candidate_scope}")',
-    },
-}
+EXPECTED_SHARED_CAPABILITY_MENTIONS = {}
 
 
-EXPECTED_SHARED_HELPER_MENTION_COUNTS = {
-    # V8-style frame-id fallback inside eq/neq predicate traces.
-    'frame_id=optional_int(record.get("destination_entry_frame_id"))': 1,
-    'or optional_int(record.get("outcome_frame_id"))': 1,
-    'or optional_int(record.get("anchor_frame_id"))': 1,
-}
+EXPECTED_SHARED_HELPER_MENTION_COUNTS = {}
+
+
+def minimal_bound_plan(*, max_relations_per_anchor: int) -> BoundQueryPlan:
+    return BoundQueryPlan(
+        plan_id="synthetic_plan",
+        plan_version="1.0.0",
+        plan_status=PlanStatus.EXPERIMENTAL,
+        recipe_id="synthetic_recipe",
+        recipe_version="1.0.0",
+        invocation_id="synthetic_invocation",
+        match_ids=["synthetic"],
+        periods=["firstHalf"],
+        perspective_team_role="home",
+        max_results=1,
+        execution_mode=ExecutionMode.EXECUTE,
+        unknown_evidence_policy=UnknownEvidencePolicy.EXCLUDE_CANDIDATE,
+        classification_mode=ClassificationMode.PARTIAL_DECLARED,
+        classification_rules=[],
+        requested_evidence=[],
+        complexity_limits=ComplexityLimits(max_relations_per_anchor=max_relations_per_anchor),
+        resolved_parameters=[],
+        nodes=[],
+        plan_hash="synthetic-plan-hash",
+        bound_plan_hash="synthetic-bound-plan-hash",
+    )
 
 
 def shared_executor_capability_mentions() -> dict[str, set[str]]:

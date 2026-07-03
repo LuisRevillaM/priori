@@ -131,6 +131,9 @@ class Binder:
         self.issues: list[BindIssue] = []
         self.catalog_outputs: dict[str, tuple[CatalogEntry | None, CatalogOutput]] = {}
         self.bound_nodes: list[BoundPlanNode] = []
+        self.effective_max_temporal_horizon_seconds = (
+            catalog.default_complexity_limits.max_temporal_horizon_seconds
+        )
 
     def bind(
         self,
@@ -239,6 +242,7 @@ class Binder:
             limits.max_temporal_horizon_seconds,
             trusted.max_temporal_horizon_seconds,
         )
+        self.effective_max_temporal_horizon_seconds = effective_max_temporal_horizon_seconds
         effective_max_returned_moments = min(limits.max_returned_moments, trusted.max_returned_moments)
         effective_max_execution_cost = min(limits.max_execution_cost, trusted.max_execution_cost)
 
@@ -274,20 +278,6 @@ class Binder:
                 f"dependency_depth={depth} exceeds max_nesting_depth={effective_max_nesting_depth}",
                 "draft_plan.nodes",
             )
-        for index, node in enumerate(draft_plan.nodes):
-            if isinstance(node, DraftPredicateNode):
-                if isinstance(node.duration, TypedValue) and node.duration.payload_type == PayloadType.NUMBER:
-                    seconds = _duration_seconds(node.duration)
-                    if seconds is not None and seconds > effective_max_temporal_horizon_seconds:
-                        self._issue(
-                            "complexity_temporal_horizon_exceeded",
-                            (
-                                f"duration={seconds}s exceeds "
-                                f"max_temporal_horizon_seconds={effective_max_temporal_horizon_seconds}"
-                            ),
-                            f"draft_plan.nodes[{index}].duration",
-                        )
-
     def _resolve_parameters(
         self,
         recipe: RecipeDefinition,
@@ -659,6 +649,28 @@ class Binder:
                 ),
                 f"{path}.required_entity_scope",
             )
+        if signature.name in {"exists", "count_at_least"} and not _has_anchor_evaluation_coverage(input_type):
+            self._issue(
+                "operator_requires_anchor_evaluations",
+                (
+                    f"{signature.name} only accepts declared anchor-evaluation outputs; "
+                    f"got {node.input.source_node_id}.{node.input.output_name}"
+                ),
+                f"{path}.input",
+            )
+        if (
+            signature.name == "count_at_least"
+            and input_type.coverage is not None
+            and input_type.coverage.count_field is None
+        ):
+            self._issue(
+                "operator_requires_count_coverage",
+                (
+                    f"count_at_least requires a declared count_field on "
+                    f"{node.input.source_node_id}.{node.input.output_name}"
+                ),
+                f"{path}.input",
+            )
         if signature.compare_required and compare is None:
             self._issue(
                 "missing_compare_value",
@@ -727,6 +739,19 @@ class Binder:
                     "duration_unit_mismatch",
                     f"duration unit must be second, millisecond, or frame; got {duration.unit.value}",
                     f"{path}.duration.unit",
+                )
+            seconds = _duration_seconds(duration)
+            if (
+                seconds is not None
+                and seconds > self.effective_max_temporal_horizon_seconds
+            ):
+                self._issue(
+                    "complexity_temporal_horizon_exceeded",
+                    (
+                        f"duration={seconds}s exceeds "
+                        f"max_temporal_horizon_seconds={self.effective_max_temporal_horizon_seconds}"
+                    ),
+                    f"{path}.duration",
                 )
 
     def _validate_classifications(
@@ -935,6 +960,16 @@ def bind_error_codes(error: BindError) -> set[str]:
 
 def validation_error_codes(error: ValidationError) -> set[str]:
     return {str(issue["type"]) for issue in error.errors()}
+
+
+def _has_anchor_evaluation_coverage(output: CatalogOutput) -> bool:
+    return (
+        output.coverage is not None
+        and output.name == "anchor_evaluations"
+        and output.temporal_type == TemporalContainer.EPISODE_SET
+        and output.cardinality == Cardinality.COLLECTION
+        and output.entity_scope == EntityScope.ANCHOR
+    )
 
 
 def _duration_seconds(value: TypedValue) -> float | None:

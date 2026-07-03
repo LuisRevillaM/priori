@@ -30,7 +30,7 @@ from tqe.runtime.executor import (
     player_records_at_frame_for_team,
     point_from_xy,
     runtime_records,
-    time_to_arrival_candidates,
+    arrival_candidates,
     tracked_point_at_frame,
 )
 from tqe.runtime.ir import BoundCatalogNode, Unit
@@ -895,7 +895,7 @@ def time_to_arrival_anchor_record(
         target_x_field=target_x_field,
         target_y_field=target_y_field,
     )
-    candidate_records, known_candidate_ids = time_to_arrival_candidates(
+    candidate_records, known_candidate_ids = arrival_candidates(
         state=state,
         anchor=anchor,
         frame_id=frame_id,

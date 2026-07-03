@@ -110,6 +110,33 @@ class M11BinderTests(unittest.TestCase):
 
         self.assertBindError(payload, "operator_temporal_mismatch")
 
+    def test_exists_on_plain_episode_set_fails_at_bind_time(self) -> None:
+        payload = load_payload()
+        payload["draft_plan"]["nodes"] = [
+            {
+                "kind": "primitive",
+                "node_id": "possession",
+                "catalog_ref": "possession_segment",
+                "version": "0.1.0",
+            },
+            {
+                "kind": "predicate",
+                "node_id": "possession_exists",
+                "input": {"source_node_id": "possession", "output_name": "episodes"},
+                "operator": {"name": "exists", "version": "1.0.0"},
+            },
+        ]
+        payload["draft_plan"]["classification_rules"] = [
+            {
+                "label": "BAD",
+                "predicate_ids": ["possession_exists"],
+                "description": "Invalid plain episode-set existence fixture.",
+            }
+        ]
+        payload["draft_plan"]["requested_evidence"] = []
+
+        self.assertBindError(payload, "operator_requires_anchor_evaluations")
+
     def test_unknown_node_parameter_fails_at_bind_time(self) -> None:
         payload = load_payload()
         payload["draft_plan"]["nodes"][5]["parameters"] = {
@@ -228,6 +255,17 @@ class M11BinderTests(unittest.TestCase):
         payload["draft_plan"]["complexity_limits"]["max_plan_nodes"] = 1
 
         self.assertBindError(payload, "complexity_nodes_exceeded")
+
+    def test_parameter_ref_duration_respects_temporal_horizon(self) -> None:
+        payload = load_payload()
+        parameter = next(
+            item
+            for item in payload["recipe"]["parameters"]
+            if item["name"] == "minimum_wide_dwell_seconds"
+        )
+        parameter["default"]["value"] = 20.0
+
+        self.assertBindError(payload, "complexity_temporal_horizon_exceeded")
 
     def test_missing_perspective_team_role_is_schema_error(self) -> None:
         payload = load_payload()

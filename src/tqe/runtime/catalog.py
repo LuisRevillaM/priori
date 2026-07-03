@@ -9,6 +9,7 @@ from tqe.runtime.ir import (
     CatalogInput,
     CatalogOutput,
     ComplexityLimits,
+    CoverageDeclaration,
     EntityScope,
     MissingDataSemantics,
     NodeKind,
@@ -28,6 +29,53 @@ LANE_PARTITION_LIMITATION = (
     "(tie_epsilon_m=1e-9)."
 )
 
+ANCHOR_EVALUATION_COVERAGE_STATUS_FIELDS: dict[str, str] = {
+    "transition_anchor": "transition_status",
+    "structured_zone": "zone_status",
+    "space_region_generation": "open_space_status",
+    "outcome_window": "outcome_window_status",
+    "action_event_anchor": "action_event_status",
+    "set_piece_structure": "set_piece_structure_status",
+    "action_chain": "action_chain_status",
+    "tracking_quality": "tracking_quality_status",
+    "pairwise_distance": "pairwise_distance_status",
+    "marking": "marking_status",
+    "cover_shadow": "cover_shadow_status",
+    "velocity": "velocity_status",
+    "acceleration": "acceleration_status",
+    "off_ball_run": "off_ball_run_status",
+    "off_ball_run_type": "off_ball_run_type_status",
+    "time_to_arrival": "time_to_arrival_status",
+    "carry_episode": "carry_status",
+    "join_episode_sets": "join_status",
+    "team_compactness": "team_compactness_status",
+    "switch_of_play": "switch_status",
+    "change_across_anchor": "change_status",
+    "one_touch_relay_episode": "one_touch_relay_status",
+    "defensive_line_model": "line_status",
+    "multi_line_model": "multi_line_status",
+    "relative_position_to_line": "relative_position_status",
+    "receiver_line_transition_during_pass_leg": "receiver_line_transition_status",
+    "pass_chain_episode": "pass_chain_status",
+    "controlled_line_break_episode": "line_break_status",
+    "lane_occupancy": "lane_occupancy_status",
+    "geometric_progressive_corridor": "evaluation_status",
+    "opponents_bypassed_by_action": "evaluation_status",
+    "support_arrival_relation": "support_arrival_status",
+    "pressure_on_carrier": "pressure_status",
+    "team_press": "team_press_status",
+    "local_number_relation": "local_number_status",
+    "geometric_progressive_corridor_from_anchor_set": "evaluation_status",
+}
+
+ANCHOR_EVALUATION_COVERAGE_COUNT_FIELDS: dict[str, str] = {
+    "geometric_progressive_corridor": "relation_count",
+    "geometric_progressive_corridor_from_anchor_set": "relation_count",
+    "opponents_bypassed_by_action": "opponents_bypassed_count",
+    "team_press": "pressure_actor_count",
+    "local_number_relation": "local_number_difference",
+}
+
 
 def output(
     *,
@@ -39,6 +87,7 @@ def output(
     entity_scope: EntityScope = EntityScope.NONE,
     evidence_fields: list[str] | None = None,
     allowed_values: list[str] | None = None,
+    coverage: CoverageDeclaration | None = None,
     missing_data_semantics: MissingDataSemantics = MissingDataSemantics.UNKNOWN,
 ) -> CatalogOutput:
     return CatalogOutput(
@@ -51,6 +100,7 @@ def output(
         missing_data_semantics=missing_data_semantics,
         evidence_fields=evidence_fields or [],
         allowed_values=allowed_values,
+        coverage=coverage,
     )
 
 
@@ -5648,9 +5698,11 @@ def default_operators() -> list[OperatorSignature]:
 
 
 def default_catalog() -> CapabilityCatalog:
+    primitives = declare_anchor_evaluation_coverage(default_primitives())
+    relations = declare_anchor_evaluation_coverage(default_relations())
     return CapabilityCatalog(
-        primitives=default_primitives(),
-        relations=default_relations(),
+        primitives=primitives,
+        relations=relations,
         operators=default_operators(),
         default_complexity_limits=ComplexityLimits(
             max_plan_nodes=40,
@@ -5661,3 +5713,26 @@ def default_catalog() -> CapabilityCatalog:
             max_execution_cost=100000,
         ),
     )
+
+
+def declare_anchor_evaluation_coverage(entries: list[CatalogEntry]) -> list[CatalogEntry]:
+    declared: list[CatalogEntry] = []
+    for entry in entries:
+        outputs: list[CatalogOutput] = []
+        for item in entry.outputs:
+            if item.name != "anchor_evaluations":
+                outputs.append(item)
+                continue
+            status_field = ANCHOR_EVALUATION_COVERAGE_STATUS_FIELDS.get(entry.name)
+            if status_field is None:
+                raise RuntimeError(f"{entry.name}.anchor_evaluations lacks coverage declaration")
+            payload = item.model_dump(mode="python")
+            payload["coverage"] = CoverageDeclaration(
+                status_field=status_field,
+                count_field=ANCHOR_EVALUATION_COVERAGE_COUNT_FIELDS.get(entry.name),
+            )
+            outputs.append(
+                CatalogOutput.model_validate(payload)
+            )
+        declared.append(entry.model_copy(update={"outputs": outputs}))
+    return declared
