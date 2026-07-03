@@ -307,6 +307,10 @@ afl-substrate-q2-verify:
 test:
 	$(PYTHON) -m unittest discover -s tests
 
+.PHONY: envelope-conformance-report
+envelope-conformance-report:
+	$(PYTHON) scripts/runtime/envelope_conformance_report.py
+
 # --- F0-2 write-mode contract -------------------------------------------------
 # Every *-verify target is a READ-ONLY CHECK: it never creates or modifies
 # tracked files (run reports go to gitignored artifacts/check-runs/), and it
