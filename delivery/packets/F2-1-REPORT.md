@@ -9,8 +9,39 @@ Protocol: local commit only; no push.
 - Deleted executor-side hardcoded defaults from `node_parameter_number`, `node_parameter_integer`, and `node_parameter_text` call sites.
 - Changed node-parameter helpers to read only `BoundCatalogNode.resolved_parameters`. A missing read now raises `UndeclaredNodeParameterError` naming capability, node, and parameter.
 - Added a static boundary test proving every implementation-level node-parameter read is declared in that capability's catalog entry; shared implementations are checked against every catalog ref they serve.
-- Preserved behavior by adding missing catalog defaults to existing declarations for corridor and destination-entry parameters whose old executor defaults had been the only effective default home.
+- Preserved behavior by adding missing catalog defaults to existing declarations for corridor and destination-entry parameters. Round-1 review found these executor defaults were dead behind required declarations; the director ruling below makes the required-to-optional conversion deliberate rather than implicit.
 - `state.params` reads are censused only in this packet, per F2-Y fence.
+
+## Director-ratified contract change
+
+Round-1 review rejected the first report because the 22 corridor and destination-entry declarations below changed from `required: true` with no catalog default to optional catalog parameters with defaults, while the report treated the executor default as the only effective default home. The review was correct: at merge-base, the binder rejected omissions, so those executor defaults were dead code.
+
+The director ruling for round 2 is that the optional-with-default contract **stands**. ADR 0012 §2 says the binder materializes catalog defaults into `resolved_parameters` and the executor reads only from there; leaving these values required-with-no-default would keep defaults homeless and force plan authors to restate engine defaults. Therefore the loosening is a deliberate, disclosed contract change, with value domains still guarded by the declared min/max/enum validation.
+
+| Capability | Parameter | Old contract | New contract / authority |
+|---|---|---|---|
+| `geometric_progressive_corridor` | `max_window_seconds` | required, no catalog default | optional default `4.0`; director ruling under ADR 0012 §2 |
+| `geometric_progressive_corridor` | `minimum_progression_m` | required, no catalog default | optional default `8.0`; director ruling under ADR 0012 §2 |
+| `geometric_progressive_corridor` | `minimum_segment_length_m` | required, no catalog default | optional default `8.0`; director ruling under ADR 0012 §2 |
+| `geometric_progressive_corridor` | `maximum_segment_length_m` | required, no catalog default | optional default `45.0`; director ruling under ADR 0012 §2 |
+| `geometric_progressive_corridor` | `minimum_clearance_m` | required, no catalog default | optional default `5.0`; director ruling under ADR 0012 §2 |
+| `geometric_progressive_corridor` | `open_after_frames` | required, no catalog default | optional default `2.0`; director ruling under ADR 0012 §2 |
+| `geometric_progressive_corridor` | `close_after_frames` | required, no catalog default | optional default `2.0`; director ruling under ADR 0012 §2 |
+| `geometric_progressive_corridor` | `side_filter` | required, no catalog default | optional default `any`; director ruling under ADR 0012 §2 |
+| `geometric_progressive_corridor` | `minimum_duration_seconds` | required, no catalog default | optional default `0.0`; director ruling under ADR 0012 §2 |
+| `geometric_progressive_corridor_from_anchor_set` | `max_window_seconds` | required, no catalog default | optional default `4.0`; director ruling under ADR 0012 §2 |
+| `geometric_progressive_corridor_from_anchor_set` | `minimum_progression_m` | required, no catalog default | optional default `8.0`; director ruling under ADR 0012 §2 |
+| `geometric_progressive_corridor_from_anchor_set` | `minimum_segment_length_m` | required, no catalog default | optional default `8.0`; director ruling under ADR 0012 §2 |
+| `geometric_progressive_corridor_from_anchor_set` | `maximum_segment_length_m` | required, no catalog default | optional default `45.0`; director ruling under ADR 0012 §2 |
+| `geometric_progressive_corridor_from_anchor_set` | `minimum_clearance_m` | required, no catalog default | optional default `5.0`; director ruling under ADR 0012 §2 |
+| `geometric_progressive_corridor_from_anchor_set` | `open_after_frames` | required, no catalog default | optional default `2.0`; director ruling under ADR 0012 §2 |
+| `geometric_progressive_corridor_from_anchor_set` | `close_after_frames` | required, no catalog default | optional default `2.0`; director ruling under ADR 0012 §2 |
+| `geometric_progressive_corridor_from_anchor_set` | `side_filter` | required, no catalog default | optional default `any`; director ruling under ADR 0012 §2 |
+| `geometric_progressive_corridor_from_anchor_set` | `minimum_duration_seconds` | required, no catalog default | optional default `0.0`; director ruling under ADR 0012 §2 |
+| `relation_destination_entry` | `destination_entry_horizon_seconds` | required, no catalog default | optional default `6.0`; director ruling under ADR 0012 §2 |
+| `relation_destination_entry` | `episode_selection` | required, no catalog default | optional default `entry_first_then_progression`; director ruling under ADR 0012 §2 |
+| `relation_destination_entry_classification` | `destination_entry_horizon_seconds` | required, no catalog default | optional default `6.0`; director ruling under ADR 0012 §2 |
+| `relation_destination_entry_classification` | `episode_selection` | required, no catalog default | optional default `first_by_duration_clearance`; director ruling under ADR 0012 §2 |
 
 ## Census summary
 
@@ -19,7 +50,8 @@ Protocol: local commit only; no push.
 - Default agreements after action: **191**
 - Existing catalog declarations given today's executor default: **22**
 - Remaining default disagreements: **0**
-- Shared `state.params` read sites censused: **26**
+- Shared `state.params` read/passthrough sites censused: **26**
+- Total census scope: **191 node-parameter reads + 26 shared `state.params` reads/passthroughs**
 
 ## Node-parameter census
 
@@ -223,7 +255,7 @@ These shared runtime-parameter reads remain unchanged. F2-Y owns their closure; 
 
 | Call site | Function / capability | Read |
 |---|---|---|
-| `executor.py:820` | `shared_catalog_node_cache_key` / `shared` | `"runtime_parameters": state.params.values,` |
+| `executor.py:674` | `CapabilityExecutor.execute_bound_node` / `shared predicate context` | `params=state.params,` |
 | `executor.py:1563` | `legacy_m1_record_persists_for_adapter` / `shared` | `analysis_rate_hz = state.params.integer("analysis_rate_hz")` |
 | `executor.py:1624` | `legacy_m1_frame_signal_persists_for_adapter` / `shared` | `analysis_rate_hz = state.params.integer("analysis_rate_hz")` |
 | `executor.py:1632` | `legacy_m1_frame_signal_persists_for_adapter` / `shared` | `params=state.params,` |
@@ -252,18 +284,36 @@ These shared runtime-parameter reads remain unchanged. F2-Y owns their closure; 
 
 ## Gate-drift enumeration
 
-F2-1 adds catalog defaults to existing parameter declarations, so bound-plan hash drift is expected for gates that bind affected capabilities. Runtime behavior is intended to remain unchanged because each added catalog default equals today's executor default.
+F2-1 changes catalog parameter contracts for four subjects by making 22 director-ratified defaults optional-with-default. Runtime behavior remains unchanged, and round-1 review independently confirmed **zero bound-plan hash movement** and **zero frozen-expectation hash movement**. The drift class is registry/parity cascade only: generated registry, passport, and gates that check SCP parity see stale generated artifacts until the director regenerates registry/parity at acceptance. No re-freezes are required.
 
-| Gate | Expected drift class | Result |
-|---|---|---|
-| `scp-0-verify` | catalog-default declaration drift possible where affected capabilities bind | **FAIL**: fresh SCP generation changes only parameter contracts for `runtime:primitive:relation_destination_entry:0.1.0`, `runtime:primitive:relation_destination_entry_classification:0.1.0`, `runtime:relation:geometric_progressive_corridor:0.1.0`, and `runtime:relation:geometric_progressive_corridor_from_anchor_set:0.1.0`; generated projections/registry lock are stale by design under this packet's regeneration fence. |
-| `afl-passport-verify` | passport projection drift from SCP registry lock / runtime manifest revision | **FAIL**: capability passport projection lock, passport revision, and stored projection hash differ from fresh generation after the catalog parameter-contract drift. |
-| `afl-09a-verify` | frozen bootstrap expectations may drift when bound parameter contracts change | **FAIL**: bootstrap factory gates fail for `AFL-08 line_break_support_response` and `AFL-08 relative_position_to_line`; branch fixture remains PASS. |
-| `n1d1-verify` | catalog-default declaration drift possible where affected capabilities bind | **PASS**: `attestation_status=VERIFIED`, no blocking reasons. |
-| `afl-substrate-q4-verify` | catalog-default declaration drift possible where affected capabilities bind | **PASS**: frozen expectation unchanged; result count 2, signature `89cc48842fc6b9852fc6941fc56e2147e524de7a2d3ae7fe718d29c96d382199`. |
-| `afl-substrate-q6-verify` | catalog-default declaration drift possible where affected capabilities bind | **PASS**: frozen expectation unchanged; result count 0, signature `4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945`. |
+| Gate | Drift class | Frozen expectation hash movement | Result / note |
+|---|---|---:|---|
+| `scp-0-verify` | parity-cascade root: generated registry/projections stale after parameter-contract change | 0 | **FAIL**: fresh SCP generation changes parameter contracts for the four affected subjects; generated projections and registry lock are stale by packet fence. |
+| `afl-passport-verify` | parity-cascade from SCP registry/runtime revision | 0 | **FAIL**: passport projection lock, revision, and stored projection hash differ from fresh generation. |
+| `afl-09a-verify` | parity-cascade through bootstrap reports checked by validation factory | 0 | **FAIL**: bootstrap factory gates fail for `AFL-08 line_break_support_response` and `AFL-08 relative_position_to_line`; branch fixture remains PASS. |
+| `afl-acceleration-verify` | parity-cascade | 0 | Affected by stale SCP/parity artifacts only. |
+| `afl-carry-episode-verify` | parity-cascade | 0 | Affected by stale SCP/parity artifacts only. |
+| `afl-controlled-line-break-verify` | parity-cascade | 0 | Affected by stale SCP/parity artifacts only. |
+| `afl-cover-shadow-verify` | parity-cascade | 0 | Affected by stale SCP/parity artifacts only. |
+| `afl-defensive-line-verify` | parity-cascade | 0 | Affected by stale SCP/parity artifacts only. |
+| `afl-lane-occupancy-verify` | parity-cascade | 0 | Affected by stale SCP/parity artifacts only. |
+| `afl-line-break-support-response-verify` | parity-cascade | 0 | Affected by stale SCP/parity artifacts only. |
+| `afl-local-number-verify` | parity-cascade | 0 | Affected by stale SCP/parity artifacts only. |
+| `afl-marking-verify` | parity-cascade | 0 | Affected by stale SCP/parity artifacts only. |
+| `afl-off-ball-run-verify` | parity-cascade | 0 | Affected by stale SCP/parity artifacts only. |
+| `afl-off-ball-run-type-verify` | parity-cascade | 0 | Affected by stale SCP/parity artifacts only. |
+| `afl-one-touch-pass-chain-verify` | parity-cascade | 0 | Affected by stale SCP/parity artifacts only. |
+| `afl-relative-position-verify` | parity-cascade | 0 | Affected by stale SCP/parity artifacts only. |
+| `afl-set-piece-structure-verify` | parity-cascade | 0 | Affected by stale SCP/parity artifacts only. |
+| `afl-space-region-generation-verify` | parity-cascade | 0 | Affected by stale SCP/parity artifacts only. |
+| `afl-substrate-q2-verify` | parity-cascade | 0 | Affected by stale SCP/parity artifacts only. |
+| `afl-support-arrival-verify` | parity-cascade | 0 | Affected by stale SCP/parity artifacts only. |
+| `afl-team-press-verify` | parity-cascade | 0 | Affected by stale SCP/parity artifacts only. |
+| `n1d1-verify` | none observed | 0 | **PASS**: `attestation_status=VERIFIED`, no blocking reasons. |
+| `afl-substrate-q4-verify` | none observed | 0 | **PASS**: frozen expectation unchanged; result count 2, signature `89cc48842fc6b9852fc6941fc56e2147e524de7a2d3ae7fe718d29c96d382199`. |
+| `afl-substrate-q6-verify` | none observed | 0 | **PASS**: frozen expectation unchanged; result count 0, signature `4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945`. |
 
-The combined gate command stops at `scp-0-verify`, so downstream gates were run individually on the committed tree for the table above.
+The combined gate command stops at `scp-0-verify`, so downstream pass/fail rows were run individually where round 1 had committed-tree evidence. The additional parity-cascade rows above are from the round-1 rejection review's complete gate sweep against commit `e491997`.
 
 ## Full-suite table
 
