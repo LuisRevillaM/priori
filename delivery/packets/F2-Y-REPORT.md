@@ -24,6 +24,7 @@ V9(a-c) remain untouched.
 | `6b0a901` | Start F2-Y round 2 report. |
 | `be9f43f` | Correct episode trace UNKNOWN contract. |
 | `c145d19` | Clean up witness and cache boundary hygiene. |
+| `5c5784a` | Restore predicate trace legacy record bridging. |
 
 ## R2 - T7 Contract
 
@@ -105,25 +106,64 @@ this round-two review fix.
   `opponents_bypassed_count` as relation-multiplicity signals. That remains
   intentionally reported as a future limits review item, not fixed here.
 
+## Round 3 - Scoped Legacy Trace Matcher
+
+The round-three review diagnosed the remaining row wipeout as V8 fallout, not
+the T7 redo. `record_matches_anchor` was correctly strict for witness
+selection, but `predicate_trace_from_runtime_record` was using that strict
+matcher for legacy predicate trace records that have no `anchor_id` key.
+Those records identify their anchor by `result_id` or by the
+`match_id` / `period` / `anchor_frame_id` triple, so strict matching missed
+every record-backed trace, fell through to sparse frame-signal lookup, and
+emitted `anchor_frame_missing_from_predicate_signal`.
+
+Round 3 adds `legacy_trace_record_matches_anchor` and uses it only in the
+predicate trace record path. `record_matches_anchor` remains strict and
+unchanged for witness selection. The bridge:
+
+- first honors strict `anchor_id` matching;
+- refuses fallback when an `anchor_id` key is present but does not match;
+- for anchor-id-less legacy records, matches `result_id` against
+  `anchor.attributes["result_id"]` when available;
+- otherwise matches the `match_id` / `period` / `anchor_frame_id` triple.
+
+Probe tests added:
+
+- `test_anchorless_legacy_trace_records_bridge_by_identity`
+- `test_uncovered_frame_signal_trace_is_unknown_with_reason`
+
+Backlog item recorded: the sparse FrameSignal fallback remains a trap for
+record-backed predicate signals keyed by a different frame column than the
+runtime anchor. This packet does not fix that broader R1-era issue; it only
+restores the scoped legacy trace record identity bridge ruled for round 3.
+
+## Restoration Census
+
+| Probe | Round-2 broken state | Round-3 committed tree | Attribution |
+| --- | ---: | ---: | --- |
+| `execute_default_plan` legacy rows | 0 rows / 180 UNKNOWN traces | 180 rows / 900 PASS traces | Frozen baseline restored; five predicates per row: `wide_entry_threshold`, `wide_entry_persists`, `shift_threshold`, `shift_persists`, `not_stoppage`. |
+| `opposite_corridor_after_shift` generic rows | 0 rows / 792 UNKNOWN traces | 9 rows / 655 traces | Generic results restored with `DESTINATION_ENTERED:6` and `CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY:3`; trace statuses `PASS:60`, `FAIL:3`, `UNKNOWN:592`. |
+| `opposite_corridor_after_shift` legacy profile | 32 rows | 32 rows | Unchanged; classifications remain `DESTINATION_ENTERED:18`, `CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY:14`; trace statuses `PASS:50`, `FAIL:14`. |
+
+`tests.test_m1_1_runtime` passes all 12 tests, including frozen selected-result
+baseline equality and full predicate-trace emission. This is the byte-exact
+frozen-baseline restoration requested by the review.
+
 ## Verification
 
-Commands were run on the committed tree after `c145d19`.
+Commands were run on the committed tree after `5c5784a` unless noted.
 
 | Check | Result | Notes |
 | --- | --- | --- |
-| `PYTHONPATH=src .venv/bin/python -m unittest tests.test_predicate_truth_series` | PASS | 11 tests. |
-| `PYTHONPATH=src .venv/bin/python -m unittest tests.test_executor_boundaries` | PASS | 14 tests. |
+| `PYTHONPATH=src .venv/bin/python -m unittest tests.test_predicate_truth_series` | PASS | 13 tests, including the two round-three probes. |
+| `PYTHONPATH=src .venv/bin/python -m unittest tests.test_m1_1_runtime` | PASS | 12 tests; restores 180-row frozen baseline and generic execution rows. |
+| `PYTHONPATH=src .venv/bin/python -m unittest tests.test_executor_boundaries` | PASS | 14 tests from round two; this file was not touched in round three. |
 | `git diff --check` | PASS | No whitespace errors. |
-| `make PYTHON=.venv/bin/python test` | FAIL | 369 tests, 9 failures. Failures are frozen/generated drift from the intentional tri-state behavior and generated artifact locks fenced for director handling. |
+| `make PYTHON=.venv/bin/python test` | FAIL | 371 tests, 4 failures. The five M1 runtime failures from round two are gone; remaining failures are generated/frozen drift class. |
 
 Full-suite failures observed:
 
 - `test_m1_1_binder.M11BinderTests.test_generated_artifacts_are_current`
-- `test_m1_1_runtime.M11RuntimeTests.test_runtime_selected_results_match_frozen_baseline`
-- `test_m1_1_runtime.M11RuntimeTests.test_plan_path_helper_defaults_to_generic_execution`
-- `test_m1_1_runtime.M11RuntimeTests.test_max_results_is_honored_deterministically`
-- `test_m1_1_runtime.M11RuntimeTests.test_runtime_emits_full_predicate_traces_for_results`
-- `test_m1_1_runtime.M11RuntimeTests.test_geometric_progressive_corridor_relation_has_real_episode_breadth`
 - `test_scp0_semantic_registry.SCP0SemanticRegistryTests.test_checked_in_lock_and_parity_report_match_fresh_regeneration`
 - `test_verifier_write_mode.CheckModeIsReadOnlyTests.test_scp0_verifier_check_mode_leaves_tracked_files_untouched`
 - `test_workbench_beta0_contract.WorkbenchBeta0ContractTests.test_attested_novel_composition_requires_verified_plan_hash`
@@ -138,7 +178,7 @@ Full-suite failures observed:
 | `afl-line-break-support-response-verify` | FAIL | Runtime execution still PASS with 1 result and 0 evidence failures; frozen `bound_plan_hash`, `result_ids`, and `result_signature_hash` drift. |
 | `afl-lane-occupancy-verify` | PASS | Verification report PASS; lane occupancy unit suite passed. |
 | `afl-09a-verify` | FAIL | Bootstrap factory gate reports Q4/Q8 drift from dependent frozen gates. |
-| `scp-0-verify` | PASS | Verification report PASS; no findings. |
+| `scp-0-verify` | FAIL | Internal verification report status is PASS/no findings, but the make target exits red on generated semantic-registry projection and lock drift. |
 | `afl-passport-verify` | FAIL | Stored capability passport projection and registry lock drift against freshly generated projection. |
 
 Generated artifacts, semantic registry locks, frozen expectations, delivery
