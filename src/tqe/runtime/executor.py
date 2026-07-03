@@ -119,6 +119,7 @@ class PeriodState:
     ball_alive: np.ndarray
     defender_count: pd.Series
     defender_centroid_y: pd.Series
+    canonical_data_manifest_hash: str = ""
     signals: dict[str, Any] = field(default_factory=dict)
     runtime_values: dict[str, dict[str, RuntimeValue]] = field(default_factory=dict)
     candidates: list[dict[str, Any]] = field(default_factory=list)
@@ -210,6 +211,7 @@ class TacticalQueryExecutor:
     ) -> None:
         self.canonical_root = canonical_root
         self.raw_root = raw_root
+        self.canonical_data_manifest_hash = canonical_data_manifest_hash(canonical_root)
         if compatibility_profile not in {GENERIC_EXECUTION_PROFILE, legacy_m1.LEGACY_M1_PARITY_PROFILE}:
             raise RuntimeError(f"Unsupported compatibility profile {compatibility_profile}")
         self.compatibility_profile = compatibility_profile
@@ -684,6 +686,7 @@ class TacticalQueryExecutor:
             defending_team_id=team_id(self.canonical_root, match_id, defending_role),
             canonical_root=self.canonical_root,
             raw_tracking=raw_tracking,
+            canonical_data_manifest_hash=self.canonical_data_manifest_hash,
             positions=positions,
             frame_ids=frame_ids,
             ball_y=frame.y_m.to_numpy(dtype=float),
@@ -733,11 +736,62 @@ def catalog_node_cache_key(node: BoundCatalogNode) -> str:
     )
 
 
+def canonical_data_manifest_hash(canonical_root: Path) -> str:
+    root = canonical_root.resolve()
+    candidates = (
+        root / "manifest.json",
+        root / "canonical_manifest.json",
+        root / "canonical-manifest.json",
+    )
+    for candidate in candidates:
+        if candidate.is_file():
+            return file_content_hash(
+                candidate,
+                schema_version="canonical_data_manifest_file.v1",
+            )
+    if not root.exists():
+        return stable_hash(
+            {
+                "schema_version": "canonical_data_manifest_tree.v1",
+                "canonical_root": str(root),
+                "exists": False,
+            }
+        )
+    digest = hashlib.sha256()
+    digest.update(b"canonical_data_manifest_tree.v1\0")
+    digest.update(str(root).encode("utf-8"))
+    for path in sorted(item for item in root.rglob("*") if item.is_file()):
+        relative = path.relative_to(root).as_posix()
+        digest.update(b"\0path\0")
+        digest.update(relative.encode("utf-8"))
+        digest.update(b"\0content\0")
+        with path.open("rb") as handle:
+            for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                digest.update(chunk)
+    return digest.hexdigest()
+
+
+def file_content_hash(path: Path, *, schema_version: str) -> str:
+    digest = hashlib.sha256()
+    digest.update(schema_version.encode("utf-8"))
+    digest.update(b"\0")
+    digest.update(path.name.encode("utf-8"))
+    digest.update(b"\0")
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
 def shared_catalog_node_cache_key(state: PeriodState, node: BoundCatalogNode, node_cache_key: str) -> str:
+    manifest_hash = getattr(state, "canonical_data_manifest_hash", None)
+    if manifest_hash is None:
+        manifest_hash = canonical_data_manifest_hash(state.canonical_root)
     return stable_hash(
         {
-            "schema_version": "shared_catalog_node_output_cache.v0",
+            "schema_version": "shared_catalog_node_output_cache.v1",
             "canonical_root": str(state.canonical_root.resolve()),
+            "canonical_data_manifest_hash": manifest_hash,
             "raw_tracking": str(state.raw_tracking.resolve()),
             "match_id": state.match_id,
             "period": state.period,
@@ -1230,19 +1284,36 @@ def enforce_runtime_complexity_limits(
     if not isinstance(node, BoundCatalogNode) or node.kind != NodeKind.RELATION:
         return
     limit = int(bound_plan.complexity_limits.max_relations_per_anchor)
-    runtime_value = state.runtime_values.get(node.node_id, {}).get("episodes")
-    if runtime_value is None:
-        return
+    runtime_outputs = state.runtime_values.get(node.node_id, {})
+    runtime_value = runtime_outputs.get("episodes")
+    anchor_evaluations = runtime_outputs.get("anchor_evaluations")
     counts: Counter[str] = Counter()
-    for record in runtime_records(runtime_value):
-        key = str(record.get("anchor_id") or record.get("result_id") or record.get("anchor_frame_id") or "")
-        if key:
-            counts[key] += 1
-    violations = {
+    if runtime_value is not None:
+        for record in runtime_records(runtime_value):
+            key = str(record.get("anchor_id") or record.get("result_id") or record.get("anchor_frame_id") or "")
+            if key:
+                counts[key] += 1
+    count_violations = {
         anchor_key: count
         for anchor_key, count in counts.items()
         if count > limit
     }
+    coverage_violations: dict[str, int] = {}
+    if anchor_evaluations is not None and anchor_evaluations.output.coverage is not None:
+        count_field = anchor_evaluations.output.coverage.count_field
+        if count_field is not None:
+            for record in runtime_records(anchor_evaluations):
+                raw_count = record.get(count_field)
+                if raw_count is None:
+                    continue
+                try:
+                    count = int(raw_count)
+                except (TypeError, ValueError):
+                    continue
+                if count > limit:
+                    key = str(record.get("anchor_id") or record.get("result_id") or record.get("anchor_frame_id") or "")
+                    coverage_violations[key or "<unknown>"] = count
+    violations = {**count_violations, **coverage_violations}
     if violations:
         sample_key, sample_count = sorted(violations.items(), key=lambda item: (-item[1], item[0]))[0]
         raise RuntimeError(

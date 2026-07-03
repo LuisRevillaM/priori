@@ -256,6 +256,17 @@ class M11BinderTests(unittest.TestCase):
 
         self.assertBindError(payload, "complexity_nodes_exceeded")
 
+    def test_parameter_ref_duration_respects_temporal_horizon(self) -> None:
+        payload = load_payload()
+        parameter = next(
+            item
+            for item in payload["recipe"]["parameters"]
+            if item["name"] == "minimum_wide_dwell_seconds"
+        )
+        parameter["default"]["value"] = 20.0
+
+        self.assertBindError(payload, "complexity_temporal_horizon_exceeded")
+
     def test_missing_perspective_team_role_is_schema_error(self) -> None:
         payload = load_payload()
         del payload["default_invocation"]["perspective_team_role"]
