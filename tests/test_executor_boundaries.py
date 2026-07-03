@@ -16,6 +16,7 @@ from tqe.runtime.capabilities import (
     build_relation_registry,
 )
 from tqe.runtime.catalog import default_catalog
+from tqe.runtime.ir import BoundCatalogNode, NodeKind
 
 
 class ExecutorRegistryBoundaryTests(unittest.TestCase):
@@ -49,6 +50,37 @@ class ExecutorRegistryBoundaryTests(unittest.TestCase):
         observed = shared_executor_helper_mentions(EXPECTED_SHARED_HELPER_MENTION_COUNTS)
 
         self.assertEqual(EXPECTED_SHARED_HELPER_MENTION_COUNTS, observed)
+
+    def test_node_parameter_reads_are_catalog_declared(self) -> None:
+        observed = node_parameter_reads_by_capability()
+        catalog_parameters = {
+            entry.name: {parameter.name for parameter in entry.parameters}
+            for entry in default_catalog().primitives + default_catalog().relations
+        }
+
+        undeclared = {
+            capability: sorted(parameters - catalog_parameters[capability])
+            for capability, parameters in observed.items()
+            if parameters - catalog_parameters[capability]
+        }
+
+        self.assertEqual({}, undeclared)
+
+    def test_node_parameter_read_requires_bound_catalog_parameter(self) -> None:
+        node = BoundCatalogNode(
+            kind=NodeKind.PRIMITIVE,
+            node_id="sample_node",
+            catalog_ref="sample_capability",
+            version="0.1.0",
+            outputs=[],
+            resolved_parameters={},
+        )
+
+        with self.assertRaisesRegex(
+            executor.UndeclaredNodeParameterError,
+            "sample_capability.sample_node read undeclared parameter missing_parameter",
+        ):
+            executor.node_parameter_number(node, "missing_parameter")
 
 
 # This is the F2-0 freeze line, not a cleanup.  Destination-entry lines are the
@@ -152,3 +184,47 @@ def shared_executor_source() -> tuple[str, list[str], str]:
         for line_number, line in enumerate(lines, start=1)
     )
     return source, lines, shared_source
+
+
+def node_parameter_reads_by_capability() -> dict[str, set[str]]:
+    source, _lines, _shared_source = shared_executor_source()
+    module = ast.parse(source)
+    capabilities_for_implementation: dict[str, set[str]] = {}
+    for capability_name, implementation_name in (
+        *PRIMITIVE_IMPLEMENTATION_NAMES,
+        *RELATION_IMPLEMENTATION_NAMES,
+    ):
+        capabilities_for_implementation.setdefault(implementation_name, set()).add(capability_name)
+    implementation_spans = {
+        node.name: node
+        for node in module.body
+        if isinstance(node, ast.FunctionDef) and node.name in capabilities_for_implementation
+    }
+    reads: dict[str, set[str]] = {}
+    for implementation_name, function_node in implementation_spans.items():
+        capability_names = capabilities_for_implementation[implementation_name]
+        for node in ast.walk(function_node):
+            if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Name):
+                continue
+            if node.func.id == "node_parameter_event_type_filter":
+                for capability_name in capability_names:
+                    reads.setdefault(capability_name, set()).add("event_type_filter")
+                continue
+            if node.func.id not in {"node_parameter_number", "node_parameter_integer", "node_parameter_text"}:
+                continue
+            if len(node.args) != 2:
+                for capability_name in capability_names:
+                    reads.setdefault(capability_name, set()).add(
+                        f"invalid_call_arity_at_line_{node.lineno}"
+                    )
+                continue
+            name_arg = node.args[1]
+            if not isinstance(name_arg, ast.Constant) or not isinstance(name_arg.value, str):
+                for capability_name in capability_names:
+                    reads.setdefault(capability_name, set()).add(
+                        f"dynamic_parameter_name_at_line_{node.lineno}"
+                    )
+                continue
+            for capability_name in capability_names:
+                reads.setdefault(capability_name, set()).add(name_arg.value)
+    return reads
