@@ -96,3 +96,63 @@ sealed-set evaluation and this track are independent; neither blocks the
 other. The charter's demo scope (public IDSSE data, pre-meeting demo)
 remains in force until the owner explicitly re-scopes; this track is the
 ambition running ahead of the charter, on purpose, in writing.
+
+---
+
+## Charter update — 2026-07-04 (post-ladder strategy decisions)
+
+The validation ladder (VAL-0 calibration, VAL-1 detection, VAL-2 tracking,
+VAL-3a composition + gating — all adversarially accepted) resolved enough
+uncertainty to fix the following as plan-of-record.
+
+### Success metric: query fidelity, not vision benchmarks
+
+The pipeline's acceptance number is **INT-1 query fidelity**: the same typed
+queries executed over ground-truth and pipeline-predicted game state, with
+answer agreement reported PER QUERY FAMILY and UNKNOWN absorbing the gap
+honestly. GS-HOTA and its kin are diagnostic context; the fidelity table is
+the product truth — it prices exactly which questions the film-decoder can
+be trusted with, and it improves as components are swapped under the stable
+interfaces. Near-term expectation, stated honestly: shape families
+(pressing structure, block shifts, compactness, occupancy, off-ball
+movement) lead; ball-anchored families lag until the insist-path invests.
+
+### The proof precedes partnership (owner directive, standing)
+
+The build and experiments never depend on partners or partner footage. The
+proof artifact is one full match we own or control end-to-end, demonstrated
+as: any supported question -> moments + measures + honest UNKNOWN, every
+number decomposing to film. Measurement (aggregations, rates, CAR-class
+insights) is co-equal with retrieval — clipping alone is not the product.
+
+### Pilot path (Plan A / Plan B)
+
+Plan A — permission-footage: after the open-data demonstration exists, ask
+rights-holders for recordings they own outright; the optimal ask is the
+club's own scout film (Veo/Hudl tactical recordings — fully club-owned, and
+technically our easiest footage class: near-static calibration, all-22
+visibility). One-page permission covering processing + showing derived
+analytics; clean provenance line. Plan B — own camera + permission to film,
+so the proof never depends on a yes. Target heuristic (owner's): programs
+where coaches make real money. Austin list: UT Austin soccer (best first
+door), Austin FC II / Academy (softer entry than the league-entangled first
+team), elite club academies (MLS Next class) over high schools.
+
+### The insist-path (glass ceilings are investment, not physics)
+
+Rungs, cheapest first: (1) cheap levers — resolution, tiling, better
+checkpoints (proven: ball 5%->71% AP50 by checkpoint+resolution alone);
+(2) fine-tune flywheel — pipeline pre-labels, humans correct, Modal trains;
+partner footage joins the flywheel STRICTLY POST-PROOF with consent;
+(3) temporal ball models (sequence-based, SoccerNet ball lineage);
+(4) own the capture spec — at pilots and V2 we design the input (mounting,
+resolution, a second cheap camera killing ball-depth ambiguity). Doctrine
+nuance codified: physics-constrained trajectory inference is permissible
+ONLY as a declared, separately-typed tier — never blended with observation.
+
+### Where investment aims
+
+The fidelity table is the investment map: insist where the gap between
+vision-delivered and product-needed fidelity is largest for the families
+that move dossiers, in value order. SoccerNet data (NDA, eval-only sandbox)
+measures; it never trains, never ships, never leaves the sandbox.
