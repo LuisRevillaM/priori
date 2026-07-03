@@ -107,6 +107,11 @@ RELOCATED_IMPLEMENTATION_MODULES: dict[str, str] = {
     "primitive_relative_position_to_line": "tqe.runtime.capabilities.lines_family",
     "primitive_receiver_line_transition_during_pass_leg": "tqe.runtime.capabilities.lines_family",
     "primitive_controlled_line_break_episode": "tqe.runtime.capabilities.lines_family",
+    "primitive_marking": "tqe.runtime.capabilities.offball_family",
+    "primitive_off_ball_run": "tqe.runtime.capabilities.offball_family",
+    "primitive_off_ball_run_type": "tqe.runtime.capabilities.offball_family",
+    "primitive_time_to_arrival": "tqe.runtime.capabilities.offball_family",
+    "relation_support_arrival": "tqe.runtime.capabilities.offball_family",
 }
 
 

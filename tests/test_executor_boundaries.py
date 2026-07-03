@@ -155,6 +155,32 @@ class ExecutorRegistryBoundaryTests(unittest.TestCase):
             self.assertEqual("tqe.runtime.capabilities.lines_family", implementation.__module__)
 
 
+    def test_offball_family_relocation_is_registry_only(self) -> None:
+        source = Path(executor.__file__).resolve().read_text(encoding="utf-8")
+        self.assertNotIn("offball_family", source)
+
+        primitive_registry = build_primitive_registry(vars(executor))
+        relation_registry = build_relation_registry(vars(executor))
+        relocated_capabilities = {
+            "marking": primitive_registry["marking"],
+            "off_ball_run": primitive_registry["off_ball_run"],
+            "off_ball_run_type": primitive_registry["off_ball_run_type"],
+            "time_to_arrival": primitive_registry["time_to_arrival"],
+            "support_arrival_relation": relation_registry["support_arrival_relation"],
+        }
+
+        for implementation_name in (
+            "primitive_marking",
+            "primitive_off_ball_run",
+            "primitive_off_ball_run_type",
+            "primitive_time_to_arrival",
+            "relation_support_arrival",
+        ):
+            self.assertFalse(hasattr(executor, implementation_name), implementation_name)
+        for implementation in relocated_capabilities.values():
+            self.assertEqual("tqe.runtime.capabilities.offball_family", implementation.__module__)
+
+
 # This is the F2-0 freeze line, not a cleanup.  Destination-entry lines are the
 # V8/V10 audit leaks named in ADR 0012; the import/helper lines are existing
 # capability-family code still outside primitive_/relation_ bodies until later
@@ -178,14 +204,10 @@ EXPECTED_SHARED_CAPABILITY_MENTIONS = {
         "from tqe.runtime.local_number_relation import (",
     },
     "marking": {
-        '"Observed nearest-opposition proximity only; no marking assignment, defensive scheme, "',
         '"no routine, role, marking scheme, planned play, intent, quality, or causation claim."',
     },
     "relation_destination_entry": {
         'if node.catalog_ref != "relation_destination_entry":',
-    },
-    "time_to_arrival": {
-        'raise RuntimeError(f"Unsupported time_to_arrival candidate_scope: {candidate_scope}")',
     },
     "velocity": {
         '"UNKNOWN if either velocity window lacks tracking endpoints or if observed speed/acceleration "',
@@ -300,4 +322,5 @@ def implementation_source_paths() -> tuple[Path, ...]:
         Path(executor.__file__).resolve().parent / "capabilities" / "pass_family.py",
         Path(executor.__file__).resolve().parent / "capabilities" / "corridor_family.py",
         Path(executor.__file__).resolve().parent / "capabilities" / "lines_family.py",
+        Path(executor.__file__).resolve().parent / "capabilities" / "offball_family.py",
     )
