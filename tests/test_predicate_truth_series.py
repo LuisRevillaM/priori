@@ -15,7 +15,9 @@ import pandas as pd
 from tqe.runtime.executor import (
     MatchContext,
     RuntimeParameters,
+    RuntimeAnchor,
     execute_predicate_with_resolved_inputs,
+    predicate_trace_from_runtime_value,
     record_persistence_evidence,
 )
 from tqe.runtime.ir import (
@@ -158,6 +160,60 @@ def anchor_evaluation_node(
         if operator_name == "count_at_least"
         else None,
         output=output_type,
+    )
+
+
+def episode_predicate_node() -> BoundPredicateNode:
+    input_type = CatalogOutput(
+        name="source_signal",
+        temporal_type=TemporalContainer.FRAME_SIGNAL,
+        payload_type=PayloadType.BOOLEAN,
+        cardinality=Cardinality.SINGLE,
+        unit=Unit.NONE,
+        missing_data_semantics=MissingDataSemantics.UNKNOWN,
+    )
+    output_type = CatalogOutput(
+        name="predicate",
+        temporal_type=TemporalContainer.EPISODE_SET,
+        payload_type=PayloadType.BOOLEAN,
+        cardinality=Cardinality.COLLECTION,
+        unit=Unit.NONE,
+        missing_data_semantics=MissingDataSemantics.UNKNOWN,
+    )
+    return BoundPredicateNode(
+        node_id="episode_predicate",
+        input=SignalRef(source_node_id="source_node", output_name="source_signal"),
+        input_type=input_type,
+        operator=OperatorRef(name="persists_for", version="1.0.0"),
+        operator_signature=OperatorSignature(
+            name="persists_for",
+            version="1.0.0",
+            purpose="test episode traces",
+            input_temporal_types=[TemporalContainer.FRAME_SIGNAL],
+            input_payload_types=[PayloadType.BOOLEAN],
+            input_cardinalities=[Cardinality.SINGLE],
+            duration_required=True,
+            output_temporal_type=TemporalContainer.EPISODE_SET,
+            output_payload_type=PayloadType.BOOLEAN,
+            output_cardinality=Cardinality.COLLECTION,
+        ),
+        duration=TypedValue(payload_type=PayloadType.NUMBER, value=1.0, unit=Unit.SECOND),
+        output=output_type,
+    )
+
+
+def runtime_anchor(frame_id: int = 100) -> RuntimeAnchor:
+    return RuntimeAnchor(
+        anchor_id="anchor_a",
+        semantic_key="anchor_a",
+        match_id="synthetic",
+        period="firstHalf",
+        anchor_frame_id=frame_id,
+        source_node_id="anchors",
+        output_name="anchor_evaluations",
+        start_frame_id=frame_id,
+        end_frame_id=frame_id,
+        attributes={"anchor_id": "anchor_a", "anchor_frame_id": frame_id},
     )
 
 
@@ -346,6 +402,46 @@ class ComparisonTruthSeriesTest(unittest.TestCase):
             ["opponents_bypassed_count"] * 3,
             [record["source_evidence"]["coverage_count_field"] for record in output["predicate_records"]],
         )
+
+    def test_episode_trace_uncovered_plain_episode_set_is_unknown(self) -> None:
+        node = episode_predicate_node()
+        runtime_value = RuntimeValue(
+            output=node.output,
+            value=[{"start_frame_id": 10, "end_frame_id": 20}],
+            records=[{"start_frame_id": 10, "end_frame_id": 20}],
+        )
+
+        trace = predicate_trace_from_runtime_value(
+            node=node,
+            runtime_value=runtime_value,
+            anchor=runtime_anchor(100),
+            result_id="r1",
+            common_evidence={"result_id": "r1"},
+        )
+
+        self.assertIsNotNone(trace)
+        self.assertEqual("UNKNOWN", trace.status)
+        self.assertEqual("episode_trace_anchor_uncovered", trace.source_evidence["reason"])
+
+    def test_episode_trace_explicit_temporal_fail_remains_fail(self) -> None:
+        node = episode_predicate_node()
+        runtime_value = RuntimeValue(
+            output=node.output,
+            value=[{"start_frame_id": 90, "end_frame_id": 110, "temporal_status": "FAIL"}],
+            records=[{"start_frame_id": 90, "end_frame_id": 110, "temporal_status": "FAIL"}],
+        )
+
+        trace = predicate_trace_from_runtime_value(
+            node=node,
+            runtime_value=runtime_value,
+            anchor=runtime_anchor(100),
+            result_id="r1",
+            common_evidence={"result_id": "r1"},
+        )
+
+        self.assertIsNotNone(trace)
+        self.assertEqual("FAIL", trace.status)
+        self.assertEqual({"start_frame_id": 90, "end_frame_id": 110}, trace.window)
 
 
 if __name__ == "__main__":

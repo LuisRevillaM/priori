@@ -2886,12 +2886,15 @@ def predicate_trace_from_runtime_value(
             if matched is None:
                 status = "UNKNOWN"
                 matched_window = None
+                reason = "episode_trace_anchor_uncovered"
             else:
                 status = str(matched.get("temporal_status") or "PASS")
                 matched_window = matched
+                reason = None
         else:
-            status = "PASS" if matched is not None else "FAIL"
+            status = "PASS" if matched is not None else "UNKNOWN"
             matched_window = matched
+            reason = None if matched is not None else "episode_trace_anchor_uncovered"
         return PredicateTrace(
             predicate_id=node.node_id,
             status=status,
@@ -2907,7 +2910,7 @@ def predicate_trace_from_runtime_value(
             }
             if isinstance(matched_window, dict)
             else None,
-            source_evidence=source_evidence,
+            source_evidence={**source_evidence, "reason": reason} if reason is not None else source_evidence,
         )
     return None
 
