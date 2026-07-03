@@ -7,7 +7,6 @@ from pathlib import Path
 
 from tqe.runtime import executor
 from tqe.runtime.capabilities import (
-    LEGACY_NOOP_CAPABILITIES,
     PREDICATE_IMPLEMENTATION_NAMES,
     PRIMITIVE_IMPLEMENTATION_NAMES,
     RELOCATED_IMPLEMENTATION_MODULES,
@@ -21,7 +20,7 @@ from tqe.runtime.ir import BoundCatalogNode, NodeKind
 
 
 class ExecutorRegistryBoundaryTests(unittest.TestCase):
-    def test_capability_registry_matches_catalog_with_legacy_noop_debt(self) -> None:
+    def test_capability_registry_matches_catalog_without_legacy_noop_debt(self) -> None:
         catalog = default_catalog()
         catalog_primitives = {entry.name for entry in catalog.primitives}
         catalog_relations = {entry.name for entry in catalog.relations}
@@ -30,9 +29,9 @@ class ExecutorRegistryBoundaryTests(unittest.TestCase):
 
         self.assertEqual(len(primitive_names), len(set(primitive_names)))
         self.assertEqual(len(relation_names), len(set(relation_names)))
-        self.assertEqual(catalog_primitives, set(primitive_names) - LEGACY_NOOP_CAPABILITIES)
+        self.assertEqual(catalog_primitives, set(primitive_names))
         self.assertEqual(catalog_relations, set(relation_names))
-        self.assertEqual(LEGACY_NOOP_CAPABILITIES, set(primitive_names) - catalog_primitives)
+        self.assertEqual(set(), set(primitive_names) - catalog_primitives)
 
         primitive_registry = build_primitive_registry(vars(executor))
         relation_registry = build_relation_registry(vars(executor))
@@ -223,8 +222,7 @@ class ExecutorRegistryBoundaryTests(unittest.TestCase):
         inline_primitives = {
             implementation_name
             for capability_name, implementation_name in PRIMITIVE_IMPLEMENTATION_NAMES
-            if capability_name not in LEGACY_NOOP_CAPABILITIES
-            and implementation_name not in relocated_names
+            if implementation_name not in relocated_names
         }
         inline_relations = {
             implementation_name
@@ -234,14 +232,7 @@ class ExecutorRegistryBoundaryTests(unittest.TestCase):
 
         self.assertEqual(set(), inline_primitives)
         self.assertEqual(set(), inline_relations)
-        self.assertEqual({("primitive_noop", executor.primitive_noop)}, {
-            (implementation.__name__, implementation)
-            for capability_name, implementation in primitive_registry.items()
-            if capability_name in LEGACY_NOOP_CAPABILITIES
-        })
         for capability_name, implementation in primitive_registry.items():
-            if capability_name in LEGACY_NOOP_CAPABILITIES:
-                continue
             self.assertNotEqual("tqe.runtime.executor", implementation.__module__, capability_name)
         for capability_name, implementation in relation_registry.items():
             self.assertNotEqual("tqe.runtime.executor", implementation.__module__, capability_name)

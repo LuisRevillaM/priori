@@ -53,10 +53,6 @@ PRIMITIVE_IMPLEMENTATION_NAMES: tuple[tuple[str, str], ...] = (
     ("outcome_classification", "primitive_outcome_classification"),
     ("relation_destination_entry", "primitive_relation_destination_entry_classification"),
     ("relation_destination_entry_classification", "primitive_relation_destination_entry_classification"),
-    ("wide_channel_dwell", "primitive_noop"),
-    ("shift_persistence", "primitive_noop"),
-    ("robust_team_width", "primitive_noop"),
-    ("analysis_rate", "primitive_noop"),
 )
 
 
@@ -80,18 +76,6 @@ PREDICATE_IMPLEMENTATION_NAMES: tuple[tuple[str, str], ...] = (
     ("persists_for", "predicate_persists_for"),
     ("exists", "predicate_exists"),
     ("count_at_least", "predicate_count_at_least"),
-)
-
-
-# Known V10 debt: these legacy names remain dispatchable noops even though
-# they are not catalog capabilities.  F2-X deletes or quarantines them.
-LEGACY_NOOP_CAPABILITIES: frozenset[str] = frozenset(
-    {
-        "wide_channel_dwell",
-        "shift_persistence",
-        "robust_team_width",
-        "analysis_rate",
-    }
 )
 
 

@@ -2140,16 +2140,6 @@ def persistence_status_at_index(
     return "FAIL"
 
 
-def primitive_noop(state: PeriodState, node: BoundCatalogNode) -> None:
-    state.signals.setdefault(node.node_id, {})
-
-
-
-
-
-
-
-
 
 
 
