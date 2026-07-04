@@ -11,10 +11,10 @@
       "multi_step": true,
       "semantic_correspondence": {
         "coverage_row": "pressure_change_after",
-        "meaning": "Signed change in nearest-defender distance from pass release to controlled reception for the same controlled-pass anchor.",
+        "meaning": "Signed change in nearest-opponent distance from the passer at physical release to the receiver at controlled reception for the same controlled-pass anchor.",
         "anchor_source": "controlled_pass_episode.anchors",
-        "before_relation": "pressure_on_carrier.anchor_evaluations at physical_release_frame_id",
-        "after_relation": "pressure_on_carrier.anchor_evaluations at controlled_reception_frame_id",
+        "before_relation": "pressure_on_carrier.anchor_evaluations at physical_release_frame_id with carrier_id_field=passer_id",
+        "after_relation": "pressure_on_carrier.anchor_evaluations at controlled_reception_frame_id with carrier_id_field=receiver_id",
         "scalar": "nearest_defender_distance_m",
         "unit": "metre"
       },
@@ -25,6 +25,9 @@
           "delta_reason",
           "before_value_field",
           "after_value_field",
+          "anchor_status_field",
+          "anchor_status_value",
+          "anchor_status",
           "before_status_field",
           "after_status_field",
           "required_status_value",
@@ -39,6 +42,10 @@
           "source_anchor_frame_id",
           "before_evaluation_frame_id",
           "after_evaluation_frame_id",
+          "before_subject_field",
+          "after_subject_field",
+          "before_subject_id",
+          "after_subject_id",
           "witness_anchor_node_id",
           "witness_before_node_id",
           "witness_after_node_id"
@@ -65,7 +72,26 @@
             "anchor_status_value": "PASS",
             "before_frame_field": "physical_release_frame_id",
             "after_frame_field": "controlled_reception_frame_id",
-            "carrier_id_field": "receiver_id"
+            "before_input_context": {
+              "frame_field": "physical_release_frame_id",
+              "carrier_id_field": "passer_id",
+              "maximum_pressure_distance_m": 15.0,
+              "minimum_closing_speed_mps": -5.0,
+              "maximum_approach_angle_degrees": 180.0,
+              "minimum_pressure_duration_seconds": 0.0,
+              "lookback_seconds": 0.4,
+              "candidate_scope": "defending_outfield"
+            },
+            "after_input_context": {
+              "frame_field": "controlled_reception_frame_id",
+              "carrier_id_field": "receiver_id",
+              "maximum_pressure_distance_m": 15.0,
+              "minimum_closing_speed_mps": -5.0,
+              "maximum_approach_angle_degrees": 180.0,
+              "minimum_pressure_duration_seconds": 0.0,
+              "lookback_seconds": 0.4,
+              "candidate_scope": "defending_outfield"
+            }
           }
         ],
         "claim_boundary": "Observed signed change in nearest-defender distance across declared release/reception frames only; no pressure quality, pass value, tactical causation, defender intent, or reception-success claim."

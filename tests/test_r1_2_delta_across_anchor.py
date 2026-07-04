@@ -15,6 +15,7 @@ from tqe.runtime.operators.delta_across_anchor import (
     DELTA_ACROSS_ANCHOR_SIGNATURE,
     execute_delta_across_anchor,
 )
+from tqe.runtime.capabilities.teamshape_family import pressure_defending_team_role
 from tqe.runtime.values import RuntimeValue, canonical_anchor_record_id, runtime_value_from_raw
 
 
@@ -37,15 +38,25 @@ def anchor_record(anchor_id: str, frame_id: int) -> dict[str, object]:
         "anchor_frame_id": frame_id,
         "start_frame_id": frame_id,
         "end_frame_id": frame_id,
+        "controlled_pass_status": "PASS",
     }
     item["anchor_id"] = canonical_anchor_record_id(item)
     return item
 
 
-def evaluation_record(anchor: dict[str, object], value: float, status: str = "PASS") -> dict[str, object]:
+def evaluation_record(
+    anchor: dict[str, object],
+    value: float,
+    status: str = "PASS",
+    *,
+    pressure_frame_id: int | None = None,
+    carrier_id: str = "carrier",
+) -> dict[str, object]:
     return {
         **anchor,
         "pressure_status": status,
+        "pressure_frame_id": int(pressure_frame_id if pressure_frame_id is not None else int(anchor["anchor_frame_id"])),
+        "carrier_id": carrier_id,
         "nearest_defender_distance_m": value,
     }
 
@@ -103,6 +114,10 @@ def run_delta(
         parameters={
             "before_value_field": typed_enum("nearest_defender_distance_m"),
             "after_value_field": typed_enum("nearest_defender_distance_m"),
+            "anchor_status_field": typed_enum("controlled_pass_status"),
+            "anchor_status_value": typed_enum("PASS"),
+            "before_subject_field": typed_enum("carrier_id"),
+            "after_subject_field": typed_enum("carrier_id"),
             "before_status_field": typed_enum(before_status_field),
             "after_status_field": typed_enum(after_status_field),
             "required_status_value": typed_enum("PASS"),
@@ -116,14 +131,19 @@ def run_delta(
 
 
 class DeltaAcrossAnchorTests(unittest.TestCase):
+    def test_pressure_subject_defenders_follow_both_team_anchors(self) -> None:
+        self.assertEqual("away", pressure_defending_team_role({"team_role": "home"}, "away"))
+        self.assertEqual("home", pressure_defending_team_role({"team_role": "away"}, "away"))
+        self.assertEqual("away", pressure_defending_team_role({}, "away"))
+
     def test_signed_delta_and_edges_at_threshold(self) -> None:
         rising = anchor_record("rise", 10)
         falling = anchor_record("fall", 20)
 
         signals = run_delta(
             anchors=[rising, falling],
-            before=[evaluation_record(rising, 0.8), evaluation_record(falling, 2.0)],
-            after=[evaluation_record(rising, 1.0), evaluation_record(falling, 1.0)],
+            before=[evaluation_record(rising, 0.8, pressure_frame_id=9), evaluation_record(falling, 2.0, pressure_frame_id=19)],
+            after=[evaluation_record(rising, 1.0, pressure_frame_id=10), evaluation_record(falling, 1.0, pressure_frame_id=20)],
         )
 
         records = signals["delta_records"]
@@ -136,8 +156,8 @@ class DeltaAcrossAnchorTests(unittest.TestCase):
 
         signals = run_delta(
             anchors=[anchor],
-            before=[evaluation_record(anchor, 0.95)],
-            after=[evaluation_record(anchor, 1.0)],
+            before=[evaluation_record(anchor, 0.95, pressure_frame_id=9)],
+            after=[evaluation_record(anchor, 1.0, pressure_frame_id=10)],
             edge_threshold=1.0,
             hysteresis_margin=0.1,
         )
@@ -147,12 +167,30 @@ class DeltaAcrossAnchorTests(unittest.TestCase):
         self.assertEqual("FAIL", record["rising_edge_status"])
         self.assertEqual("rising_edge_not_observed", record["rising_edge_reason"])
 
+    def test_evidence_uses_evaluation_frames_and_subjects(self) -> None:
+        anchor = anchor_record("frames", 100)
+
+        signals = run_delta(
+            anchors=[anchor],
+            before=[evaluation_record(anchor, 0.8, pressure_frame_id=92, carrier_id="passer")],
+            after=[evaluation_record(anchor, 1.2, pressure_frame_id=108, carrier_id="receiver")],
+        )
+
+        record = signals["delta_records"][0]
+        self.assertEqual("PASS", record["delta_status"])
+        self.assertEqual(92, record["before_evaluation_frame_id"])
+        self.assertEqual(108, record["after_evaluation_frame_id"])
+        self.assertEqual("carrier_id", record["before_subject_field"])
+        self.assertEqual("carrier_id", record["after_subject_field"])
+        self.assertEqual("passer", record["before_subject_id"])
+        self.assertEqual("receiver", record["after_subject_id"])
+
     def test_missing_after_record_is_unknown(self) -> None:
         anchor = anchor_record("missing", 10)
 
         signals = run_delta(
             anchors=[anchor],
-            before=[evaluation_record(anchor, 0.8)],
+            before=[evaluation_record(anchor, 0.8, pressure_frame_id=9)],
             after=[],
         )
 
@@ -166,14 +204,43 @@ class DeltaAcrossAnchorTests(unittest.TestCase):
 
         signals = run_delta(
             anchors=[anchor],
-            before=[evaluation_record(anchor, 0.8, status="FAIL")],
-            after=[evaluation_record(anchor, 1.2)],
+            before=[evaluation_record(anchor, 0.8, status="FAIL", pressure_frame_id=9)],
+            after=[evaluation_record(anchor, 1.2, pressure_frame_id=10)],
         )
 
         record = signals["delta_records"][0]
         self.assertEqual("FAIL", record["delta_status"])
         self.assertEqual("before_required_status_not_met", record["delta_reason"])
         self.assertEqual("FAIL", record["rising_edge_status"])
+
+    def test_anchor_status_constraint_is_enforced(self) -> None:
+        anchor = anchor_record("bad-anchor", 10)
+        anchor["controlled_pass_status"] = "FAIL"
+
+        signals = run_delta(
+            anchors=[anchor],
+            before=[evaluation_record(anchor, 0.8, pressure_frame_id=9)],
+            after=[evaluation_record(anchor, 1.2, pressure_frame_id=10)],
+        )
+
+        record = signals["delta_records"][0]
+        self.assertEqual("FAIL", record["delta_status"])
+        self.assertEqual("anchor_required_status_not_met", record["delta_reason"])
+        self.assertEqual("FAIL", record["rising_edge_status"])
+
+    def test_same_frame_delta_is_unknown(self) -> None:
+        anchor = anchor_record("same-frame", 10)
+
+        signals = run_delta(
+            anchors=[anchor],
+            before=[evaluation_record(anchor, 0.8, pressure_frame_id=10)],
+            after=[evaluation_record(anchor, 1.2, pressure_frame_id=10)],
+        )
+
+        record = signals["delta_records"][0]
+        self.assertEqual("UNKNOWN", record["delta_status"])
+        self.assertEqual("before_after_frames_not_distinct", record["delta_reason"])
+        self.assertEqual("UNKNOWN", record["rising_edge_status"])
 
     def test_bind_rejects_field_parameter_not_declared_by_inputs(self) -> None:
         payload = delta_pressure_document()
@@ -236,12 +303,25 @@ class DeltaAcrossAnchorTests(unittest.TestCase):
         self.assertEqual("nearest_defender_distance_m", parameters["after_value_field"]["value"])
         self.assertEqual("physical_release_frame_id", build.metadata["delta_across_anchor_constraint"]["before_frame_field"])
         self.assertEqual("controlled_reception_frame_id", build.metadata["delta_across_anchor_constraint"]["after_frame_field"])
+        self.assertEqual(
+            "passer_id",
+            build.metadata["delta_across_anchor_constraint"]["before_input_context"]["carrier_id_field"],
+        )
+        self.assertEqual(
+            "receiver_id",
+            build.metadata["delta_across_anchor_constraint"]["after_input_context"]["carrier_id_field"],
+        )
         pressure_nodes = [node for node in build.nodes if node.get("catalog_ref") == "pressure_on_carrier"]
         self.assertEqual(2, len(pressure_nodes))
+        contexts = {
+            node["parameters"]["frame_field"]["value"]: node["parameters"]["carrier_id_field"]["value"]
+            for node in pressure_nodes
+        }
         self.assertEqual(
-            ["controlled_reception_frame_id", "physical_release_frame_id"],
-            sorted(node["parameters"]["frame_field"]["value"] for node in pressure_nodes),
+            {"physical_release_frame_id": "passer_id", "controlled_reception_frame_id": "receiver_id"},
+            contexts,
         )
+        self.assertTrue(all(node["parameters"]["maximum_pressure_distance_m"]["value"] == 15.0 for node in pressure_nodes))
 
     def test_search_synthesis_fails_on_unapplied_delta_constraint_key(self) -> None:
         target = copy.deepcopy(r1_2_target())
@@ -259,6 +339,24 @@ class DeltaAcrossAnchorTests(unittest.TestCase):
         payload = json.dumps(error.exception.details, sort_keys=True)
         self.assertIn("unapplied_delta_constraint_keys", payload)
         self.assertIn("unsupported_delta_key", payload)
+
+    def test_search_synthesis_fails_on_unapplied_nested_context_key(self) -> None:
+        target = copy.deepcopy(r1_2_target())
+        target["target_contract"]["composition_constraints"][0]["before_input_context"]["unsupported_nested_key"] = "must_not_drop"
+        context = search.SearchContext(
+            catalog=search.CatalogIndex(),
+            target_contract=target["target_contract"],
+        )
+        required_fields = search.required_target_fields(target["target_contract"])
+
+        with self.assertRaises(search.SynthesisError):
+            search.build_operator_composition(context, required_fields, depth=0)
+
+    def test_provider_name_scoring_literals_are_absent(self) -> None:
+        source = Path(search.__file__).read_text(encoding="utf-8")
+        self.assertNotIn('score += 5 if evaluator.name in {"pressure_on_carrier", "team_compactness"}', source)
+        self.assertNotIn('score += 6 if evaluator.name in {"pressure_on_carrier", "team_compactness"}', source)
+        self.assertNotIn('score += 4 if anchor_entry.name in {"carry_episode", "controlled_pass_episode", "switch_of_play"}', source)
 
 
 def r1_2_target() -> dict[str, object]:
@@ -322,7 +420,7 @@ def delta_pressure_document() -> dict[str, object]:
                     },
                     "parameters": {
                         "frame_field": {"payload_type": "enum", "value": "physical_release_frame_id"},
-                        "carrier_id_field": {"payload_type": "enum", "value": "receiver_id"},
+                        "carrier_id_field": {"payload_type": "enum", "value": "passer_id"},
                         "maximum_pressure_distance_m": {"payload_type": "number", "unit": "metre", "value": 15.0},
                         "minimum_closing_speed_mps": {"payload_type": "number", "unit": "none", "value": -5.0},
                         "maximum_approach_angle_degrees": {"payload_type": "number", "unit": "none", "value": 180.0},
@@ -368,6 +466,10 @@ def delta_pressure_document() -> dict[str, object]:
                     "parameters": {
                         "before_value_field": {"payload_type": "enum", "value": "nearest_defender_distance_m"},
                         "after_value_field": {"payload_type": "enum", "value": "nearest_defender_distance_m"},
+                        "anchor_status_field": {"payload_type": "enum", "value": "controlled_pass_status"},
+                        "anchor_status_value": {"payload_type": "enum", "value": "PASS"},
+                        "before_subject_field": {"payload_type": "enum", "value": "carrier_id"},
+                        "after_subject_field": {"payload_type": "enum", "value": "carrier_id"},
                         "before_status_field": {"payload_type": "enum", "value": "none"},
                         "after_status_field": {"payload_type": "enum", "value": "none"},
                         "required_status_value": {"payload_type": "enum", "value": "PASS"},
@@ -406,11 +508,20 @@ def delta_pressure_document() -> dict[str, object]:
                     "delta_reason",
                     "before_value_field",
                     "after_value_field",
+                    "anchor_status_field",
+                    "anchor_status_value",
+                    "anchor_status",
                     "before_status_field",
                     "after_status_field",
                     "before_value",
                     "after_value",
                     "signed_delta",
+                    "before_evaluation_frame_id",
+                    "after_evaluation_frame_id",
+                    "before_subject_field",
+                    "after_subject_field",
+                    "before_subject_id",
+                    "after_subject_id",
                     "value_unit",
                     "witness_before_node_id",
                     "witness_after_node_id",

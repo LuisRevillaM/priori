@@ -223,7 +223,6 @@ def relation_pressure_on_carrier(state: PeriodState, node: BoundCatalogNode) -> 
     candidate_scope = node_parameter_text(node, "candidate_scope")
     if candidate_scope != "defending_outfield":
         raise RuntimeError("pressure_on_carrier v0.1 supports candidate_scope=defending_outfield")
-    known_outfield_ids = outfield_player_ids(state.canonical_root, state.match_id, state.defending_team_role)
     records = [
         pressure_on_carrier_anchor_record(
             state=state,
@@ -235,7 +234,7 @@ def relation_pressure_on_carrier(state: PeriodState, node: BoundCatalogNode) -> 
             maximum_approach_angle_degrees=maximum_approach_angle_degrees,
             minimum_pressure_duration_seconds=minimum_pressure_duration_seconds,
             lookback_seconds=lookback_seconds,
-            known_outfield_ids=known_outfield_ids,
+            default_defending_team_role=state.defending_team_role,
         )
         for anchor in anchor_records
         if isinstance(anchor, dict)
@@ -794,17 +793,20 @@ def pressure_on_carrier_anchor_record(
     maximum_approach_angle_degrees: float,
     minimum_pressure_duration_seconds: float,
     lookback_seconds: float,
-    known_outfield_ids: set[str],
+    default_defending_team_role: str,
 ) -> dict[str, Any] | None:
     anchor_frame_id = optional_int(anchor.get("anchor_frame_id"))
-    pressure_frame_id = optional_int(anchor.get(frame_field)) or anchor_frame_id
+    pressure_frame_id = anchor_frame_id if frame_field == "anchor_frame_id" else optional_int(anchor.get(frame_field))
     if anchor_frame_id is None or pressure_frame_id is None:
         return None
     carrier_id = str(anchor.get(carrier_id_field) or "")
+    defending_team_role = pressure_defending_team_role(anchor, default_defending_team_role)
+    known_outfield_ids = outfield_player_ids(state.canonical_root, state.match_id, defending_team_role)
     evidence = pressure_evidence_at_frame(
         state=state,
         frame_id=pressure_frame_id,
         carrier_id=carrier_id,
+        defending_team_role=defending_team_role,
         known_outfield_ids=known_outfield_ids,
         maximum_pressure_distance_m=maximum_pressure_distance_m,
         minimum_closing_speed_mps=minimum_closing_speed_mps,
@@ -817,6 +819,7 @@ def pressure_on_carrier_anchor_record(
             state=state,
             frame_id=pressure_frame_id,
             carrier_id=carrier_id,
+            defending_team_role=defending_team_role,
             known_outfield_ids=known_outfield_ids,
             maximum_pressure_distance_m=maximum_pressure_distance_m,
             minimum_closing_speed_mps=minimum_closing_speed_mps,
@@ -843,6 +846,7 @@ def pressure_on_carrier_anchor_record(
         "pressure_frame_id": pressure_frame_id,
         "carrier_id_field": carrier_id_field,
         "carrier_id": carrier_id or None,
+        "pressure_defending_team_role": defending_team_role,
         "maximum_pressure_distance_m": maximum_pressure_distance_m,
         "minimum_closing_speed_mps": minimum_closing_speed_mps,
         "maximum_approach_angle_degrees": maximum_approach_angle_degrees,
@@ -1081,6 +1085,7 @@ def pressure_evidence_at_frame(
     state: PeriodState,
     frame_id: int,
     carrier_id: str,
+    defending_team_role: str,
     known_outfield_ids: set[str],
     maximum_pressure_distance_m: float,
     minimum_closing_speed_mps: float,
@@ -1103,7 +1108,7 @@ def pressure_evidence_at_frame(
         return {**base, "pressure_reason": "carrier_tracking_missing"}
     defenders = [
         record
-        for record in player_records_at_frame_for_team(state, frame_id, state.defending_team_role)
+        for record in player_records_at_frame_for_team(state, frame_id, defending_team_role)
         if record["player_id"] in known_outfield_ids
         and record.get("x_m") is not None
         and record.get("y_m") is not None
@@ -1171,6 +1176,7 @@ def pressure_duration_ending_at_frame(
     state: PeriodState,
     frame_id: int,
     carrier_id: str,
+    defending_team_role: str,
     known_outfield_ids: set[str],
     maximum_pressure_distance_m: float,
     minimum_closing_speed_mps: float,
@@ -1185,6 +1191,7 @@ def pressure_duration_ending_at_frame(
             state=state,
             frame_id=candidate_frame_id,
             carrier_id=carrier_id,
+            defending_team_role=defending_team_role,
             known_outfield_ids=known_outfield_ids,
             maximum_pressure_distance_m=maximum_pressure_distance_m,
             minimum_closing_speed_mps=minimum_closing_speed_mps,
@@ -1195,6 +1202,15 @@ def pressure_duration_ending_at_frame(
             break
         observed += 1
     return round(float(observed / FRAME_RATE_HZ), 3)
+
+
+def pressure_defending_team_role(anchor: dict[str, Any], default_defending_team_role: str) -> str:
+    anchor_team_role = str(anchor.get("team_role") or "")
+    if anchor_team_role == "home":
+        return "away"
+    if anchor_team_role == "away":
+        return "home"
+    return default_defending_team_role
 def vector_angle_degrees(a: tuple[float, float], b: tuple[float, float]) -> float | None:
     a_norm = math.hypot(a[0], a[1])
     b_norm = math.hypot(b[0], b[1])

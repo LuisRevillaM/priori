@@ -39,6 +39,9 @@ EVIDENCE_FIELDS = [
     "falling_edge_reason",
     "before_value_field",
     "after_value_field",
+    "anchor_status_field",
+    "anchor_status_value",
+    "anchor_status",
     "before_status_field",
     "after_status_field",
     "required_status_value",
@@ -55,6 +58,10 @@ EVIDENCE_FIELDS = [
     "source_anchor_frame_id",
     "before_evaluation_frame_id",
     "after_evaluation_frame_id",
+    "before_subject_field",
+    "after_subject_field",
+    "before_subject_id",
+    "after_subject_id",
     "before_record_hash",
     "after_record_hash",
     "witness_anchor_node_id",
@@ -165,6 +172,33 @@ DELTA_ACROSS_ANCHOR_SIGNATURE = CompositionOperatorSignature(
             description="After-record numeric evidence field to compare.",
         ),
         ParameterDefinition(
+            name="anchor_status_field",
+            payload_type=PayloadType.ENUM,
+            required=True,
+            description="Anchor-record status field required for anchor validity, or none.",
+        ),
+        ParameterDefinition(
+            name="anchor_status_value",
+            payload_type=PayloadType.ENUM,
+            required=True,
+            allowed_values=list(STATUS_VALUE_VALUES),
+            description="Required anchor status value when anchor_status_field is not none.",
+        ),
+        ParameterDefinition(
+            name="before_subject_field",
+            payload_type=PayloadType.ENUM,
+            required=False,
+            default=TypedValue(payload_type=PayloadType.ENUM, value="none"),
+            description="Before-record subject/entity field used for audit, or none.",
+        ),
+        ParameterDefinition(
+            name="after_subject_field",
+            payload_type=PayloadType.ENUM,
+            required=False,
+            default=TypedValue(payload_type=PayloadType.ENUM, value="none"),
+            description="After-record subject/entity field used for audit, or none.",
+        ),
+        ParameterDefinition(
             name="before_status_field",
             payload_type=PayloadType.ENUM,
             required=True,
@@ -231,6 +265,10 @@ def execute_delta_across_anchor(
     anchor_ref = node.inputs["anchors"]
     before_value_field = _parameter_enum(parameters, "before_value_field")
     after_value_field = _parameter_enum(parameters, "after_value_field")
+    anchor_status_field = _parameter_enum(parameters, "anchor_status_field")
+    anchor_status_value = _parameter_enum(parameters, "anchor_status_value")
+    before_subject_field = _parameter_enum(parameters, "before_subject_field", "none")
+    after_subject_field = _parameter_enum(parameters, "after_subject_field", "none")
     before_status_field = _parameter_enum(parameters, "before_status_field")
     after_status_field = _parameter_enum(parameters, "after_status_field")
     required_status_value = _parameter_enum(parameters, "required_status_value")
@@ -247,6 +285,10 @@ def execute_delta_across_anchor(
             after_record=after_records.get(str(anchor.get("anchor_id"))),
             before_value_field=before_value_field,
             after_value_field=after_value_field,
+            anchor_status_field=anchor_status_field,
+            anchor_status_value=anchor_status_value,
+            before_subject_field=before_subject_field,
+            after_subject_field=after_subject_field,
             before_status_field=before_status_field,
             after_status_field=after_status_field,
             required_status_value=required_status_value,
@@ -297,6 +339,10 @@ def _delta_record(
     after_record: dict[str, Any] | None,
     before_value_field: str,
     after_value_field: str,
+    anchor_status_field: str,
+    anchor_status_value: str,
+    before_subject_field: str,
+    after_subject_field: str,
     before_status_field: str,
     after_status_field: str,
     required_status_value: str,
@@ -314,14 +360,26 @@ def _delta_record(
     anchor_frame_id = _optional_int(anchor.get("anchor_frame_id"))
     if anchor_frame_id is None:
         return None
+    before_frame_id = _record_frame_id(before_record)
+    after_frame_id = _record_frame_id(after_record)
     before_value = None if before_record is None else _optional_float(before_record.get(before_value_field))
     after_value = None if after_record is None else _optional_float(after_record.get(after_value_field))
+    anchor_status = _status_value(anchor, anchor_status_field)
     before_status = _status_value(before_record, before_status_field)
     after_status = _status_value(after_record, after_status_field)
+    before_subject_id = _subject_value(before_record, before_subject_field)
+    after_subject_id = _subject_value(after_record, after_subject_field)
     delta_status = "UNKNOWN"
     delta_reason = "delta_evidence_missing"
-    if before_record is None or after_record is None:
+    if not _status_matches(anchor_status, anchor_status_field, anchor_status_value):
+        delta_status = "UNKNOWN" if anchor_status is None else "FAIL"
+        delta_reason = "anchor_required_status_not_met"
+    elif before_record is None or after_record is None:
         delta_reason = "before_or_after_record_missing"
+    elif before_frame_id is None or after_frame_id is None:
+        delta_reason = "before_or_after_frame_missing"
+    elif before_frame_id == after_frame_id:
+        delta_reason = "before_after_frames_not_distinct"
     elif not _status_matches(before_status, before_status_field, required_status_value):
         delta_status = "UNKNOWN" if before_status is None else "FAIL"
         delta_reason = "before_required_status_not_met"
@@ -367,6 +425,9 @@ def _delta_record(
         "falling_edge_reason": falling_reason,
         "before_value_field": before_value_field,
         "after_value_field": after_value_field,
+        "anchor_status_field": anchor_status_field,
+        "anchor_status_value": anchor_status_value,
+        "anchor_status": anchor_status,
         "before_status_field": before_status_field,
         "after_status_field": after_status_field,
         "required_status_value": required_status_value,
@@ -381,8 +442,12 @@ def _delta_record(
         "missing_evidence_policy": missing_evidence_policy,
         "source_anchor_id": str(anchor.get("anchor_id")),
         "source_anchor_frame_id": anchor_frame_id,
-        "before_evaluation_frame_id": _record_frame_id(before_record),
-        "after_evaluation_frame_id": _record_frame_id(after_record),
+        "before_evaluation_frame_id": before_frame_id,
+        "after_evaluation_frame_id": after_frame_id,
+        "before_subject_field": before_subject_field,
+        "after_subject_field": after_subject_field,
+        "before_subject_id": before_subject_id,
+        "after_subject_id": after_subject_id,
         "before_record_hash": None if before_record is None else stable_hash(before_record),
         "after_record_hash": None if after_record is None else stable_hash(after_record),
         "witness_anchor_node_id": anchor_node_id,
@@ -472,18 +537,25 @@ def _record_frame_id(record: dict[str, Any] | None) -> int | None:
     if record is None:
         return None
     for key in (
-        "anchor_frame_id",
-        "frame_id",
         "line_evaluation_frame_id",
         "pressure_frame_id",
         "team_compactness_frame_id",
         "lane_evaluation_frame_id",
         "local_number_frame_id",
+        "frame_id",
+        "anchor_frame_id",
     ):
         value = _optional_int(record.get(key))
         if value is not None:
             return value
     return None
+
+
+def _subject_value(record: dict[str, Any] | None, field: str) -> str | None:
+    if field == "none" or record is None:
+        return None
+    value = record.get(field)
+    return None if value is None else str(value)
 
 
 def _parameter_enum(parameters: dict[str, TypedValue], name: str, default: str = "") -> str:
