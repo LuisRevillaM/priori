@@ -1,0 +1,108 @@
+{
+  "schema_version": "compiler_search_targets.v0",
+  "strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+  "sample_policy": "r1_3_extremum_over_set_acceptance",
+  "note": "R1-3 acceptance target. Concept id is a reporting label only; synthesis consumes the generic extremum_over_set constraint and evidence fields.",
+  "targets": [
+    {
+      "target_id": "r1_3_argmin_defender_distance_v0",
+      "concept": "nearest_defender_relation",
+      "held_out": true,
+      "multi_step": true,
+      "semantic_correspondence": {
+        "coverage_row": "nearest_defender_relation",
+        "meaning": "Select the observed defender with minimum distance to an anchor target player at the declared frame.",
+        "source_relation": "defender_distance_candidate_set.anchor_evaluations + extremum_over_set argmin(candidate_distance_m)",
+        "anchor_source": "controlled_pass_episode.anchors",
+        "target_player_field": "receiver_id",
+        "candidate_set": "observed_defending_outfield candidate defenders at controlled_reception_frame_id",
+        "selection": "argmin over observed candidate_distance_m with defender id and frame witnesses",
+        "unit": "metre"
+      },
+      "target_contract": {
+        "desired_output": "classification",
+        "required_evidence": [
+          "extremum_selection_status",
+          "extremum_selection_reason",
+          "selection_mode",
+          "top_k",
+          "selected_rank",
+          "value_field",
+          "value_unit",
+          "selected_value",
+          "record_id_field",
+          "selected_record_id",
+          "entity_id_field",
+          "selected_entity_id",
+          "frame_field",
+          "selected_frame_id",
+          "subject_id_field",
+          "subject_id",
+          "anchor_id_field",
+          "source_anchor_id",
+          "status_field",
+          "required_status_value",
+          "coverage_status_field",
+          "coverage_status",
+          "coverage_policy",
+          "value_bound_kind",
+          "value_bound",
+          "valid_candidate_count",
+          "unknown_candidate_count",
+          "candidate_count",
+          "tie_breaker_field",
+          "secondary_tie_breaker_field",
+          "selected_tie_breaker_value",
+          "selected_secondary_tie_breaker_value",
+          "selected_source_record_hash",
+          "selected_source_record_index",
+          "witness_source_node_id",
+          "witness_source_output_name",
+          "missing_evidence_policy"
+        ],
+        "status_semantics": [
+          {
+            "field": "extremum_selection_status",
+            "required_value": "PASS"
+          }
+        ],
+        "composition_constraints": [
+          {
+            "kind": "relation_on_anchor",
+            "relation_status_field": "defender_distance_candidate_status",
+            "anchor_status_field": "controlled_pass_status",
+            "anchor_status_value": "PASS",
+            "anchor_frame_field": "controlled_reception_frame_id",
+            "target_player_id_field": "receiver_id",
+            "candidate_scope": "observed_defending_outfield",
+            "minimum_observed_candidates": 6
+          },
+          {
+            "kind": "extremum_over_set",
+            "selection_mode": "argmin",
+            "top_k": 1,
+            "value_field": "candidate_distance_m",
+            "value_unit": "metre",
+            "record_id_field": "candidate_record_id",
+            "entity_id_field": "candidate_defender_id",
+            "frame_field": "candidate_frame_id",
+            "anchor_id_field": "source_anchor_id",
+            "subject_id_field": "target_player_id",
+            "status_field": "defender_distance_candidate_status",
+            "required_status_value": "PASS",
+            "coverage_status_field": "coverage_status",
+            "coverage_policy": "unknown_if_incomplete_could_change_answer",
+            "value_bound_kind": "lower",
+            "value_bound": 0.0,
+            "tie_breaker_field": "candidate_defender_id",
+            "secondary_tie_breaker_field": "candidate_record_id",
+            "missing_evidence_policy": "unknown",
+            "source_provider": "defender_distance_candidate_set",
+            "source_output": "anchor_evaluations"
+          }
+        ],
+        "claim_boundary": "Observed argmin selection over observed defender-target distance candidate records only; does not claim untracked defenders were farther away and does not infer marking assignment, pressure quality, defender intent, tactical causation, pass value, or optimality."
+      }
+    }
+  ]
+}

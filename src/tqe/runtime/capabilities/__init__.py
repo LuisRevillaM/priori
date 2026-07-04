@@ -63,6 +63,7 @@ RELATION_IMPLEMENTATION_NAMES: tuple[tuple[str, str], ...] = (
     ("support_arrival_relation", "relation_support_arrival"),
     ("support_arrival_point_pair", "relation_support_arrival_point_pair"),
     ("pressure_on_carrier", "relation_pressure_on_carrier"),
+    ("defender_distance_candidate_set", "relation_defender_distance_candidate_set"),
     ("team_press", "relation_team_press"),
     ("local_number_relation", "relation_local_number"),
 )
@@ -110,6 +111,7 @@ RELOCATED_IMPLEMENTATION_MODULES: dict[str, str] = {
     "primitive_defensive_outfield_centroid": "tqe.runtime.capabilities.teamshape_family",
     "primitive_signed_lateral_shift": "tqe.runtime.capabilities.teamshape_family",
     "relation_pressure_on_carrier": "tqe.runtime.capabilities.teamshape_family",
+    "relation_defender_distance_candidate_set": "tqe.runtime.capabilities.teamshape_family",
     "relation_team_press": "tqe.runtime.capabilities.teamshape_family",
     "relation_local_number": "tqe.runtime.capabilities.teamshape_family",
 }
