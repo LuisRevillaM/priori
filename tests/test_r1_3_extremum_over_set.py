@@ -9,6 +9,7 @@ from types import SimpleNamespace
 
 from scripts.coverage_map import compiler_search_reachability as search
 from tqe.runtime.binder import BindError, bind_document, bind_error_codes
+from tqe.runtime.capabilities import teamshape_family
 from tqe.runtime.ir import CatalogOutput, MissingDataSemantics, TacticalQueryDocument, TypedValue
 from tqe.runtime.operators.extremum_over_set import (
     EXTREMUM_OVER_SET_SIGNATURE,
@@ -85,6 +86,38 @@ def candidate_value(records: list[dict[str, object]]) -> RuntimeValue:
     )
     return runtime_value_from_raw(
         node_id="candidates",
+        output=output,
+        raw_value=records,
+        frame_ids=[int(record["anchor_frame_id"]) for record in records],
+        records=records,
+    )
+
+
+def relation_candidate_value(records: list[dict[str, object]]) -> RuntimeValue:
+    input_def = EXTREMUM_OVER_SET_SIGNATURE.inputs[0]
+    output = CatalogOutput(
+        name="anchor_evaluations",
+        temporal_type=input_def.temporal_type,
+        payload_type=input_def.payload_type,
+        cardinality=input_def.cardinality,
+        unit=input_def.unit,
+        entity_scope=input_def.entity_scope,
+        missing_data_semantics=MissingDataSemantics.UNKNOWN,
+        evidence_fields=[
+            "anchor_id",
+            "source_anchor_id",
+            "anchor_frame_id",
+            "candidate_record_id",
+            "candidate_defender_id",
+            "candidate_frame_id",
+            "candidate_distance_m",
+            "defender_distance_candidate_status",
+            "coverage_status",
+            "target_player_id",
+        ],
+    )
+    return runtime_value_from_raw(
+        node_id="defender_distance_candidate_set",
         output=output,
         raw_value=records,
         frame_ids=[int(record["anchor_frame_id"]) for record in records],
@@ -211,6 +244,108 @@ class ExtremumOverSetTests(unittest.TestCase):
         self.assertIsNotNone(selected["selected_source_record_hash"])
         self.assertEqual("subject_player_id", selected["subject_id_field"])
         self.assertEqual("carrier", selected["subject_id"])
+
+    def test_relation_composition_selects_defending_side_for_both_anchor_teams(self) -> None:
+        originals = {
+            "outfield_player_ids": teamshape_family.outfield_player_ids,
+            "tracked_point_at_frame": teamshape_family.tracked_point_at_frame,
+            "player_records_at_frame_for_team": teamshape_family.player_records_at_frame_for_team,
+        }
+
+        def fake_outfield_player_ids(_root: object, _match_id: str, team_role: str) -> set[str]:
+            return {"home-near", "home-far"} if team_role == "home" else {"away-near", "away-far"}
+
+        def fake_tracked_point_at_frame(_state: object, _frame_id: int, player_id: str) -> tuple[float, float] | None:
+            return {
+                "home-target": (0.0, 0.0),
+                "away-target": (10.0, 0.0),
+            }.get(player_id)
+
+        def fake_player_records_at_frame_for_team(_state: object, _frame_id: int, team_role: str) -> list[dict[str, object]]:
+            if team_role == "home":
+                return [
+                    {"player_id": "home-near", "x_m": 9.0, "y_m": 0.0},
+                    {"player_id": "home-far", "x_m": 20.0, "y_m": 0.0},
+                ]
+            return [
+                {"player_id": "away-near", "x_m": 1.0, "y_m": 0.0},
+                {"player_id": "away-far", "x_m": -20.0, "y_m": 0.0},
+            ]
+
+        try:
+            teamshape_family.outfield_player_ids = fake_outfield_player_ids
+            teamshape_family.tracked_point_at_frame = fake_tracked_point_at_frame
+            teamshape_family.player_records_at_frame_for_team = fake_player_records_at_frame_for_team
+            state = SimpleNamespace(canonical_root=Path("."), match_id="TST", period="firstHalf")
+            relation_records: list[dict[str, object]] = []
+            for anchor in (
+                {
+                    "anchor_id": "home-anchor",
+                    "anchor_frame_id": 100,
+                    "controlled_reception_frame_id": 100,
+                    "receiver_id": "home-target",
+                    "team_role": "home",
+                    "controlled_pass_status": "PASS",
+                },
+                {
+                    "anchor_id": "away-anchor",
+                    "anchor_frame_id": 200,
+                    "controlled_reception_frame_id": 200,
+                    "receiver_id": "away-target",
+                    "team_role": "away",
+                    "controlled_pass_status": "PASS",
+                },
+            ):
+                relation_records.extend(
+                    teamshape_family.defender_distance_candidate_records(
+                        state=state,
+                        anchor=anchor,
+                        anchor_frame_field="controlled_reception_frame_id",
+                        target_player_id_field="receiver_id",
+                        candidate_scope="observed_defending_outfield",
+                        required_anchor_status_field="controlled_pass_status",
+                        required_anchor_status_value="PASS",
+                        minimum_observed_candidates=1,
+                        default_defending_team_role="away",
+                    )
+                )
+        finally:
+            for name, value in originals.items():
+                setattr(teamshape_family, name, value)
+
+        operator_state = SimpleNamespace(match_id="TST", period="firstHalf", signals={})
+        execute_extremum_over_set(
+            state=operator_state,
+            node=operator_node(),
+            inputs={"candidates": relation_candidate_value(relation_records)},
+            parameters={
+                "selection_mode": typed_enum("argmin"),
+                "top_k": typed_number(1.0),
+                "value_field": typed_enum("candidate_distance_m"),
+                "value_unit": typed_enum("metre"),
+                "record_id_field": typed_enum("candidate_record_id"),
+                "entity_id_field": typed_enum("candidate_defender_id"),
+                "frame_field": typed_enum("candidate_frame_id"),
+                "anchor_id_field": typed_enum("source_anchor_id"),
+                "subject_id_field": typed_enum("target_player_id"),
+                "status_field": typed_enum("defender_distance_candidate_status"),
+                "required_status_value": typed_enum("PASS"),
+                "coverage_status_field": typed_enum("coverage_status"),
+                "coverage_policy": typed_enum("unknown_if_incomplete_could_change_answer"),
+                "value_bound_kind": typed_enum("lower"),
+                "value_bound": typed_number(0.0),
+                "tie_breaker_field": typed_enum("candidate_defender_id"),
+                "secondary_tie_breaker_field": typed_enum("candidate_record_id"),
+                "missing_evidence_policy": typed_enum("unknown"),
+            },
+        )
+        selected = {
+            record["source_anchor_id"]: record["selected_entity_id"]
+            for record in operator_state.signals["extremum"]["extremum_selection_records"]
+        }
+
+        self.assertEqual("away-near", selected["home-anchor"])
+        self.assertEqual("home-near", selected["away-anchor"])
 
     def test_binder_rejects_unbound_operator_field_parameter(self) -> None:
         payload = json.loads(PLAN_PATH.read_text(encoding="utf-8"))
