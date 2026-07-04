@@ -565,6 +565,11 @@ class Binder:
             resolved_parameters=resolved_node_parameters,
             path=path,
         )
+        self._validate_declared_join_constraints(
+            signature=signature,
+            resolved_parameters=resolved_node_parameters,
+            path=path,
+        )
         outputs = self._bind_operator_outputs(node=node, signature=signature, path=path)
         if (signature.name, signature.version) not in self.composition_operator_registry:
             self._issue(
@@ -739,6 +744,85 @@ class Binder:
                     ),
                     f"{path}.parameters.{parameter.name}",
                 )
+
+    def _validate_declared_join_constraints(
+        self,
+        *,
+        signature: CompositionOperatorSignature,
+        resolved_parameters: dict[str, TypedValue],
+        path: str,
+    ) -> None:
+        parameter_names = {parameter.name for parameter in signature.parameters}
+        join_parameter_names = {
+            "join_key",
+            "same_team_perspective_required",
+            "entity_identity_preserved_required",
+            "frame_alignment_required",
+            "unconstrained",
+            "unconstrained_rationale",
+        }
+        if not join_parameter_names.issubset(parameter_names):
+            return
+        same_team_required = _resolved_bool(resolved_parameters, "same_team_perspective_required")
+        entity_required = _resolved_bool(resolved_parameters, "entity_identity_preserved_required")
+        frame_required = _resolved_bool(resolved_parameters, "frame_alignment_required")
+        unconstrained = _resolved_bool(resolved_parameters, "unconstrained")
+        rationale = _resolved_text(resolved_parameters, "unconstrained_rationale", "none")
+        if not any((same_team_required, entity_required, frame_required)) and not unconstrained:
+            self._issue(
+                "operator_join_constraints_missing",
+                "join composition must declare at least one enforced constraint or an unconstrained rationale",
+                f"{path}.parameters",
+            )
+        if unconstrained and rationale == "none":
+            self._issue(
+                "operator_join_unconstrained_rationale_missing",
+                "unconstrained join composition requires a rationale",
+                f"{path}.parameters.unconstrained_rationale",
+            )
+        join_key = _resolved_text(resolved_parameters, "join_key", "")
+        required_fields_by_key = {
+            "same_anchor": ("left_anchor_id_field", "right_anchor_id_field"),
+            "same_frame_window": ("left_frame_field", "right_frame_field"),
+            "same_entity": ("left_entity_id_field", "right_entity_id_field"),
+            "episode_overlap": (
+                "left_start_frame_field",
+                "left_end_frame_field",
+                "right_start_frame_field",
+                "right_end_frame_field",
+            ),
+        }
+        for field_parameter in required_fields_by_key.get(join_key, ()):
+            if _resolved_text(resolved_parameters, field_parameter, "none") == "none":
+                self._issue(
+                    "operator_join_key_field_missing",
+                    f"{join_key} join requires declared {field_parameter}",
+                    f"{path}.parameters.{field_parameter}",
+                )
+        if same_team_required:
+            for field_parameter in ("left_team_role_field", "right_team_role_field"):
+                if _resolved_text(resolved_parameters, field_parameter, "none") == "none":
+                    self._issue(
+                        "operator_join_constraint_field_missing",
+                        f"same-team-perspective constraint requires declared {field_parameter}",
+                        f"{path}.parameters.{field_parameter}",
+                    )
+        if entity_required:
+            for field_parameter in ("left_entity_id_field", "right_entity_id_field"):
+                if _resolved_text(resolved_parameters, field_parameter, "none") == "none":
+                    self._issue(
+                        "operator_join_constraint_field_missing",
+                        f"entity-identity constraint requires declared {field_parameter}",
+                        f"{path}.parameters.{field_parameter}",
+                    )
+        if frame_required:
+            for field_parameter in ("left_frame_field", "right_frame_field"):
+                if _resolved_text(resolved_parameters, field_parameter, "none") == "none":
+                    self._issue(
+                        "operator_join_constraint_field_missing",
+                        f"frame-alignment constraint requires declared {field_parameter}",
+                        f"{path}.parameters.{field_parameter}",
+                    )
 
     def _bind_operator_outputs(
         self,
@@ -1308,6 +1392,24 @@ def bind_error_codes(error: BindError) -> set[str]:
 
 def validation_error_codes(error: ValidationError) -> set[str]:
     return {str(issue["type"]) for issue in error.errors()}
+
+
+def _resolved_bool(
+    parameters: dict[str, TypedValue],
+    name: str,
+    default: bool = False,
+) -> bool:
+    value = parameters.get(name)
+    return default if value is None else bool(value.value)
+
+
+def _resolved_text(
+    parameters: dict[str, TypedValue],
+    name: str,
+    default: str = "",
+) -> str:
+    value = parameters.get(name)
+    return default if value is None else str(value.value)
 
 
 def _has_anchor_evaluation_coverage(output: CatalogOutput) -> bool:

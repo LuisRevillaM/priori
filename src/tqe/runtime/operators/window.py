@@ -24,15 +24,16 @@ from tqe.runtime.ir import (
     Unit,
     stable_hash,
 )
+from tqe.runtime.operators.typed_join import same_team_perspective_satisfied
 from tqe.runtime.values import FrameSignal, RuntimeValue
 
 
 WINDOW_MODE_VALUES = ("before", "after", "around", "trace_back_from_outcome")
 TRUNCATION_POLICY_VALUES = ("emit_with_flag", "unknown")
-CONTINUITY_POLICY_VALUES = ("fixed_duration", "same_possession", "same_team_control")
+CONTINUITY_POLICY_VALUES = ("fixed_duration", "same_possession")
 OVERLAP_POLICY_VALUES = ("preserve_all",)
 TEAM_BINDING_POLICY_VALUES = ("none", "equal_team_role")
-CONTINUITY_OVERLAP_POLICY_VALUES = ("latest_start", "unknown_on_ambiguous")
+CONTINUITY_OVERLAP_POLICY_VALUES = ("latest_start_covering_anchor", "unknown_on_ambiguous")
 STATUS_VALUE_VALUES = ("PASS", "FAIL", "UNKNOWN")
 EVIDENCE_FIELDS = [
     "window_status",
@@ -269,7 +270,7 @@ WINDOW_SIGNATURE = CompositionOperatorSignature(
             name="continuity_overlap_policy",
             payload_type=PayloadType.ENUM,
             required=False,
-            default=TypedValue(payload_type=PayloadType.ENUM, value="latest_start"),
+            default=TypedValue(payload_type=PayloadType.ENUM, value="latest_start_covering_anchor"),
             allowed_values=list(CONTINUITY_OVERLAP_POLICY_VALUES),
             description="Declared policy when multiple continuity records cover the anchor.",
         ),
@@ -287,7 +288,7 @@ WINDOW_SIGNATURE = CompositionOperatorSignature(
     limitations=[
         "Windows are derived from declared anchor frames and declared durations only.",
         "Boundary truncation is recorded and either emitted or UNKNOWN according to truncation_policy.",
-        "same_possession and same_team_control use supplied continuity intervals only; missing coverage is UNKNOWN.",
+        "same_possession uses supplied continuity intervals only; missing coverage is UNKNOWN.",
         "Continuity-backed policies require declared team-role fields and equal team-role binding.",
         "trace_back_from_outcome bounds the preceding window by continuity evidence and does not infer causation.",
     ],
@@ -325,7 +326,7 @@ def execute_window(
     anchor_team_role_field = _parameter_enum(parameters, "anchor_team_role_field", "none")
     continuity_team_role_field = _parameter_enum(parameters, "continuity_team_role_field", "none")
     team_binding_policy = _parameter_enum(parameters, "team_binding_policy", "none")
-    continuity_overlap_policy = _parameter_enum(parameters, "continuity_overlap_policy", "latest_start")
+    continuity_overlap_policy = _parameter_enum(parameters, "continuity_overlap_policy", "latest_start_covering_anchor")
     overlap_policy = _parameter_enum(parameters, "overlap_policy", "preserve_all")
 
     if frame_rate_hz <= 0:
@@ -502,6 +503,8 @@ def _window_record(
     )
     bounded_start = int(requested_start)
     bounded_end = int(requested_end)
+    continuity_evaluation_start = max(int(requested_start), int(period_start_frame_id))
+    continuity_evaluation_end = min(int(requested_end), int(period_end_frame_id))
     if int(source_anchor_frame_id) < int(period_start_frame_id) or int(source_anchor_frame_id) > int(period_end_frame_id):
         bounded_start = bounded_end = min(
             max(int(source_anchor_frame_id), int(period_start_frame_id)),
@@ -572,8 +575,8 @@ def _window_record(
         continuity, continuity_status, continuity_reason = _continuity_decision(
             continuity_records=continuity_records,
             anchor_frame_id=int(source_anchor_frame_id),
-            requested_start=bounded_start,
-            requested_end=bounded_end,
+            requested_start=continuity_evaluation_start,
+            requested_end=continuity_evaluation_end,
             window_mode=window_mode,
             continuity_start_field=continuity_start_field,
             continuity_end_field=continuity_end_field,
@@ -604,7 +607,7 @@ def _window_record(
                         if continuity_bounded_start != bounded_start or continuity_bounded_end != bounded_end:
                             continuity_reason = "trace_back_bounded_by_continuity"
                         bounded_start, bounded_end = continuity_bounded_start, continuity_bounded_end
-                elif continuity_start > bounded_start or continuity_end < bounded_end:
+                elif continuity_start > continuity_evaluation_start or continuity_end < continuity_evaluation_end:
                     status = "FAIL"
                     reason = "continuity_break_inside_window"
                     continuity_status = "FAIL"
@@ -733,11 +736,16 @@ def _continuity_decision(
         if continuity_status_field != "none" and status != continuity_status_value:
             continue
         if start <= anchor_frame_id <= end:
-            record_team_role = _record_text(record, continuity_team_role_field)
-            if record_team_role is None:
+            same_team, _anchor_role, record_team_role = same_team_perspective_satisfied(
+                {"team_role": anchor_team_role},
+                record,
+                left_team_role_field="team_role",
+                right_team_role_field=continuity_team_role_field,
+            )
+            if same_team is None:
                 return record, "UNKNOWN", "continuity_team_field_missing"
             candidate = (int(start), int(end), stable_hash(record), record)
-            if record_team_role == anchor_team_role:
+            if same_team:
                 candidates.append(candidate)
             else:
                 mismatched_covering_candidates.append(candidate)

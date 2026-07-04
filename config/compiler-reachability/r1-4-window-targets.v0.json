@@ -89,7 +89,7 @@
             "anchor_team_role_field": "team_role",
             "continuity_team_role_field": "team_role",
             "team_binding_policy": "equal_team_role",
-            "continuity_overlap_policy": "latest_start",
+            "continuity_overlap_policy": "latest_start_covering_anchor",
             "overlap_policy": "preserve_all"
           }
         ],

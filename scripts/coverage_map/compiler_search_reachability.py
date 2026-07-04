@@ -1743,7 +1743,7 @@ def window_constraint_payload(constraint: dict[str, Any]) -> dict[str, Any]:
         "anchor_team_role_field": str(constraint.get("anchor_team_role_field", "none")),
         "continuity_team_role_field": str(constraint.get("continuity_team_role_field", "none")),
         "team_binding_policy": str(constraint.get("team_binding_policy", "none")),
-        "continuity_overlap_policy": str(constraint.get("continuity_overlap_policy", "latest_start")),
+        "continuity_overlap_policy": str(constraint.get("continuity_overlap_policy", "latest_start_covering_anchor")),
         "overlap_policy": str(constraint.get("overlap_policy", "preserve_all")),
     }
 
