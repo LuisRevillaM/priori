@@ -1,0 +1,49 @@
+{
+  "schema_version": "compiler_search_targets.v0",
+  "strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+  "sample_policy": "r1_1_project_onto_axis_acceptance",
+  "note": "R1-1 acceptance target. Concept id is a reporting label only; synthesis consumes the generic vector_projection constraint and evidence fields.",
+  "targets": [
+    {
+      "target_id": "r1_1_goalward_axis_projection_v0",
+      "concept": "support_depth",
+      "held_out": true,
+      "multi_step": true,
+      "target_contract": {
+        "desired_output": "classification",
+        "required_evidence": [
+          "axis_projection_status",
+          "axis_projection_reason",
+          "axis",
+          "source_start_point_field",
+          "source_end_point_field",
+          "source_start_point",
+          "source_end_point",
+          "signed_projection_m",
+          "angle_between_degrees",
+          "source_anchor_id",
+          "source_frame_id",
+          "witness_source_node_id",
+          "witness_source_output_name"
+        ],
+        "status_semantics": [
+          {
+            "field": "axis_projection_status",
+            "required_value": "PASS"
+          }
+        ],
+        "composition_constraints": [
+          {
+            "kind": "vector_projection",
+            "axis": "goalward",
+            "start_point_field": "release_ball_point",
+            "end_point_field": "reception_ball_point",
+            "required_source_status_field": "controlled_pass_status",
+            "required_source_status_value": "PASS"
+          }
+        ],
+        "claim_boundary": "Observed projection of a source point-pair onto a declared axis only; no support quality, intent, causation, pass probability, or decision value."
+      }
+    }
+  ]
+}
