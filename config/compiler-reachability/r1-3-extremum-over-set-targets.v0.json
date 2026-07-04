@@ -96,9 +96,7 @@
             "value_bound": 0.0,
             "tie_breaker_field": "candidate_defender_id",
             "secondary_tie_breaker_field": "candidate_record_id",
-            "missing_evidence_policy": "unknown",
-            "source_provider": "defender_distance_candidate_set",
-            "source_output": "anchor_evaluations"
+            "missing_evidence_policy": "unknown"
           }
         ],
         "claim_boundary": "Observed argmin selection over observed defender-target distance candidate records only; does not claim untracked defenders were farther away and does not infer marking assignment, pressure quality, defender intent, tactical causation, pass value, or optimality."

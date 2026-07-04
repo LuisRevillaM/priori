@@ -1344,8 +1344,6 @@ def extremum_over_set_constraint(constraint: dict[str, Any]) -> dict[str, Any]:
         "tie_breaker_field",
         "secondary_tie_breaker_field",
         "missing_evidence_policy",
-        "source_provider",
-        "source_output",
     }
     unapplied = sorted(key for key in constraint if key not in allowed_keys)
     if unapplied:
@@ -1373,8 +1371,6 @@ def extremum_over_set_constraint(constraint: dict[str, Any]) -> dict[str, Any]:
         "tie_breaker_field": required_extremum_constraint(constraint, "tie_breaker_field"),
         "secondary_tie_breaker_field": str(constraint.get("secondary_tie_breaker_field", "none")),
         "missing_evidence_policy": str(constraint.get("missing_evidence_policy", "unknown")),
-        "source_provider": str(constraint.get("source_provider", "")),
-        "source_output": str(constraint.get("source_output", "anchor_evaluations")),
     }
 
 
@@ -1394,8 +1390,6 @@ def extremum_over_set_candidates(
     constraint: dict[str, Any],
 ) -> list[dict[str, Any]]:
     operator_input = EXTREMUM_OVER_SET_SIGNATURE.inputs[0]
-    source_provider = str(constraint["source_provider"])
-    source_output = str(constraint["source_output"])
     source_required_fields = {
         str(constraint["value_field"]),
         str(constraint["record_id_field"]),
@@ -1415,14 +1409,10 @@ def extremum_over_set_candidates(
             source_required_fields.add(field_name)
     scored: list[tuple[int, str, str, CatalogEntry, CatalogOutput]] = []
     for entry in context.catalog.entries.values():
-        if source_provider and entry.name != source_provider:
-            continue
         fields = context.catalog.field_set(entry)
         if not source_required_fields.issubset(fields):
             continue
         for output in entry.outputs:
-            if source_output and output.name != source_output:
-                continue
             if not composition_output_matches_operator_input(output, operator_input):
                 continue
             output_fields = {output.name, *output.evidence_fields}
@@ -1430,8 +1420,6 @@ def extremum_over_set_candidates(
                 continue
             score = 0
             score += 25 * len(source_required_fields & output_fields)
-            if entry.name == source_provider:
-                score += 20
             scored.append((-score, entry.name, output.name, entry, output))
     return [
         {
@@ -2965,6 +2953,7 @@ def row_result(
         "target_contract_hash": target_contract_hash,
         "semantic_correspondence": target.get("semantic_correspondence"),
         "concept_name_used_as_hint": concept_name_used_as_hint(target),
+        "provider_name_used_as_hint": provider_name_used_as_hint(target),
         "gold_chain_used_as_input": False,
         "pattern_dispatch_used": False,
         "synthesizer_version": SYNTHESIZER_VERSION,
@@ -3050,6 +3039,8 @@ def build_report(
     findings: list[dict[str, str]] = []
     if any(result.get("concept_name_used_as_hint") for result in results):
         findings.append({"code": "concept_name_hint_used", "message": "A target used concept name inside the typed contract.", "path": "row_ledger"})
+    if any(result.get("provider_name_used_as_hint") for result in results):
+        findings.append({"code": "provider_name_hint_used", "message": "A target used a provider/catalog name inside the typed contract.", "path": "row_ledger"})
     if any(result.get("gold_chain_used_as_input") for result in results):
         findings.append({"code": "gold_chain_used_as_input", "message": "Coverage-map gold chain was consumed during synthesis.", "path": "row_ledger"})
     if any(result.get("pattern_dispatch_used") for result in results):
@@ -3089,6 +3080,7 @@ def build_report(
             "pattern_dispatch_allowed": False,
             "coverage_gold_chain_allowed_as_input": False,
             "concept_name_allowed_as_input": False,
+            "provider_name_allowed_as_input": False,
         },
         "search_budget": {
             "max_depth": MAX_DEPTH,
@@ -3188,6 +3180,30 @@ def concept_name_used_as_hint(target: dict[str, Any]) -> bool:
     concept = str(target["concept"]).lower()
     contract = json.dumps(target["target_contract"], sort_keys=True).lower()
     return concept in contract
+
+
+def provider_name_used_as_hint(target: dict[str, Any]) -> bool:
+    provider_names = {entry.name.lower() for entry in CatalogIndex().entries.values()}
+    for value in json_string_values(target.get("target_contract")):
+        if value.lower() in provider_names:
+            return True
+    return False
+
+
+def json_string_values(value: Any) -> list[str]:
+    if isinstance(value, str):
+        return [value]
+    if isinstance(value, dict):
+        values: list[str] = []
+        for child in value.values():
+            values.extend(json_string_values(child))
+        return values
+    if isinstance(value, list):
+        values = []
+        for child in value:
+            values.extend(json_string_values(child))
+        return values
+    return []
 
 
 def gold_chain_audit(row: dict[str, Any]) -> dict[str, Any]:
@@ -3364,7 +3380,9 @@ def relative_path(path: Path) -> str:
     try:
         return str(path.relative_to(ROOT))
     except ValueError:
-        return str(path)
+        if path.parent.name in {"out", "plans", "cache"}:
+            return f"<external>/{path.parent.name}/{path.name}"
+        return f"<external>/{path.name}"
 
 
 if __name__ == "__main__":

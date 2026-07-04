@@ -487,9 +487,10 @@ def _selection_records_for_anchor(
         tie_breaker_field=tie_breaker_field,
         secondary_tie_breaker_field=secondary_tie_breaker_field,
     )
-    selected_index, selected_record, selected_value = ranked[0]
+    coverage_decision_index = min(top_k, valid_count) - 1
+    coverage_decision_value = ranked[coverage_decision_index][2]
     selected_status, selected_reason = _coverage_decision(
-        selected_value=selected_value,
+        selected_value=coverage_decision_value,
         selection_mode=selection_mode,
         top_k=top_k,
         valid_count=valid_count,

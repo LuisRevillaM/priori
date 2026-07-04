@@ -217,6 +217,19 @@ class ExtremumOverSetTests(unittest.TestCase):
         self.assertEqual("incomplete_set_could_change_argmin", selected["extremum_selection_reason"])
         self.assertIsNone(selected["selected_entity_id"])
 
+    def test_top_k_coverage_decides_against_kth_ranked_value(self) -> None:
+        records = [
+            candidate(record_id="best", entity_id="def-best", value=0.0),
+            candidate(record_id="second", entity_id="def-second", value=3.0),
+            candidate(record_id="missing", entity_id="def-x", value=None, status="UNKNOWN", coverage="INCOMPLETE"),
+        ]
+
+        selected = run_extremum(records, top_k=2)["extremum_selection_records"][0]
+
+        self.assertEqual("UNKNOWN", selected["extremum_selection_status"])
+        self.assertEqual("incomplete_set_could_change_argmin", selected["extremum_selection_reason"])
+        self.assertIsNone(selected["selected_entity_id"])
+
     def test_top_k_larger_than_valid_set_is_unknown(self) -> None:
         selected = run_extremum(
             [
@@ -385,6 +398,35 @@ class ExtremumOverSetTests(unittest.TestCase):
             "defender_distance_candidate_set.anchor_evaluations + extremum_over_set argmin(candidate_distance_m)",
             target["semantic_correspondence"]["source_relation"],
         )
+
+    def test_search_synthesis_fails_on_provider_pinning_constraint_keys(self) -> None:
+        target = copy.deepcopy(json.loads(R1_3_TARGET_PATH.read_text(encoding="utf-8"))["targets"][0])
+        target["target_contract"]["composition_constraints"][1]["source_provider"] = "defender_distance_candidate_set"
+        target["target_contract"]["composition_constraints"][1]["source_output"] = "anchor_evaluations"
+        context = search.SearchContext(
+            catalog=search.CatalogIndex(),
+            target_contract=target["target_contract"],
+        )
+        required_fields = search.required_target_fields(target["target_contract"])
+
+        with self.assertRaises(search.SynthesisError) as raised:
+            search.build_operator_composition(context, required_fields, depth=0)
+
+        self.assertEqual("missing_constraint", raised.exception.taxonomy)
+        payload = json.dumps(raised.exception.details, sort_keys=True)
+        self.assertIn("unapplied_extremum_constraint_keys", payload)
+        self.assertIn("source_provider", payload)
+        self.assertIn("source_output", payload)
+
+    def test_provider_name_hint_guard_catches_constraint_value_channel(self) -> None:
+        payload = json.loads(R1_3_TARGET_PATH.read_text(encoding="utf-8"))
+        [target] = payload["targets"]
+        self.assertFalse(search.provider_name_used_as_hint(target))
+
+        hinted = copy.deepcopy(target)
+        hinted["target_contract"]["composition_constraints"][1]["source_provider"] = "defender_distance_candidate_set"
+
+        self.assertTrue(search.provider_name_used_as_hint(hinted))
 
 
 if __name__ == "__main__":
