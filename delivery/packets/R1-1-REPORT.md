@@ -157,3 +157,29 @@ and a generic `vector_projection` constraint, produced 20 J03WOY results with
 zero requested-evidence failures, and moved the copied coverage ledger from 7
 to 8 compiler-reachable rows. Full suite and the eight pinned gates pass on the
 committed tree.
+
+---
+
+# Round 2 Report - R1-1 Review Remediation
+
+Review: `delivery/packets/R1-1-REVIEW.md` on frontier commit `e109922`
+ADR addendum: `docs/adr/0013-r1-operator-era.md`, Addendum 2026-07-04.
+
+Round 1 was rejected on semantics/substance, not scaffolding conduct:
+
+- B1: goalward orientation used invocation perspective rather than acting team.
+- B2: `toward_point` fabricated a `(0,0)` fallback axis and lacked full axis tests.
+- B3: acceptance composition did not realize the ledger row's true
+  support-depth meaning and did not honestly report discovery space.
+
+## Round 2 Implementation Ledger
+
+| Step | Status | Evidence |
+| --- | --- | --- |
+| R2 report-first commit | IN_PROGRESS | This section is added before Round 2 implementation changes. |
+| Orientation basis remediation | PENDING | Not started. |
+| Axis semantics/tests | PENDING | Not started. |
+| Signature union/input validation | PENDING | Not started. |
+| True support-depth acceptance composition | PENDING | Not started. |
+| Reachability delta / discovery-space report | PENDING | Not started. |
+| Full suite and pinned gates | PENDING | Not started. |
