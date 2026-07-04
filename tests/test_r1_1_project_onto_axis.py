@@ -325,7 +325,7 @@ def support_depth_document() -> dict[str, object]:
                 {
                     "kind": "relation",
                     "node_id": "support_arrival",
-                    "catalog_ref": "support_arrival_relation",
+                    "catalog_ref": "support_arrival_point_pair",
                     "version": "0.1.0",
                     "inputs": {
                         "anchors": {
@@ -391,7 +391,7 @@ def support_depth_document() -> dict[str, object]:
                         "orientation_basis": {"payload_type": "enum", "value": "acting_team"},
                         "required_source_status_field": {
                             "payload_type": "enum",
-                            "value": "support_arrival_status",
+                            "value": "support_point_pair_status",
                         },
                         "required_source_status_value": {
                             "payload_type": "enum",

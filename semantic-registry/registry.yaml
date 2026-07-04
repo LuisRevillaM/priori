@@ -1634,6 +1634,12 @@ implementations:
     description: Current observed geometric support-arrival implementation.
     implements: [op.observed_geometric_support_arrival.v1]
     source_refs: [src/tqe/runtime/support_arrival.py, src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+  - id: impl.support_arrival_point_pair.python.v1
+    kind: Implementation
+    display_name: Support Arrival Point Pair Python Implementation
+    description: Additive observed support-arrival point-pair view for projection operators.
+    implements: [op.observed_geometric_support_arrival.v1]
+    source_refs: [src/tqe/runtime/support_arrival.py, src/tqe/runtime/capabilities/offball_family.py, src/tqe/runtime/catalog.py]
   - id: impl.local_number_relation.python.v1
     kind: Implementation
     display_name: Local Number Relation Python Implementation
@@ -2479,6 +2485,82 @@ runtime_bindings:
     output_bindings:
       anchor_evaluations: {runtime_port: anchor_evaluations}
       support_arrival_status: {runtime_port: support_arrival_status}
+    semantic_parameters:
+      - name: anchor_frame_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: controlled_reception_frame_id, unit: none}
+        allowed_values: [controlled_reception_frame_id, anchor_frame_id]
+      - name: candidate_scope
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: perspective_outfield, unit: none}
+        allowed_values: [perspective_outfield, defending_outfield]
+      - name: support_region_mode
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: WITHIN_DISTANCE_OF_REFERENCE_POINT, unit: none}
+        allowed_values: [WITHIN_DISTANCE_OF_REFERENCE_POINT, BEHIND_BALL_OUTLET, AHEAD_OF_BALL_OPTION]
+      - name: maximum_arrival_seconds
+        type: {container: Scalar, value: Scalar, unit: second}
+        required: false
+        default: {payload_type: number, value: 2.0, unit: second}
+        minimum: 0.0
+        maximum: 10.0
+      - name: minimum_duration_seconds
+        type: {container: Scalar, value: Scalar, unit: second}
+        required: false
+        default: {payload_type: number, value: 0.4, unit: second}
+        minimum: 0.0
+        maximum: 5.0
+      - name: maximum_support_distance_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 8.0, unit: metre}
+        minimum: 0.5
+        maximum: 30.0
+      - name: minimum_supporting_players
+        type: {container: Scalar, value: Scalar, unit: count}
+        required: false
+        default: {payload_type: number, value: 1, unit: count}
+        minimum: 1.0
+        maximum: 10.0
+      - name: required_anchor_status_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: none, unit: none}
+        allowed_values: [none, line_break_status, receiver_line_transition_status]
+      - name: required_anchor_status_value
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: PASS, unit: none}
+        allowed_values: [PASS, FAIL, UNKNOWN]
+    parameter_bindings:
+      anchor_frame_field: anchor_frame_field
+      candidate_scope: candidate_scope
+      support_region_mode: support_region_mode
+      maximum_arrival_seconds: maximum_arrival_seconds
+      minimum_duration_seconds: minimum_duration_seconds
+      maximum_support_distance_m: maximum_support_distance_m
+      minimum_supporting_players: minimum_supporting_players
+      required_anchor_status_field: required_anchor_status_field
+      required_anchor_status_value: required_anchor_status_value
+
+  - id: binding.relation.support_arrival_point_pair.0_1_0
+    kind: RuntimeBinding
+    display_name: support_arrival_point_pair runtime binding
+    description: Canonical runtime binding for support_arrival_point_pair 0.1.0.
+    runtime_capability: {id: support_arrival_point_pair, version: 0.1.0, kind: relation}
+    implementation_ref: impl.support_arrival_point_pair.python.v1
+    implements: [op.observed_geometric_support_arrival.v1]
+    conformance_status: PARTIAL
+    known_deviations: [Exposes the observed first-supporter point pair for projection operators and does not prove tactical intent or support quality.]
+    input_bindings:
+      anchors: {source: NODE_INPUT, runtime_port: anchors}
+      observed_candidate_positions: {source: RUNTIME_CONTEXT, context_ref: canonical_match_state.outfield_positions}
+    output_bindings:
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+      support_arrival_status: {runtime_port: support_point_pair_status}
     semantic_parameters:
       - name: anchor_frame_field
         type: {container: Scalar, value: Enum, unit: none}
@@ -4688,6 +4770,13 @@ exposure_policies:
     subject_ref: runtime:relation:support_arrival_relation:0.1.0
     ai_compiler: ALLOWED
     product: ALLOWED
+  - id: exposure.runtime.support_arrival_point_pair.0_1_0
+    kind: ExposurePolicy
+    display_name: support_arrival_point_pair exposure
+    description: Exposure policy for support_arrival_point_pair.
+    subject_ref: runtime:relation:support_arrival_point_pair:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
   - id: exposure.runtime.local_number_relation.0_1_0
     kind: ExposurePolicy
     display_name: local_number_relation exposure
@@ -5093,6 +5182,12 @@ projection_policies:
         permitted_fields: []
         rationale: Verified Hermes-authored composition is intentionally new relative to the model-visible knowledge-pack baseline.
         review_condition: Remove or update this waiver when the AI baseline intentionally includes the composition.
+      - subject_ref: runtime:relation:support_arrival_point_pair:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: e1ce6791d966b81241383b871eeb4bff9596f6c6c84cc9d93217c7bcd49a95b8
+        permitted_fields: []
+        rationale: R1-1 adds a support-arrival point-pair view for projection operators without changing the legacy support-arrival relation contract.
+        review_condition: Remove or update this waiver when the model-visible baseline intentionally includes the support-arrival point-pair view.
       - subject_ref: runtime:primitive:acceleration:0.1.0
         difference_kind: REMOVED
         baseline_contract_hash: 8044338ee752d7de324f50f6913f20afe30a5dd313d277d712733cd8bb11d49f
@@ -5147,13 +5242,6 @@ projection_policies:
         permitted_fields: []
         rationale: Team press is Hermes-authorable substrate (agent exposure is still blocklist-gated, audit finding V5) but is intentionally denied from the AI projection pending exposure review.
         review_condition: Remove this waiver when the capability passes exposure review and enters the AI projection, or when Hermes exposure becomes registry-driven.
-      - subject_ref: runtime:relation:support_arrival_relation:0.1.0
-        difference_kind: CONTRACT_CHANGED
-        baseline_contract_hash: 5f4bd59cc6e4d71348dcaff1f0e7767e57fd835d230a54bfe4b938c3b22e314d
-        projection_contract_hash: c001b14f25fda30968681b16aefe78c1ab1bd93217537fb8456b94b078472b9b
-        permitted_fields: [evidence_fields, outputs, parameters]
-        rationale: R1-1 exposes existing support-arrival first-supporter point evidence and permits controlled_pass_status gating so support-depth can be composed truthfully.
-        review_condition: Re-review if the support-arrival runtime contract changes beyond the R1-1 support-depth fields or controlled-pass status gate.
       - subject_ref: recipe:line_break_support_response_v1:0.1.0
         difference_kind: CONTRACT_CHANGED
         baseline_contract_hash: a0a83061005860a3212d895055edce154c0b82c035b637c185d330d34f07424e
@@ -5304,6 +5392,16 @@ maturity_assessments:
     display_name: support_arrival_relation maturity
     description: Maturity assessment for support_arrival_relation.
     subject_ref: runtime:relation:support_arrival_relation:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.runtime.support_arrival_point_pair.0_1_0
+    kind: MaturityAssessment
+    display_name: support_arrival_point_pair maturity
+    description: Maturity assessment for support_arrival_point_pair.
+    subject_ref: runtime:relation:support_arrival_point_pair:0.1.0
     semantic: REVIEWED
     implementation: IMPLEMENTED
     validation: VERIFIED

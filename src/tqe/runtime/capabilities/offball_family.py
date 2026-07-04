@@ -321,6 +321,67 @@ def relation_support_arrival(state: PeriodState, node: BoundCatalogNode) -> None
         ),
         "support_arrival_status_records": records,
     }
+
+
+def relation_support_arrival_point_pair(state: PeriodState, node: BoundCatalogNode) -> None:
+    anchor_value = catalog_input_value(state, node, "anchors")
+    anchor_records = anchor_value.value
+    if not isinstance(anchor_records, list):
+        raise RuntimeError(f"{node.node_id} requires anchor records")
+    anchor_frame_field = node_parameter_text(node, "anchor_frame_field")
+    candidate_scope = node_parameter_text(node, "candidate_scope")
+    support_region_mode = node_parameter_text(node, "support_region_mode")
+    maximum_arrival_seconds = node_parameter_number(node, "maximum_arrival_seconds")
+    minimum_duration_seconds = node_parameter_number(node, "minimum_duration_seconds")
+    maximum_support_distance_m = node_parameter_number(node, "maximum_support_distance_m")
+    minimum_supporting_players = node_parameter_integer(node, "minimum_supporting_players")
+    required_anchor_status_field = node_parameter_text(node, "required_anchor_status_field")
+    required_anchor_status_value = node_parameter_text(node, "required_anchor_status_value")
+    orientation = parquet_rows(state.canonical_root / "orientation.parquet")
+    attack_x_sign = attack_x_sign_for(
+        orientation,
+        state.match_id,
+        state.period,
+        state.perspective_team_role,
+    )
+    records = [
+        support_arrival_point_pair_record(
+            state=state,
+            anchor=anchor,
+            anchor_frame_field=anchor_frame_field,
+            candidate_scope=candidate_scope,
+            support_region_mode=support_region_mode,
+            maximum_arrival_seconds=maximum_arrival_seconds,
+            minimum_duration_seconds=minimum_duration_seconds,
+            maximum_support_distance_m=maximum_support_distance_m,
+            minimum_supporting_players=minimum_supporting_players,
+            required_anchor_status_field=required_anchor_status_field,
+            required_anchor_status_value=required_anchor_status_value,
+            attack_x_sign=attack_x_sign,
+        )
+        for anchor in anchor_records
+        if isinstance(anchor, dict)
+    ]
+    records = [record for record in records if record is not None]
+    frame_ids = [int(record["anchor_frame_id"]) for record in records]
+    status_values = [
+        None if str(record["support_point_pair_status"]) == "UNKNOWN" else str(record["support_point_pair_status"])
+        for record in records
+    ]
+    state.signals[node.node_id] = {
+        "anchor_evaluations": records,
+        "anchor_evaluations_records": records,
+        "support_point_pair_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=status_values,
+            unknown_mask=[value is None for value in status_values],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "support_point_pair_status").entity_scope,
+        ),
+        "support_point_pair_status_records": records,
+    }
+
+
 def marking_anchor_record(
     *,
     state: PeriodState,
@@ -1113,7 +1174,6 @@ def support_arrival_anchor_record(
         ),
     )
     payload = evaluation.to_dict()
-    first_support = first_support_points(payload)
     return {
         **anchor,
         "match_id": state.match_id,
@@ -1143,11 +1203,8 @@ def support_arrival_anchor_record(
         "candidate_player_ids": list(payload["candidate_player_ids"]),
         "evaluated_candidate_player_ids": list(payload["evaluated_candidate_player_ids"]),
         "supporting_player_ids": list(payload["supporting_player_ids"]),
-        "first_supporter_id": first_support["player_id"],
         "first_arrival_frame_id": payload["first_arrival_frame_id"],
         "first_arrival_seconds_after_anchor": payload["first_arrival_seconds_after_anchor"],
-        "first_supporter_point": first_support["candidate_point"],
-        "first_support_reference_point": first_support["reference_point"],
         "support_duration_seconds": payload["support_duration_seconds"],
         "missing_candidate_player_ids": list(payload["missing_candidate_player_ids"]),
         "invalid_candidate_player_ids": list(payload["invalid_candidate_player_ids"]),
@@ -1164,6 +1221,64 @@ def support_arrival_anchor_record(
         "reference_player_id": payload["reference_player_id"],
         "reference_point": reference_point,
         "observed_candidate_record_count": len(candidate_positions),
+    }
+
+
+def support_arrival_point_pair_record(
+    *,
+    state: PeriodState,
+    anchor: dict[str, Any],
+    anchor_frame_field: str,
+    candidate_scope: str,
+    support_region_mode: str,
+    maximum_arrival_seconds: float,
+    minimum_duration_seconds: float,
+    maximum_support_distance_m: float,
+    minimum_supporting_players: int,
+    required_anchor_status_field: str,
+    required_anchor_status_value: str,
+    attack_x_sign: int | None,
+) -> dict[str, Any] | None:
+    record = support_arrival_anchor_record(
+        state=state,
+        anchor=anchor,
+        anchor_frame_field=anchor_frame_field,
+        candidate_scope=candidate_scope,
+        support_region_mode=support_region_mode,
+        maximum_arrival_seconds=maximum_arrival_seconds,
+        minimum_duration_seconds=minimum_duration_seconds,
+        maximum_support_distance_m=maximum_support_distance_m,
+        minimum_supporting_players=minimum_supporting_players,
+        required_anchor_status_field=required_anchor_status_field,
+        required_anchor_status_value=required_anchor_status_value,
+        attack_x_sign=attack_x_sign,
+    )
+    if record is None:
+        return None
+    first_support = first_support_points(record)
+    status = str(record.get("support_arrival_status") or "UNKNOWN")
+    if status == "UNKNOWN":
+        point_pair_status = "UNKNOWN"
+        point_pair_reason = "support_arrival_unknown"
+    elif status == "FAIL":
+        point_pair_status = "FAIL"
+        point_pair_reason = "support_arrival_failed"
+    elif not first_support.get("candidate_point") or not first_support.get("reference_point"):
+        point_pair_status = "UNKNOWN"
+        point_pair_reason = "first_support_point_missing"
+    elif not record.get("candidate_team_role"):
+        point_pair_status = "UNKNOWN"
+        point_pair_reason = "candidate_team_role_missing"
+    else:
+        point_pair_status = "PASS"
+        point_pair_reason = "first_support_point_pair_available"
+    return {
+        **record,
+        "support_point_pair_status": point_pair_status,
+        "support_point_pair_reason": point_pair_reason,
+        "first_supporter_id": first_support["player_id"],
+        "first_supporter_point": first_support["candidate_point"],
+        "first_support_reference_point": first_support["reference_point"],
     }
 
 
@@ -1236,11 +1351,8 @@ def support_arrival_prefilter_record(
         "candidate_player_ids": [],
         "evaluated_candidate_player_ids": [],
         "supporting_player_ids": [],
-        "first_supporter_id": None,
         "first_arrival_frame_id": None,
         "first_arrival_seconds_after_anchor": None,
-        "first_supporter_point": None,
-        "first_support_reference_point": None,
         "support_duration_seconds": 0.0,
         "missing_candidate_player_ids": [],
         "invalid_candidate_player_ids": [],
