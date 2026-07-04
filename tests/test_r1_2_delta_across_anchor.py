@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import copy
+import json
 import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
 
+from scripts.coverage_map import compiler_search_reachability as search
 from tqe.runtime.binder import BindError, bind_document
 from tqe.runtime.executor import TacticalQueryExecutor, execution_result_rows
 from tqe.runtime.ir import CatalogOutput, MissingDataSemantics, TacticalQueryDocument, TypedValue
@@ -13,6 +16,9 @@ from tqe.runtime.operators.delta_across_anchor import (
     execute_delta_across_anchor,
 )
 from tqe.runtime.values import RuntimeValue, canonical_anchor_record_id, runtime_value_from_raw
+
+
+R1_2_TARGET_PATH = Path("config/compiler-reachability/r1-2-delta-across-anchor-targets.v0.json")
 
 
 def typed_enum(value: str) -> TypedValue:
@@ -194,6 +200,69 @@ class DeltaAcrossAnchorTests(unittest.TestCase):
         self.assertEqual("none", evidence["before_status_field"])
         self.assertEqual("metre", evidence["value_unit"])
         self.assertIsInstance(evidence["signed_delta"], float)
+
+    def test_search_tool_field_exemption_is_signature_derived(self) -> None:
+        target = r1_2_target()
+        required_fields = search.required_target_fields(target["target_contract"])
+
+        self.assertEqual(
+            {
+                field
+                for output in DELTA_ACROSS_ANCHOR_SIGNATURE.outputs
+                for field in [output.name, *output.evidence_fields]
+            },
+            search.DELTA_ACROSS_ANCHOR_FIELDS,
+        )
+        self.assertTrue(required_fields <= search.operator_composition_fields(target["target_contract"], required_fields))
+
+    def test_search_synthesis_uses_generic_operator_composition(self) -> None:
+        target = r1_2_target()
+        context = search.SearchContext(
+            catalog=search.CatalogIndex(),
+            target_contract=target["target_contract"],
+        )
+        required_fields = search.required_target_fields(target["target_contract"])
+
+        build = search.build_operator_composition(context, required_fields, depth=0)
+
+        self.assertEqual("operator:delta_across_anchor", build.terminal_entry)
+        self.assertIn("generic_delta_across_anchor_operator", build.rules_used)
+        operator_nodes = [
+            node for node in build.nodes if node.get("kind") == "operator" and node.get("operator", {}).get("name") == "delta_across_anchor"
+        ]
+        self.assertEqual(1, len(operator_nodes))
+        parameters = operator_nodes[0]["parameters"]
+        self.assertEqual("nearest_defender_distance_m", parameters["before_value_field"]["value"])
+        self.assertEqual("nearest_defender_distance_m", parameters["after_value_field"]["value"])
+        self.assertEqual("physical_release_frame_id", build.metadata["delta_across_anchor_constraint"]["before_frame_field"])
+        self.assertEqual("controlled_reception_frame_id", build.metadata["delta_across_anchor_constraint"]["after_frame_field"])
+        pressure_nodes = [node for node in build.nodes if node.get("catalog_ref") == "pressure_on_carrier"]
+        self.assertEqual(2, len(pressure_nodes))
+        self.assertEqual(
+            ["controlled_reception_frame_id", "physical_release_frame_id"],
+            sorted(node["parameters"]["frame_field"]["value"] for node in pressure_nodes),
+        )
+
+    def test_search_synthesis_fails_on_unapplied_delta_constraint_key(self) -> None:
+        target = copy.deepcopy(r1_2_target())
+        target["target_contract"]["composition_constraints"][0]["unsupported_delta_key"] = "must_not_drop"
+        context = search.SearchContext(
+            catalog=search.CatalogIndex(),
+            target_contract=target["target_contract"],
+        )
+        required_fields = search.required_target_fields(target["target_contract"])
+
+        with self.assertRaises(search.SynthesisError) as error:
+            search.build_operator_composition(context, required_fields, depth=0)
+
+        self.assertEqual("missing_constraint", error.exception.taxonomy)
+        payload = json.dumps(error.exception.details, sort_keys=True)
+        self.assertIn("unapplied_delta_constraint_keys", payload)
+        self.assertIn("unsupported_delta_key", payload)
+
+
+def r1_2_target() -> dict[str, object]:
+    return json.loads(R1_2_TARGET_PATH.read_text(encoding="utf-8"))["targets"][0]
 
 
 def delta_pressure_document() -> dict[str, object]:
