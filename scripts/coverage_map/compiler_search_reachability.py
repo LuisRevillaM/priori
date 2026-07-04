@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import collections
 import concurrent.futures
+import copy
 import csv
 import gzip
 import json
@@ -44,6 +45,7 @@ from tqe.runtime.ir import (  # noqa: E402
 from tqe.runtime.operators.delta_across_anchor import DELTA_ACROSS_ANCHOR_SIGNATURE  # noqa: E402
 from tqe.runtime.operators.extremum_over_set import EXTREMUM_OVER_SET_SIGNATURE  # noqa: E402
 from tqe.runtime.operators.project_onto_axis import PROJECT_ONTO_AXIS_SIGNATURE  # noqa: E402
+from tqe.runtime.operators.window import WINDOW_SIGNATURE  # noqa: E402
 
 
 def repo_path(value: str | Path) -> Path:
@@ -77,6 +79,15 @@ MATCH_IDS = [
     for match_id in os.environ.get("TQE_SEARCH_MATCH_IDS", ",".join(DEFAULT_MATCH_IDS)).split(",")
     if match_id.strip()
 ]
+PERSPECTIVE_TEAM_ROLES = [
+    role.strip()
+    for role in os.environ.get("TQE_SEARCH_PERSPECTIVE_TEAM_ROLES", "home").split(",")
+    if role.strip()
+]
+if any(role not in {"home", "away"} for role in PERSPECTIVE_TEAM_ROLES):
+    raise ValueError("TQE_SEARCH_PERSPECTIVE_TEAM_ROLES must contain only home and/or away")
+if not PERSPECTIVE_TEAM_ROLES:
+    raise ValueError("TQE_SEARCH_PERSPECTIVE_TEAM_ROLES cannot be empty")
 
 SUPPORTED_MODALITIES = {"tracking", "events", "tracking_event_synchronized"}
 SUPPORTED_COMPOSITION_CONSTRAINT_KINDS = {
@@ -89,6 +100,7 @@ SUPPORTED_COMPOSITION_CONSTRAINT_KINDS = {
     "temporal_order",
     "delta_across_anchor",
     "extremum_over_set",
+    "window",
     "vector_projection",
 }
 EXCLUDED_CATALOG_REFS = {
@@ -463,9 +475,11 @@ def declared_operator_fields(signature: Any) -> set[str]:
 PROJECT_ONTO_AXIS_FIELDS = declared_operator_fields(PROJECT_ONTO_AXIS_SIGNATURE)
 DELTA_ACROSS_ANCHOR_FIELDS = declared_operator_fields(DELTA_ACROSS_ANCHOR_SIGNATURE)
 EXTREMUM_OVER_SET_FIELDS = declared_operator_fields(EXTREMUM_OVER_SET_SIGNATURE)
+WINDOW_FIELDS = declared_operator_fields(WINDOW_SIGNATURE)
 OPERATOR_SIGNATURES_BY_CONSTRAINT_KIND = {
     "delta_across_anchor": DELTA_ACROSS_ANCHOR_SIGNATURE,
     "extremum_over_set": EXTREMUM_OVER_SET_SIGNATURE,
+    "window": WINDOW_SIGNATURE,
     "vector_projection": PROJECT_ONTO_AXIS_SIGNATURE,
 }
 OPERATOR_FIELDS_BY_CONSTRAINT_KIND = {
@@ -560,11 +574,12 @@ def evaluate_target(
             failure_details=error.details,
         )
 
-    plan_path = PLAN_DIR / f"{target['target_id']}.json"
-    plan_path.write_text(json.dumps(build["document"], indent=2, sort_keys=True) + "\n", encoding="utf-8")
     try:
-        document = TacticalQueryDocument.model_validate(build["document"])
-        bound = bind_document(document)
+        execution, rows, document_payload = execute_build_for_perspectives(
+            build=build,
+            executor=executor,
+            target_id=target["target_id"],
+        )
     except (BindError, ValueError) as error:
         return row_result(
             target=target,
@@ -576,9 +591,6 @@ def evaluate_target(
             document_payload=build["document"],
             build=build,
         )
-
-    try:
-        execution = executor.execute(bound)
     except Exception as error:  # pragma: no cover - exact failure is serialized.
         return row_result(
             target=target,
@@ -591,7 +603,6 @@ def evaluate_target(
             build=build,
         )
 
-    rows = execution_result_rows(execution)
     evidence_failures = int(execution.provenance.get("requested_evidence_failure_count") or 0)
     if execution.status != ExecutionStatus.PASS or evidence_failures != 0:
         return row_result(
@@ -601,7 +612,7 @@ def evaluate_target(
             failure_taxonomy="runtime_gap",
             message="Discovered plan did not execute with complete requested evidence.",
             target_contract_hash=target_hash,
-            document_payload=build["document"],
+            document_payload=document_payload,
             build=build,
             execution=execution,
             rows=rows,
@@ -614,10 +625,104 @@ def evaluate_target(
         failure_taxonomy=None,
         message="Bounded backward search discovered a reusable executable plan from the typed target contract.",
         target_contract_hash=target_hash,
-        document_payload=build["document"],
+        document_payload=document_payload,
         build=build,
         execution=execution,
         rows=rows,
+    )
+
+
+@dataclass
+class CombinedExecution:
+    status: ExecutionStatus
+    provenance: dict[str, Any]
+
+
+def execute_build_for_perspectives(
+    *,
+    build: dict[str, Any],
+    executor: TacticalQueryExecutor,
+    target_id: str,
+) -> tuple[CombinedExecution, list[dict[str, Any]], dict[str, Any]]:
+    role_documents: dict[str, dict[str, Any]] = {}
+    role_traces: dict[str, str | None] = {}
+    role_statuses: dict[str, str] = {}
+    role_counts: dict[str, int] = {}
+    node_cache: collections.Counter[str] = collections.Counter()
+    rows: list[dict[str, Any]] = []
+    evidence_failures = 0
+    runtime_value_count = 0
+    for role in PERSPECTIVE_TEAM_ROLES:
+        document_payload = copy.deepcopy(build["document"])
+        document_payload["default_invocation"]["perspective_team_role"] = role
+        if len(PERSPECTIVE_TEAM_ROLES) > 1:
+            document_payload["default_invocation"]["invocation_id"] = f"{target_id}_{role}_probe"
+        role_documents[role] = document_payload
+        document = TacticalQueryDocument.model_validate(document_payload)
+        bound = bind_document(document)
+        execution = executor.execute(bound)
+        role_rows = execution_result_rows(execution)
+        for item in role_rows:
+            row = dict(item)
+            requested = dict(row.get("requested_evidence") or {})
+            requested["execution_perspective_team_role"] = role
+            row["requested_evidence"] = requested
+            row["execution_perspective_team_role"] = role
+            rows.append(row)
+        evidence_failures += int(execution.provenance.get("requested_evidence_failure_count") or 0)
+        runtime_value_count += int(execution.provenance.get("runtime_value_count") or 0)
+        role_traces[role] = execution.provenance.get("runtime_trace_hash")
+        role_statuses[role] = execution.status.value
+        role_counts[role] = len(role_rows)
+        cache = execution.provenance.get("node_cache")
+        if isinstance(cache, dict):
+            for key in ("hits", "local_hits", "shared_hits", "misses", "disabled", "bypassed"):
+                node_cache[key] += int(cache.get(key) or 0)
+    combined_status = (
+        ExecutionStatus.PASS
+        if all(status == ExecutionStatus.PASS.value for status in role_statuses.values())
+        else ExecutionStatus.FAIL
+    )
+    document_payload: dict[str, Any]
+    if len(role_documents) == 1:
+        document_payload = next(iter(role_documents.values()))
+    else:
+        document_payload = {
+            "schema_version": "compiler_search_perspective_bundle.v1",
+            "target_id": target_id,
+            "perspective_team_roles": PERSPECTIVE_TEAM_ROLES,
+            "documents": role_documents,
+        }
+    (PLAN_DIR / f"{target_id}.json").write_text(
+        json.dumps(document_payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    rows.sort(
+        key=lambda item: (
+            str(item.get("execution_perspective_team_role") or ""),
+            str(item.get("result_id") or ""),
+        )
+    )
+    return (
+        CombinedExecution(
+            status=combined_status,
+            provenance={
+                "requested_evidence_failure_count": evidence_failures,
+                "runtime_trace_hash": stable_hash(
+                    {
+                        "perspective_team_roles": PERSPECTIVE_TEAM_ROLES,
+                        "role_traces": role_traces,
+                    }
+                ),
+                "runtime_value_count": runtime_value_count,
+                "node_cache": dict(sorted(node_cache.items())),
+                "perspective_team_roles": PERSPECTIVE_TEAM_ROLES,
+                "perspective_statuses": role_statuses,
+                "perspective_result_counts": role_counts,
+            },
+        ),
+        rows,
+        document_payload,
     )
 
 
@@ -965,6 +1070,10 @@ def delta_across_anchor_output_for_field(field: str) -> str:
 
 def extremum_over_set_output_for_field(field: str) -> str:
     return operator_output_for_field(EXTREMUM_OVER_SET_SIGNATURE, field)
+
+
+def window_output_for_field(field: str) -> str:
+    return operator_output_for_field(WINDOW_SIGNATURE, field)
 
 
 def operator_output_for_field(signature: Any, field: str) -> str:
@@ -1431,6 +1540,315 @@ def extremum_over_set_candidates(
     ]
 
 
+def build_window_operator(
+    context: SearchContext,
+    required_fields: set[str],
+    *,
+    depth: int,
+) -> BuildResult:
+    constraint = first_target_constraint(context, "window")
+    window_constraint = window_constraint_payload(constraint)
+    attempts: list[dict[str, Any]] = []
+    candidates = window_candidates(context, window_constraint)
+    candidate_summaries = [
+        {
+            "anchor_provider": candidate["anchor_entry"].name,
+            "anchor_output": candidate["anchor_output"].name,
+            "continuity_provider": None
+            if candidate["continuity_entry"] is None
+            else candidate["continuity_entry"].name,
+            "continuity_output": None
+            if candidate["continuity_output"] is None
+            else candidate["continuity_output"].name,
+            "anchor_required_fields": candidate["anchor_required_fields"],
+            "continuity_required_fields": candidate["continuity_required_fields"],
+        }
+        for candidate in candidates
+    ]
+    for candidate in candidates[: context.max_branching]:
+        try:
+            anchor = build_entry(
+                context,
+                candidate["anchor_entry"],
+                set(candidate["anchor_required_fields"]),
+                depth=depth + 1,
+                input_context={},
+            )
+            continuity = None
+            if candidate["continuity_entry"] is not None:
+                continuity = build_entry(
+                    context,
+                    candidate["continuity_entry"],
+                    set(candidate["continuity_required_fields"]),
+                    depth=depth + 1,
+                    input_context={},
+                )
+            missing_anchor_fields = sorted(
+                field for field in candidate["anchor_required_fields"] if field not in anchor.field_sources
+            )
+            missing_continuity_fields = []
+            if continuity is not None:
+                missing_continuity_fields = sorted(
+                    field for field in candidate["continuity_required_fields"] if field not in continuity.field_sources
+                )
+            if missing_anchor_fields or missing_continuity_fields:
+                raise SynthesisError(
+                    "missing_constraint",
+                    "Window composition did not cover declared anchor/continuity fields.",
+                    {
+                        "missing_anchor_fields": missing_anchor_fields,
+                        "missing_continuity_fields": missing_continuity_fields,
+                    },
+                )
+            node_id = context.node_id("window")
+            nodes = [*anchor.nodes]
+            node_inputs = {"anchors": ref(anchor.terminal_node_id, candidate["anchor_output"].name)}
+            providers_used = [*anchor.providers_used]
+            rules_used = [*anchor.rules_used]
+            field_sources = {**anchor.field_sources}
+            metadata: dict[str, Any] = {
+                "window_discovery_space_count": len(candidates),
+                "window_candidate_outputs": candidate_summaries,
+                "window_selected_output": {
+                    "anchor_provider": candidate["anchor_entry"].name,
+                    "anchor_output": candidate["anchor_output"].name,
+                    "continuity_provider": None
+                    if candidate["continuity_entry"] is None
+                    else candidate["continuity_entry"].name,
+                    "continuity_output": None
+                    if candidate["continuity_output"] is None
+                    else candidate["continuity_output"].name,
+                },
+                "window_constraint": window_constraint,
+                "anchor_build_metadata": anchor.metadata,
+            }
+            if continuity is not None:
+                nodes.extend(continuity.nodes)
+                node_inputs["continuity_evidence"] = ref(
+                    continuity.terminal_node_id,
+                    candidate["continuity_output"].name,
+                )
+                providers_used.extend(continuity.providers_used)
+                rules_used.extend(continuity.rules_used)
+                field_sources.update(continuity.field_sources)
+                metadata["continuity_build_metadata"] = continuity.metadata
+            nodes.append(
+                operator_node(
+                    node_id=node_id,
+                    operator_name="window",
+                    version="0.1.0",
+                    inputs=node_inputs,
+                    parameters={
+                        "window_mode": enum(window_constraint["window_mode"]),
+                        "anchor_frame_field": enum(window_constraint["anchor_frame_field"]),
+                        "before_duration_seconds": number(
+                            float(window_constraint["before_duration_seconds"]),
+                            "second",
+                        ),
+                        "after_duration_seconds": number(
+                            float(window_constraint["after_duration_seconds"]),
+                            "second",
+                        ),
+                        "frame_rate_hz": number(float(window_constraint["frame_rate_hz"]), "hertz"),
+                        "anchor_status_field": enum(window_constraint["anchor_status_field"]),
+                        "anchor_status_value": enum(window_constraint["anchor_status_value"]),
+                        "truncation_policy": enum(window_constraint["truncation_policy"]),
+                        "continuity_policy": enum(window_constraint["continuity_policy"]),
+                        "continuity_start_frame_field": enum(window_constraint["continuity_start_frame_field"]),
+                        "continuity_end_frame_field": enum(window_constraint["continuity_end_frame_field"]),
+                        "continuity_status_field": enum(window_constraint["continuity_status_field"]),
+                        "continuity_status_value": enum(window_constraint["continuity_status_value"]),
+                        "anchor_team_role_field": enum(window_constraint["anchor_team_role_field"]),
+                        "continuity_team_role_field": enum(window_constraint["continuity_team_role_field"]),
+                        "team_binding_policy": enum(window_constraint["team_binding_policy"]),
+                        "continuity_overlap_policy": enum(window_constraint["continuity_overlap_policy"]),
+                        "overlap_policy": enum(window_constraint["overlap_policy"]),
+                    },
+                )
+            )
+            for field in WINDOW_FIELDS:
+                field_sources.setdefault(field, (node_id, window_output_for_field(field)))
+            return BuildResult(
+                nodes=dedupe_nodes(nodes),
+                terminal_node_id=node_id,
+                terminal_entry="operator:window",
+                terminal_output="window_records",
+                field_sources=field_sources,
+                rules_used=[*rules_used, "generic_window_operator"],
+                providers_used=[*providers_used, "operator:window"],
+                metadata=metadata,
+            )
+        except SynthesisError as error:
+            attempts.append(
+                {
+                    "anchor_provider": candidate["anchor_entry"].name,
+                    "continuity_provider": None
+                    if candidate["continuity_entry"] is None
+                    else candidate["continuity_entry"].name,
+                    "taxonomy": error.taxonomy,
+                    "message": error.message,
+                    **error.details,
+                }
+            )
+    raise SynthesisError(
+        "missing_constraint",
+        "No typed anchor/continuity source satisfied window.",
+        {"attempted": attempts[: context.max_branching], "candidate_count": len(candidates)},
+    )
+
+
+def window_constraint_payload(constraint: dict[str, Any]) -> dict[str, Any]:
+    allowed_keys = {
+        "kind",
+        "window_mode",
+        "anchor_frame_field",
+        "before_duration_seconds",
+        "after_duration_seconds",
+        "frame_rate_hz",
+        "anchor_status_field",
+        "anchor_status_value",
+        "truncation_policy",
+        "continuity_policy",
+        "continuity_start_frame_field",
+        "continuity_end_frame_field",
+        "continuity_status_field",
+        "continuity_status_value",
+        "anchor_team_role_field",
+        "continuity_team_role_field",
+        "team_binding_policy",
+        "continuity_overlap_policy",
+        "overlap_policy",
+    }
+    unapplied = sorted(key for key in constraint if key not in allowed_keys)
+    if unapplied:
+        raise SynthesisError(
+            "missing_constraint",
+            "window supplied unsupported keys that synthesis cannot apply.",
+            {"unapplied_window_constraint_keys": unapplied},
+        )
+    return {
+        "window_mode": required_window_constraint(constraint, "window_mode"),
+        "anchor_frame_field": required_window_constraint(constraint, "anchor_frame_field"),
+        "before_duration_seconds": float(required_window_constraint(constraint, "before_duration_seconds")),
+        "after_duration_seconds": float(required_window_constraint(constraint, "after_duration_seconds")),
+        "frame_rate_hz": float(required_window_constraint(constraint, "frame_rate_hz")),
+        "anchor_status_field": str(constraint.get("anchor_status_field", "none")),
+        "anchor_status_value": str(constraint.get("anchor_status_value", "PASS")),
+        "truncation_policy": str(constraint.get("truncation_policy", "emit_with_flag")),
+        "continuity_policy": str(constraint.get("continuity_policy", "fixed_duration")),
+        "continuity_start_frame_field": str(constraint.get("continuity_start_frame_field", "none")),
+        "continuity_end_frame_field": str(constraint.get("continuity_end_frame_field", "none")),
+        "continuity_status_field": str(constraint.get("continuity_status_field", "none")),
+        "continuity_status_value": str(constraint.get("continuity_status_value", "PASS")),
+        "anchor_team_role_field": str(constraint.get("anchor_team_role_field", "none")),
+        "continuity_team_role_field": str(constraint.get("continuity_team_role_field", "none")),
+        "team_binding_policy": str(constraint.get("team_binding_policy", "none")),
+        "continuity_overlap_policy": str(constraint.get("continuity_overlap_policy", "latest_start")),
+        "overlap_policy": str(constraint.get("overlap_policy", "preserve_all")),
+    }
+
+
+def required_window_constraint(constraint: dict[str, Any], key: str) -> str:
+    value = constraint.get(key)
+    if value is None or str(value) == "" or str(value) == "none":
+        raise SynthesisError(
+            "missing_constraint",
+            f"window requires declared {key}; no provider-field default is allowed.",
+            {"missing_window_constraint_key": key},
+        )
+    return str(value)
+
+
+def window_candidates(context: SearchContext, constraint: dict[str, Any]) -> list[dict[str, Any]]:
+    operator_inputs = {item.name: item for item in WINDOW_SIGNATURE.inputs}
+    anchor_required_fields = {
+        str(constraint["anchor_frame_field"]),
+    }
+    if str(constraint["anchor_status_field"]) != "none":
+        anchor_required_fields.add(str(constraint["anchor_status_field"]))
+    continuity_policy = str(constraint["continuity_policy"])
+    continuity_required_fields: set[str] = set()
+    if continuity_policy != "fixed_duration":
+        anchor_required_fields.add(str(constraint["anchor_team_role_field"]))
+        continuity_required_fields.update(
+            {
+                str(constraint["continuity_start_frame_field"]),
+                str(constraint["continuity_end_frame_field"]),
+                str(constraint["continuity_team_role_field"]),
+            }
+        )
+        if str(constraint["team_binding_policy"]) != "equal_team_role":
+            raise SynthesisError(
+                "missing_constraint",
+                "window continuity policies require declared equal-team binding.",
+                {"continuity_policy": continuity_policy},
+            )
+        if "none" in continuity_required_fields or "none" in anchor_required_fields:
+            raise SynthesisError(
+                "missing_constraint",
+                "window continuity policies require declared continuity frame and team fields.",
+                {"continuity_policy": continuity_policy},
+            )
+        if str(constraint["continuity_status_field"]) != "none":
+            continuity_required_fields.add(str(constraint["continuity_status_field"]))
+    anchors = window_anchor_sources(context, anchor_required_fields, operator_inputs["anchors"])
+    continuity_sources = (
+        [(None, None)]
+        if continuity_policy == "fixed_duration"
+        else window_anchor_sources(context, continuity_required_fields, operator_inputs["continuity_evidence"])
+    )
+    candidates: list[tuple[int, str, str, str, dict[str, Any]]] = []
+    for anchor_entry, anchor_output in anchors:
+        anchor_fields = {anchor_output.name, *anchor_output.evidence_fields}
+        for continuity_entry, continuity_output in continuity_sources:
+            score = 20 * len(anchor_required_fields & anchor_fields)
+            continuity_name = ""
+            continuity_output_name = ""
+            if continuity_entry is not None and continuity_output is not None:
+                continuity_fields = {continuity_output.name, *continuity_output.evidence_fields}
+                score += 20 * len(continuity_required_fields & continuity_fields)
+                continuity_name = continuity_entry.name
+                continuity_output_name = continuity_output.name
+            candidates.append(
+                (
+                    -score,
+                    anchor_entry.name,
+                    anchor_output.name,
+                    continuity_name,
+                    {
+                        "anchor_entry": anchor_entry,
+                        "anchor_output": anchor_output,
+                        "continuity_entry": continuity_entry,
+                        "continuity_output": continuity_output,
+                        "anchor_required_fields": sorted(anchor_required_fields),
+                        "continuity_required_fields": sorted(continuity_required_fields),
+                    },
+                )
+            )
+    return [candidate for *_prefix, candidate in sorted(candidates)]
+
+
+def window_anchor_sources(
+    context: SearchContext,
+    required_fields: set[str],
+    input_def: Any,
+) -> list[tuple[CatalogEntry, CatalogOutput]]:
+    scored: list[tuple[int, str, str, CatalogEntry, CatalogOutput]] = []
+    for entry in context.catalog.entries.values():
+        fields = context.catalog.field_set(entry)
+        if not required_fields.issubset(fields):
+            continue
+        for output in entry.outputs:
+            if not composition_output_matches_operator_input(output, input_def):
+                continue
+            output_fields = {output.name, *output.evidence_fields}
+            if not required_fields.issubset(output_fields):
+                continue
+            score = 20 * len(required_fields & output_fields)
+            scored.append((-score, entry.name, output.name, entry, output))
+    return [(entry, output) for _score, _entry, _output, entry, output in sorted(scored)]
+
+
 def delta_across_anchor_candidates(
     context: SearchContext,
     constraint: dict[str, Any],
@@ -1526,6 +1944,7 @@ def delta_across_anchor_candidates(
 OPERATOR_COMPOSITION_BUILDERS = {
     "delta_across_anchor": build_delta_across_anchor_operator,
     "extremum_over_set": build_extremum_over_set_operator,
+    "window": build_window_operator,
     "vector_projection": build_project_onto_axis,
 }
 
@@ -2846,7 +3265,12 @@ def unsupported_composition_constraints(contract: dict[str, Any]) -> list[dict[s
     return unsupported
 
 
-def assemble_document(*, target: dict[str, Any], build: BuildResult) -> dict[str, Any]:
+def assemble_document(
+    *,
+    target: dict[str, Any],
+    build: BuildResult,
+    perspective_team_role: str | None = None,
+) -> dict[str, Any]:
     contract = target["target_contract"]
     predicates = predicates_for_contract(contract, build.field_sources)
     requested_evidence = [
@@ -2868,6 +3292,7 @@ def assemble_document(*, target: dict[str, Any], build: BuildResult) -> dict[str
         anchor_source=ref(build.terminal_node_id, build.terminal_output),
         requested_evidence=requested_evidence,
         claim_boundary=contract["claim_boundary"],
+        perspective_team_role=perspective_team_role or PERSPECTIVE_TEAM_ROLES[0],
     )
 
 
@@ -3081,6 +3506,7 @@ def build_report(
             "coverage_gold_chain_allowed_as_input": False,
             "concept_name_allowed_as_input": False,
             "provider_name_allowed_as_input": False,
+            "perspective_team_roles": PERSPECTIVE_TEAM_ROLES,
         },
         "search_budget": {
             "max_depth": MAX_DEPTH,
@@ -3277,6 +3703,7 @@ def document(
     anchor_source: dict[str, str],
     requested_evidence: list[dict[str, Any]],
     claim_boundary: str,
+    perspective_team_role: str,
 ) -> dict[str, Any]:
     recipe_id = f"search_{target_id}"
     return {
@@ -3305,7 +3732,7 @@ def document(
             "invocation_id": f"{target_id}_probe",
             "match_ids": MATCH_IDS,
             "periods": ["firstHalf", "secondHalf"],
-            "perspective_team_role": "home",
+            "perspective_team_role": perspective_team_role,
             "parameters": {},
             "max_results": 20,
             "execution_mode": "execute",

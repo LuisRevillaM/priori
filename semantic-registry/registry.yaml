@@ -1806,6 +1806,21 @@ runtime_bindings:
       episodes: {runtime_port: episodes}
       anchors: {runtime_port: anchors}
 
+  - id: binding.relation.possession_segment_team_keyed_episodes.0_1_0
+    kind: RuntimeBinding
+    display_name: possession_segment_team_keyed_episodes runtime binding
+    description: Internal runtime binding for the possession-segment team-key adapter used by team-bound window compositions.
+    runtime_capability: {id: possession_segment_team_keyed_episodes, version: 0.1.0, kind: relation}
+    implementation_ref: impl.possession_segment.python.v1
+    implements: [op.possession_segment_intervals.v1]
+    conformance_status: PARTIAL
+    known_deviations: [Internal adapter copies possession episodes and annotates the execution perspective team role; it does not introduce a new possession-control claim.]
+    output_bindings:
+      episodes: {runtime_port: episodes}
+    uncovered_runtime_inputs: [possession_segments]
+    uncovered_semantic_inputs: [canonical_match_state]
+    uncovered_semantic_outputs: [anchors]
+
   - id: binding.primitive.controlled_pass_episode.0_1_0
     kind: RuntimeBinding
     display_name: controlled_pass_episode runtime binding
@@ -1880,6 +1895,21 @@ runtime_bindings:
       minimum_receiver_dwell_seconds: minimum_receiver_dwell_seconds
       event_type_filter: event_type_filter
     uncovered_runtime_outputs: [episodes]
+
+  - id: binding.relation.controlled_pass_team_keyed_anchors.0_1_0
+    kind: RuntimeBinding
+    display_name: controlled_pass_team_keyed_anchors runtime binding
+    description: Internal runtime binding for the controlled-pass team-key adapter used by team-bound window compositions.
+    runtime_capability: {id: controlled_pass_team_keyed_anchors, version: 0.1.0, kind: relation}
+    implementation_ref: impl.controlled_pass_episode.python.v1
+    implements: [op.event_seeded_tracking_confirmed_pass.v1]
+    conformance_status: PARTIAL
+    known_deviations: [Internal adapter copies controlled-pass anchors and exposes the provider event team role; it does not re-evaluate pass control or introduce a new ball-transfer claim.]
+    output_bindings:
+      anchors: {runtime_port: anchors}
+    uncovered_runtime_inputs: [controlled_pass_anchors]
+    uncovered_semantic_inputs: [candidate_pass_events, tracking_window]
+    uncovered_semantic_outputs: [controlled_pass_status, forward_progression_m]
 
   - id: binding.primitive.action_event_anchor.0_1_0
     kind: RuntimeBinding
@@ -4823,6 +4853,14 @@ exposure_policies:
     subject_ref: runtime:primitive:possession_segment:0.1.0
     ai_compiler: ALLOWED
     product: ALLOWED
+  - id: exposure.runtime.possession_segment_team_keyed_episodes.0_1_0
+    kind: ExposurePolicy
+    display_name: possession_segment_team_keyed_episodes exposure
+    description: Internal adapter exposure policy for possession_segment_team_keyed_episodes; denied from product and AI projection pending any standalone semantic review.
+    subject_ref: runtime:relation:possession_segment_team_keyed_episodes:0.1.0
+    ai_compiler: DENIED
+    product: DENIED
+    reasons: [internal_team_key_adapter_not_product_claim]
   - id: exposure.runtime.controlled_pass_episode.0_1_0
     kind: ExposurePolicy
     display_name: controlled_pass_episode exposure
@@ -4830,6 +4868,14 @@ exposure_policies:
     subject_ref: runtime:primitive:controlled_pass_episode:0.1.0
     ai_compiler: ALLOWED
     product: ALLOWED
+  - id: exposure.runtime.controlled_pass_team_keyed_anchors.0_1_0
+    kind: ExposurePolicy
+    display_name: controlled_pass_team_keyed_anchors exposure
+    description: Internal adapter exposure policy for controlled_pass_team_keyed_anchors; denied from product and AI projection pending any standalone semantic review.
+    subject_ref: runtime:relation:controlled_pass_team_keyed_anchors:0.1.0
+    ai_compiler: DENIED
+    product: DENIED
+    reasons: [internal_team_key_adapter_not_product_claim]
   - id: exposure.runtime.ball_lateral_fraction.0_1_0
     kind: ExposurePolicy
     display_name: ball_lateral_fraction exposure
@@ -5243,6 +5289,18 @@ projection_policies:
         permitted_fields: []
         rationale: Defender-distance candidate set is runtime-executable substrate (R1-3 extremum provider) intentionally denied from this projection pending exposure and product-claim review.
         review_condition: Remove this waiver when the capability passes exposure review and enters the product projection.
+      - subject_ref: runtime:relation:controlled_pass_team_keyed_anchors:0.1.0
+        difference_kind: REMOVED
+        baseline_contract_hash: dab448cbabeb1b37af7f625defeeac5d7c82b74a98f1074711b0e932d6d5443c
+        permitted_fields: []
+        rationale: Controlled-pass team-keyed anchors is an internal adapter for team-bound window compositions, intentionally denied from the product projection because it is not a standalone coach-facing claim.
+        review_condition: Remove this waiver only if the adapter is promoted through standalone exposure and product-claim review.
+      - subject_ref: runtime:relation:possession_segment_team_keyed_episodes:0.1.0
+        difference_kind: REMOVED
+        baseline_contract_hash: 2c0f16143b178a076d567abe3a7d74086a21ecc584a87e8b5299fb7ec8690a35
+        permitted_fields: []
+        rationale: Possession-segment team-keyed episodes is an internal adapter for team-bound window compositions, intentionally denied from the product projection because it is not a standalone coach-facing claim.
+        review_condition: Remove this waiver only if the adapter is promoted through standalone exposure and product-claim review.
       - subject_ref: runtime:primitive:cover_shadow:0.1.0
         difference_kind: REMOVED
         baseline_contract_hash: 7ae43012a6725d814b7484c7c92de81096359754b7911cb77c3663ab0449c453
@@ -5440,6 +5498,16 @@ maturity_assessments:
     validation: VERIFIED
     agent_safety: APPROVED
     product: EXPOSED
+  - id: maturity.runtime.possession_segment_team_keyed_episodes.0_1_0
+    kind: MaturityAssessment
+    display_name: possession_segment_team_keyed_episodes maturity
+    description: Maturity assessment for possession_segment_team_keyed_episodes; internal adapter for team-bound window compositions, without standalone product-claim validation.
+    subject_ref: runtime:relation:possession_segment_team_keyed_episodes:0.1.0
+    semantic: PROPOSED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: REVIEWED
+    product: NOT_EXPOSED
   - id: maturity.runtime.controlled_pass_episode.0_1_0
     kind: MaturityAssessment
     display_name: controlled_pass_episode maturity
@@ -5450,6 +5518,16 @@ maturity_assessments:
     validation: VERIFIED
     agent_safety: APPROVED
     product: EXPOSED
+  - id: maturity.runtime.controlled_pass_team_keyed_anchors.0_1_0
+    kind: MaturityAssessment
+    display_name: controlled_pass_team_keyed_anchors maturity
+    description: Maturity assessment for controlled_pass_team_keyed_anchors; internal adapter for team-bound window compositions, without standalone product-claim validation.
+    subject_ref: runtime:relation:controlled_pass_team_keyed_anchors:0.1.0
+    semantic: PROPOSED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: REVIEWED
+    product: NOT_EXPOSED
   - id: maturity.runtime.ball_lateral_fraction.0_1_0
     kind: MaturityAssessment
     display_name: ball_lateral_fraction maturity

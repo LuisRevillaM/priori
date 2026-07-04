@@ -545,6 +545,142 @@
       "version": "0.1.0"
     },
     {
+      "binding_id": "binding.relation.controlled_pass_team_keyed_anchors.0_1_0",
+      "conformance": "PARTIAL",
+      "id": "controlled_pass_team_keyed_anchors",
+      "implements": [
+        "op.event_seeded_tracking_confirmed_pass.v1"
+      ],
+      "kind": "relation",
+      "product_exposure": "DENIED",
+      "product_maturity": "NOT_EXPOSED",
+      "reason": "PRODUCT_PROJECTION_POLICY_DENIED",
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "anchor_id",
+          "anchor_frame_id",
+          "start_frame_id",
+          "end_frame_id",
+          "controlled_reception_frame_id",
+          "controlled_pass_status",
+          "team_role"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "controlled_pass_anchors",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "kind": "relation",
+        "limitations": [
+          "Copies declared controlled-pass anchors and exposes their event team role; it does not re-evaluate pass control."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "controlled_pass_team_keyed_anchors",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "start_frame_id",
+              "end_frame_id",
+              "controlled_reception_frame_id",
+              "controlled_pass_status",
+              "team_role"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchors",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "parameters": [],
+        "purpose": "Expose controlled-pass anchor records with declared acting-team evidence for team-keyed compositions.",
+        "runtime_id": "relation:controlled_pass_team_keyed_anchors:0.1.0",
+        "version": "0.1.0"
+      },
+      "validation_maturity": "VERIFIED",
+      "version": "0.1.0"
+    },
+    {
+      "agent_safety_maturity": "REVIEWED",
+      "ai_exposure": "DENIED",
+      "binding_id": "binding.relation.controlled_pass_team_keyed_anchors.0_1_0",
+      "conformance": "PARTIAL",
+      "id": "controlled_pass_team_keyed_anchors",
+      "implements": [
+        "op.event_seeded_tracking_confirmed_pass.v1"
+      ],
+      "kind": "relation",
+      "reason": "AI_PROJECTION_POLICY_DENIED",
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "anchor_id",
+          "anchor_frame_id",
+          "start_frame_id",
+          "end_frame_id",
+          "controlled_reception_frame_id",
+          "controlled_pass_status",
+          "team_role"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "controlled_pass_anchors",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "kind": "relation",
+        "limitations": [
+          "Copies declared controlled-pass anchors and exposes their event team role; it does not re-evaluate pass control."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "controlled_pass_team_keyed_anchors",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "start_frame_id",
+              "end_frame_id",
+              "controlled_reception_frame_id",
+              "controlled_pass_status",
+              "team_role"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchors",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "parameters": [],
+        "purpose": "Expose controlled-pass anchor records with declared acting-team evidence for team-keyed compositions.",
+        "runtime_id": "relation:controlled_pass_team_keyed_anchors:0.1.0",
+        "version": "0.1.0"
+      },
+      "validation_maturity": "VERIFIED",
+      "version": "0.1.0"
+    },
+    {
       "binding_id": "binding.primitive.cover_shadow.0_1_0",
       "conformance": "PARTIAL",
       "id": "cover_shadow",
@@ -3929,6 +4065,130 @@
       "version": "0.1.0"
     },
     {
+      "binding_id": "binding.relation.possession_segment_team_keyed_episodes.0_1_0",
+      "conformance": "PARTIAL",
+      "id": "possession_segment_team_keyed_episodes",
+      "implements": [
+        "op.possession_segment_intervals.v1"
+      ],
+      "kind": "relation",
+      "product_exposure": "DENIED",
+      "product_maturity": "NOT_EXPOSED",
+      "reason": "PRODUCT_PROJECTION_POLICY_DENIED",
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "possession_start_frame_id",
+          "possession_end_frame_id",
+          "possession_duration_seconds",
+          "team_role"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "possession",
+            "name": "possession_segments",
+            "payload_type": "boolean",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "kind": "relation",
+        "limitations": [
+          "Copies possession segments for the execution perspective team; it does not infer clean individual control."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "possession_segment_team_keyed_episodes",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "possession",
+            "evidence_fields": [
+              "possession_start_frame_id",
+              "possession_end_frame_id",
+              "possession_duration_seconds",
+              "team_role"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "episodes",
+            "payload_type": "boolean",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "parameters": [],
+        "purpose": "Expose perspective-team possession segments with declared team-role evidence for team-keyed compositions.",
+        "runtime_id": "relation:possession_segment_team_keyed_episodes:0.1.0",
+        "version": "0.1.0"
+      },
+      "validation_maturity": "VERIFIED",
+      "version": "0.1.0"
+    },
+    {
+      "agent_safety_maturity": "REVIEWED",
+      "ai_exposure": "DENIED",
+      "binding_id": "binding.relation.possession_segment_team_keyed_episodes.0_1_0",
+      "conformance": "PARTIAL",
+      "id": "possession_segment_team_keyed_episodes",
+      "implements": [
+        "op.possession_segment_intervals.v1"
+      ],
+      "kind": "relation",
+      "reason": "AI_PROJECTION_POLICY_DENIED",
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "possession_start_frame_id",
+          "possession_end_frame_id",
+          "possession_duration_seconds",
+          "team_role"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "possession",
+            "name": "possession_segments",
+            "payload_type": "boolean",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "kind": "relation",
+        "limitations": [
+          "Copies possession segments for the execution perspective team; it does not infer clean individual control."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "possession_segment_team_keyed_episodes",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "possession",
+            "evidence_fields": [
+              "possession_start_frame_id",
+              "possession_end_frame_id",
+              "possession_duration_seconds",
+              "team_role"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "episodes",
+            "payload_type": "boolean",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "parameters": [],
+        "purpose": "Expose perspective-team possession segments with declared team-role evidence for team-keyed compositions.",
+        "runtime_id": "relation:possession_segment_team_keyed_episodes:0.1.0",
+        "version": "0.1.0"
+      },
+      "validation_maturity": "VERIFIED",
+      "version": "0.1.0"
+    },
+    {
       "agent_safety_maturity": "APPROVED",
       "ai_exposure": "REVIEWED_PLAN_ONLY",
       "binding_id": "binding.primitive.relation_destination_entry_classification.0_1_0",
@@ -5501,16 +5761,16 @@
   ],
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "ed232a4f8f4bc919d6d98779a908d077d51847b72a570d3c6d0759ced1a2f00f",
+    "baseline_artifact_revision": "eadfb82615ae38901b17b1d208449a99c1ccb22f6928b453f1b8c184654ceae1",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "e04d951d0c0d62f7784eebbebcf5297c260056e8c272aa605260c6434dbe1b84",
+    "lock_hash": "b333b9df051bff30b2757f6173830d6dfc2d072dcaa9d370408ba0adaef8cbae",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "09cd2b1304750e8c6ca08fc9c0f48389b833e8b2e7bb3018ffac9696d086a407",
+    "registry_revision": "7acce6c761e5b8bc750ad471daf38c024d4df8b8c7636f69f621ac8dd3836cf8",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "591551595889634882d311aff978e6c4ce00aa4ec9935109dea6df4554554d53",
+    "runtime_manifest_revision": "c9190051ffd9b5022809d0026244a1e520b3fd2a4040fab076b4cc947e11963d",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"

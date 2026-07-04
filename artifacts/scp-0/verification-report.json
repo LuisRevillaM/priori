@@ -844,11 +844,11 @@
       "shared_count": 48
     },
     "baseline_sources": {
-      "baseline_artifact_revision": "ed232a4f8f4bc919d6d98779a908d077d51847b72a570d3c6d0759ced1a2f00f",
+      "baseline_artifact_revision": "eadfb82615ae38901b17b1d208449a99c1ccb22f6928b453f1b8c184654ceae1",
       "capability_catalog": {
         "exists": true,
         "path": "generated/capability-catalog.json",
-        "source_artifact_sha256": "f13abafd1d07c6f31686970b6b50a36be27a40b699c5ff7b83d551796058d436"
+        "source_artifact_sha256": "8d3a0a36f71b43cb87712244bef14ce81e5d349e8f694806217728bed0a9ae8c"
       },
       "product_recipe_contracts": {
         "frozen_baseline": false,
@@ -871,7 +871,7 @@
           "projection_contract_hash": "a796f3d6ca9399358c6bf535d0d7d8f57509bbf9763661cf191c76e346af9d3b"
         }
       },
-      "baseline_count": 52,
+      "baseline_count": 54,
       "contract_changed": [],
       "contract_changed_details": {},
       "projection_count": 43,
@@ -887,7 +887,9 @@
         "runtime:primitive:off_ball_run_type:0.1.0",
         "runtime:primitive:set_piece_structure:0.1.0",
         "runtime:primitive:space_region_generation:0.1.0",
+        "runtime:relation:controlled_pass_team_keyed_anchors:0.1.0",
         "runtime:relation:defender_distance_candidate_set:0.1.0",
+        "runtime:relation:possession_segment_team_keyed_episodes:0.1.0",
         "runtime:relation:team_press:0.1.0"
       ],
       "removed_details": {
@@ -915,8 +917,14 @@
         "runtime:primitive:space_region_generation:0.1.0": {
           "baseline_contract_hash": "3ae62e6ad6caceb2e14343362d5578780d25891e9fb9e8a4014e5a7a835a578a"
         },
+        "runtime:relation:controlled_pass_team_keyed_anchors:0.1.0": {
+          "baseline_contract_hash": "dab448cbabeb1b37af7f625defeeac5d7c82b74a98f1074711b0e932d6d5443c"
+        },
         "runtime:relation:defender_distance_candidate_set:0.1.0": {
           "baseline_contract_hash": "8ac52b22780e6deb81c5b10a06f1b5bd20246935bc905a97d327141073c9fb52"
+        },
+        "runtime:relation:possession_segment_team_keyed_episodes:0.1.0": {
+          "baseline_contract_hash": "2c0f16143b178a076d567abe3a7d74086a21ecc584a87e8b5299fb7ec8690a35"
         },
         "runtime:relation:team_press:0.1.0": {
           "baseline_contract_hash": "4cf1558ccf3ed95deb1fea53b10166cb7144b63af1b1b8fa8b45b623425a6708"
@@ -934,26 +942,26 @@
   },
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "ed232a4f8f4bc919d6d98779a908d077d51847b72a570d3c6d0759ced1a2f00f",
+    "baseline_artifact_revision": "eadfb82615ae38901b17b1d208449a99c1ccb22f6928b453f1b8c184654ceae1",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "e04d951d0c0d62f7784eebbebcf5297c260056e8c272aa605260c6434dbe1b84",
+    "lock_hash": "b333b9df051bff30b2757f6173830d6dfc2d072dcaa9d370408ba0adaef8cbae",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "09cd2b1304750e8c6ca08fc9c0f48389b833e8b2e7bb3018ffac9696d086a407",
+    "registry_revision": "7acce6c761e5b8bc750ad471daf38c024d4df8b8c7636f69f621ac8dd3836cf8",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "591551595889634882d311aff978e6c4ce00aa4ec9935109dea6df4554554d53",
+    "runtime_manifest_revision": "c9190051ffd9b5022809d0026244a1e520b3fd2a4040fab076b4cc947e11963d",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"
   },
   "runtime_capabilities": {
-    "bound": 46,
+    "bound": 48,
     "duplicate_bindings": 0,
-    "including_operators_total": 54,
+    "including_operators_total": 56,
     "orphaned": 0,
-    "runtime_total": 46,
+    "runtime_total": 48,
     "unresolved_bindings": 0
   },
   "schema_version": "1.0",

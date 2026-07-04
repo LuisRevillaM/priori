@@ -1,6 +1,6 @@
 {
-  "passport_count": 46,
-  "passport_revision": "6e0b85b32689b4278aba6c2efd8127bdca6f309811155b7063ab21c7b2d5c6f5",
+  "passport_count": 48,
+  "passport_revision": "14d31819253a81947b3e20745edefdb7694a5fecb7ba25dba9180e3246121f93",
   "passports": [
     {
       "binding": {
@@ -19853,6 +19853,344 @@
     {
       "binding": {
         "conformance": "PARTIAL",
+        "id": "binding.relation.controlled_pass_team_keyed_anchors.0_1_0",
+        "input_bindings": {},
+        "known_deviations": [
+          "Internal adapter copies controlled-pass anchors and exposes the provider event team role; it does not re-evaluate pass control or introduce a new ball-transfer claim."
+        ],
+        "output_bindings": {
+          "anchors": {
+            "runtime_port": "anchors"
+          }
+        },
+        "parameter_bindings": {},
+        "semantic_parameters": [],
+        "uncovered_runtime_inputs": [
+          "controlled_pass_anchors"
+        ],
+        "uncovered_runtime_outputs": [],
+        "uncovered_runtime_parameters": [],
+        "uncovered_semantic_inputs": [
+          "candidate_pass_events",
+          "tracking_window"
+        ],
+        "uncovered_semantic_outputs": [
+          "controlled_pass_status",
+          "forward_progression_m"
+        ],
+        "uncovered_semantic_parameters": []
+      },
+      "claim_contracts": [
+        {
+          "contract_ref": "claim.controlled_ball_transfer.v1",
+          "inherits": [],
+          "permitted": [
+            "event_candidate_pass_identified",
+            "tracking_confirmed_controlled_reception",
+            "tracking_confirmed_physical_release"
+          ],
+          "prohibited": [
+            "proves_pass_optimality",
+            "proves_pass_probability",
+            "proves_passer_intent"
+          ],
+          "unknown_conditions": [
+            "controlled_reception_unresolved",
+            "physical_release_unresolved",
+            "possession_continuity_unresolved"
+          ]
+        }
+      ],
+      "concepts": [
+        {
+          "aliases": [],
+          "claim_contract_ref": "claim.controlled_ball_transfer.v1",
+          "created_from": [],
+          "description": "The ball moves from one player to a teammate and the teammate gains controlled possession.",
+          "display_name": "Controlled Ball Transfer",
+          "evidence_contract_ref": "evidence.controlled_ball_transfer.v1",
+          "id": "concept.controlled_ball_transfer",
+          "kind": "Concept",
+          "owners": [],
+          "reviewers": [],
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [
+            "pass",
+            "control",
+            "event_tracking_alignment"
+          ],
+          "version": "1.0.0"
+        }
+      ],
+      "description": "Internal runtime binding for the controlled-pass team-key adapter used by team-bound window compositions.",
+      "display_name": "controlled_pass_team_keyed_anchors runtime binding",
+      "evidence_contracts": [
+        {
+          "contract_ref": "evidence.controlled_ball_transfer.v1",
+          "inherits": [],
+          "optional": [],
+          "replay_projection": [
+            "ball_path",
+            "passer_marker",
+            "receiver_marker",
+            "reception_frame",
+            "release_frame"
+          ],
+          "required": [
+            "controlled_reception_frame_id",
+            "event_anchor_frame_id",
+            "forward_progression_m",
+            "passer_id",
+            "physical_release_frame_id",
+            "receiver_id",
+            "reception_ball_point",
+            "release_ball_point"
+          ]
+        }
+      ],
+      "exposure_policy": {
+        "ai_compiler": "DENIED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Internal adapter exposure policy for controlled_pass_team_keyed_anchors; denied from product and AI projection pending any standalone semantic review.",
+        "display_name": "controlled_pass_team_keyed_anchors exposure",
+        "id": "exposure.runtime.controlled_pass_team_keyed_anchors.0_1_0",
+        "kind": "ExposurePolicy",
+        "owners": [],
+        "parameter_overrides": {},
+        "product": "DENIED",
+        "reasons": [
+          "internal_team_key_adapter_not_product_claim"
+        ],
+        "reviewed_recipes": "ALLOWED",
+        "reviewers": [],
+        "status": "CURRENT",
+        "subject_ref": "runtime:relation:controlled_pass_team_keyed_anchors:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "implementation": {
+        "aliases": [],
+        "created_from": [],
+        "description": "Current event-seeded tracking-confirmed pass implementation.",
+        "display_name": "Controlled Pass Episode Python Implementation",
+        "id": "impl.controlled_pass_episode.python.v1",
+        "implementation_type": "python",
+        "implements": [
+          "op.event_seeded_tracking_confirmed_pass.v1"
+        ],
+        "kind": "Implementation",
+        "owners": [],
+        "reviewers": [],
+        "source_refs": [
+          "src/tqe/runtime/executor.py",
+          "src/tqe/runtime/catalog.py",
+          "src/tqe/runtime/pass_bypass.py"
+        ],
+        "status": "CURRENT",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "maturity_assessment": {
+        "agent_safety": "REVIEWED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Maturity assessment for controlled_pass_team_keyed_anchors; internal adapter for team-bound window compositions, without standalone product-claim validation.",
+        "display_name": "controlled_pass_team_keyed_anchors maturity",
+        "id": "maturity.runtime.controlled_pass_team_keyed_anchors.0_1_0",
+        "implementation": "IMPLEMENTED",
+        "kind": "MaturityAssessment",
+        "owners": [],
+        "product": "NOT_EXPOSED",
+        "reviewers": [],
+        "semantic": "PROPOSED",
+        "status": "CURRENT",
+        "subject_ref": "runtime:relation:controlled_pass_team_keyed_anchors:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "validation": "VERIFIED",
+        "version": "1.0.0"
+      },
+      "operationalizations": [
+        {
+          "aliases": [],
+          "applicability": [
+            "candidate_pass_event",
+            "tracking_available_around_event"
+          ],
+          "claim_contract_ref": "claim.controlled_ball_transfer.v1",
+          "concept_refs": [
+            "concept.controlled_ball_transfer"
+          ],
+          "created_from": [],
+          "description": "Use event data to find candidate completed passes, then tracking data to confirm physical release and controlled reception.",
+          "display_name": "Event-Seeded Tracking-Confirmed Pass",
+          "evidence_contract_ref": "evidence.controlled_ball_transfer.v1",
+          "id": "op.event_seeded_tracking_confirmed_pass.v1",
+          "inputs": [
+            {
+              "description": "",
+              "name": "candidate_pass_events",
+              "required": true,
+              "type": {
+                "container": "EventSet",
+                "nullable": true,
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "ProviderEvent"
+              }
+            },
+            {
+              "description": "",
+              "name": "tracking_window",
+              "required": true,
+              "type": {
+                "container": "TrajectorySet",
+                "coordinate_frame": "pitch_absolute",
+                "nullable": true,
+                "temporal_basis": "canonical_frame_time",
+                "unit": "metre",
+                "value": "Position"
+              }
+            }
+          ],
+          "kind": "Operationalization",
+          "lowering": [
+            "event_tracking_alignment_candidate",
+            "physical_ball_release",
+            "physical_ball_reception",
+            "possession_continuity"
+          ],
+          "outputs": [
+            {
+              "description": "",
+              "name": "controlled_pass_status",
+              "required": true,
+              "type": {
+                "container": "FrameSignal",
+                "entity_scope": "possession",
+                "nullable": true,
+                "quantity": "controlled_pass_status",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "Enum"
+              }
+            },
+            {
+              "description": "",
+              "name": "forward_progression_m",
+              "required": true,
+              "type": {
+                "container": "FrameSignal",
+                "entity_scope": "possession",
+                "nullable": true,
+                "quantity": "forward_progression",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "metre",
+                "value": "Scalar"
+              }
+            },
+            {
+              "description": "",
+              "name": "anchors",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "controlled_pass_anchor",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            }
+          ],
+          "owners": [],
+          "required_modalities": [
+            "events",
+            "tracking"
+          ],
+          "reviewers": [],
+          "semantic_basis": "INFERRED_CANDIDATE",
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [],
+          "version": "1.0.0"
+        }
+      ],
+      "passport_hash": "9897d0813beb803345e0069e24521d288a0d8104e0938301477de69cf8875fd5",
+      "projection_membership": {
+        "ai": false,
+        "product": false
+      },
+      "runtime_capability": {
+        "id": "controlled_pass_team_keyed_anchors",
+        "kind": "relation",
+        "version": "0.1.0"
+      },
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "anchor_id",
+          "anchor_frame_id",
+          "start_frame_id",
+          "end_frame_id",
+          "controlled_reception_frame_id",
+          "controlled_pass_status",
+          "team_role"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "controlled_pass_anchors",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "kind": "relation",
+        "limitations": [
+          "Copies declared controlled-pass anchors and exposes their event team role; it does not re-evaluate pass control."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "controlled_pass_team_keyed_anchors",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "start_frame_id",
+              "end_frame_id",
+              "controlled_reception_frame_id",
+              "controlled_pass_status",
+              "team_role"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchors",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "parameters": [],
+        "purpose": "Expose controlled-pass anchor records with declared acting-team evidence for team-keyed compositions.",
+        "runtime_id": "relation:controlled_pass_team_keyed_anchors:0.1.0",
+        "version": "0.1.0"
+      },
+      "status": "CURRENT",
+      "subject_ref": "runtime:relation:controlled_pass_team_keyed_anchors:0.1.0"
+    },
+    {
+      "binding": {
+        "conformance": "PARTIAL",
         "id": "binding.relation.defender_distance_candidate_set.0_1_0",
         "input_bindings": {
           "anchors": {
@@ -23025,6 +23363,297 @@
     {
       "binding": {
         "conformance": "PARTIAL",
+        "id": "binding.relation.possession_segment_team_keyed_episodes.0_1_0",
+        "input_bindings": {},
+        "known_deviations": [
+          "Internal adapter copies possession episodes and annotates the execution perspective team role; it does not introduce a new possession-control claim."
+        ],
+        "output_bindings": {
+          "episodes": {
+            "runtime_port": "episodes"
+          }
+        },
+        "parameter_bindings": {},
+        "semantic_parameters": [],
+        "uncovered_runtime_inputs": [
+          "possession_segments"
+        ],
+        "uncovered_runtime_outputs": [],
+        "uncovered_runtime_parameters": [],
+        "uncovered_semantic_inputs": [
+          "canonical_match_state"
+        ],
+        "uncovered_semantic_outputs": [
+          "anchors"
+        ],
+        "uncovered_semantic_parameters": []
+      },
+      "claim_contracts": [
+        {
+          "contract_ref": "claim.possession_context.v1",
+          "inherits": [],
+          "permitted": [
+            "possession_anchor_identified",
+            "team_active_ball_possession_interval_identified"
+          ],
+          "prohibited": [
+            "proves_best_action",
+            "proves_possession_intent"
+          ],
+          "unknown_conditions": [
+            "ball_control_unresolved",
+            "possession_boundary_unresolved"
+          ]
+        }
+      ],
+      "concepts": [
+        {
+          "aliases": [],
+          "claim_contract_ref": "claim.possession_context.v1",
+          "created_from": [],
+          "description": "Active-ball possession intervals and anchors for a perspective team.",
+          "display_name": "Possession Context",
+          "evidence_contract_ref": "evidence.possession_context.v1",
+          "id": "concept.possession_context",
+          "kind": "Concept",
+          "owners": [],
+          "reviewers": [],
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [
+            "possession",
+            "anchor"
+          ],
+          "version": "1.0.0"
+        }
+      ],
+      "description": "Internal runtime binding for the possession-segment team-key adapter used by team-bound window compositions.",
+      "display_name": "possession_segment_team_keyed_episodes runtime binding",
+      "evidence_contracts": [
+        {
+          "contract_ref": "evidence.possession_context.v1",
+          "inherits": [],
+          "optional": [],
+          "replay_projection": [
+            "anchor_frame_id",
+            "possession_window"
+          ],
+          "required": [
+            "anchor_frame_id",
+            "anchor_id",
+            "match_id",
+            "period",
+            "possession_end_frame_id",
+            "possession_start_frame_id"
+          ]
+        }
+      ],
+      "exposure_policy": {
+        "ai_compiler": "DENIED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Internal adapter exposure policy for possession_segment_team_keyed_episodes; denied from product and AI projection pending any standalone semantic review.",
+        "display_name": "possession_segment_team_keyed_episodes exposure",
+        "id": "exposure.runtime.possession_segment_team_keyed_episodes.0_1_0",
+        "kind": "ExposurePolicy",
+        "owners": [],
+        "parameter_overrides": {},
+        "product": "DENIED",
+        "reasons": [
+          "internal_team_key_adapter_not_product_claim"
+        ],
+        "reviewed_recipes": "ALLOWED",
+        "reviewers": [],
+        "status": "CURRENT",
+        "subject_ref": "runtime:relation:possession_segment_team_keyed_episodes:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "implementation": {
+        "aliases": [],
+        "created_from": [],
+        "description": "Current Python implementation registered in the runtime catalog.",
+        "display_name": "Possession Segment Python Implementation",
+        "id": "impl.possession_segment.python.v1",
+        "implementation_type": "python",
+        "implements": [
+          "op.possession_segment_intervals.v1"
+        ],
+        "kind": "Implementation",
+        "owners": [],
+        "reviewers": [],
+        "source_refs": [
+          "src/tqe/runtime/executor.py",
+          "src/tqe/runtime/catalog.py"
+        ],
+        "status": "CURRENT",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "maturity_assessment": {
+        "agent_safety": "REVIEWED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Maturity assessment for possession_segment_team_keyed_episodes; internal adapter for team-bound window compositions, without standalone product-claim validation.",
+        "display_name": "possession_segment_team_keyed_episodes maturity",
+        "id": "maturity.runtime.possession_segment_team_keyed_episodes.0_1_0",
+        "implementation": "IMPLEMENTED",
+        "kind": "MaturityAssessment",
+        "owners": [],
+        "product": "NOT_EXPOSED",
+        "reviewers": [],
+        "semantic": "PROPOSED",
+        "status": "CURRENT",
+        "subject_ref": "runtime:relation:possession_segment_team_keyed_episodes:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "validation": "VERIFIED",
+        "version": "1.0.0"
+      },
+      "operationalizations": [
+        {
+          "aliases": [],
+          "applicability": [
+            "ball_in_play_candidate",
+            "perspective_team_known"
+          ],
+          "claim_contract_ref": "claim.possession_context.v1",
+          "concept_refs": [
+            "concept.possession_context"
+          ],
+          "created_from": [],
+          "description": "Identify active-ball possession intervals and anchors for the perspective team.",
+          "display_name": "Possession Segment Intervals",
+          "evidence_contract_ref": "evidence.possession_context.v1",
+          "id": "op.possession_segment_intervals.v1",
+          "inputs": [
+            {
+              "description": "",
+              "name": "canonical_match_state",
+              "required": true,
+              "type": {
+                "container": "WorldState",
+                "nullable": true,
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "MatchState"
+              }
+            }
+          ],
+          "kind": "Operationalization",
+          "lowering": [
+            "team_control_candidates",
+            "possession_episode_extraction"
+          ],
+          "outputs": [
+            {
+              "description": "",
+              "name": "episodes",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "possession",
+                "nullable": true,
+                "quantity": "possession",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "Boolean"
+              }
+            },
+            {
+              "description": "",
+              "name": "anchors",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "possession_anchor",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            }
+          ],
+          "owners": [],
+          "required_modalities": [
+            "tracking",
+            "events"
+          ],
+          "reviewers": [],
+          "semantic_basis": "INFERRED_CANDIDATE",
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [],
+          "version": "1.0.0"
+        }
+      ],
+      "passport_hash": "d35d821f3eddbf4214c75cb1c35d39eed45d83b88c092b17e3865e4de4432dd6",
+      "projection_membership": {
+        "ai": false,
+        "product": false
+      },
+      "runtime_capability": {
+        "id": "possession_segment_team_keyed_episodes",
+        "kind": "relation",
+        "version": "0.1.0"
+      },
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "possession_start_frame_id",
+          "possession_end_frame_id",
+          "possession_duration_seconds",
+          "team_role"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "possession",
+            "name": "possession_segments",
+            "payload_type": "boolean",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "kind": "relation",
+        "limitations": [
+          "Copies possession segments for the execution perspective team; it does not infer clean individual control."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "possession_segment_team_keyed_episodes",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "possession",
+            "evidence_fields": [
+              "possession_start_frame_id",
+              "possession_end_frame_id",
+              "possession_duration_seconds",
+              "team_role"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "episodes",
+            "payload_type": "boolean",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "parameters": [],
+        "purpose": "Expose perspective-team possession segments with declared team-role evidence for team-keyed compositions.",
+        "runtime_id": "relation:possession_segment_team_keyed_episodes:0.1.0",
+        "version": "0.1.0"
+      },
+      "status": "CURRENT",
+      "subject_ref": "runtime:relation:possession_segment_team_keyed_episodes:0.1.0"
+    },
+    {
+      "binding": {
+        "conformance": "PARTIAL",
         "id": "binding.relation.pressure_on_carrier.0_1_0",
         "input_bindings": {
           "anchors": {
@@ -26062,16 +26691,16 @@
   "projection_id": "priori.capability_passport_projection.afl08",
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "ed232a4f8f4bc919d6d98779a908d077d51847b72a570d3c6d0759ced1a2f00f",
+    "baseline_artifact_revision": "eadfb82615ae38901b17b1d208449a99c1ccb22f6928b453f1b8c184654ceae1",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "e04d951d0c0d62f7784eebbebcf5297c260056e8c272aa605260c6434dbe1b84",
+    "lock_hash": "b333b9df051bff30b2757f6173830d6dfc2d072dcaa9d370408ba0adaef8cbae",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "09cd2b1304750e8c6ca08fc9c0f48389b833e8b2e7bb3018ffac9696d086a407",
+    "registry_revision": "7acce6c761e5b8bc750ad471daf38c024d4df8b8c7636f69f621ac8dd3836cf8",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "591551595889634882d311aff978e6c4ce00aa4ec9935109dea6df4554554d53",
+    "runtime_manifest_revision": "c9190051ffd9b5022809d0026244a1e520b3fd2a4040fab076b4cc947e11963d",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"
