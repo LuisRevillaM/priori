@@ -6,12 +6,16 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from tqe.runtime.binder import BindError, bind_document, bind_error_codes
+from tqe.runtime.executor import TacticalQueryExecutor, execution_result_rows
 from tqe.runtime.ir import CatalogOutput, MissingDataSemantics, TacticalQueryDocument, TypedValue
 from tqe.runtime.operators.typed_join import TYPED_JOIN_SIGNATURE, execute_typed_join
 from tqe.runtime.values import RuntimeValue, canonical_anchor_record_id, runtime_value_from_raw
 
+from tests.support.canonical_data import CANONICAL_DATA_ROOT, requires_canonical_data
+
 
 PLAN_PATH = Path("config/query-plans/ball_side_block_shift.ir.v1.json")
+CAR_BUNDLE_PATH = Path("tests/fixtures/r1_5_fragile_possession_state_j03woh_bundle.json")
 
 
 def typed_enum(value: str) -> TypedValue:
@@ -270,6 +274,66 @@ class TypedJoinOperatorTests(unittest.TestCase):
         }
         bound = bind_document(TacticalQueryDocument.model_validate(payload))
         self.assertTrue(bound.bound_plan_hash)
+
+
+@requires_canonical_data
+class TypedJoinCompositionSuiteTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.bundle = json.loads(CAR_BUNDLE_PATH.read_text(encoding="utf-8"))
+
+    def test_car0_composition_executes_for_both_team_perspectives(self) -> None:
+        executor = TacticalQueryExecutor(canonical_root=CANONICAL_DATA_ROOT)
+        role_counts: dict[str, int] = {}
+
+        for role, document_payload in sorted(self.bundle["documents"].items()):
+            bound = bind_document(TacticalQueryDocument.model_validate(document_payload))
+            execution = executor.execute(bound)
+            rows = execution_result_rows(execution)
+            role_counts[role] = len(rows)
+
+            self.assertEqual("pass", execution.status.value)
+            self.assertEqual(0, execution.provenance["requested_evidence_failure_count"])
+            self.assertGreater(len(rows), 0)
+            for row in rows:
+                requested = row["requested_evidence"]
+                self.assertEqual("PASS", requested["typed_join_status"])
+                self.assertEqual("PASS", requested["window_status"])
+                self.assertEqual("PASS", requested["pressure_status"])
+                self.assertEqual("FAIL", requested["support_arrival_status"])
+                self.assertEqual(role, requested["left_team_role"])
+                self.assertEqual(role, requested["right_team_role"])
+
+        self.assertEqual({"away", "home"}, set(role_counts))
+        self.assertGreater(role_counts["away"], 0)
+        self.assertGreater(role_counts["home"], 0)
+
+    def test_car0_executor_path_chains_window_into_typed_join(self) -> None:
+        document_payload = self.bundle["documents"]["home"]
+        nodes = document_payload["draft_plan"]["nodes"]
+        operator_nodes = {
+            node["node_id"]: node
+            for node in nodes
+            if node.get("kind") == "operator"
+        }
+        terminal_join = operator_nodes["typed_join_2"]
+
+        self.assertEqual("typed_join", terminal_join["operator"]["name"])
+        self.assertEqual("window", operator_nodes[terminal_join["inputs"]["left"]["source_node_id"]]["operator"]["name"])
+        self.assertEqual(
+            "typed_join",
+            operator_nodes[terminal_join["inputs"]["right"]["source_node_id"]]["operator"]["name"],
+        )
+
+        bound = bind_document(TacticalQueryDocument.model_validate(document_payload))
+        execution = TacticalQueryExecutor(canonical_root=CANONICAL_DATA_ROOT).execute(bound)
+        rows = execution_result_rows(execution)
+
+        self.assertEqual("pass", execution.status.value)
+        self.assertGreater(len(rows), 0)
+        self.assertTrue(
+            all(row["requested_evidence"]["typed_join_reason"] == "typed_join_matched" for row in rows)
+        )
 
 
 if __name__ == "__main__":
