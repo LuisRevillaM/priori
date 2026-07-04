@@ -1,9 +1,10 @@
 # R1-5 Report - typed_join Operator
 
-Branch: `packet/r1-5`
-Frontier base: `de7748a`
-Packet: `delivery/packets/R1-5-typed-join.md`
-ADR: `docs/adr/0013-r1-operator-era.md`, including all addenda
+Branch: `packet/r1-5`  
+Frontier base: `de7748a`  
+Packet: `delivery/packets/R1-5-typed-join.md`  
+Round-2 review: `delivery/packets/R1-5-REVIEW.md`  
+ADR: `docs/adr/0013-r1-operator-era.md`, including Addendum 4  
 Push: no push, per direct-channel protocol.
 
 ## Result
@@ -13,7 +14,10 @@ READY FOR REVIEW.
 The work is committed in the writable clone at `/private/tmp/priori-r1-5-clone`,
 branch `packet/r1-5`.
 
-Stage-committed-from-first-commit was satisfied by `65765be`.
+Stage-committed-from-first-commit was satisfied by `65765be`. Round 2 also
+satisfied the review's first-commit order: `6fca2f5` added the named
+both-teams composition-level suite test and the executor-path chain test before
+any authority or semantic changes.
 
 ## Commit Ledger
 
@@ -22,26 +26,30 @@ Stage-committed-from-first-commit was satisfied by `65765be`.
 | `65765be` | Stage-committed the R1-5 report skeleton before implementation. |
 | `5232f6f` | Added `typed_join@0.1.0`, registry wiring, binder constraint enforcement, the R1-4 window obligations, and focused tests. |
 | `aaab59c` | Wired generic typed-join synthesis, added the CAR-0 reachability target, promoted `fragile_possession_state`, and generated the first CAR proof. |
-| `39631c4` | Refreshed the CAR proof for both home and away team perspectives and committed the reproducing artifacts. |
-| `(this commit)` | Final report with committed-tree proof, audit table, and verification evidence. |
+| `39631c4` | Refreshed the CAR proof for both home and away team perspectives. |
+| `61258d6` | Finalized the round-1 report. |
+| `6fca2f5` | R-N first commit: composition-level both-team suite test and executor-path chain test. |
+| `d54fde0` | R-M: restored R1-4 provenance, reverted the tracked ledger flip/deletions, and republished the delta on a copy ledger. |
+| `9177e90` | R-O: input-derived typed_join output declarations, per-side status values, predicate targeting, regenerated proof fixture/artifacts. |
+| `8114bcf` | R-P: committed full-population audit artifacts with UNKNOWN accounting. |
+| `(this commit)` | Final round-2 report and verification table. |
 
-## Opening Obligations
+## Round-2 Review Items
 
-| Obligation | Status | Evidence |
+| Item | Status | Evidence |
 | --- | --- | --- |
-| O1 - named both-teams composition-level test | DONE | `tests.test_r1_5_typed_join.TypedJoinOperatorTests.test_same_anchor_join_preserves_both_team_anchors` exercises home and away anchors in one join; `tests.test_r1_4_window` retains the R1-4 both-team window tests. |
-| O2 - window data-boundary false FAIL | DONE | `window` now judges continuity coverage against the period-clipped requested span. Added `test_same_team_continuity_is_judged_against_clipped_observed_window`. |
-| O3 - `latest_start` overlap-policy misnomer | DONE | Runtime/default/search target now use `latest_start_covering_anchor`; source grep finds only that value and historical target/concept names. |
-| O4 - delete runtime `same_team_control` label | DONE | `window` continuity policy enum now declares only `fixed_duration` and `same_possession`. Remaining `same_team_control_after` strings are historical concept/target identifiers, not runtime enum values. |
-| O5 - ledger/report hygiene | DONE | Generated artifacts were committed from the final proof: plan bundle, row ledger, report, and coverage-map row. Report uses clone-local commit hashes only. |
+| R-N first commit | DONE | `6fca2f5`; `TypedJoinCompositionSuiteTests.test_car0_composition_executes_for_both_team_perspectives` executes the generated CAR-0 composition for both `home` and `away`; `test_car0_executor_path_chains_window_into_typed_join` proves the executor path chains `window` into terminal `typed_join`. |
+| R-M director authority boundary | DONE | Tracked generated ledger remains unflipped; R1-4 plan bundle is restored at `generated/compiler-search-v0/plans/r1_4_same_team_control_after_reception_v0.json`; CAR-0 delta is measured only on `/private/tmp/r1-5-copy-ledger/coverage-map.work.json` and published under `delivery/packets/r1-5-copy-proof/`. |
+| R-O input-derived outputs and side statuses | DONE | Static `typed_join` evidence fields are generic only; generated typed_join nodes derive output fields from bound inputs. `left_required_status_value` / `right_required_status_value` are declared and recorded. Inner CAR join now requires pressure `PASS` on the left and support-arrival `FAIL` on the right. The only generated predicate is terminal `typed_join_status == PASS`. |
+| R-P full-population audit | DONE | `delivery/packets/r1-5-population-audit/audit.json` and `.md` are committed in-tree. The audit counts every terminal joined record across seven matches, two periods, and both team perspectives before result truncation. |
 
 ## Implementation Summary
 
 ### Operator
 
 `typed_join@0.1.0` is a registry operator that joins two episode-set evidence
-channels under declared identity and composition constraints. It is not a catalog
-primitive and it does not create evidence.
+channels under declared identity and composition constraints. It is not a
+catalog primitive and it does not create football evidence.
 
 Declared join keys:
 
@@ -65,37 +73,60 @@ Declared no-match policies:
 
 Tri-state behavior:
 
-- If either side carries the declared status field as `UNKNOWN`, the joined row is `UNKNOWN` with `typed_join_reason=join_side_status_unknown`.
+- If either declared side status is `UNKNOWN`, the joined row is `UNKNOWN` with `typed_join_reason=join_side_status_unknown`.
 - Missing required counterpart follows the declared no-match policy.
 - Dropped no-match rows record `typed_join_dropped_no_match_count` on emitted rows.
 
 Witness behavior:
 
-- Joined rows carry left/right record hashes, record indices, source node ids, output names, join fields, and constraint fields.
+- Joined rows carry left/right record hashes, record indices, source node ids, output names, join fields, side status requirements, and constraint fields.
 - Joined rows use `canonical_anchor_record_id` so anchor identity follows the same V8 record-identity rule as other runtime records.
-- The output declaration includes the typed-join fields plus the CAR-carried fields required by the acceptance composition.
 
-### Binder Enforcement
+### Output Declarations
 
-The binder enforces join constraints generically by detecting join-like operator
-signatures, not by special-casing the `typed_join` name. A join with no enforced
-constraint fails to bind unless it explicitly sets `unconstrained=true` and a
-non-`none` rationale. Declared field parameters are checked against the bound
-input evidence fields.
+Addendum 4 forbids static CAR-specific output declarations in the operator
+source. The static `typed_join` signature now declares only generic join fields.
+When compiler search synthesizes a specific typed join, the emitted operator node
+declares output evidence fields derived from the bound left and right inputs
+plus generic join fields. CAR fields such as `window_status`, `pressure_status`,
+and `support_arrival_status` therefore appear in the CAR proof plan because the
+bound input channels carry them, not because `typed_join.py` knows about CAR.
 
-### Window Retrofit
+### Side-Specific Status Values
 
-`window` now reuses the typed-join same-team helper for continuity team checks.
-The R1-4 continuity overlap default and target declaration were renamed to
-`latest_start_covering_anchor`. The runtime `same_team_control` policy label was
-removed; the remaining supported continuity label is `same_possession`.
+The round-1 target had to enforce support failure with a side-provider predicate
+because `typed_join` exposed only one `required_status_value`. Round 2 adds
+side-specific values while preserving the legacy default:
+
+- `required_status_value`: compatibility default
+- `left_required_status_value`: left side requirement
+- `right_required_status_value`: right side requirement
+
+The CAR inner join now declares:
+
+```text
+left_status_field=pressure_status
+left_required_status_value=PASS
+right_status_field=support_arrival_status
+right_required_status_value=FAIL
+```
+
+The regenerated plan has only one predicate:
+
+```text
+typed_join_2.typed_join_status == PASS
+```
+
+`window_status`, `pressure_status`, and `support_arrival_status` remain requested
+evidence from `typed_join_2.typed_join_records`, but they are no longer separate
+side-provider predicates.
 
 ### Search Synthesis
 
-The compiler search path supports generic `typed_join` operator insertion. The
-target declares side requirements and nested side composition constraints; the
-builder recursively synthesizes each side, applies every declared key, and fails
-if any accepted constraint key is unapplied.
+The compiler search path supports generic `typed_join` insertion. The target
+declares side requirements and nested side composition constraints; the builder
+recursively synthesizes each side, applies every declared key, and fails if any
+accepted constraint key is unapplied.
 
 The CAR-0 plan is:
 
@@ -105,7 +136,7 @@ window(after, same_possession)
     typed_join pressure_on_carrier + support_arrival_point_pair
 ```
 
-Search-blindness checks from the final row ledger:
+Search-blindness checks from the regenerated row ledger:
 
 | Check | Value |
 | --- | --- |
@@ -114,22 +145,27 @@ Search-blindness checks from the final row ledger:
 | Coverage gold chain used as input | `False` |
 | Pattern dispatch used | `False` |
 | Coverage gold-chain audit | `post_hoc_only` |
-| Target contract hash | `c2c755538884bf7db1532233d536675d8465cf2027d025835d6b44e96dc043c2` |
 
-## Acceptance Proof - CAR-0
+## Copy-Ledger Acceptance Proof
 
-Final proof command, run on committed implementation tree `39631c4` with both
-team perspectives:
+Round 2 does not flip the tracked generated ledger. The delta is measured on a
+copy ledger only.
+
+Proof command:
 
 ```bash
 PYTHONPATH=src \
 TQE_SEARCH_TARGETS=config/compiler-reachability/r1-5-typed-join-targets.v0.json \
+TQE_SEARCH_LEDGER=/private/tmp/r1-5-copy-ledger/coverage-map.work.json \
 TQE_SEARCH_UPDATE_LEDGER=1 \
+TQE_SEARCH_OUT_DIR=delivery/packets/r1-5-copy-proof/search-run \
+TQE_SEARCH_REPORT=delivery/packets/r1-5-copy-proof/compiler-search-v0-report.json \
 TQE_SEARCH_PERSPECTIVE_TEAM_ROLES=home,away \
+TQE_SEARCH_MATCH_IDS=J03WOH \
 TQE_DATA_ROOT=/Users/luisrevilla/code/priori/data/canonical/v1 \
 TQE_RAW_ROOT=/Users/luisrevilla/code/priori/data/raw/idsse/figshare-28196177-v1 \
 TQE_SEARCH_SHARED_NODE_CACHE=1 \
-TQE_SEARCH_NODE_CACHE_NAMESPACE=r1_5_car_both_teams \
+TQE_SEARCH_NODE_CACHE_NAMESPACE=r1_5_round2_ro_proof_j03woh \
 UV_CACHE_DIR=/private/tmp/uv-cache \
 uv run --no-sync python scripts/coverage_map/compiler_search_reachability.py
 ```
@@ -137,121 +173,103 @@ uv run --no-sync python scripts/coverage_map/compiler_search_reachability.py
 | Field | Value |
 | --- | --- |
 | Report status | PASS |
-| Concept | `fragile_possession_state` |
 | Target | `r1_5_fragile_possession_state_v0` |
 | Result | `compiler_reachable` |
-| Result count | 40 |
+| Result count | 24 |
 | Requested evidence failures | 0 |
 | Perspective roles | `home,away` |
-| Document hash | `e62cd3147bca35e432b087bc4767215c6830f4987121888b6e5934f66e269bef` |
-| Runtime trace hash | `a84895fc56d20ada23928fcac5ec3bf05e0a5742f4b648eb17400191307b7129` |
-| Runtime value count | 896 |
-| Node-cache hits / misses | 56 / 196 |
+| Match scope | `J03WOH` |
+| Document hash | `ae4d5b3915454e78ff11b81f88cd302b3564c12de1af978a52b3c420ba69c20e` |
+| Runtime trace hash | `cdf7a6d45b873193acbde88990b3b72322cf56e1ba81935c498e96efb93b066e` |
+| Runtime value count | 116 |
+| Node-cache hits / misses | 8 / 28 |
 | Terminal provider | `operator:typed_join` |
 | Rules used | `generic_typed_join_operator`, `generic_window_operator`, `provider_field_backward_search` |
-| Row-ledger hash | `bc5d2d989d128c7baaeaaa79283461d970dded6c411adcc77842590fa0179ab9` |
-| Report hash | `65f6e0d163a9aa32ed1d3c4cbae3b0a81ac7753ecaf2a438002434078a7b5c6a` |
-| Plan-bundle hash | `83dbcec28e97aaf9262680c284e1848c58555e0911cede73f5a36de6fc425cee` |
+| Plan-bundle hash | `44f90db1cf9949323d30dc2fe90587b61549edab0942994732901f75c8db060c` |
+| Row-ledger hash | `717aa853b4290ae49457bb4e8f469d227ac74dd6c733422682adc0933a66d2f3` |
+| Report hash | `ea585bb7207b5fbee5bb562e1685f9048083a9218dd785028dc20840b40630d3` |
+| Coverage-delta hash | `96f1c308cd5cc17afe94f79b278beb38520a19e8ef3428cc5063facb1a7fa07b` |
 
-Coverage-map delta on the tracked ledger:
+Copy-ledger delta:
 
-| Metric | Before | After |
-| --- | --- | --- |
-| Compiler-reachable count | 11 | 12 |
-| Supported count | 362 | 363 |
-| Compiler-reachable pct | 1.5% | 1.6% |
-| Supported pct | 48.9% | 48.9% |
+| Metric | Before tracked ledger | After copy ledger | Delta |
+| --- | ---: | ---: | ---: |
+| Compiler-reachable count | 11 | 12 | +1 |
+| Supported count | 363 | 363 | 0 |
+| Tracked ledger mutated | false | false | n/a |
 
-`fragile_possession_state` was added as a new supported coverage row with a
-compiler-reachable evidence object. Claim boundary: observed same-team
-possession continuation, carrier pressure, and support-arrival failure only; no
-risk, value, intent, causation, trap, quality, or decision correctness.
+The tracked row for `fragile_possession_state` is supported but unflipped; the
+director-owned acceptance flip remains outside executor authority.
 
-## Full Booked-Evidence Audit
+## Full-Population Audit
 
-Audit extraction executed the committed proof bundle directly for both roles.
-Artifacts are local review aids:
+The audit executes the terminal anchor source directly across all seven matches,
+both periods, and both team perspectives. It reads terminal joined records before
+result truncation, so the `max_results=100` binder limit does not cap the
+population denominator.
 
-- `/private/tmp/r1-5-car-audit.json` (`b4991de50123a49ef20dbac81be2a9978339cca81d20fbb5cfe47a51fb456e9a`)
-- `/private/tmp/r1-5-car-audit.md` (`d95bfefefcacc2b1bb15838854c84fb47f4bd9e0e869c50203e91c717b783376`)
+Artifacts:
 
-Per-role execution:
-
-| Role | Status | Rows | Requested evidence failures | Runtime values | Runtime trace hash |
-| --- | --- | ---: | ---: | ---: | --- |
-| `away` | pass | 20 | 0 | 448 | `493fbdc662b2c40a485af5fc20215c976ba40c809f456d3c8e3af5aab85e1e69` |
-| `home` | pass | 20 | 0 | 448 | `d1ed7ea45a926a30f509f02bfb0b4c939a2f2e380bdaba78ed50f5a85981540d` |
+- `delivery/packets/r1-5-population-audit/audit.json`
+  - SHA-256 `4ece84ae78c1d66a212b36215d9ff5dd3702e3e47e31adf4d39ca60781718278`
+- `delivery/packets/r1-5-population-audit/audit.md`
+  - SHA-256 `39482ea0af272aa8d8251e7c06001050bb3db7bd9539e6286e5a610009432859`
 
 Audit summary:
 
 | Metric | Value |
-| --- | --- |
-| Total rows | 40 |
-| `typed_join_status` distribution | PASS 40 |
-| `window_status` distribution | PASS 40 |
-| `pressure_status` distribution | PASS 40 |
-| `support_arrival_status` distribution | FAIL 40 |
-| Team-pair distribution | away->away 20; home->home 20 |
+| --- | ---: |
+| Terminal rows | 8,414 |
+| Terminal population hash | `5cb6279ffb2ac055c20dcb928de42ea728916d3d6a07003b9b4479033b7706ab` |
+| Requested-evidence missing rows | 5,654 |
 
-| n | result_id | exec_role | match_id | period | anchor_frame | left_team | right_team | window | pressure | support | nearest_defender_m | supporters | join_reason |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | 5803ac63b35b75f6 | away | J03WOH | firstHalf | 23670 | away | away | PASS | PASS | FAIL | 2.703 |  | typed_join_matched |
-| 2 | 7fb3cb48ad638950 | away | J03WOH | firstHalf | 46205 | away | away | PASS | PASS | FAIL | 2.667 |  | typed_join_matched |
-| 3 | ac9eebd18fa17cfe | away | J03WOH | firstHalf | 63491 | away | away | PASS | PASS | FAIL | 3.936 |  | typed_join_matched |
-| 4 | 193cf97cd374119d | away | J03WOH | firstHalf | 65279 | away | away | PASS | PASS | FAIL | 1.493 |  | typed_join_matched |
-| 5 | 6cab439ec3ef2e9f | away | J03WOH | secondHalf | 101803 | away | away | PASS | PASS | FAIL | 3.293 |  | typed_join_matched |
-| 6 | 16740ab21803709c | away | J03WOH | secondHalf | 106378 | away | away | PASS | PASS | FAIL | 1.788 |  | typed_join_matched |
-| 7 | 47525cc0a061a797 | away | J03WOH | secondHalf | 109688 | away | away | PASS | PASS | FAIL | 2.731 |  | typed_join_matched |
-| 8 | 70c5c6d5c9e363f5 | away | J03WOH | secondHalf | 111815 | away | away | PASS | PASS | FAIL | 3.292 |  | typed_join_matched |
-| 9 | 30a6c71ac340917f | away | J03WOH | secondHalf | 138607 | away | away | PASS | PASS | FAIL | 1.228 |  | typed_join_matched |
-| 10 | 3f92dd11a4b4e2ba | away | J03WOH | secondHalf | 156033 | away | away | PASS | PASS | FAIL | 1.744 |  | typed_join_matched |
-| 11 | 7379592739c2e98c | away | J03WOH | secondHalf | 156138 | away | away | PASS | PASS | FAIL | 3.203 |  | typed_join_matched |
-| 12 | 35f0d8be38533684 | away | J03WOY | firstHalf | 36730 | away | away | PASS | PASS | FAIL | 2.541 |  | typed_join_matched |
-| 13 | 4b9f0611982ce415 | away | J03WOY | firstHalf | 51891 | away | away | PASS | PASS | FAIL | 3.691 |  | typed_join_matched |
-| 14 | c13438b542010cc1 | away | J03WOY | secondHalf | 115230 | away | away | PASS | PASS | FAIL | 2.066 |  | typed_join_matched |
-| 15 | f7eca11d3abcef45 | away | J03WOY | secondHalf | 116483 | away | away | PASS | PASS | FAIL | 2.182 |  | typed_join_matched |
-| 16 | ce84ef01f98bca43 | away | J03WOY | secondHalf | 135062 | away | away | PASS | PASS | FAIL | 3.396 |  | typed_join_matched |
-| 17 | 71e75ddf01dbc4e1 | away | J03WOY | secondHalf | 165768 | away | away | PASS | PASS | FAIL | 1.901 |  | typed_join_matched |
-| 18 | 40b19e224a44f4cd | away | J03WPY | firstHalf | 33621 | away | away | PASS | PASS | FAIL | 2.114 |  | typed_join_matched |
-| 19 | d19b889cdcaa0604 | away | J03WPY | secondHalf | 144621 | away | away | PASS | PASS | FAIL | 3.842 |  | typed_join_matched |
-| 20 | fb072c3c7b6c7a1d | away | J03WPY | secondHalf | 144649 | away | away | PASS | PASS | FAIL | 3.623 |  | typed_join_matched |
-| 21 | 97a9ab0f87d6fcc2 | home | J03WOH | firstHalf | 15146 | home | home | PASS | PASS | FAIL | 3.388 |  | typed_join_matched |
-| 22 | d7d27f72828a42cd | home | J03WOH | firstHalf | 35484 | home | home | PASS | PASS | FAIL | 2.834 |  | typed_join_matched |
-| 23 | db5e45ee4ec63d93 | home | J03WOH | firstHalf | 35922 | home | home | PASS | PASS | FAIL | 3.66 |  | typed_join_matched |
-| 24 | 4bb7d465a8a8fb89 | home | J03WOH | firstHalf | 37526 | home | home | PASS | PASS | FAIL | 2.925 |  | typed_join_matched |
-| 25 | ca9772f1e8a07073 | home | J03WOH | firstHalf | 49046 | home | home | PASS | PASS | FAIL | 1.972 |  | typed_join_matched |
-| 26 | 6b82dbe9e1facd87 | home | J03WOH | firstHalf | 68981 | home | home | PASS | PASS | FAIL | 2.191 |  | typed_join_matched |
-| 27 | a1e74c91a2626ab5 | home | J03WOH | firstHalf | 71280 | home | home | PASS | PASS | FAIL | 2.833 |  | typed_join_matched |
-| 28 | 75f68814b7453293 | home | J03WOH | firstHalf | 73608 | home | home | PASS | PASS | FAIL | 2.102 |  | typed_join_matched |
-| 29 | f150227a546e3151 | home | J03WOH | secondHalf | 115915 | home | home | PASS | PASS | FAIL | 3.428 |  | typed_join_matched |
-| 30 | 1ba79962e4bd1615 | home | J03WOH | secondHalf | 117800 | home | home | PASS | PASS | FAIL | 2.853 |  | typed_join_matched |
-| 31 | dc762c868da8bf9e | home | J03WOH | secondHalf | 119413 | home | home | PASS | PASS | FAIL | 3.444 |  | typed_join_matched |
-| 32 | 8e1090ad717362fb | home | J03WOH | secondHalf | 141231 | home | home | PASS | PASS | FAIL | 2.596 |  | typed_join_matched |
-| 33 | 7409d5a03993074a | home | J03WOH | secondHalf | 165401 | home | home | PASS | PASS | FAIL | 3.65 |  | typed_join_matched |
-| 34 | e4832ba8b952fd2a | home | J03WOY | firstHalf | 13160 | home | home | PASS | PASS | FAIL | 3.384 |  | typed_join_matched |
-| 35 | c4685898060d4cee | home | J03WOY | firstHalf | 18556 | home | home | PASS | PASS | FAIL | 3.731 |  | typed_join_matched |
-| 36 | 489d20518b53d1b6 | home | J03WOY | firstHalf | 19800 | home | home | PASS | PASS | FAIL | 2.503 |  | typed_join_matched |
-| 37 | d9b4be1b56132561 | home | J03WOY | firstHalf | 19891 | home | home | PASS | PASS | FAIL | 2.151 |  | typed_join_matched |
-| 38 | d421b78581f86662 | home | J03WOY | firstHalf | 21392 | home | home | PASS | PASS | FAIL | 3.52 |  | typed_join_matched |
-| 39 | 07ceef3915a2309c | home | J03WOY | firstHalf | 22034 | home | home | PASS | PASS | FAIL | 3.5 |  | typed_join_matched |
-| 40 | ce9a07020bef29ec | home | J03WOY | firstHalf | 42928 | home | home | PASS | PASS | FAIL | 3.425 |  | typed_join_matched |
+Status distributions:
+
+| Field | Distribution |
+| --- | --- |
+| `typed_join_status` | FAIL 2,615; PASS 145; UNKNOWN 5,654 |
+| `window_status` | FAIL 1,420; PASS 2,292; UNKNOWN 4,702 |
+| `pressure_status` | FAIL 5,138; None 2,560; PASS 716 |
+| `support_arrival_status` | FAIL 3,308; None 2,560; PASS 2,546 |
+
+UNKNOWN accounting:
+
+| Unknown source | Rows |
+| --- | ---: |
+| `typed_join_status == UNKNOWN` | 5,654 |
+| `window_status == UNKNOWN` | 4,702 |
+| `pressure_status == UNKNOWN` | 0 |
+| `support_arrival_status == UNKNOWN` | 0 |
+
+Role totals:
+
+| Role | Rows | FAIL | PASS | UNKNOWN |
+| --- | ---: | ---: | ---: | ---: |
+| `away` | 4,207 | 1,163 | 72 | 2,972 |
+| `home` | 4,207 | 1,452 | 73 | 2,682 |
+
+This replaces the round-1 capped booked-evidence table. The earlier 40-row table
+was accepted-result evidence only; it did not disclose the UNKNOWN/FAIL
+population denominator.
 
 ## Verification
 
 | Command | Result | Notes |
 | --- | --- | --- |
-| `PYTHONPATH=src ... uv run python -m unittest tests.test_r1_0_operator_scaffolding tests.test_r1_4_window tests.test_r1_5_typed_join` | PASS | 34 tests in 9.653s. Covers registry ratchets, window obligations, join keys, no-match policies, UNKNOWN propagation, both-team anchors, binder constraint rejection, and unconstrained rationale. |
-| `TQE_SEARCH_TARGETS=config/compiler-reachability/r1-5-typed-join-targets.v0.json TQE_SEARCH_PERSPECTIVE_TEAM_ROLES=home,away ... uv run --no-sync python scripts/coverage_map/compiler_search_reachability.py` | PASS | `compiler_reachable`, 40 rows, 0 requested evidence failures, compiler-reachable count 11 -> 12. |
-| CAR booked-evidence audit extraction | PASS | 40 rows; home 20 / away 20; all team pairs same-team; all requested statuses match target semantics. |
-| `UV_CACHE_DIR=/private/tmp/uv-cache make PYTHON="uv run --no-sync python" afl-substrate-q6-verify` | PASS | Honest-zero intact; runtime trace hash `b9e24dabc23931c0de15ee665d39fcd15a6ce30de02c0fa932a012f332695f8c`. |
-| `UV_CACHE_DIR=/private/tmp/uv-cache make PYTHON="uv run --no-sync python" scp-0-verify` | PASS | SCP-0 status PASS; 58 tests OK. |
-| `UV_CACHE_DIR=/private/tmp/uv-cache make PYTHON="uv run --no-sync python" m1-1-gate-a-verify` | PASS | 450 binder validation rows pass. |
-| `UV_CACHE_DIR=/private/tmp/uv-cache make PYTHON="uv run --no-sync python" test` | PASS | 445 tests in 356.871s; runtime attestation `VERIFIED`, blocking reasons `[]`. |
-| Source hygiene grep | PASS | `latest_start` appears only as `latest_start_covering_anchor`; `same_team_control` appears only in historical concept/target/projection identifiers, not runtime enum values. |
+| `PYTHONPATH=src ... uv run --no-sync python -m unittest tests.test_r1_5_typed_join` | PASS | 12 tests in 93.751s after regenerating the fixture. |
+| `PYTHONPATH=src ... uv run --no-sync python -m unittest tests.test_r1_0_operator_scaffolding tests.test_r1_4_window tests.test_r1_5_typed_join` | PASS | 37 tests in 110.520s. |
+| `TQE_SEARCH_TARGETS=config/compiler-reachability/r1-5-typed-join-targets.v0.json ... TQE_SEARCH_MATCH_IDS=J03WOH ... uv run --no-sync python scripts/coverage_map/compiler_search_reachability.py` | PASS | Copy-ledger proof: compiler-reachable, 24 rows, 0 requested evidence failures, copy delta 11 -> 12. |
+| R1-5 full-population audit generator | PASS | 8,414 terminal rows; PASS 145 / FAIL 2,615 / UNKNOWN 5,654; artifacts committed in-tree. |
+| `UV_CACHE_DIR=/private/tmp/uv-cache make PYTHON="uv run --no-sync python" test` | PASS | 448 tests in 486.152s; runtime attestation `VERIFIED`, blocking reasons `[]`. Required temporary ignored symlinks from clone-local `data/canonical/v1` and `data/raw/idsse/figshare-28196177-v1` to the canonical corpus, then symlinks were removed. |
 
-Full-suite note: the first `make test` attempt in the temp clone failed with 1
-failure and 5 errors because several corpus-backed tests pass the relative path
-`data/canonical/v1` into runtime calls while the fresh clone had no ignored
-`data/` directory. I created a temporary ignored symlink to the canonical corpus,
-reran the same command, and the corpus-backed full suite passed. The symlink was
-removed afterward; the branch tree is clean.
+## Notes for Review
+
+- The static `typed_join` operator no longer declares CAR/provider fields.
+- The regenerated plan intentionally declares CAR fields only on the emitted
+  typed_join nodes because their bound inputs carry those fields.
+- Predicate targeting is terminal-only for CAR-0. Side facts are enforced by
+  side-specific join parameters and surfaced as requested evidence.
+- The copy proof is scoped to `J03WOH` for review speed; the full-population
+  audit spans all seven matches.
+- The tracked generated ledger and R1-4 provenance remain restored. The
+  director-owned coverage flip is measured but not performed by this branch.
