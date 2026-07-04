@@ -28,7 +28,8 @@
     "pattern_dispatch_allowed": false,
     "persistent_node_cache_enabled": false,
     "perspective_team_roles": [
-      "home"
+      "home",
+      "away"
     ],
     "provider_name_allowed_as_input": false,
     "search_worker_count": 1,
@@ -108,14 +109,14 @@
     "execution_cache_backend": {
       "backend": "memory",
       "enabled": true,
-      "entry_count": 98
+      "entry_count": 196
     },
     "execution_node_cache": {
       "bypassed": 0,
       "disabled": 0,
-      "hits": 28,
-      "local_hits": 28,
-      "misses": 98,
+      "hits": 56,
+      "local_hits": 56,
+      "misses": 196,
       "shared_hits": 0
     },
     "execution_reuse_enabled": true,

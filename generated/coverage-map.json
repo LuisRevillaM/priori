@@ -9809,9 +9809,9 @@
    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
    "target_id": "r1_5_fragile_possession_state_v0",
    "report_path": "artifacts/autonomous/compiler-search-v0-report.json",
-   "document_hash": "920362fb79e7353907373e286214eb5aac81375695f440cc2ef175749d9b61fd",
+   "document_hash": "e62cd3147bca35e432b087bc4767215c6830f4987121888b6e5934f66e269bef",
    "held_out": true,
-   "result_count": 20,
+   "result_count": 40,
    "honest_zero": false,
    "semantic_correspondence": {
     "coverage_row": "fragile_possession_state",
