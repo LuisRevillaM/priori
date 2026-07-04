@@ -33,41 +33,16 @@ from tqe.runtime.values import FrameSignal, RuntimeValue
 
 
 AXIS_VALUES = ("goalward", "lateral", "toward_point", "along_lane_normal")
-POINT_FIELD_VALUES = (
-    "none",
-    "release_ball_point",
-    "reception_ball_point",
-    "release_passer_point",
-    "reception_receiver_point",
-    "start_point",
-    "end_point",
-    "run_start_point",
-    "run_end_point",
-    "carry_start_point",
-    "carry_end_point",
-    "ball_point",
-    "target_point",
-    "reference_point",
-    "screening_defender_point",
-    "screening_projection_point",
-    "source_open_point",
-    "target_open_point",
-    "source_close_point",
-    "target_close_point",
-)
-STATUS_FIELD_VALUES = (
-    "none",
-    "controlled_pass_status",
-    "carry_status",
-    "off_ball_run_status",
-    "support_arrival_status",
-    "projection_status",
-)
+ORIENTATION_BASIS_VALUES = ("acting_team", "perspective_team")
+ZERO_LENGTH_POLICY_VALUES = ("unknown",)
 STATUS_VALUE_VALUES = ("PASS", "FAIL", "UNKNOWN")
 EVIDENCE_FIELDS = [
     "axis_projection_status",
     "axis_projection_reason",
     "axis",
+    "orientation_basis",
+    "orientation_team_role",
+    "attack_x_sign",
     "source_start_point_field",
     "source_end_point_field",
     "reference_point_field",
@@ -78,11 +53,13 @@ EVIDENCE_FIELDS = [
     "axis_unit_vector",
     "signed_projection_m",
     "angle_between_degrees",
+    "angle_unit",
     "source_anchor_id",
     "source_frame_id",
     "source_record_hash",
     "witness_source_node_id",
     "witness_source_output_name",
+    "zero_length_policy",
 ]
 
 
@@ -97,10 +74,10 @@ PROJECT_ONTO_AXIS_SIGNATURE = CompositionOperatorSignature(
         OperatorInputDefinition(
             name="source",
             temporal_type=TemporalContainer.EPISODE_SET,
-            payload_type=PayloadType.BOOLEAN,
+            payload_type=PayloadType.ANCHOR_REF,
             cardinality=Cardinality.COLLECTION,
             unit=Unit.NONE,
-            entity_scope=EntityScope.POSSESSION,
+            entity_scope=EntityScope.ANCHOR,
         )
     ],
     outputs=[
@@ -157,17 +134,13 @@ PROJECT_ONTO_AXIS_SIGNATURE = CompositionOperatorSignature(
         ParameterDefinition(
             name="start_point_field",
             payload_type=PayloadType.ENUM,
-            required=False,
-            default=TypedValue(payload_type=PayloadType.ENUM, value="release_ball_point"),
-            allowed_values=list(POINT_FIELD_VALUES),
+            required=True,
             description="Source record point field used as vector start.",
         ),
         ParameterDefinition(
             name="end_point_field",
             payload_type=PayloadType.ENUM,
-            required=False,
-            default=TypedValue(payload_type=PayloadType.ENUM, value="reception_ball_point"),
-            allowed_values=list(POINT_FIELD_VALUES),
+            required=True,
             description="Source record point field used as vector end.",
         ),
         ParameterDefinition(
@@ -175,7 +148,6 @@ PROJECT_ONTO_AXIS_SIGNATURE = CompositionOperatorSignature(
             payload_type=PayloadType.ENUM,
             required=False,
             default=TypedValue(payload_type=PayloadType.ENUM, value="none"),
-            allowed_values=list(POINT_FIELD_VALUES),
             description="Reference point for toward_point axes, when record-backed.",
         ),
         ParameterDefinition(
@@ -183,7 +155,6 @@ PROJECT_ONTO_AXIS_SIGNATURE = CompositionOperatorSignature(
             payload_type=PayloadType.ENUM,
             required=False,
             default=TypedValue(payload_type=PayloadType.ENUM, value="none"),
-            allowed_values=list(POINT_FIELD_VALUES),
             description="Lane start point for along_lane_normal axes.",
         ),
         ParameterDefinition(
@@ -191,31 +162,27 @@ PROJECT_ONTO_AXIS_SIGNATURE = CompositionOperatorSignature(
             payload_type=PayloadType.ENUM,
             required=False,
             default=TypedValue(payload_type=PayloadType.ENUM, value="none"),
-            allowed_values=list(POINT_FIELD_VALUES),
             description="Lane end point for along_lane_normal axes.",
         ),
         ParameterDefinition(
-            name="reference_x_m",
-            payload_type=PayloadType.NUMBER,
-            unit=Unit.METRE,
-            required=False,
-            default=TypedValue(payload_type=PayloadType.NUMBER, unit=Unit.METRE, value=0.0),
-            description="Fallback reference x coordinate for toward_point axes.",
+            name="acting_team_field",
+            payload_type=PayloadType.ENUM,
+            required=True,
+            description="Source record field that names the acting team for goalward orientation.",
         ),
         ParameterDefinition(
-            name="reference_y_m",
-            payload_type=PayloadType.NUMBER,
-            unit=Unit.METRE,
+            name="orientation_basis",
+            payload_type=PayloadType.ENUM,
             required=False,
-            default=TypedValue(payload_type=PayloadType.NUMBER, unit=Unit.METRE, value=0.0),
-            description="Fallback reference y coordinate for toward_point axes.",
+            default=TypedValue(payload_type=PayloadType.ENUM, value="acting_team"),
+            allowed_values=list(ORIENTATION_BASIS_VALUES),
+            description="Team basis used for goalward orientation.",
         ),
         ParameterDefinition(
             name="required_source_status_field",
             payload_type=PayloadType.ENUM,
             required=False,
             default=TypedValue(payload_type=PayloadType.ENUM, value="none"),
-            allowed_values=list(STATUS_FIELD_VALUES),
             description="Optional source status field that must equal required_source_status_value.",
         ),
         ParameterDefinition(
@@ -225,6 +192,14 @@ PROJECT_ONTO_AXIS_SIGNATURE = CompositionOperatorSignature(
             default=TypedValue(payload_type=PayloadType.ENUM, value="PASS"),
             allowed_values=list(STATUS_VALUE_VALUES),
             description="Required source status value when required_source_status_field is set.",
+        ),
+        ParameterDefinition(
+            name="zero_length_policy",
+            payload_type=PayloadType.ENUM,
+            required=False,
+            default=TypedValue(payload_type=PayloadType.ENUM, value="unknown"),
+            allowed_values=list(ZERO_LENGTH_POLICY_VALUES),
+            description="Policy for zero-length source or axis vectors.",
         ),
     ],
     coverage_propagation_rule_id="missing_vector_evidence_to_unknown",
@@ -245,18 +220,16 @@ def execute_project_onto_axis(
     source_records = _runtime_records(source)
     source_ref = node.inputs["source"]
     axis = _parameter_enum(parameters, "axis", "goalward")
-    start_field = _parameter_enum(parameters, "start_point_field", "release_ball_point")
-    end_field = _parameter_enum(parameters, "end_point_field", "reception_ball_point")
+    start_field = _parameter_enum(parameters, "start_point_field", "")
+    end_field = _parameter_enum(parameters, "end_point_field", "")
     reference_field = _parameter_enum(parameters, "reference_point_field", "none")
     lane_start_field = _parameter_enum(parameters, "lane_start_point_field", "none")
     lane_end_field = _parameter_enum(parameters, "lane_end_point_field", "none")
+    acting_team_field = _parameter_enum(parameters, "acting_team_field", "")
+    orientation_basis = _parameter_enum(parameters, "orientation_basis", "acting_team")
     required_status_field = _parameter_enum(parameters, "required_source_status_field", "none")
     required_status_value = _parameter_enum(parameters, "required_source_status_value", "PASS")
-    reference_coordinate = (
-        _parameter_number(parameters, "reference_x_m", 0.0),
-        _parameter_number(parameters, "reference_y_m", 0.0),
-    )
-    attack_x_sign = _attack_x_sign_for_state(state)
+    zero_length_policy = _parameter_enum(parameters, "zero_length_policy", "unknown")
 
     records: list[dict[str, Any]] = []
     for index, source_record in enumerate(source_records):
@@ -273,10 +246,11 @@ def execute_project_onto_axis(
                 reference_field=reference_field,
                 lane_start_field=lane_start_field,
                 lane_end_field=lane_end_field,
+                acting_team_field=acting_team_field,
+                orientation_basis=orientation_basis,
                 required_status_field=required_status_field,
                 required_status_value=required_status_value,
-                reference_coordinate=reference_coordinate,
-                attack_x_sign=attack_x_sign,
+                zero_length_policy=zero_length_policy,
             )
         )
 
@@ -330,10 +304,11 @@ def _projection_record(
     reference_field: str,
     lane_start_field: str,
     lane_end_field: str,
+    acting_team_field: str,
+    orientation_basis: str,
     required_status_field: str,
     required_status_value: str,
-    reference_coordinate: tuple[float, float],
-    attack_x_sign: int | None,
+    zero_length_policy: str,
 ) -> dict[str, Any]:
     anchor_frame_id = _anchor_frame_id(source_record)
     start_frame_id = _optional_int(source_record.get("start_frame_id")) or anchor_frame_id
@@ -354,6 +329,9 @@ def _projection_record(
         "end_frame_id": end_frame_id,
         "entity_refs": [str(item) for item in entity_refs],
         "axis": axis,
+        "orientation_basis": orientation_basis,
+        "orientation_team_role": None,
+        "attack_x_sign": None,
         "source_start_point_field": start_field,
         "source_end_point_field": end_field,
         "reference_point_field": reference_field,
@@ -365,6 +343,7 @@ def _projection_record(
         "source_record_hash": stable_hash(source_record),
         "witness_source_node_id": source_node_id,
         "witness_source_output_name": source_output_name,
+        "zero_length_policy": zero_length_policy,
     }
 
     if required_status_field != "none" and str(source_record.get(required_status_field)) != required_status_value:
@@ -377,6 +356,7 @@ def _projection_record(
             "axis_unit_vector": None,
             "signed_projection_m": None,
             "angle_between_degrees": None,
+            "angle_unit": "degrees",
         }
 
     start_point = _point_from_record(source_record, start_field)
@@ -391,19 +371,29 @@ def _projection_record(
             "axis_unit_vector": None,
             "signed_projection_m": None,
             "angle_between_degrees": None,
+            "angle_unit": "degrees",
         }
     vector = (end_point[0] - start_point[0], end_point[1] - start_point[1])
-    axis_vector, axis_reason = _axis_vector(
+    orientation = _orientation_context(
         state=state,
+        record=source_record,
+        orientation_basis=orientation_basis,
+        acting_team_field=acting_team_field,
+    )
+    axis_vector, axis_reason = _axis_vector(
         record=source_record,
         axis=axis,
         start_point=start_point,
         reference_field=reference_field,
         lane_start_field=lane_start_field,
         lane_end_field=lane_end_field,
-        reference_coordinate=reference_coordinate,
-        attack_x_sign=attack_x_sign,
+        attack_x_sign=orientation["attack_x_sign"],
     )
+    base = {
+        **base,
+        "orientation_team_role": orientation["team_role"],
+        "attack_x_sign": orientation["attack_x_sign"],
+    }
     if axis_vector is None:
         return {
             **base,
@@ -414,18 +404,32 @@ def _projection_record(
             "axis_unit_vector": None,
             "signed_projection_m": None,
             "angle_between_degrees": None,
+            "angle_unit": "degrees",
         }
     unit_axis = _unit_vector(axis_vector)
-    if unit_axis is None or _vector_length(vector) == 0:
+    if unit_axis is None:
         return {
             **base,
             "axis_projection_status": "UNKNOWN",
-            "axis_projection_reason": "zero_length_vector",
+            "axis_projection_reason": "zero_length_axis_vector",
             "source_start_point": _point_payload(start_point),
             "source_end_point": _point_payload(end_point),
             "axis_unit_vector": _point_payload(unit_axis),
             "signed_projection_m": None,
             "angle_between_degrees": None,
+            "angle_unit": "degrees",
+        }
+    if _vector_length(vector) == 0:
+        return {
+            **base,
+            "axis_projection_status": "UNKNOWN",
+            "axis_projection_reason": "zero_length_source_vector",
+            "source_start_point": _point_payload(start_point),
+            "source_end_point": _point_payload(end_point),
+            "axis_unit_vector": _point_payload(unit_axis),
+            "signed_projection_m": None,
+            "angle_between_degrees": None,
+            "angle_unit": "degrees",
         }
     signed_projection = vector[0] * unit_axis[0] + vector[1] * unit_axis[1]
     angle = _angle_between_degrees(vector, unit_axis)
@@ -438,33 +442,30 @@ def _projection_record(
         "axis_unit_vector": _point_payload(unit_axis),
         "signed_projection_m": round(float(signed_projection), 3),
         "angle_between_degrees": None if angle is None else round(float(angle), 3),
+        "angle_unit": "degrees",
     }
 
 
 def _axis_vector(
     *,
-    state: Any,
     record: dict[str, Any],
     axis: str,
     start_point: tuple[float, float],
     reference_field: str,
     lane_start_field: str,
     lane_end_field: str,
-    reference_coordinate: tuple[float, float],
     attack_x_sign: int | None,
 ) -> tuple[tuple[float, float] | None, str]:
     if axis == "goalward":
-        record_direction = _attacking_direction_value(record.get("attacking_direction"))
-        sign = record_direction if record_direction is not None else attack_x_sign
-        if sign not in {-1, 1}:
-            return None, "attacking_direction_missing"
-        return (float(sign), 0.0), "axis_observed"
+        if attack_x_sign not in {-1, 1}:
+            return None, "orientation_missing"
+        return (float(attack_x_sign), 0.0), "axis_observed"
     if axis == "lateral":
         return (0.0, 1.0), "axis_observed"
     if axis == "toward_point":
         reference = _point_from_record(record, reference_field)
         if reference is None:
-            reference = reference_coordinate
+            return None, "reference_point_missing"
         return (reference[0] - start_point[0], reference[1] - start_point[1]), "axis_observed"
     if axis == "along_lane_normal":
         lane_start = _point_from_record(record, lane_start_field)
@@ -476,7 +477,24 @@ def _axis_vector(
     return None, "axis_unknown"
 
 
-def _attack_x_sign_for_state(state: Any) -> int | None:
+def _orientation_context(
+    *,
+    state: Any,
+    record: dict[str, Any],
+    orientation_basis: str,
+    acting_team_field: str,
+) -> dict[str, Any]:
+    if orientation_basis == "perspective_team":
+        team_role = str(getattr(state, "perspective_team_role", "") or "")
+    else:
+        team_role = str(record.get(acting_team_field) or "")
+    sign = _attack_x_sign_for_team(state=state, team_role=team_role)
+    return {"team_role": team_role or None, "attack_x_sign": sign}
+
+
+def _attack_x_sign_for_team(*, state: Any, team_role: str) -> int | None:
+    if team_role not in {"home", "away"}:
+        return None
     orientation_path = Path(state.canonical_root) / "orientation.parquet"
     try:
         orientation = pd.read_parquet(orientation_path)
@@ -486,7 +504,7 @@ def _attack_x_sign_for_state(state: Any) -> int | None:
         orientation,
         str(state.match_id),
         str(state.period),
-        str(state.perspective_team_role),
+        team_role,
     )
 
 
@@ -580,21 +598,3 @@ def _optional_int(value: Any) -> int | None:
 def _parameter_enum(parameters: dict[str, TypedValue], name: str, default: str) -> str:
     value = parameters.get(name)
     return default if value is None else str(value.value)
-
-
-def _parameter_number(parameters: dict[str, TypedValue], name: str, default: float) -> float:
-    value = parameters.get(name)
-    if value is None:
-        return default
-    return float(value.value)
-
-
-def _attacking_direction_value(value: Any) -> int | None:
-    if value in {-1, 1}:
-        return int(value)
-    text = str(value).strip().lower()
-    if text in {"1", "+1", "positive_x", "right", "left_to_right"}:
-        return 1
-    if text in {"-1", "negative_x", "left", "right_to_left"}:
-        return -1
-    return None

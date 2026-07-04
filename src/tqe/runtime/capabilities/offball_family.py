@@ -1113,6 +1113,7 @@ def support_arrival_anchor_record(
         ),
     )
     payload = evaluation.to_dict()
+    first_support = first_support_points(payload)
     return {
         **anchor,
         "match_id": state.match_id,
@@ -1142,8 +1143,11 @@ def support_arrival_anchor_record(
         "candidate_player_ids": list(payload["candidate_player_ids"]),
         "evaluated_candidate_player_ids": list(payload["evaluated_candidate_player_ids"]),
         "supporting_player_ids": list(payload["supporting_player_ids"]),
+        "first_supporter_id": first_support["player_id"],
         "first_arrival_frame_id": payload["first_arrival_frame_id"],
         "first_arrival_seconds_after_anchor": payload["first_arrival_seconds_after_anchor"],
+        "first_supporter_point": first_support["candidate_point"],
+        "first_support_reference_point": first_support["reference_point"],
         "support_duration_seconds": payload["support_duration_seconds"],
         "missing_candidate_player_ids": list(payload["missing_candidate_player_ids"]),
         "invalid_candidate_player_ids": list(payload["invalid_candidate_player_ids"]),
@@ -1161,6 +1165,32 @@ def support_arrival_anchor_record(
         "reference_point": reference_point,
         "observed_candidate_record_count": len(candidate_positions),
     }
+
+
+def first_support_points(payload: dict[str, Any]) -> dict[str, Any]:
+    supporting_ids = payload.get("supporting_player_ids")
+    if not isinstance(supporting_ids, (list, tuple)) or not supporting_ids:
+        return {"player_id": None, "candidate_point": None, "reference_point": None}
+    first_id = str(supporting_ids[0])
+    per_player = payload.get("per_player_evidence")
+    if not isinstance(per_player, (list, tuple)):
+        return {"player_id": first_id, "candidate_point": None, "reference_point": None}
+    for player in per_player:
+        if not isinstance(player, dict) or str(player.get("player_id") or "") != first_id:
+            continue
+        first_frame_id = optional_int(player.get("first_arrival_frame_id"))
+        frame_evidence = player.get("frame_evidence")
+        if first_frame_id is None or not isinstance(frame_evidence, (list, tuple)):
+            return {"player_id": first_id, "candidate_point": None, "reference_point": None}
+        for frame in frame_evidence:
+            if not isinstance(frame, dict) or optional_int(frame.get("frame_id")) != first_frame_id:
+                continue
+            candidate = point_from_xy(frame.get("candidate_x_m"), frame.get("candidate_y_m"))
+            reference = point_from_xy(frame.get("reference_x_m"), frame.get("reference_y_m"))
+            return {"player_id": first_id, "candidate_point": candidate, "reference_point": reference}
+    return {"player_id": first_id, "candidate_point": None, "reference_point": None}
+
+
 def support_arrival_prefilter_record(
     *,
     state: PeriodState,
@@ -1206,8 +1236,11 @@ def support_arrival_prefilter_record(
         "candidate_player_ids": [],
         "evaluated_candidate_player_ids": [],
         "supporting_player_ids": [],
+        "first_supporter_id": None,
         "first_arrival_frame_id": None,
         "first_arrival_seconds_after_anchor": None,
+        "first_supporter_point": None,
+        "first_support_reference_point": None,
         "support_duration_seconds": 0.0,
         "missing_candidate_player_ids": [],
         "invalid_candidate_player_ids": [],

@@ -452,6 +452,9 @@ PROJECT_ONTO_AXIS_FIELDS = {
     "axis_projection_status",
     "axis_projection_reason",
     "axis",
+    "orientation_basis",
+    "orientation_team_role",
+    "attack_x_sign",
     "source_start_point_field",
     "source_end_point_field",
     "reference_point_field",
@@ -462,11 +465,13 @@ PROJECT_ONTO_AXIS_FIELDS = {
     "axis_unit_vector",
     "signed_projection_m",
     "angle_between_degrees",
+    "angle_unit",
     "source_anchor_id",
     "source_frame_id",
     "source_record_hash",
     "witness_source_node_id",
     "witness_source_output_name",
+    "zero_length_policy",
 }
 
 
@@ -479,6 +484,7 @@ class BuildResult:
     field_sources: dict[str, tuple[str, str]]
     rules_used: list[str] = field(default_factory=list)
     providers_used: list[str] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -649,6 +655,7 @@ def synthesize_by_search(*, target: dict[str, Any], row: dict[str, Any], context
             "providers_used": build.providers_used,
             "rules_used": sorted(set(build.rules_used)),
             "terminal_provider": build.terminal_entry,
+            "build_metadata": build.metadata,
             "field_sources": {
                 field: {"source_node_id": source[0], "output_name": source[1]}
                 for field, source in sorted(build.field_sources.items())
@@ -733,22 +740,34 @@ def build_project_onto_axis(
     reference_point_field = str(constraint.get("reference_point_field", "none"))
     lane_start_point_field = str(constraint.get("lane_start_point_field", "none"))
     lane_end_point_field = str(constraint.get("lane_end_point_field", "none"))
+    acting_team_field = str(constraint.get("acting_team_field", "none"))
+    orientation_basis = str(constraint.get("orientation_basis", "acting_team"))
     required_source_status_field = str(constraint.get("required_source_status_field", "none"))
     required_source_status_value = str(constraint.get("required_source_status_value", "PASS"))
+    zero_length_policy = str(constraint.get("zero_length_policy", "unknown"))
     source_required_fields = {
         start_point_field,
         end_point_field,
     }
     source_required_fields.update(
         field
-        for field in (reference_point_field, lane_start_point_field, lane_end_point_field)
+        for field in (reference_point_field, lane_start_point_field, lane_end_point_field, acting_team_field)
         if field != "none"
     )
     if required_source_status_field != "none":
         source_required_fields.add(required_source_status_field)
     source_required_fields.discard("none")
     attempts: list[dict[str, Any]] = []
-    for candidate in vector_projection_candidates(context, source_required_fields)[: context.max_branching]:
+    candidates = vector_projection_candidates(context, source_required_fields)
+    candidate_summaries = [
+        {
+            "provider": candidate["entry"].name,
+            "output": candidate["output"].name,
+            "fields": sorted({candidate["output"].name, *candidate["output"].evidence_fields} & source_required_fields),
+        }
+        for candidate in candidates
+    ]
+    for candidate in candidates[: context.max_branching]:
         entry = candidate["entry"]
         output = candidate["output"]
         try:
@@ -787,8 +806,11 @@ def build_project_onto_axis(
                         "reference_point_field": enum(reference_point_field),
                         "lane_start_point_field": enum(lane_start_point_field),
                         "lane_end_point_field": enum(lane_end_point_field),
+                        "acting_team_field": enum(acting_team_field),
+                        "orientation_basis": enum(orientation_basis),
                         "required_source_status_field": enum(required_source_status_field),
                         "required_source_status_value": enum(required_source_status_value),
+                        "zero_length_policy": enum(zero_length_policy),
                     },
                 )
             )
@@ -803,6 +825,14 @@ def build_project_onto_axis(
                 field_sources=field_sources,
                 rules_used=[*source.rules_used, "generic_vector_projection_operator"],
                 providers_used=[*source.providers_used, "operator:project_onto_axis"],
+                metadata={
+                    "vector_projection_discovery_space_count": len(candidates),
+                    "vector_projection_candidate_outputs": candidate_summaries,
+                    "vector_projection_selected_output": {
+                        "provider": entry.name,
+                        "output": output.name,
+                    },
+                },
             )
         except SynthesisError as error:
             attempts.append(
@@ -839,8 +869,7 @@ def vector_projection_candidates(
                 continue
             score = 0
             score += 25 * len(source_required_fields & output_fields)
-            score += 8 if output.name == "episodes" else 0
-            score += 3 if entry.name == "controlled_pass_episode" else 0
+            score += 8 if output.name in {"episodes", "anchor_evaluations"} else 0
             candidates.append((-score, entry.name, output.name, entry, output))
     return [
         {"entry": entry, "output": output}
@@ -2146,6 +2175,7 @@ def row_result(
         "terminal_provider": None if build is None else build.get("terminal_provider"),
         "rules_used": [] if build is None else build.get("rules_used", []),
         "field_sources": {} if build is None else build.get("field_sources", {}),
+        "build_metadata": {} if build is None else build.get("build_metadata", {}),
         "coverage_gold_chain_audit": gold_chain_audit(row),
     }
 
