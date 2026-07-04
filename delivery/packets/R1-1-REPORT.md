@@ -23,6 +23,9 @@ controlled_pass_episode
 The copied coverage ledger moved from 7 to 8 `compiler_reachable` rows. The
 existing frozen `line_break_support_response` plan hash/result id were restored
 after the additive point-pair design, so existing query plans do not drift.
+Round 3 fixes the proof-plan synthesis path: declared `relation_on_anchor`
+constraints are applied to the generated proof plan, unsupported constraint keys
+fail synthesis, and the regenerated proof still earns the 8.
 
 ## Scope
 
@@ -37,6 +40,15 @@ acceptance composition:
   the first observed supporter's goalward depth relative to the carrier/reference
   point.
 - The discovery space is reported honestly from the compiler-search output.
+- Round 3 applies the target's declared relation constraints during proof-plan
+  synthesis instead of letting catalog defaults stand in.
+- Tool-side point-field defaults (`release_ball_point` / `reception_ball_point`)
+  were removed from vector-projection synthesis.
+- The compiler-search projection field list is derived from
+  `PROJECT_ONTO_AXIS_SIGNATURE`.
+- Angle policy is explicit: `angle_between_degrees` is emitted in degrees, and
+  every projection record carries `angle_unit: "degrees"` including UNKNOWN
+  records. The operator does not emit radians.
 
 ## Commit Ledger
 
@@ -51,6 +63,8 @@ acceptance composition:
 | `5605d3a` | PASS | Regenerated semantic projections for the first round-2 shape. |
 | `c2002be` | PASS | Moved support point-pair fields to additive `support_arrival_point_pair`. |
 | `15abb98` | PASS | Regenerated projections after the additive point-pair design. |
+| `853cf27` | PASS | Reported round-2 remediation and verification. |
+| `7df33ad` | PASS | Applied declared proof constraints in synthesis and added round-3 probes. |
 
 This final report commit is report-only.
 
@@ -69,6 +83,11 @@ This final report commit is report-only.
 | Field-parameter binder guard | PASS | Operator `_field` parameters are validated against source output/evidence fields; undeclared fields fail bind with `operator_field_parameter_not_in_input`. |
 | Additive support point-pair view | PASS | New `support_arrival_point_pair@0.1.0` exposes the first supporter/reference point pair while leaving `support_arrival_relation` frozen. |
 | True support-depth target | PASS | Target declares source `support_arrival_point_pair.anchor_evaluations`, point pair `first_support_reference_point -> first_supporter_point`, axis `acting-team goalward`, and orientation team field `candidate_team_role`. |
+| Relation constraint application | PASS | Synthesized `support_arrival_point_pair` node now carries the target's 30m distance, 3s arrival, 0s duration, and upstream `controlled_pass_status == PASS` parameters. |
+| Unapplied constraint guard | PASS | Unsupported `relation_on_anchor` keys now raise a synthesis `missing_constraint` failure instead of being dropped. |
+| Vector field defaults removed | PASS | `start_point_field`, `end_point_field`, and goalward `acting_team_field` must be declared by the vector-projection constraint; no pass-field fallback is allowed. |
+| Signature-derived field list | PASS | Search's `PROJECT_ONTO_AXIS_FIELDS` is derived from `PROJECT_ONTO_AXIS_SIGNATURE.outputs`; tests assert parity. |
+| Angle-units policy | PASS | Projection records use numeric `angle_between_degrees` and `angle_unit: "degrees"`; no radians path exists. |
 | Existing plan drift | PASS | Frozen `line_break_support_response` plan uses the original relation and restored its original bound plan hash/result id. |
 
 ## Catalog / IR / Search Edit Enumeration
@@ -82,10 +101,10 @@ This final report commit is report-only.
 | `src/tqe/runtime/capabilities/__init__.py` | Registers the support point-pair capability implementation. | Runtime wiring. |
 | `src/tqe/runtime/catalog.py` | Declares `support_arrival_point_pair@0.1.0`. | Catalog visibility for compiler search. |
 | `semantic-registry/registry.yaml` | Adds semantic registry binding and AI projection waiver for the additive view. | Semantic projection consistency. |
-| `scripts/coverage_map/compiler_search_reachability.py` | Adds generic `vector_projection` composition and discovery metadata. | Lets search discover point-pair providers and compose them through the operator. |
+| `scripts/coverage_map/compiler_search_reachability.py` | Adds generic `vector_projection` composition, discovery metadata, round-3 relation-constraint enforcement, required vector field declarations, and signature-derived operator fields. | Lets search discover point-pair providers and compose them through the operator without dropping declared target constraints. |
 | `config/compiler-reachability/r1-1-project-onto-axis-targets.v0.json` | Declares the acceptance target and semantic correspondence. | R1-1 reachability proof. |
 | `tests/test_r1_0_operator_scaffolding.py` | Updates the operator registry ratchet from zero to one. | R1-1 supersedes R1-0 empty registry while preserving boundary guards. |
-| `tests/test_r1_1_project_onto_axis.py` | Adds the operator and end-to-end composition tests. | Round-2 semantic coverage. |
+| `tests/test_r1_1_project_onto_axis.py` | Adds the operator, end-to-end composition, synthesis constraint, unapplied-key, and signature-field parity tests. | Round-2 and round-3 semantic coverage. |
 
 Generated semantic artifacts were regenerated after the additive point-pair
 design:
@@ -102,20 +121,20 @@ Non-updating proof command:
 ```text
 TQE_SEARCH_TARGETS=config/compiler-reachability/r1-1-project-onto-axis-targets.v0.json \
 TQE_SEARCH_UPDATE_LEDGER=0 \
-TQE_SEARCH_OUT_DIR=/private/tmp/priori-r1-1-search \
-TQE_SEARCH_REPORT=/private/tmp/priori-r1-1-search-report.json \
+TQE_SEARCH_OUT_DIR=/private/tmp/priori-r1-1-search-r3 \
+TQE_SEARCH_REPORT=/private/tmp/priori-r1-1-search-r3-report.json \
 PYTHONPATH=src ./.venv/bin/python scripts/coverage_map/compiler_search_reachability.py
 ```
 
 Copied-ledger update command:
 
 ```text
-cp generated/coverage-map.json /private/tmp/r1-1-coverage-map.json
+cp generated/coverage-map.json /private/tmp/r1-1-coverage-map-r3.json
 TQE_SEARCH_TARGETS=config/compiler-reachability/r1-1-project-onto-axis-targets.v0.json \
-TQE_SEARCH_LEDGER=/private/tmp/r1-1-coverage-map.json \
+TQE_SEARCH_LEDGER=/private/tmp/r1-1-coverage-map-r3.json \
 TQE_SEARCH_UPDATE_LEDGER=1 \
-TQE_SEARCH_OUT_DIR=/private/tmp/priori-r1-1-search-update \
-TQE_SEARCH_REPORT=/private/tmp/priori-r1-1-search-update-report.json \
+TQE_SEARCH_OUT_DIR=/private/tmp/priori-r1-1-search-r3-update \
+TQE_SEARCH_REPORT=/private/tmp/priori-r1-1-search-r3-update-report.json \
 PYTHONPATH=src ./.venv/bin/python scripts/coverage_map/compiler_search_reachability.py
 ```
 
@@ -136,13 +155,29 @@ Result:
 | Candidate output | `support_arrival_point_pair.anchor_evaluations` |
 | Candidate fields | `candidate_team_role`, `first_support_reference_point`, `first_supporter_point`, `support_point_pair_status` |
 | Selected output | `support_arrival_point_pair.anchor_evaluations` |
+| Document hash | `5158d67088773ac758a2c59eb8d6de32456f334e0a4883dcea6d156b72360521` |
+| Runtime trace hash | `adc3a14f095e2318c605bd593a00cac4d29edf197adc72d4d0a79126ab59ca0e` |
+
+Applied `relation_on_anchor` parameters in the regenerated proof plan:
+
+| Parameter | Value |
+| --- | --- |
+| `anchor_frame_field` | `controlled_reception_frame_id` |
+| `candidate_scope` | `perspective_outfield` |
+| `support_region_mode` | `WITHIN_DISTANCE_OF_REFERENCE_POINT` |
+| `maximum_arrival_seconds` | `3.0` |
+| `minimum_duration_seconds` | `0.0` |
+| `maximum_support_distance_m` | `30.0` |
+| `minimum_supporting_players` | `1.0` |
+| `required_anchor_status_field` | `controlled_pass_status` |
+| `required_anchor_status_value` | `PASS` |
 
 Reachability delta measured by the copied-ledger update path:
 
 | Ledger | `compiler_reachable` count | `compiler_reachable` pct | Supported count | Supported pct |
 | --- | ---: | ---: | ---: | ---: |
 | Baseline generated ledger | 7 | n/a | 362 | 48.9 |
-| Copied ledger after R1-1 update | 8 | 1.1 | 362 | 48.9 |
+| Copied ledger after R1-1 round-3 update | 8 | 1.1 | 362 | 48.9 |
 
 Sample/held-out counters from the target-specific run:
 
@@ -185,7 +220,7 @@ Focused tests:
 
 | Command | Status | Notes |
 | --- | --- | --- |
-| `PYTHONPATH=src ./.venv/bin/python -m unittest tests.test_r1_1_project_onto_axis -v` | PASS | 8 tests in 15.048s. Covers all axes, acting-team orientation, `toward_point` UNKNOWN, lane-normal zero length UNKNOWN, source zero length UNKNOWN, field-param bind rejection, and real bind/execute composition. |
+| `PYTHONPATH=src ./.venv/bin/python -m unittest tests.test_r1_1_project_onto_axis -v` | PASS | 10 tests in 13.818s. Covers all axes, acting-team orientation, `toward_point` UNKNOWN, lane-normal zero length UNKNOWN, source zero length UNKNOWN, field-param bind rejection, real bind/execute composition, declared relation-constraint application, unapplied-key failure, and signature-derived projection fields. |
 | R1-1 compiler-search non-updating proof | PASS | Target became `compiler_reachable`; 20 results; zero requested evidence failures. |
 | R1-1 copied-ledger update proof | PASS | Copied ledger moved `compiler_reachable` from 7 to 8. |
 
@@ -193,7 +228,7 @@ Full suite on the committed code tree:
 
 | Command | Status | Notes |
 | --- | --- | --- |
-| `PYTHON=.venv/bin/python make test` | PASS | 385 tests in 329.148s; attestation `VERIFIED`; no blockers. |
+| `PYTHON=.venv/bin/python make test` | PASS | 387 tests in 329.358s; attestation `VERIFIED`; no blockers. |
 
 Pinned gates on the committed code tree:
 
@@ -212,7 +247,7 @@ Semantic registry verification:
 
 | Command | Status | Notes |
 | --- | --- | --- |
-| `make scp-0-write` / SCP-0 regeneration path | PASS | Findings `[]`; runtime capabilities bound 45/45; operators semantically defined 8/8; registry tests 58 OK. |
+| `PYTHON=.venv/bin/python make scp-0-verify` | PASS | Findings `[]`; runtime capabilities bound 45/45; operators semantically defined 8/8; registry tests 58 OK. |
 
 SCP-0 hashes after regeneration:
 
@@ -260,9 +295,12 @@ declared, witnessed, and UNKNOWN-preserving for missing vector evidence. Round
 2 corrected the semantics that matter for `support_depth`: goalward orientation
 is acting-team-backed and recorded in evidence, `toward_point` no longer
 fabricates an axis, all axes are tested, and the acceptance target now composes
-from a real supporter-relative point pair. The new compiler-search target is
-held out and multi-step, returns 20 results with zero requested-evidence
-failures, and moves a copied coverage ledger from 7 to 8 compiler-reachable
-rows.
+from a real supporter-relative point pair. Round 3 corrected the proof
+synthesis boundary so the target's relation constraints are applied in the
+generated plan, unsupported constraint keys fail synthesis, vector point fields
+must be declared, and the operator evidence field list is signature-derived.
+The compiler-search target is held out and multi-step, returns 20 results with
+zero requested-evidence failures, and moves a copied coverage ledger from 7 to
+8 compiler-reachable rows.
 
 No push was performed.
