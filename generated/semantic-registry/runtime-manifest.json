@@ -7197,9 +7197,14 @@
         "minimum_duration_seconds",
         "maximum_support_distance_m",
         "minimum_supporting_players",
+        "candidate_scope",
+        "candidate_team_role",
         "supporting_player_ids",
+        "first_supporter_id",
         "first_arrival_frame_id",
         "first_arrival_seconds_after_anchor",
+        "first_supporter_point",
+        "first_support_reference_point",
         "support_duration_seconds",
         "candidate_player_ids",
         "evaluated_candidate_player_ids",
@@ -7258,9 +7263,14 @@
             "minimum_duration_seconds",
             "maximum_support_distance_m",
             "minimum_supporting_players",
+            "candidate_scope",
+            "candidate_team_role",
             "supporting_player_ids",
+            "first_supporter_id",
             "first_arrival_frame_id",
             "first_arrival_seconds_after_anchor",
+            "first_supporter_point",
+            "first_support_reference_point",
             "support_duration_seconds",
             "candidate_player_ids",
             "evaluated_candidate_player_ids",
@@ -7405,6 +7415,7 @@
         {
           "allowed_values": [
             "none",
+            "controlled_pass_status",
             "line_break_status",
             "receiver_line_transition_status"
           ],
@@ -8598,6 +8609,6 @@
       "unit": "none"
     }
   ],
-  "runtime_manifest_revision": "ad57d70f9db86d60424d2006fa86cf8e2e356bf3135d9f971f9202b583f4c881",
+  "runtime_manifest_revision": "2090705e21da86e0713e6d8797a81bd4f15a3740d52c3604b88724f1c8ae1b68",
   "schema_version": "1.0"
 }

@@ -2523,7 +2523,7 @@ runtime_bindings:
         type: {container: Scalar, value: Enum, unit: none}
         required: false
         default: {payload_type: enum, value: none, unit: none}
-        allowed_values: [none, line_break_status, receiver_line_transition_status]
+        allowed_values: [none, controlled_pass_status, line_break_status, receiver_line_transition_status]
       - name: required_anchor_status_value
         type: {container: Scalar, value: Enum, unit: none}
         required: false
@@ -5147,6 +5147,13 @@ projection_policies:
         permitted_fields: []
         rationale: Team press is Hermes-authorable substrate (agent exposure is still blocklist-gated, audit finding V5) but is intentionally denied from the AI projection pending exposure review.
         review_condition: Remove this waiver when the capability passes exposure review and enters the AI projection, or when Hermes exposure becomes registry-driven.
+      - subject_ref: runtime:relation:support_arrival_relation:0.1.0
+        difference_kind: CONTRACT_CHANGED
+        baseline_contract_hash: 5f4bd59cc6e4d71348dcaff1f0e7767e57fd835d230a54bfe4b938c3b22e314d
+        projection_contract_hash: c001b14f25fda30968681b16aefe78c1ab1bd93217537fb8456b94b078472b9b
+        permitted_fields: [evidence_fields, outputs, parameters]
+        rationale: R1-1 exposes existing support-arrival first-supporter point evidence and permits controlled_pass_status gating so support-depth can be composed truthfully.
+        review_condition: Re-review if the support-arrival runtime contract changes beyond the R1-1 support-depth fields or controlled-pass status gate.
       - subject_ref: recipe:line_break_support_response_v1:0.1.0
         difference_kind: CONTRACT_CHANGED
         baseline_contract_hash: a0a83061005860a3212d895055edce154c0b82c035b637c185d330d34f07424e
