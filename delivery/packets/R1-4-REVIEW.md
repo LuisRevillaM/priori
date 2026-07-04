@@ -160,3 +160,27 @@ entity-identity-preserved) are designed as bind-time-enforced elements
 FIRST, and window's continuity binding retrofits onto them in R1-5 —
 recorded now so the join packet inherits this as scope, not surprise.
 CAR-0 is possession-keyed and waits on exactly these seams.
+
+---
+
+# R1-4 Round-2 Review: ACCEPTED — the 11 is earned
+
+Reviewed 2026-07-04 at 81798f2. Canon case verified both directions
+(home->FAIL continuity_team_mismatch, away->UNKNOWN, never PASS); away
+PASS 1 -> 1,009; all 2,274 PASS rows team-consistent against raw-derived
+possession; adapters legitimate additive views with hash-pinned waivers;
+harness perspective parameterized (frozen plans byte-stable under the new
+harness); all six published hashes reproduce from the committed tree;
+enforcement live at synthesis AND runtime; flip 10->11 on a copy,
+correspondence present, real ledger untouched.
+
+## Director ruling: merge now; five fixes become R1-5 opening obligations
+
+O1: the named both-teams composition-level test (rule 13 — third round
+open on this; it lands in R1-5's retrofit or the era doesn't close).
+O2: data-boundary false FAIL (coverage judged on the requested window
+before period clipping) — fix in the R-L retrofit.
+O3: latest_start overlap-policy misnomer — rename or implement.
+O4: same_team_control DELETED (R-I(c) judgment: dead labels are traps).
+O5: ledger/report hygiene — reconcile clone-only commit hashes, disclose
+single-match booking, move audit artifacts into the tree.
