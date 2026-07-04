@@ -77,6 +77,24 @@ def primitive_possession_segment(state: PeriodState, node: BoundCatalogNode) -> 
     state.signals[node.node_id] = {"episodes": segments, "anchors": segments}
 
 
+def relation_possession_segment_team_keyed_episodes(state: PeriodState, node: BoundCatalogNode) -> None:
+    segments_value = catalog_input_value(state, node, "possession_segments")
+    segments = segments_value.value
+    if not isinstance(segments, list):
+        raise RuntimeError(f"{node.node_id} requires possession_segments records")
+    records = []
+    for item in segments:
+        if not isinstance(item, dict):
+            continue
+        record = dict(item)
+        record["team_role"] = state.perspective_team_role
+        records.append(record)
+    state.signals[node.node_id] = {
+        "episodes": records,
+        "episodes_records": records,
+    }
+
+
 def primitive_transition_anchor(state: PeriodState, node: BoundCatalogNode) -> None:
     transition_type = node_parameter_text(node, "transition_type")
     minimum_prior_possession_seconds = node_parameter_number(node, "minimum_prior_possession_seconds")

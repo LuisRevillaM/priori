@@ -229,6 +229,26 @@ def controlled_pass_episode_record(
         "reception_receiver_point": reception_receiver,
     }
 
+
+def relation_controlled_pass_team_keyed_anchors(state: PeriodState, node: BoundCatalogNode) -> None:
+    anchors_value = catalog_input_value(state, node, "controlled_pass_anchors")
+    anchors = anchors_value.value
+    if not isinstance(anchors, list):
+        raise RuntimeError(f"{node.node_id} requires controlled_pass_anchors records")
+    records = []
+    for item in anchors:
+        if not isinstance(item, dict):
+            continue
+        record = dict(item)
+        team_role = record.get("team_role")
+        if team_role is not None:
+            record["team_role"] = str(team_role)
+        records.append(record)
+    state.signals[node.node_id] = {
+        "anchors": records,
+        "anchors_records": records,
+    }
+
 def primitive_one_touch_relay_episode(state: PeriodState, node: BoundCatalogNode) -> None:
     config = OneTouchRelayConfig(
         event_type_filter=node_parameter_event_type_filter(node),
@@ -448,4 +468,3 @@ def pass_bypass_anchor_record(
         "missing_active_opponent_ids": list(evaluation.get("missing_active_opponent_ids") or []),
         "unknown_reason": evaluation.get("failure_reason"),
     }
-

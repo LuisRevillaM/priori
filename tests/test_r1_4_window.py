@@ -104,12 +104,13 @@ def run_window(
     after_seconds: float = 1.0,
     truncation_policy: str = "emit_with_flag",
     continuity_policy: str = "fixed_duration",
+    continuity_overlap_policy: str = "latest_start",
     frame_ids: list[int] | None = None,
 ) -> dict[str, object]:
     state = SimpleNamespace(
         match_id="TST",
         period="firstHalf",
-        frame_ids=frame_ids or list(range(100, 151)),
+        frame_ids=list(range(100, 151)) if frame_ids is None else frame_ids,
         signals={},
     )
     inputs = {"anchors": runtime_records_value("anchors", anchors)}
@@ -137,6 +138,10 @@ def run_window(
             "continuity_end_frame_field": typed_enum("end_frame_id" if continuity is not None else "none"),
             "continuity_status_field": typed_enum("continuity_status" if continuity is not None else "none"),
             "continuity_status_value": typed_enum("PASS"),
+            "anchor_team_role_field": typed_enum("team_role" if continuity is not None else "none"),
+            "continuity_team_role_field": typed_enum("team_role" if continuity is not None else "none"),
+            "team_binding_policy": typed_enum("equal_team_role" if continuity is not None else "none"),
+            "continuity_overlap_policy": typed_enum(continuity_overlap_policy),
             "overlap_policy": typed_enum("preserve_all"),
         },
     )
@@ -213,6 +218,94 @@ class WindowOperatorTests(unittest.TestCase):
 
         self.assertEqual("UNKNOWN", record["window_status"])
         self.assertEqual("continuity_evidence_not_covering_anchor", record["window_reason"])
+
+    def test_opponent_possession_covering_anchor_is_fail_not_same_team_pass(self) -> None:
+        [record] = run_window(
+            [anchor_record("away-reception", 120, team_role="away")],
+            continuity=[continuity_record("home-possession", 100, 140, team_role="home")],
+            window_mode="after",
+            after_seconds=0.4,
+            continuity_policy="same_possession",
+            frame_ids=list(range(100, 151)),
+        )["window_records"]
+
+        self.assertEqual("FAIL", record["window_status"])
+        self.assertEqual("continuity_team_mismatch", record["window_reason"])
+        self.assertEqual("away", record["anchor_team_role"])
+        self.assertEqual("home", record["continuity_team_role"])
+
+    def test_observed_same_team_break_mid_window_is_fail(self) -> None:
+        [record] = run_window(
+            [anchor_record("home-reception", 120, team_role="home")],
+            continuity=[continuity_record("short-home-possession", 100, 125, team_role="home")],
+            window_mode="after",
+            after_seconds=1.0,
+            continuity_policy="same_possession",
+            frame_ids=list(range(100, 151)),
+        )["window_records"]
+
+        self.assertEqual("FAIL", record["window_status"])
+        self.assertEqual("continuity_break_inside_window", record["window_reason"])
+
+    def test_overlapping_continuity_can_be_declared_ambiguous(self) -> None:
+        [record] = run_window(
+            [anchor_record("home-reception", 120, team_role="home")],
+            continuity=[
+                continuity_record("home-possession-a", 100, 140, team_role="home"),
+                continuity_record("home-possession-b", 110, 145, team_role="home"),
+            ],
+            window_mode="after",
+            after_seconds=0.4,
+            continuity_policy="same_possession",
+            continuity_overlap_policy="unknown_on_ambiguous",
+            frame_ids=list(range(100, 151)),
+        )["window_records"]
+
+        self.assertEqual("UNKNOWN", record["window_status"])
+        self.assertEqual("ambiguous_overlapping_continuity_evidence", record["window_reason"])
+
+    def test_trace_back_truncation_is_judged_after_continuity_bounding(self) -> None:
+        [record] = run_window(
+            [anchor_record("outcome", 105, team_role="home")],
+            continuity=[continuity_record("home-possession", 100, 110, team_role="home")],
+            window_mode="trace_back_from_outcome",
+            before_seconds=1.0,
+            after_seconds=0.0,
+            truncation_policy="unknown",
+            continuity_policy="same_possession",
+            frame_ids=list(range(100, 151)),
+        )["window_records"]
+
+        self.assertEqual("PASS", record["window_status"])
+        self.assertEqual(100, record["window_start_frame_id"])
+        self.assertFalse(record["truncated_start"])
+        self.assertEqual("trace_back_bounded_by_continuity", record["continuity_reason"])
+
+    def test_anchor_outside_observed_bounds_is_unknown_not_phantom_pass(self) -> None:
+        [record] = run_window(
+            [anchor_record("outside", 90, team_role="home")],
+            window_mode="after",
+            after_seconds=0.2,
+            frame_ids=list(range(100, 151)),
+        )["window_records"]
+
+        self.assertEqual("UNKNOWN", record["window_status"])
+        self.assertEqual("anchor_outside_observed_bounds", record["window_reason"])
+
+    def test_fixed_duration_period_fallback_ignores_continuity_records(self) -> None:
+        [record] = run_window(
+            [anchor_record("home-reception", 120, team_role="home")],
+            continuity=[continuity_record("long-home-possession", 100, 150, team_role="home")],
+            window_mode="before",
+            before_seconds=1.0,
+            continuity_policy="fixed_duration",
+            frame_ids=[],
+        )["window_records"]
+
+        self.assertEqual("PASS", record["window_status"])
+        self.assertEqual(120, record["window_start_frame_id"])
+        self.assertEqual(120, record["period_start_frame_id"])
+        self.assertTrue(record["truncated_start"])
 
     def test_zero_duration_boundary_anchor_is_allowed(self) -> None:
         [record] = run_window(

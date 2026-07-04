@@ -12,10 +12,10 @@
       "semantic_correspondence": {
         "coverage_row": "same_team_control_after",
         "meaning": "Construct a declared four-second post-reception window for each controlled-pass anchor, requiring same-team possession continuity over that window.",
-        "source_relation": "controlled_pass_episode.anchors + possession_segment.episodes + window(after, same_possession continuity)",
-        "anchor_source": "controlled_pass_episode.anchors",
+        "source_relation": "controlled-pass anchors with declared team role + possession episodes with declared team role + window(after, same_possession continuity)",
+        "anchor_source": "controlled-pass team-keyed anchors",
         "anchor_frame_field": "controlled_reception_frame_id",
-        "continuity_source": "possession_segment.episodes",
+        "continuity_source": "team-keyed possession episodes",
         "continuity_policy": "same_possession",
         "window": "4.0 seconds after controlled reception",
         "unit": "second"
@@ -49,6 +49,12 @@
           "continuity_reason",
           "continuity_start_frame_field",
           "continuity_end_frame_field",
+          "anchor_team_role_field",
+          "continuity_team_role_field",
+          "anchor_team_role",
+          "continuity_team_role",
+          "team_binding_policy",
+          "continuity_overlap_policy",
           "continuity_evidence_id",
           "continuity_start_frame_id",
           "continuity_end_frame_id",
@@ -80,10 +86,14 @@
             "continuity_end_frame_field": "possession_end_frame_id",
             "continuity_status_field": "none",
             "continuity_status_value": "PASS",
+            "anchor_team_role_field": "team_role",
+            "continuity_team_role_field": "team_role",
+            "team_binding_policy": "equal_team_role",
+            "continuity_overlap_policy": "latest_start",
             "overlap_policy": "preserve_all"
           }
         ],
-        "claim_boundary": "Observed same-team possession continuity across a declared four-second post-reception window only; does not claim clean individual control, pass value, tactical causation, intent, quality, or optimality."
+        "claim_boundary": "Observed possession continuity for the same declared team role as the pass anchor across a declared four-second post-reception window only; does not claim clean individual control, pass value, tactical causation, intent, quality, or optimality."
       }
     }
   ]

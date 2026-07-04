@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import collections
 import concurrent.futures
+import copy
 import csv
 import gzip
 import json
@@ -78,6 +79,15 @@ MATCH_IDS = [
     for match_id in os.environ.get("TQE_SEARCH_MATCH_IDS", ",".join(DEFAULT_MATCH_IDS)).split(",")
     if match_id.strip()
 ]
+PERSPECTIVE_TEAM_ROLES = [
+    role.strip()
+    for role in os.environ.get("TQE_SEARCH_PERSPECTIVE_TEAM_ROLES", "home").split(",")
+    if role.strip()
+]
+if any(role not in {"home", "away"} for role in PERSPECTIVE_TEAM_ROLES):
+    raise ValueError("TQE_SEARCH_PERSPECTIVE_TEAM_ROLES must contain only home and/or away")
+if not PERSPECTIVE_TEAM_ROLES:
+    raise ValueError("TQE_SEARCH_PERSPECTIVE_TEAM_ROLES cannot be empty")
 
 SUPPORTED_MODALITIES = {"tracking", "events", "tracking_event_synchronized"}
 SUPPORTED_COMPOSITION_CONSTRAINT_KINDS = {
@@ -564,11 +574,12 @@ def evaluate_target(
             failure_details=error.details,
         )
 
-    plan_path = PLAN_DIR / f"{target['target_id']}.json"
-    plan_path.write_text(json.dumps(build["document"], indent=2, sort_keys=True) + "\n", encoding="utf-8")
     try:
-        document = TacticalQueryDocument.model_validate(build["document"])
-        bound = bind_document(document)
+        execution, rows, document_payload = execute_build_for_perspectives(
+            build=build,
+            executor=executor,
+            target_id=target["target_id"],
+        )
     except (BindError, ValueError) as error:
         return row_result(
             target=target,
@@ -580,9 +591,6 @@ def evaluate_target(
             document_payload=build["document"],
             build=build,
         )
-
-    try:
-        execution = executor.execute(bound)
     except Exception as error:  # pragma: no cover - exact failure is serialized.
         return row_result(
             target=target,
@@ -595,7 +603,6 @@ def evaluate_target(
             build=build,
         )
 
-    rows = execution_result_rows(execution)
     evidence_failures = int(execution.provenance.get("requested_evidence_failure_count") or 0)
     if execution.status != ExecutionStatus.PASS or evidence_failures != 0:
         return row_result(
@@ -605,7 +612,7 @@ def evaluate_target(
             failure_taxonomy="runtime_gap",
             message="Discovered plan did not execute with complete requested evidence.",
             target_contract_hash=target_hash,
-            document_payload=build["document"],
+            document_payload=document_payload,
             build=build,
             execution=execution,
             rows=rows,
@@ -618,10 +625,104 @@ def evaluate_target(
         failure_taxonomy=None,
         message="Bounded backward search discovered a reusable executable plan from the typed target contract.",
         target_contract_hash=target_hash,
-        document_payload=build["document"],
+        document_payload=document_payload,
         build=build,
         execution=execution,
         rows=rows,
+    )
+
+
+@dataclass
+class CombinedExecution:
+    status: ExecutionStatus
+    provenance: dict[str, Any]
+
+
+def execute_build_for_perspectives(
+    *,
+    build: dict[str, Any],
+    executor: TacticalQueryExecutor,
+    target_id: str,
+) -> tuple[CombinedExecution, list[dict[str, Any]], dict[str, Any]]:
+    role_documents: dict[str, dict[str, Any]] = {}
+    role_traces: dict[str, str | None] = {}
+    role_statuses: dict[str, str] = {}
+    role_counts: dict[str, int] = {}
+    node_cache: collections.Counter[str] = collections.Counter()
+    rows: list[dict[str, Any]] = []
+    evidence_failures = 0
+    runtime_value_count = 0
+    for role in PERSPECTIVE_TEAM_ROLES:
+        document_payload = copy.deepcopy(build["document"])
+        document_payload["default_invocation"]["perspective_team_role"] = role
+        if len(PERSPECTIVE_TEAM_ROLES) > 1:
+            document_payload["default_invocation"]["invocation_id"] = f"{target_id}_{role}_probe"
+        role_documents[role] = document_payload
+        document = TacticalQueryDocument.model_validate(document_payload)
+        bound = bind_document(document)
+        execution = executor.execute(bound)
+        role_rows = execution_result_rows(execution)
+        for item in role_rows:
+            row = dict(item)
+            requested = dict(row.get("requested_evidence") or {})
+            requested["execution_perspective_team_role"] = role
+            row["requested_evidence"] = requested
+            row["execution_perspective_team_role"] = role
+            rows.append(row)
+        evidence_failures += int(execution.provenance.get("requested_evidence_failure_count") or 0)
+        runtime_value_count += int(execution.provenance.get("runtime_value_count") or 0)
+        role_traces[role] = execution.provenance.get("runtime_trace_hash")
+        role_statuses[role] = execution.status.value
+        role_counts[role] = len(role_rows)
+        cache = execution.provenance.get("node_cache")
+        if isinstance(cache, dict):
+            for key in ("hits", "local_hits", "shared_hits", "misses", "disabled", "bypassed"):
+                node_cache[key] += int(cache.get(key) or 0)
+    combined_status = (
+        ExecutionStatus.PASS
+        if all(status == ExecutionStatus.PASS.value for status in role_statuses.values())
+        else ExecutionStatus.FAIL
+    )
+    document_payload: dict[str, Any]
+    if len(role_documents) == 1:
+        document_payload = next(iter(role_documents.values()))
+    else:
+        document_payload = {
+            "schema_version": "compiler_search_perspective_bundle.v1",
+            "target_id": target_id,
+            "perspective_team_roles": PERSPECTIVE_TEAM_ROLES,
+            "documents": role_documents,
+        }
+    (PLAN_DIR / f"{target_id}.json").write_text(
+        json.dumps(document_payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    rows.sort(
+        key=lambda item: (
+            str(item.get("execution_perspective_team_role") or ""),
+            str(item.get("result_id") or ""),
+        )
+    )
+    return (
+        CombinedExecution(
+            status=combined_status,
+            provenance={
+                "requested_evidence_failure_count": evidence_failures,
+                "runtime_trace_hash": stable_hash(
+                    {
+                        "perspective_team_roles": PERSPECTIVE_TEAM_ROLES,
+                        "role_traces": role_traces,
+                    }
+                ),
+                "runtime_value_count": runtime_value_count,
+                "node_cache": dict(sorted(node_cache.items())),
+                "perspective_team_roles": PERSPECTIVE_TEAM_ROLES,
+                "perspective_statuses": role_statuses,
+                "perspective_result_counts": role_counts,
+            },
+        ),
+        rows,
+        document_payload,
     )
 
 
@@ -1557,6 +1658,10 @@ def build_window_operator(
                         "continuity_end_frame_field": enum(window_constraint["continuity_end_frame_field"]),
                         "continuity_status_field": enum(window_constraint["continuity_status_field"]),
                         "continuity_status_value": enum(window_constraint["continuity_status_value"]),
+                        "anchor_team_role_field": enum(window_constraint["anchor_team_role_field"]),
+                        "continuity_team_role_field": enum(window_constraint["continuity_team_role_field"]),
+                        "team_binding_policy": enum(window_constraint["team_binding_policy"]),
+                        "continuity_overlap_policy": enum(window_constraint["continuity_overlap_policy"]),
                         "overlap_policy": enum(window_constraint["overlap_policy"]),
                     },
                 )
@@ -1608,6 +1713,10 @@ def window_constraint_payload(constraint: dict[str, Any]) -> dict[str, Any]:
         "continuity_end_frame_field",
         "continuity_status_field",
         "continuity_status_value",
+        "anchor_team_role_field",
+        "continuity_team_role_field",
+        "team_binding_policy",
+        "continuity_overlap_policy",
         "overlap_policy",
     }
     unapplied = sorted(key for key in constraint if key not in allowed_keys)
@@ -1631,6 +1740,10 @@ def window_constraint_payload(constraint: dict[str, Any]) -> dict[str, Any]:
         "continuity_end_frame_field": str(constraint.get("continuity_end_frame_field", "none")),
         "continuity_status_field": str(constraint.get("continuity_status_field", "none")),
         "continuity_status_value": str(constraint.get("continuity_status_value", "PASS")),
+        "anchor_team_role_field": str(constraint.get("anchor_team_role_field", "none")),
+        "continuity_team_role_field": str(constraint.get("continuity_team_role_field", "none")),
+        "team_binding_policy": str(constraint.get("team_binding_policy", "none")),
+        "continuity_overlap_policy": str(constraint.get("continuity_overlap_policy", "latest_start")),
         "overlap_policy": str(constraint.get("overlap_policy", "preserve_all")),
     }
 
@@ -1656,16 +1769,24 @@ def window_candidates(context: SearchContext, constraint: dict[str, Any]) -> lis
     continuity_policy = str(constraint["continuity_policy"])
     continuity_required_fields: set[str] = set()
     if continuity_policy != "fixed_duration":
+        anchor_required_fields.add(str(constraint["anchor_team_role_field"]))
         continuity_required_fields.update(
             {
                 str(constraint["continuity_start_frame_field"]),
                 str(constraint["continuity_end_frame_field"]),
+                str(constraint["continuity_team_role_field"]),
             }
         )
-        if "none" in continuity_required_fields:
+        if str(constraint["team_binding_policy"]) != "equal_team_role":
             raise SynthesisError(
                 "missing_constraint",
-                "window continuity policies require declared continuity frame fields.",
+                "window continuity policies require declared equal-team binding.",
+                {"continuity_policy": continuity_policy},
+            )
+        if "none" in continuity_required_fields or "none" in anchor_required_fields:
+            raise SynthesisError(
+                "missing_constraint",
+                "window continuity policies require declared continuity frame and team fields.",
                 {"continuity_policy": continuity_policy},
             )
         if str(constraint["continuity_status_field"]) != "none":
@@ -3144,7 +3265,12 @@ def unsupported_composition_constraints(contract: dict[str, Any]) -> list[dict[s
     return unsupported
 
 
-def assemble_document(*, target: dict[str, Any], build: BuildResult) -> dict[str, Any]:
+def assemble_document(
+    *,
+    target: dict[str, Any],
+    build: BuildResult,
+    perspective_team_role: str | None = None,
+) -> dict[str, Any]:
     contract = target["target_contract"]
     predicates = predicates_for_contract(contract, build.field_sources)
     requested_evidence = [
@@ -3166,6 +3292,7 @@ def assemble_document(*, target: dict[str, Any], build: BuildResult) -> dict[str
         anchor_source=ref(build.terminal_node_id, build.terminal_output),
         requested_evidence=requested_evidence,
         claim_boundary=contract["claim_boundary"],
+        perspective_team_role=perspective_team_role or PERSPECTIVE_TEAM_ROLES[0],
     )
 
 
@@ -3379,6 +3506,7 @@ def build_report(
             "coverage_gold_chain_allowed_as_input": False,
             "concept_name_allowed_as_input": False,
             "provider_name_allowed_as_input": False,
+            "perspective_team_roles": PERSPECTIVE_TEAM_ROLES,
         },
         "search_budget": {
             "max_depth": MAX_DEPTH,
@@ -3575,6 +3703,7 @@ def document(
     anchor_source: dict[str, str],
     requested_evidence: list[dict[str, Any]],
     claim_boundary: str,
+    perspective_team_role: str,
 ) -> dict[str, Any]:
     recipe_id = f"search_{target_id}"
     return {
@@ -3603,7 +3732,7 @@ def document(
             "invocation_id": f"{target_id}_probe",
             "match_ids": MATCH_IDS,
             "periods": ["firstHalf", "secondHalf"],
-            "perspective_team_role": "home",
+            "perspective_team_role": perspective_team_role,
             "parameters": {},
             "max_results": 20,
             "execution_mode": "execute",

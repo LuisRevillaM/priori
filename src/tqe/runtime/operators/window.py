@@ -31,6 +31,8 @@ WINDOW_MODE_VALUES = ("before", "after", "around", "trace_back_from_outcome")
 TRUNCATION_POLICY_VALUES = ("emit_with_flag", "unknown")
 CONTINUITY_POLICY_VALUES = ("fixed_duration", "same_possession", "same_team_control")
 OVERLAP_POLICY_VALUES = ("preserve_all",)
+TEAM_BINDING_POLICY_VALUES = ("none", "equal_team_role")
+CONTINUITY_OVERLAP_POLICY_VALUES = ("latest_start", "unknown_on_ambiguous")
 STATUS_VALUE_VALUES = ("PASS", "FAIL", "UNKNOWN")
 EVIDENCE_FIELDS = [
     "window_status",
@@ -65,6 +67,12 @@ EVIDENCE_FIELDS = [
     "continuity_end_frame_field",
     "continuity_status_field",
     "continuity_status_value",
+    "anchor_team_role_field",
+    "continuity_team_role_field",
+    "anchor_team_role",
+    "continuity_team_role",
+    "team_binding_policy",
+    "continuity_overlap_policy",
     "continuity_evidence_id",
     "continuity_start_frame_id",
     "continuity_end_frame_id",
@@ -236,6 +244,36 @@ WINDOW_SIGNATURE = CompositionOperatorSignature(
             description="Required continuity status value when continuity_status_field is not none.",
         ),
         ParameterDefinition(
+            name="anchor_team_role_field",
+            payload_type=PayloadType.ENUM,
+            required=False,
+            default=TypedValue(payload_type=PayloadType.ENUM, value="none"),
+            description="Anchor-record team-role field used to key continuity evidence.",
+        ),
+        ParameterDefinition(
+            name="continuity_team_role_field",
+            payload_type=PayloadType.ENUM,
+            required=False,
+            default=TypedValue(payload_type=PayloadType.ENUM, value="none"),
+            description="Continuity-record team-role field used to key continuity evidence.",
+        ),
+        ParameterDefinition(
+            name="team_binding_policy",
+            payload_type=PayloadType.ENUM,
+            required=False,
+            default=TypedValue(payload_type=PayloadType.ENUM, value="none"),
+            allowed_values=list(TEAM_BINDING_POLICY_VALUES),
+            description="Declared policy for matching anchor and continuity team evidence.",
+        ),
+        ParameterDefinition(
+            name="continuity_overlap_policy",
+            payload_type=PayloadType.ENUM,
+            required=False,
+            default=TypedValue(payload_type=PayloadType.ENUM, value="latest_start"),
+            allowed_values=list(CONTINUITY_OVERLAP_POLICY_VALUES),
+            description="Declared policy when multiple continuity records cover the anchor.",
+        ),
+        ParameterDefinition(
             name="overlap_policy",
             payload_type=PayloadType.ENUM,
             required=False,
@@ -250,6 +288,7 @@ WINDOW_SIGNATURE = CompositionOperatorSignature(
         "Windows are derived from declared anchor frames and declared durations only.",
         "Boundary truncation is recorded and either emitted or UNKNOWN according to truncation_policy.",
         "same_possession and same_team_control use supplied continuity intervals only; missing coverage is UNKNOWN.",
+        "Continuity-backed policies require declared team-role fields and equal team-role binding.",
         "trace_back_from_outcome bounds the preceding window by continuity evidence and does not infer causation.",
     ],
 )
@@ -283,11 +322,15 @@ def execute_window(
     continuity_end_field = _parameter_enum(parameters, "continuity_end_frame_field", "none")
     continuity_status_field = _parameter_enum(parameters, "continuity_status_field", "none")
     continuity_status_value = _parameter_enum(parameters, "continuity_status_value", "PASS")
+    anchor_team_role_field = _parameter_enum(parameters, "anchor_team_role_field", "none")
+    continuity_team_role_field = _parameter_enum(parameters, "continuity_team_role_field", "none")
+    team_binding_policy = _parameter_enum(parameters, "team_binding_policy", "none")
+    continuity_overlap_policy = _parameter_enum(parameters, "continuity_overlap_policy", "latest_start")
     overlap_policy = _parameter_enum(parameters, "overlap_policy", "preserve_all")
 
     if frame_rate_hz <= 0:
         raise RuntimeError(f"{node.node_id} frame_rate_hz must be positive")
-    period_start, period_end = _period_bounds(state, anchors, continuity_records)
+    period_start, period_end = _period_bounds(state, anchors)
     records = [
         _window_record(
             state=state,
@@ -311,6 +354,10 @@ def execute_window(
             continuity_end_field=continuity_end_field,
             continuity_status_field=continuity_status_field,
             continuity_status_value=continuity_status_value,
+            anchor_team_role_field=anchor_team_role_field,
+            continuity_team_role_field=continuity_team_role_field,
+            team_binding_policy=team_binding_policy,
+            continuity_overlap_policy=continuity_overlap_policy,
             overlap_policy=overlap_policy,
             period_start_frame_id=period_start,
             period_end_frame_id=period_end,
@@ -382,6 +429,10 @@ def _window_record(
     continuity_end_field: str,
     continuity_status_field: str,
     continuity_status_value: str,
+    anchor_team_role_field: str,
+    continuity_team_role_field: str,
+    team_binding_policy: str,
+    continuity_overlap_policy: str,
     overlap_policy: str,
     period_start_frame_id: int,
     period_end_frame_id: int,
@@ -425,6 +476,11 @@ def _window_record(
             continuity_end_field=continuity_end_field,
             continuity_status_field=continuity_status_field,
             continuity_status_value=continuity_status_value,
+            anchor_team_role_field=anchor_team_role_field,
+            continuity_team_role_field=continuity_team_role_field,
+            anchor_team_role=None,
+            team_binding_policy=team_binding_policy,
+            continuity_overlap_policy=continuity_overlap_policy,
             continuity=None,
             anchor_node_id=anchor_node_id,
             anchor_output_name=anchor_output_name,
@@ -436,6 +492,7 @@ def _window_record(
             continuity_reason="anchor_frame_missing",
         )
     anchor_status = _status_value(anchor, anchor_status_field)
+    anchor_team_role = _record_text(anchor, anchor_team_role_field)
     requested_start, requested_end = _requested_window_frames(
         anchor_frame_id=source_anchor_frame_id,
         window_mode=window_mode,
@@ -443,16 +500,66 @@ def _window_record(
         after_seconds=after_seconds,
         frame_rate_hz=frame_rate_hz,
     )
-    clipped_start = max(int(requested_start), int(period_start_frame_id))
-    clipped_end = min(int(requested_end), int(period_end_frame_id))
-    truncated_start = clipped_start != int(requested_start)
-    truncated_end = clipped_end != int(requested_end)
-    if clipped_end < clipped_start:
-        clipped_start = clipped_end = int(source_anchor_frame_id)
+    bounded_start = int(requested_start)
+    bounded_end = int(requested_end)
+    if int(source_anchor_frame_id) < int(period_start_frame_id) or int(source_anchor_frame_id) > int(period_end_frame_id):
+        bounded_start = bounded_end = min(
+            max(int(source_anchor_frame_id), int(period_start_frame_id)),
+            int(period_end_frame_id),
+        )
+        return _status_record(
+            state=state,
+            anchor=anchor,
+            match_id=match_id,
+            period=period,
+            entity_refs=entity_refs,
+            source_anchor_id=source_anchor_id,
+            source_anchor_frame_id=int(source_anchor_frame_id),
+            source_anchor_start_frame_id=source_anchor_start,
+            source_anchor_end_frame_id=source_anchor_end,
+            anchor_frame_field=anchor_frame_field,
+            anchor_status_field=anchor_status_field,
+            anchor_status_value=anchor_status_value,
+            anchor_status=anchor_status,
+            before_seconds=before_seconds,
+            after_seconds=after_seconds,
+            frame_rate_hz=frame_rate_hz,
+            requested_start_frame_id=int(requested_start),
+            requested_end_frame_id=int(requested_end),
+            window_start_frame_id=int(bounded_start),
+            window_end_frame_id=int(bounded_end),
+            period_start_frame_id=period_start_frame_id,
+            period_end_frame_id=period_end_frame_id,
+            truncated_start=True,
+            truncated_end=True,
+            truncation_policy=truncation_policy,
+            continuity_policy=continuity_policy,
+            continuity_start_field=continuity_start_field,
+            continuity_end_field=continuity_end_field,
+            continuity_status_field=continuity_status_field,
+            continuity_status_value=continuity_status_value,
+            anchor_team_role_field=anchor_team_role_field,
+            continuity_team_role_field=continuity_team_role_field,
+            anchor_team_role=anchor_team_role,
+            team_binding_policy=team_binding_policy,
+            continuity_overlap_policy=continuity_overlap_policy,
+            continuity=None,
+            anchor_node_id=anchor_node_id,
+            anchor_output_name=anchor_output_name,
+            anchor_index=anchor_index,
+            overlap_policy=overlap_policy,
+            status="UNKNOWN",
+            reason="anchor_outside_observed_bounds",
+            continuity_status="UNKNOWN",
+            continuity_reason="continuity_not_evaluated_anchor_outside_bounds",
+            continuity_node_id=continuity_node_id,
+            continuity_output_name=continuity_output_name,
+            window_mode=window_mode,
+        )
     status = "PASS"
     reason = "window_constructed"
-    continuity_status = "PASS"
-    continuity_reason = "fixed_duration_policy"
+    continuity_status = "PASS" if continuity_policy == "fixed_duration" else "UNKNOWN"
+    continuity_reason = "fixed_duration_policy" if continuity_policy == "fixed_duration" else "continuity_not_evaluated"
     continuity: dict[str, Any] | None = None
     if anchor_status_field != "none":
         if anchor_status is None or anchor_status == "UNKNOWN":
@@ -461,43 +568,64 @@ def _window_record(
         elif anchor_status != anchor_status_value:
             status = "FAIL"
             reason = "required_anchor_status_not_met"
-    if status == "PASS" and (truncated_start or truncated_end) and truncation_policy == "unknown":
-        status = "UNKNOWN"
-        reason = "window_truncated_by_boundary"
     if status == "PASS" and continuity_policy != "fixed_duration":
         continuity, continuity_status, continuity_reason = _continuity_decision(
             continuity_records=continuity_records,
             anchor_frame_id=int(source_anchor_frame_id),
-            clipped_start=clipped_start,
-            clipped_end=clipped_end,
+            requested_start=bounded_start,
+            requested_end=bounded_end,
             window_mode=window_mode,
             continuity_start_field=continuity_start_field,
             continuity_end_field=continuity_end_field,
             continuity_status_field=continuity_status_field,
             continuity_status_value=continuity_status_value,
+            anchor_team_role=anchor_team_role,
+            continuity_team_role_field=continuity_team_role_field,
+            team_binding_policy=team_binding_policy,
+            continuity_overlap_policy=continuity_overlap_policy,
         )
         if continuity_status == "UNKNOWN":
             status = "UNKNOWN"
+            reason = continuity_reason
+        elif continuity_status == "FAIL":
+            status = "FAIL"
             reason = continuity_reason
         elif continuity is not None:
             continuity_start = _record_frame_id(continuity, continuity_start_field)
             continuity_end = _record_frame_id(continuity, continuity_end_field)
             if continuity_start is not None and continuity_end is not None:
                 if window_mode == "trace_back_from_outcome":
-                    bounded_start = max(clipped_start, continuity_start)
-                    bounded_end = min(clipped_end, continuity_end)
-                    if bounded_start > bounded_end:
+                    continuity_bounded_start = max(bounded_start, continuity_start)
+                    continuity_bounded_end = min(bounded_end, continuity_end)
+                    if continuity_bounded_start > continuity_bounded_end:
                         status = "UNKNOWN"
                         reason = "continuity_evidence_does_not_overlap_window"
                     else:
-                        if bounded_start != clipped_start or bounded_end != clipped_end:
+                        if continuity_bounded_start != bounded_start or continuity_bounded_end != bounded_end:
                             continuity_reason = "trace_back_bounded_by_continuity"
-                        clipped_start, clipped_end = bounded_start, bounded_end
-                elif continuity_start > clipped_start or continuity_end < clipped_end:
-                    status = "UNKNOWN"
-                    reason = "continuity_window_not_fully_covered"
-                    continuity_status = "UNKNOWN"
-                    continuity_reason = "continuity_window_not_fully_covered"
+                        bounded_start, bounded_end = continuity_bounded_start, continuity_bounded_end
+                elif continuity_start > bounded_start or continuity_end < bounded_end:
+                    status = "FAIL"
+                    reason = "continuity_break_inside_window"
+                    continuity_status = "FAIL"
+                    continuity_reason = "continuity_break_inside_window"
+    clipped_start = max(int(bounded_start), int(period_start_frame_id))
+    clipped_end = min(int(bounded_end), int(period_end_frame_id))
+    truncated_start = clipped_start != int(bounded_start)
+    truncated_end = clipped_end != int(bounded_end)
+    if clipped_end < clipped_start:
+        clipped_start = clipped_end = min(
+            max(int(source_anchor_frame_id), int(period_start_frame_id)),
+            int(period_end_frame_id),
+        )
+        status = "UNKNOWN"
+        reason = "window_outside_observed_bounds"
+        if continuity_policy != "fixed_duration" and continuity_status == "PASS":
+            continuity_status = "UNKNOWN"
+            continuity_reason = "window_outside_observed_bounds"
+    if status == "PASS" and (truncated_start or truncated_end) and truncation_policy == "unknown":
+        status = "UNKNOWN"
+        reason = "window_truncated_by_boundary"
     return _status_record(
         state=state,
         anchor=anchor,
@@ -529,6 +657,11 @@ def _window_record(
         continuity_end_field=continuity_end_field,
         continuity_status_field=continuity_status_field,
         continuity_status_value=continuity_status_value,
+        anchor_team_role_field=anchor_team_role_field,
+        continuity_team_role_field=continuity_team_role_field,
+        anchor_team_role=anchor_team_role,
+        team_binding_policy=team_binding_policy,
+        continuity_overlap_policy=continuity_overlap_policy,
         continuity=continuity,
         anchor_node_id=anchor_node_id,
         anchor_output_name=anchor_output_name,
@@ -569,19 +702,28 @@ def _continuity_decision(
     *,
     continuity_records: list[dict[str, Any]],
     anchor_frame_id: int,
-    clipped_start: int,
-    clipped_end: int,
+    requested_start: int,
+    requested_end: int,
     window_mode: str,
     continuity_start_field: str,
     continuity_end_field: str,
     continuity_status_field: str,
     continuity_status_value: str,
+    anchor_team_role: str | None,
+    continuity_team_role_field: str,
+    team_binding_policy: str,
+    continuity_overlap_policy: str,
 ) -> tuple[dict[str, Any] | None, str, str]:
     if continuity_start_field == "none" or continuity_end_field == "none":
         return None, "UNKNOWN", "continuity_frame_fields_missing"
+    if team_binding_policy != "equal_team_role":
+        return None, "UNKNOWN", "continuity_team_binding_policy_missing"
+    if anchor_team_role is None or continuity_team_role_field == "none":
+        return None, "UNKNOWN", "continuity_team_fields_missing"
     if not continuity_records:
         return None, "UNKNOWN", "continuity_evidence_missing"
     candidates: list[tuple[int, int, str, dict[str, Any]]] = []
+    mismatched_covering_candidates: list[tuple[int, int, str, dict[str, Any]]] = []
     for record in continuity_records:
         start = _record_frame_id(record, continuity_start_field)
         end = _record_frame_id(record, continuity_end_field)
@@ -591,15 +733,27 @@ def _continuity_decision(
         if continuity_status_field != "none" and status != continuity_status_value:
             continue
         if start <= anchor_frame_id <= end:
-            candidates.append((int(start), int(end), stable_hash(record), record))
+            record_team_role = _record_text(record, continuity_team_role_field)
+            if record_team_role is None:
+                return record, "UNKNOWN", "continuity_team_field_missing"
+            candidate = (int(start), int(end), stable_hash(record), record)
+            if record_team_role == anchor_team_role:
+                candidates.append(candidate)
+            else:
+                mismatched_covering_candidates.append(candidate)
     if not candidates:
+        if mismatched_covering_candidates:
+            mismatched_covering_candidates.sort(key=lambda item: (item[0], item[1], item[2]))
+            return mismatched_covering_candidates[0][3], "FAIL", "continuity_team_mismatch"
         return None, "UNKNOWN", "continuity_evidence_not_covering_anchor"
+    if continuity_overlap_policy == "unknown_on_ambiguous" and len(candidates) > 1:
+        return None, "UNKNOWN", "ambiguous_overlapping_continuity_evidence"
     if window_mode == "trace_back_from_outcome":
         candidates.sort(key=lambda item: (-item[0], item[1], item[2]))
     else:
         candidates.sort(key=lambda item: (item[0], item[1], item[2]))
     start, end, _hash, record = candidates[0]
-    if end < clipped_start or start > clipped_end:
+    if end < requested_start or start > requested_end:
         return record, "UNKNOWN", "continuity_evidence_does_not_overlap_window"
     return record, "PASS", "continuity_evidence_observed"
 
@@ -636,6 +790,11 @@ def _status_record(
     continuity_end_field: str,
     continuity_status_field: str,
     continuity_status_value: str,
+    anchor_team_role_field: str,
+    continuity_team_role_field: str,
+    anchor_team_role: str | None,
+    team_binding_policy: str,
+    continuity_overlap_policy: str,
     continuity: dict[str, Any] | None,
     anchor_node_id: str,
     anchor_output_name: str,
@@ -653,6 +812,7 @@ def _status_record(
     window_duration_seconds = window_duration_frames / float(frame_rate_hz) if frame_rate_hz > 0 else 0.0
     continuity_start = None if continuity is None else _record_frame_id(continuity, continuity_start_field)
     continuity_end = None if continuity is None else _record_frame_id(continuity, continuity_end_field)
+    continuity_team_role = None if continuity is None else _record_text(continuity, continuity_team_role_field)
     record = {
         **anchor,
         "match_id": match_id or str(getattr(state, "match_id", "")),
@@ -693,6 +853,12 @@ def _status_record(
         "continuity_end_frame_field": continuity_end_field,
         "continuity_status_field": continuity_status_field,
         "continuity_status_value": continuity_status_value,
+        "anchor_team_role_field": anchor_team_role_field,
+        "continuity_team_role_field": continuity_team_role_field,
+        "anchor_team_role": anchor_team_role,
+        "continuity_team_role": continuity_team_role,
+        "team_binding_policy": team_binding_policy,
+        "continuity_overlap_policy": continuity_overlap_policy,
         "continuity_evidence_id": None if continuity is None else str(continuity.get("anchor_id") or ""),
         "continuity_start_frame_id": continuity_start,
         "continuity_end_frame_id": continuity_end,
@@ -725,15 +891,14 @@ def _duration_frames(seconds: float, frame_rate_hz: float) -> int:
 def _period_bounds(
     state: Any,
     anchors: list[dict[str, Any]],
-    continuity_records: list[dict[str, Any]],
 ) -> tuple[int, int]:
     frame_ids = getattr(state, "frame_ids", None)
     if frame_ids is not None and len(frame_ids):
         values = [int(item) for item in list(frame_ids)]
         return min(values), max(values)
     candidates: list[int] = []
-    for record in [*anchors, *continuity_records]:
-        for field in ("anchor_frame_id", "start_frame_id", "end_frame_id", "possession_start_frame_id", "possession_end_frame_id"):
+    for record in anchors:
+        for field in ("anchor_frame_id", "start_frame_id", "end_frame_id"):
             value = _record_frame_id(record, field)
             if value is not None:
                 candidates.append(value)
@@ -767,6 +932,16 @@ def _status_value(record: dict[str, Any] | None, field: str) -> str | None:
         return None
     value = record.get(field)
     return None if value is None else str(value)
+
+
+def _record_text(record: dict[str, Any] | None, field: str) -> str | None:
+    if field == "none" or record is None:
+        return None
+    value = record.get(field)
+    if value is None:
+        return None
+    text = str(value)
+    return text if text else None
 
 
 def _record_frame_id(record: dict[str, Any] | None, frame_field: str) -> int | None:

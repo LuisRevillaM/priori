@@ -4392,6 +4392,88 @@ def default_primitives() -> list[CatalogEntry]:
 def default_relations() -> list[CatalogEntry]:
     return [
         relation(
+            name="controlled_pass_team_keyed_anchors",
+            version="0.1.0",
+            purpose="Expose controlled-pass anchor records with declared acting-team evidence for team-keyed compositions.",
+            outputs=[
+                output(
+                    name="anchors",
+                    temporal_type=TemporalContainer.EPISODE_SET,
+                    payload_type=PayloadType.ANCHOR_REF,
+                    cardinality=Cardinality.COLLECTION,
+                    entity_scope=EntityScope.ANCHOR,
+                    evidence_fields=[
+                        "anchor_id",
+                        "anchor_frame_id",
+                        "start_frame_id",
+                        "end_frame_id",
+                        "controlled_reception_frame_id",
+                        "controlled_pass_status",
+                        "team_role",
+                    ],
+                )
+            ],
+            inputs=[
+                input_ref(
+                    name="controlled_pass_anchors",
+                    temporal_type=TemporalContainer.EPISODE_SET,
+                    payload_type=PayloadType.ANCHOR_REF,
+                    cardinality=Cardinality.COLLECTION,
+                    entity_scope=EntityScope.ANCHOR,
+                )
+            ],
+            evidence_fields=[
+                "anchor_id",
+                "anchor_frame_id",
+                "start_frame_id",
+                "end_frame_id",
+                "controlled_reception_frame_id",
+                "controlled_pass_status",
+                "team_role",
+            ],
+            limitations=[
+                "Copies declared controlled-pass anchors and exposes their event team role; it does not re-evaluate pass control.",
+            ],
+        ),
+        relation(
+            name="possession_segment_team_keyed_episodes",
+            version="0.1.0",
+            purpose="Expose perspective-team possession segments with declared team-role evidence for team-keyed compositions.",
+            outputs=[
+                output(
+                    name="episodes",
+                    temporal_type=TemporalContainer.EPISODE_SET,
+                    payload_type=PayloadType.BOOLEAN,
+                    cardinality=Cardinality.COLLECTION,
+                    entity_scope=EntityScope.POSSESSION,
+                    evidence_fields=[
+                        "possession_start_frame_id",
+                        "possession_end_frame_id",
+                        "possession_duration_seconds",
+                        "team_role",
+                    ],
+                )
+            ],
+            inputs=[
+                input_ref(
+                    name="possession_segments",
+                    temporal_type=TemporalContainer.EPISODE_SET,
+                    payload_type=PayloadType.BOOLEAN,
+                    cardinality=Cardinality.COLLECTION,
+                    entity_scope=EntityScope.POSSESSION,
+                )
+            ],
+            evidence_fields=[
+                "possession_start_frame_id",
+                "possession_end_frame_id",
+                "possession_duration_seconds",
+                "team_role",
+            ],
+            limitations=[
+                "Copies possession segments for the execution perspective team; it does not infer clean individual control.",
+            ],
+        ),
+        relation(
             name="geometric_progressive_corridor",
             version="0.1.0",
             purpose=(
