@@ -2,8 +2,8 @@
 
 Branch: `packet/r1-2`
 Frontier base for original packet: `834c2c9`
-Round-2 review source: `delivery/packets/R1-2-REVIEW.md` on the frontier
-ADR: `docs/adr/0013-r1-operator-era.md`, including Addendum 2
+Round-2/round-3 review source: `delivery/packets/R1-2-REVIEW.md` on the frontier
+ADR: `docs/adr/0013-r1-operator-era.md`, including Addenda 2 and 3
 Push: no push, per direct-channel protocol.
 
 ## Result
@@ -23,6 +23,32 @@ The booked rows now enforce controlled-pass anchor status, use distinct
 release/reception evaluation frames, bind the before relation to `passer_id`,
 bind the after relation to `receiver_id`, and record the actual source frames
 and subject ids in evidence.
+
+Round 3 declares the accepted R-F semantics change instead of hiding it under
+the old catalog surface. The new pressure semantics are now catalog-visible:
+when an anchor carries `team_role`, `pressure_on_carrier` evaluates the side
+defending that anchor, and declared non-anchor frame fields must be present
+with no silent anchor-frame fallback. This deliberately creates generated
+artifact/parity drift for the director to re-freeze at acceptance.
+
+## Round-3 Governance Fixes
+
+| Finding | Status | Fix |
+| --- | --- | --- |
+| B7/B8: accepted kernel default change was hidden under a frozen catalog surface | PASS | `pressure_on_carrier` now declares `team_role`, `pressure_frame_field`, `carrier_id_field`, `pressure_defending_team_role`, and `lookback_seconds`; its limitations include the R1-2 R-F semantics note and the no-silent-frame-fallback note. |
+| B9: round-2 proof hash did not reproduce on the committed tree | PASS | The proof was re-run after commit `6a342e0`; both non-updating and updating runs produce document hash `d36254e978a014419f0139cfe9aed0ce3f674c82965d01b7dc3f7234422eaa4a` and runtime trace hash `b306734cee47cefcf5cad4676ec27a3deb0f6769d24995043414e3c7386b13b2`. |
+| B10: frame-id whitelist survived reordered | PASS | `delta_across_anchor` now requires `before_frame_field` and `after_frame_field` parameters and reads exactly those fields from before/after records. The target declares `before_record_frame_field=pressure_frame_id` and `after_record_frame_field=pressure_frame_id`. |
+| B10: T1 ratchet was string-literal only | PASS | Added an AST ratchet that fails score updates combining provider/catalog entry `.name` references with string literals. |
+| B10: builder boundary undocumented | PASS | `compiler_search_reachability.py` now documents the boundary: R1 operators route through `OPERATOR_COMPOSITION_BUILDERS`; `change_across_anchor` remains a grandfathered catalog-specific builder pending later extraction. |
+| Round-1 non-blocking list | PASS | Explicitly dispositioned below. |
+
+## Round-3 Drift Disclosure
+
+| Drift | Status | Direction |
+| --- | --- | --- |
+| q6 runtime semantics | ACCEPTED | The review quantified the original q6 ripple as 109 pressure traces moving to UNKNOWN rather than wrong-frame evidence. The current declared-catalog run keeps the q6 runtime honest-zero (`result_count=0`, requested evidence failures `0`) but fails the frozen bound-plan hash until the director re-freezes. |
+| q6 verifier | EXPECTED FAIL | `afl-substrate-q6-verify` runtime status is pass/honest-zero, runtime trace hash `b9e24dabc23931c0de15ee665d39fcd15a6ce30de02c0fa932a012f332695f8c`; validation factory fails only `expected.bound_plan_hash` (`286ac3f2744d6d327b71fa1d6a5427d0a3fb6d9590236a5b9711493a8ed96a44` -> `d3f23c5655b1c01a1e6de6497a9202e1552e9b0e95be5898c284a534f57df1a6`). |
+| Generated catalog/parity artifacts | EXPECTED FAIL | Full suite reports stale generated artifacts and SCP0 parity drift because the pressure catalog surface intentionally changed. No generated artifacts were re-frozen by this executor. |
 
 ## Round-2 Review Fixes
 
@@ -49,13 +75,13 @@ and subject ids in evidence.
 
 | Item | Status | Evidence |
 | --- | --- | --- |
-| Stage commits | PASS | Round-2 commits: `ef3cd7c` evidence contract, `4c68f96` catalog-drift attempt, `64d56c0` catalog restoration. This report is the final round-2 report commit. |
+| Stage commits | PASS | Round-2 commits: `ef3cd7c`, `4c68f96`, `64d56c0`, `0a82dae`; round-3 code/governance commit: `6a342e0`. This report is the final round-3 report commit. |
 | Operator declaration and implementation | PASS | `src/tqe/runtime/operators/delta_across_anchor.py`; signature, anchor-status gate, subject evidence, source-frame evidence, signed delta, edge statuses, UNKNOWN-on-missing/same-frame semantics. |
 | Registry citizenship | PASS | `src/tqe/runtime/operators/__init__.py`; `delta_across_anchor@0.1.0` remains registered from round 1. |
 | Generic search insertion | PASS | `scripts/coverage_map/compiler_search_reachability.py`; generic operator insertion consumes target-declared contexts before synthesis and no longer uses provider-name score bonuses. |
-| Acceptance target | PASS | `config/compiler-reachability/r1-2-delta-across-anchor-targets.v0.json`; now declares release-frame passer pressure before, reception-frame receiver pressure after, anchor status, pressure thresholds, and semantic correspondence. |
-| Focused tests | PASS | 31 focused R1 tests passed, including R1-0/R1-1 regression and R1-2 round-2 probes. |
-| Full suite and pinned gates | PASS | Full suite and pinned gate bundle passed on the committed tree. |
+| Acceptance target | PASS | `config/compiler-reachability/r1-2-delta-across-anchor-targets.v0.json`; now declares release-frame passer pressure before, reception-frame receiver pressure after, anchor status, pressure thresholds, record-frame evidence fields, and semantic correspondence. |
+| Focused tests | PASS | 34 focused R1 tests passed, including R1-0/R1-1 regression and R1-2 round-3 probes. |
+| Full suite and pinned gates | EXPECTED DRIFT | Runtime tests pass except generated/parity drift caused by the accepted catalog semantics declaration. q6 fails only frozen bound-plan comparison; runtime remains pass/honest-zero. |
 
 ## Semantic Correspondence
 
@@ -73,9 +99,11 @@ Source chain:
 - Anchor source: `controlled_pass_episode.anchors`.
 - Required anchor status: `pass_status == PASS`.
 - Before relation: `pressure_on_carrier.anchor_evaluations` at
-  `physical_release_frame_id`, with `carrier_id_field=passer_id`.
+  `physical_release_frame_id`, with `carrier_id_field=passer_id` and
+  `before_record_frame_field=pressure_frame_id`.
 - After relation: `pressure_on_carrier.anchor_evaluations` at
-  `controlled_reception_frame_id`, with `carrier_id_field=receiver_id`.
+  `controlled_reception_frame_id`, with `carrier_id_field=receiver_id` and
+  `after_record_frame_field=pressure_frame_id`.
 - Scalar: `nearest_defender_distance_m`.
 - Unit: `metre`.
 
@@ -90,39 +118,40 @@ Claim boundary:
 Command:
 
 ```bash
-rm -rf /private/tmp/priori-r1-2-r2-search /private/tmp/priori-r1-2-r2-report.json
+rm -rf /private/tmp/priori-r1-2-r3-search /private/tmp/priori-r1-2-r3-report.json
 TQE_SEARCH_TARGETS=config/compiler-reachability/r1-2-delta-across-anchor-targets.v0.json \
 TQE_SEARCH_UPDATE_LEDGER=0 \
-TQE_SEARCH_OUT_DIR=/private/tmp/priori-r1-2-r2-search \
-TQE_SEARCH_REPORT=/private/tmp/priori-r1-2-r2-report.json \
-PYTHONPATH=/private/tmp/priori-r1-2-r2/src \
+TQE_SEARCH_OUT_DIR=/private/tmp/priori-r1-2-r3-search \
+TQE_SEARCH_REPORT=/private/tmp/priori-r1-2-r3-report.json \
+PYTHONPATH=/private/tmp/priori-r1-2-r3-clone/src \
 /Users/luisrevilla/code/priori/.venv/bin/python \
   scripts/coverage_map/compiler_search_reachability.py
 ```
 
 Result:
 
-| Field | Round 1 rejected book | Round 2 corrected book |
-| --- | --- | --- |
-| Target | `r1_2_pressure_distance_delta_v0` | `r1_2_pressure_distance_delta_v0` |
-| Coverage row | `pressure_change_after` | `pressure_change_after` |
-| Result | `compiler_reachable` | `compiler_reachable` |
-| Result count | `20` | `20` |
-| Requested evidence failures | `0` | `0` |
-| Terminal provider | `operator:delta_across_anchor` | `operator:delta_across_anchor` |
-| Rules used | `generic_delta_across_anchor_operator`, `provider_field_backward_search` | `generic_delta_across_anchor_operator`, `provider_field_backward_search` |
-| Document hash | `cd70182462a8cf9888822a76a4cb6c942dfd1fab47cf77754d8647cbc60c07a2` | `fa547d1821472a27554fc4fbbc0f53fe899c2674ed29f7aa8e37c68cf3e1a735` |
-| Runtime trace hash | `43a69cbdaa2583b9d2cd0676495958baecaf567fd9639d0b3366c8607191cd3d` | `f00e18c1ac0cb4b60c8131384c927e041909f89274691f5da92cfd89120e5d77` |
-| Runtime value count | `196` | `196` |
+| Field | Round 1 rejected book | Round 2 corrected book | Round 3 declared/reproducible book |
+| --- | --- | --- | --- |
+| Target | `r1_2_pressure_distance_delta_v0` | `r1_2_pressure_distance_delta_v0` | `r1_2_pressure_distance_delta_v0` |
+| Coverage row | `pressure_change_after` | `pressure_change_after` | `pressure_change_after` |
+| Result | `compiler_reachable` | `compiler_reachable` | `compiler_reachable` |
+| Result count | `20` | `20` | `20` |
+| Requested evidence failures | `0` | `0` | `0` |
+| Terminal provider | `operator:delta_across_anchor` | `operator:delta_across_anchor` | `operator:delta_across_anchor` |
+| Rules used | `generic_delta_across_anchor_operator`, `provider_field_backward_search` | `generic_delta_across_anchor_operator`, `provider_field_backward_search` | `generic_delta_across_anchor_operator`, `provider_field_backward_search` |
+| Document hash | `cd70182462a8cf9888822a76a4cb6c942dfd1fab47cf77754d8647cbc60c07a2` | `fa547d1821472a27554fc4fbbc0f53fe899c2674ed29f7aa8e37c68cf3e1a735` | `d36254e978a014419f0139cfe9aed0ce3f674c82965d01b7dc3f7234422eaa4a` |
+| Runtime trace hash | `43a69cbdaa2583b9d2cd0676495958baecaf567fd9639d0b3366c8607191cd3d` | `f00e18c1ac0cb4b60c8131384c927e041909f89274691f5da92cfd89120e5d77` | `b306734cee47cefcf5cad4676ec27a3deb0f6769d24995043414e3c7386b13b2` |
+| Runtime value count | `196` | `196` | `196` |
 
-Round-2 corpus summary:
+Round-3 corpus summary:
 
 | Field | Value |
 | --- | --- |
 | Held-out success | `1 / 1` |
 | Multi-step success | `1 / 1` |
-| Global compiler-reachable rows | `7` |
-| Global compiler-reachable pct | `0.9` |
+| Global compiler-reachable rows before ledger update | `7` |
+| Global compiler-reachable rows after temp-ledger update | `8` |
+| Global compiler-reachable pct after temp-ledger update | `1.1` |
 | Global supported rows | `362` |
 | Global supported pct | `48.9` |
 | Delta discovery-space count | `1` |
@@ -132,11 +161,13 @@ Round-2 corpus summary:
 | After frame field | `controlled_reception_frame_id` |
 | Before subject field | `passer_id` |
 | After subject field | `receiver_id` |
+| Before/after record frame field | `pressure_frame_id` |
 | Value field | `nearest_defender_distance_m` |
 
-The search target is non-updating (`TQE_SEARCH_UPDATE_LEDGER=0`). It proves
-reachability without mutating the shared coverage ledger or generated compiler
-search outputs.
+The non-updating run proves reachability without mutating the shared coverage
+ledger or generated compiler-search outputs. The updating proof was run against
+a temporary copy of `generated/coverage-map.json`; it reproduces the same
+document/runtime hashes and moves the compiler-reachable count from 7 to 8.
 
 ## Booked-Evidence Audit
 
@@ -144,7 +175,7 @@ Round 1 booked 20 rows but failed substance review: 5/20 receiver-to-self or
 wrong-team pressure rows, 9/20 uncontrolled anchors, 5/20 same-frame fallback
 deltas, and 20/20 misreported evidence frames.
 
-Round 2 books 20 rows with the following distribution:
+Round 3 books 20 rows with the following distribution:
 
 | Check | Value |
 | --- | --- |
@@ -154,6 +185,7 @@ Round 2 books 20 rows with the following distribution:
 | Missing before/after frame rows | `0` |
 | Same-frame rows | `0` |
 | Rows with declared subject correspondence | `20 / 20` |
+| Rows with declared frame-field correspondence | `20 / 20` |
 
 Per-row audit:
 
@@ -184,29 +216,21 @@ Per-row audit:
 
 | Command | Status | Notes |
 | --- | --- | --- |
-| `PYTHONPATH=/private/tmp/priori-r1-2-r2/src /Users/luisrevilla/code/priori/.venv/bin/python -m unittest tests.test_r1_2_delta_across_anchor` | PASS | 15 tests in 9.964s. Covers operator behavior, anchor-status enforcement, same-frame UNKNOWN, evidence frame/subject reporting, both-team pressure role selection, context enforcement, and provider-name scoring guard. |
-| `PYTHONPATH=/private/tmp/priori-r1-2-r2/src /Users/luisrevilla/code/priori/.venv/bin/python -m unittest tests.test_r1_0_operator_scaffolding tests.test_r1_2_delta_across_anchor tests.test_r1_1_project_onto_axis -v` | PASS | 31 tests in 24.320s. Covers R1-0/R1-1 regression plus R1-2 round-2 probes. |
+| `PYTHONPATH=/private/tmp/priori-r1-2-r3-clone/src /Users/luisrevilla/code/priori/.venv/bin/python -m unittest tests.test_r1_2_delta_across_anchor -v` | PASS | 18 tests in 9.487s. Covers operator behavior, anchor-status enforcement, declared-frame UNKNOWN, evidence frame/subject reporting, both-team pressure role selection, catalog declaration, context enforcement, and structural provider-name scoring ratchet. |
+| `PYTHONPATH=/private/tmp/priori-r1-2-r3-clone/src /Users/luisrevilla/code/priori/.venv/bin/python -m unittest tests.test_r1_0_operator_scaffolding tests.test_r1_2_delta_across_anchor tests.test_r1_1_project_onto_axis -v` | PASS | 34 tests in 24.485s. Covers R1-0/R1-1 regression plus R1-2 round-3 probes. |
 
 ## Full Suite
 
 | Command | Status | Notes |
 | --- | --- | --- |
-| `make PYTHON=/Users/luisrevilla/code/priori/.venv/bin/python test` | PASS | 402 tests in 345.210s. Attestation status `VERIFIED`, blocking reasons `[]`. |
+| `make PYTHON=/Users/luisrevilla/code/priori/.venv/bin/python test` | EXPECTED FAIL | 405 tests in 344.253s; 5 failures, all generated/parity drift from the accepted R-F catalog declaration. Runtime attestation status remains `VERIFIED`, blocking reasons `[]`. Failures: generated binder artifacts stale; SCP0 product shared record contract drift for `runtime:relation:pressure_on_carrier:0.1.0`; SCP0 lock hash drift `8a621555...` -> `ddd39c8c...`; SCP0 report status FAIL from that drift; SCP0 check-mode verifier exits 1 because drift is present. |
 
 ## Pinned Gates
 
 | Gate | Status | Notes |
 | --- | --- | --- |
-| `n1d1-verify` | PASS | `attestation_status=VERIFIED`, no blocking reasons. |
-| `afl-substrate-q4-verify` | PASS | Frozen expectation comparison PASS; result count 2; requested evidence failures 0; runtime trace hash `c145a74cdba96536d5f294b60296bb1533abe04468cda28c7a265a85415425f6`. |
-| `afl-substrate-q6-verify` | PASS | Frozen expectation comparison PASS; honest zero; requested evidence failures 0; runtime trace hash `11b9c4e6ead1c7799100da0be3cffd67eec9426c406f950b196f643502d80a7f`. |
-| `afl-line-break-support-response-verify` | PASS | Frozen expectation comparison PASS; result count 1; requested evidence failures 0; runtime trace hash `30aad11448a29a990d80dc889aea7b62ef84754f9b5e0e8c7343104f8164c6e0`. |
-| `afl-lane-occupancy-verify` | PASS | Report status PASS; lane occupancy tests 17 OK; runtime trace hash `39a0e3ddec60dd598d6d7392d4c046fd2fb2e032adac11e67d00ec759495aa61`. |
-| `afl-09a-verify` | PASS | Included in pinned gate bundle; bundle exited 0. |
-| `scp-0-verify` | PASS | Included in pinned gate bundle; semantic registry tests 58 OK. |
-| `afl-passport-verify` | PASS | Report status PASS; passport generated hash matched stored hash `c92bcd1a94dd3636b5acbe985e7b157b61bd96d6024ea7efb5b005a6fed2f323`; semantic registry tests 58 OK. |
-
-No pinned gate hash drift was introduced by the R1-2 round-2 commits.
+| `afl-substrate-q6-verify` | EXPECTED FAIL | Runtime report status PASS, honest zero, requested evidence failures 0, runtime trace hash `b9e24dabc23931c0de15ee665d39fcd15a6ce30de02c0fa932a012f332695f8c`; validation factory fails only frozen `bound_plan_hash` drift `286ac3f2744d6d327b71fa1d6a5427d0a3fb6d9590236a5b9711493a8ed96a44` -> `d3f23c5655b1c01a1e6de6497a9202e1552e9b0e95be5898c284a534f57df1a6`. |
+| `scp-0` via full suite | EXPECTED FAIL | Product shared record contract drift for `pressure_on_carrier` and lock hash drift from the declared catalog surface. Director re-freeze required at acceptance. |
 
 ## File Footprint
 
@@ -215,25 +239,45 @@ Tracked files changed relative to round-1 report commit `0116fa3`:
 - `config/compiler-reachability/r1-2-delta-across-anchor-targets.v0.json`
 - `delivery/packets/R1-2-REPORT.md`
 - `scripts/coverage_map/compiler_search_reachability.py`
+- `src/tqe/runtime/catalog.py`
 - `src/tqe/runtime/capabilities/teamshape_family.py`
 - `src/tqe/runtime/operators/delta_across_anchor.py`
 - `tests/test_r1_2_delta_across_anchor.py`
 
-The round-2 catalog-drift correction leaves no diff in
-`src/tqe/runtime/catalog.py` relative to `0116fa3`.
+`src/tqe/runtime/catalog.py` now intentionally drifts from `0116fa3` to
+declare the accepted R-F pressure semantics.
+
+## Round-1 Non-Blocking Disposition
+
+| Item | Disposition |
+| --- | --- |
+| Flat-signal double-edge | Deferred. Not needed for the accepted `pressure_change_after` proof; should be handled in a later operator semantics packet if edge extraction becomes product-facing. |
+| Silent anchor drops | Partially fixed for this target. Missing declared before/after evaluation frames now become UNKNOWN through `delta_across_anchor`; anchors missing their own `anchor_frame_id` still cannot produce an anchor-keyed delta record and remain a broader runtime design issue. |
+| Tool-side semantic defaults | Fixed for the R1-2 target path. The target declares pressure thresholds, frame fields, carrier fields, status fields, and record-frame fields; synthesis fails on unapplied keys. Generic catalog defaults still exist for unconstrained uses. |
+| Degrees unit | Deferred. Existing angle parameters still use `Unit.NONE` with degree-named fields; changing the unit model is outside this packet. |
+| Missing tests, including rule-7/both-teams | Fixed for R1-2. Tests now cover both-team pressure role selection, declared-frame UNKNOWN, catalog declaration, and structural provider-name scoring ratchet. |
 
 Local verification-only artifacts were not committed:
 
 - temporary `data` symlink into the canonical corpus
-- non-updating `/private/tmp/priori-r1-2-r2-search` proof output
-- non-updating `/private/tmp/priori-r1-2-r2-report.json` proof report
+- non-updating `/private/tmp/priori-r1-2-r3-search` proof output
+- non-updating `/private/tmp/priori-r1-2-r3-report.json` proof report
+- updating `/private/tmp/priori-r1-2-r3-search-updating` proof output against a temporary ledger copy
+- updating `/private/tmp/priori-r1-2-r3-report-updating.json` proof report
+- temporary `/private/tmp/priori-r1-2-r3-coverage-map.json` ledger copy
 
 ## Summary
 
-R1-2 round 2 is complete. The operator remains reachable through the generic
-compiler-search path, but the booked evidence now proves the intended football
-meaning instead of merely returning arithmetic rows. The target is still
-`compiler_reachable` with 20 rows and zero requested-evidence failures; every
-row now has controlled-pass anchor status, declared release/reception frames,
-declared before/after subjects, and correspondence to the target semantics.
-Full suite and pinned gates are green. No push was performed.
+R1-2 round 3 is complete. The operator remains reachable through the generic
+compiler-search path, and the booked evidence still proves the intended
+football meaning with 20 rows and zero requested-evidence failures. Every row
+now has controlled-pass anchor status, declared release/reception frames,
+declared record-frame fields, declared before/after subjects, and
+correspondence to the target semantics.
+
+The accepted R-F pressure semantics are now declared instead of hidden. That
+correctly causes generated catalog/parity drift and q6 frozen bound-plan drift;
+these are disclosed as expected director re-freeze work, not executor
+regeneration. The committed-tree proof reproduces the new document/runtime
+hashes, and an updating run against a temporary ledger moves
+compiler-reachable rows from 7 to 8. No push was performed.
