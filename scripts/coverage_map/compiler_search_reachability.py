@@ -42,6 +42,7 @@ from tqe.runtime.ir import (  # noqa: E402
     stable_hash,
 )
 from tqe.runtime.operators.delta_across_anchor import DELTA_ACROSS_ANCHOR_SIGNATURE  # noqa: E402
+from tqe.runtime.operators.extremum_over_set import EXTREMUM_OVER_SET_SIGNATURE  # noqa: E402
 from tqe.runtime.operators.project_onto_axis import PROJECT_ONTO_AXIS_SIGNATURE  # noqa: E402
 
 
@@ -87,6 +88,7 @@ SUPPORTED_COMPOSITION_CONSTRAINT_KINDS = {
     "same_player_return",
     "temporal_order",
     "delta_across_anchor",
+    "extremum_over_set",
     "vector_projection",
 }
 EXCLUDED_CATALOG_REFS = {
@@ -460,8 +462,10 @@ def declared_operator_fields(signature: Any) -> set[str]:
 
 PROJECT_ONTO_AXIS_FIELDS = declared_operator_fields(PROJECT_ONTO_AXIS_SIGNATURE)
 DELTA_ACROSS_ANCHOR_FIELDS = declared_operator_fields(DELTA_ACROSS_ANCHOR_SIGNATURE)
+EXTREMUM_OVER_SET_FIELDS = declared_operator_fields(EXTREMUM_OVER_SET_SIGNATURE)
 OPERATOR_SIGNATURES_BY_CONSTRAINT_KIND = {
     "delta_across_anchor": DELTA_ACROSS_ANCHOR_SIGNATURE,
+    "extremum_over_set": EXTREMUM_OVER_SET_SIGNATURE,
     "vector_projection": PROJECT_ONTO_AXIS_SIGNATURE,
 }
 OPERATOR_FIELDS_BY_CONSTRAINT_KIND = {
@@ -959,6 +963,10 @@ def delta_across_anchor_output_for_field(field: str) -> str:
     return operator_output_for_field(DELTA_ACROSS_ANCHOR_SIGNATURE, field)
 
 
+def extremum_over_set_output_for_field(field: str) -> str:
+    return operator_output_for_field(EXTREMUM_OVER_SET_SIGNATURE, field)
+
+
 def operator_output_for_field(signature: Any, field: str) -> str:
     for output in signature.outputs:
         if output.name == field:
@@ -1206,6 +1214,223 @@ def required_delta_constraint(constraint: dict[str, Any], key: str) -> str:
     return str(value)
 
 
+def build_extremum_over_set_operator(
+    context: SearchContext,
+    required_fields: set[str],
+    *,
+    depth: int,
+) -> BuildResult:
+    constraint = first_target_constraint(context, "extremum_over_set")
+    extremum_constraint = extremum_over_set_constraint(constraint)
+    attempts: list[dict[str, Any]] = []
+    candidates = extremum_over_set_candidates(context, extremum_constraint)
+    candidate_summaries = [
+        {
+            "source_provider": candidate["entry"].name,
+            "source_output": candidate["output"].name,
+            "source_required_fields": candidate["source_required_fields"],
+        }
+        for candidate in candidates
+    ]
+    for candidate in candidates[: context.max_branching]:
+        try:
+            source = build_entry(
+                context,
+                candidate["entry"],
+                set(candidate["source_required_fields"]),
+                depth=depth + 1,
+                input_context={},
+            )
+            missing_source_fields = sorted(
+                field for field in candidate["source_required_fields"] if field not in source.field_sources
+            )
+            if missing_source_fields:
+                raise SynthesisError(
+                    "missing_constraint",
+                    "Candidate set source did not expose all declared extremum fields.",
+                    {
+                        "source_provider": candidate["entry"].name,
+                        "source_output": candidate["output"].name,
+                        "missing_source_fields": missing_source_fields,
+                    },
+                )
+            node_id = context.node_id("extremum_over_set")
+            nodes = [*source.nodes]
+            nodes.append(
+                operator_node(
+                    node_id=node_id,
+                    operator_name="extremum_over_set",
+                    version="0.1.0",
+                    inputs={"candidates": ref(source.terminal_node_id, candidate["output"].name)},
+                    parameters={
+                        "selection_mode": enum(extremum_constraint["selection_mode"]),
+                        "top_k": number(float(extremum_constraint["top_k"]), "count"),
+                        "value_field": enum(extremum_constraint["value_field"]),
+                        "value_unit": enum(extremum_constraint["value_unit"]),
+                        "record_id_field": enum(extremum_constraint["record_id_field"]),
+                        "entity_id_field": enum(extremum_constraint["entity_id_field"]),
+                        "frame_field": enum(extremum_constraint["frame_field"]),
+                        "anchor_id_field": enum(extremum_constraint["anchor_id_field"]),
+                        "subject_id_field": enum(extremum_constraint["subject_id_field"]),
+                        "status_field": enum(extremum_constraint["status_field"]),
+                        "required_status_value": enum(extremum_constraint["required_status_value"]),
+                        "coverage_status_field": enum(extremum_constraint["coverage_status_field"]),
+                        "coverage_policy": enum(extremum_constraint["coverage_policy"]),
+                        "value_bound_kind": enum(extremum_constraint["value_bound_kind"]),
+                        "value_bound": number(float(extremum_constraint["value_bound"]), "none"),
+                        "tie_breaker_field": enum(extremum_constraint["tie_breaker_field"]),
+                        "secondary_tie_breaker_field": enum(extremum_constraint["secondary_tie_breaker_field"]),
+                        "missing_evidence_policy": enum(extremum_constraint["missing_evidence_policy"]),
+                    },
+                )
+            )
+            field_sources = {**source.field_sources}
+            for field in EXTREMUM_OVER_SET_FIELDS:
+                field_sources.setdefault(field, (node_id, extremum_over_set_output_for_field(field)))
+            return BuildResult(
+                nodes=dedupe_nodes(nodes),
+                terminal_node_id=node_id,
+                terminal_entry="operator:extremum_over_set",
+                terminal_output="extremum_selection_records",
+                field_sources=field_sources,
+                rules_used=[*source.rules_used, "generic_extremum_over_set_operator"],
+                providers_used=[*source.providers_used, "operator:extremum_over_set"],
+                metadata={
+                    "extremum_over_set_discovery_space_count": len(candidates),
+                    "extremum_over_set_candidate_outputs": candidate_summaries,
+                    "extremum_over_set_selected_output": {
+                        "source_provider": candidate["entry"].name,
+                        "source_output": candidate["output"].name,
+                    },
+                    "extremum_over_set_constraint": extremum_constraint,
+                    "source_build_metadata": source.metadata,
+                },
+            )
+        except SynthesisError as error:
+            attempts.append(
+                {
+                    "source_provider": candidate["entry"].name,
+                    "source_output": candidate["output"].name,
+                    "taxonomy": error.taxonomy,
+                    "message": error.message,
+                    **error.details,
+                }
+            )
+    raise SynthesisError(
+        "missing_constraint",
+        "No typed candidate-record source satisfied extremum_over_set.",
+        {"attempted": attempts[: context.max_branching], "candidate_count": len(candidates)},
+    )
+
+
+def extremum_over_set_constraint(constraint: dict[str, Any]) -> dict[str, Any]:
+    allowed_keys = {
+        "kind",
+        "selection_mode",
+        "top_k",
+        "value_field",
+        "value_unit",
+        "record_id_field",
+        "entity_id_field",
+        "frame_field",
+        "anchor_id_field",
+        "subject_id_field",
+        "status_field",
+        "required_status_value",
+        "coverage_status_field",
+        "coverage_policy",
+        "value_bound_kind",
+        "value_bound",
+        "tie_breaker_field",
+        "secondary_tie_breaker_field",
+        "missing_evidence_policy",
+    }
+    unapplied = sorted(key for key in constraint if key not in allowed_keys)
+    if unapplied:
+        raise SynthesisError(
+            "missing_constraint",
+            "extremum_over_set supplied unsupported keys that synthesis cannot apply.",
+            {"unapplied_extremum_constraint_keys": unapplied},
+        )
+    return {
+        "selection_mode": str(constraint.get("selection_mode", "argmin")),
+        "top_k": int(constraint.get("top_k", 1)),
+        "value_field": required_extremum_constraint(constraint, "value_field"),
+        "value_unit": str(constraint.get("value_unit", "none")),
+        "record_id_field": required_extremum_constraint(constraint, "record_id_field"),
+        "entity_id_field": required_extremum_constraint(constraint, "entity_id_field"),
+        "frame_field": required_extremum_constraint(constraint, "frame_field"),
+        "anchor_id_field": str(constraint.get("anchor_id_field", "anchor_id")),
+        "subject_id_field": str(constraint.get("subject_id_field", "none")),
+        "status_field": str(constraint.get("status_field", "none")),
+        "required_status_value": str(constraint.get("required_status_value", "PASS")),
+        "coverage_status_field": str(constraint.get("coverage_status_field", "none")),
+        "coverage_policy": str(constraint.get("coverage_policy", "unknown_if_incomplete_could_change_answer")),
+        "value_bound_kind": str(constraint.get("value_bound_kind", "none")),
+        "value_bound": float(constraint.get("value_bound", 0.0)),
+        "tie_breaker_field": required_extremum_constraint(constraint, "tie_breaker_field"),
+        "secondary_tie_breaker_field": str(constraint.get("secondary_tie_breaker_field", "none")),
+        "missing_evidence_policy": str(constraint.get("missing_evidence_policy", "unknown")),
+    }
+
+
+def required_extremum_constraint(constraint: dict[str, Any], key: str) -> str:
+    value = constraint.get(key)
+    if value is None or str(value) == "" or str(value) == "none":
+        raise SynthesisError(
+            "missing_constraint",
+            f"extremum_over_set requires declared {key}; no provider-field default is allowed.",
+            {"missing_extremum_constraint_key": key},
+        )
+    return str(value)
+
+
+def extremum_over_set_candidates(
+    context: SearchContext,
+    constraint: dict[str, Any],
+) -> list[dict[str, Any]]:
+    operator_input = EXTREMUM_OVER_SET_SIGNATURE.inputs[0]
+    source_required_fields = {
+        str(constraint["value_field"]),
+        str(constraint["record_id_field"]),
+        str(constraint["entity_id_field"]),
+        str(constraint["frame_field"]),
+        str(constraint["anchor_id_field"]),
+        str(constraint["tie_breaker_field"]),
+    }
+    for optional_key in (
+        "subject_id_field",
+        "status_field",
+        "coverage_status_field",
+        "secondary_tie_breaker_field",
+    ):
+        field_name = str(constraint[optional_key])
+        if field_name != "none":
+            source_required_fields.add(field_name)
+    scored: list[tuple[int, str, str, CatalogEntry, CatalogOutput]] = []
+    for entry in context.catalog.entries.values():
+        fields = context.catalog.field_set(entry)
+        if not source_required_fields.issubset(fields):
+            continue
+        for output in entry.outputs:
+            if not composition_output_matches_operator_input(output, operator_input):
+                continue
+            output_fields = {output.name, *output.evidence_fields}
+            if not source_required_fields.issubset(output_fields):
+                continue
+            score = 0
+            score += 25 * len(source_required_fields & output_fields)
+            scored.append((-score, entry.name, output.name, entry, output))
+    return [
+        {
+            "entry": entry,
+            "output": output,
+            "source_required_fields": sorted(source_required_fields),
+        }
+        for _score, _entry_name, _output_name, entry, output in sorted(scored)
+    ]
+
+
 def delta_across_anchor_candidates(
     context: SearchContext,
     constraint: dict[str, Any],
@@ -1300,6 +1525,7 @@ def delta_across_anchor_candidates(
 
 OPERATOR_COMPOSITION_BUILDERS = {
     "delta_across_anchor": build_delta_across_anchor_operator,
+    "extremum_over_set": build_extremum_over_set_operator,
     "vector_projection": build_project_onto_axis,
 }
 
@@ -1510,6 +1736,7 @@ def build_relation_on_anchor(
         constraint.get("anchor_status_field"),
         constraint.get("anchor_frame_field"),
         constraint.get("anchor_identity_field"),
+        constraint.get("target_player_id_field"),
     ):
         if field_name:
             anchor_required_fields.add(str(field_name))
@@ -1606,6 +1833,8 @@ def relation_on_anchor_input_context(constraint: dict[str, Any]) -> dict[str, An
         "anchor_identity_field",
         "anchor_frame_field",
         "candidate_scope",
+        "target_player_id_field",
+        "minimum_observed_candidates",
         "support_region_mode",
         "maximum_arrival_seconds",
         "minimum_duration_seconds",
@@ -1625,6 +1854,8 @@ def relation_on_anchor_input_context(constraint: dict[str, Any]) -> dict[str, An
     for key in (
         "anchor_frame_field",
         "candidate_scope",
+        "target_player_id_field",
+        "minimum_observed_candidates",
         "support_region_mode",
         "maximum_arrival_seconds",
         "minimum_duration_seconds",
@@ -2436,6 +2667,16 @@ def infer_parameters(
             "lookback_seconds": number(context_number_value(context, "lookback_seconds", 0.4), "second"),
             "candidate_scope": enum(context_enum_value(context, "candidate_scope", "defending_outfield")),
         }
+    if entry.name == "defender_distance_candidate_set":
+        context = declared_parameter_context(entry, input_context)
+        return {
+            "anchor_frame_field": enum(context_enum_value(context, "anchor_frame_field", "controlled_reception_frame_id")),
+            "target_player_id_field": enum(context_enum_value(context, "target_player_id_field", "receiver_id")),
+            "candidate_scope": enum(context_enum_value(context, "candidate_scope", "defending_outfield")),
+            "required_anchor_status_field": enum(context_enum_value(context, "required_anchor_status_field", "none")),
+            "required_anchor_status_value": enum(context_enum_value(context, "required_anchor_status_value", "PASS")),
+            "minimum_observed_candidates": number(context_number_value(context, "minimum_observed_candidates", 6.0), "count"),
+        }
     if entry.name == "team_compactness":
         return {
             "frame_field": enum(str(input_context.get("frame_field", "anchor_frame_id"))),
@@ -2712,6 +2953,7 @@ def row_result(
         "target_contract_hash": target_contract_hash,
         "semantic_correspondence": target.get("semantic_correspondence"),
         "concept_name_used_as_hint": concept_name_used_as_hint(target),
+        "provider_name_used_as_hint": provider_name_used_as_hint(target),
         "gold_chain_used_as_input": False,
         "pattern_dispatch_used": False,
         "synthesizer_version": SYNTHESIZER_VERSION,
@@ -2797,6 +3039,8 @@ def build_report(
     findings: list[dict[str, str]] = []
     if any(result.get("concept_name_used_as_hint") for result in results):
         findings.append({"code": "concept_name_hint_used", "message": "A target used concept name inside the typed contract.", "path": "row_ledger"})
+    if any(result.get("provider_name_used_as_hint") for result in results):
+        findings.append({"code": "provider_name_hint_used", "message": "A target used a provider/catalog name inside the typed contract.", "path": "row_ledger"})
     if any(result.get("gold_chain_used_as_input") for result in results):
         findings.append({"code": "gold_chain_used_as_input", "message": "Coverage-map gold chain was consumed during synthesis.", "path": "row_ledger"})
     if any(result.get("pattern_dispatch_used") for result in results):
@@ -2836,6 +3080,7 @@ def build_report(
             "pattern_dispatch_allowed": False,
             "coverage_gold_chain_allowed_as_input": False,
             "concept_name_allowed_as_input": False,
+            "provider_name_allowed_as_input": False,
         },
         "search_budget": {
             "max_depth": MAX_DEPTH,
@@ -2935,6 +3180,30 @@ def concept_name_used_as_hint(target: dict[str, Any]) -> bool:
     concept = str(target["concept"]).lower()
     contract = json.dumps(target["target_contract"], sort_keys=True).lower()
     return concept in contract
+
+
+def provider_name_used_as_hint(target: dict[str, Any]) -> bool:
+    provider_names = {entry.name.lower() for entry in CatalogIndex().entries.values()}
+    for value in json_string_values(target.get("target_contract")):
+        if value.lower() in provider_names:
+            return True
+    return False
+
+
+def json_string_values(value: Any) -> list[str]:
+    if isinstance(value, str):
+        return [value]
+    if isinstance(value, dict):
+        values: list[str] = []
+        for child in value.values():
+            values.extend(json_string_values(child))
+        return values
+    if isinstance(value, list):
+        values = []
+        for child in value:
+            values.extend(json_string_values(child))
+        return values
+    return []
 
 
 def gold_chain_audit(row: dict[str, Any]) -> dict[str, Any]:
@@ -3111,7 +3380,9 @@ def relative_path(path: Path) -> str:
     try:
         return str(path.relative_to(ROOT))
     except ValueError:
-        return str(path)
+        if path.parent.name in {"out", "plans", "cache"}:
+            return f"<external>/{path.parent.name}/{path.name}"
+        return f"<external>/{path.name}"
 
 
 if __name__ == "__main__":

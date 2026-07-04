@@ -257,6 +257,68 @@ def relation_pressure_on_carrier(state: PeriodState, node: BoundCatalogNode) -> 
         ),
         "pressure_status_records": records,
     }
+
+
+def relation_defender_distance_candidate_set(state: PeriodState, node: BoundCatalogNode) -> None:
+    anchor_value = catalog_input_value(state, node, "anchors")
+    anchor_records = anchor_value.value
+    if not isinstance(anchor_records, list):
+        raise RuntimeError(f"{node.node_id} requires anchor records")
+    anchor_frame_field = node_parameter_text(node, "anchor_frame_field")
+    target_player_id_field = node_parameter_text(node, "target_player_id_field")
+    candidate_scope = node_parameter_text(node, "candidate_scope")
+    required_anchor_status_field = node_parameter_text(node, "required_anchor_status_field")
+    required_anchor_status_value = node_parameter_text(node, "required_anchor_status_value")
+    minimum_observed_candidates = node_parameter_integer(node, "minimum_observed_candidates")
+    if candidate_scope not in {"defending_outfield", "observed_defending_outfield"}:
+        raise RuntimeError(
+            "defender_distance_candidate_set v0.1 supports candidate_scope=defending_outfield or observed_defending_outfield"
+        )
+    records: list[dict[str, Any]] = []
+    for anchor in anchor_records:
+        if not isinstance(anchor, dict):
+            continue
+        records.extend(
+            defender_distance_candidate_records(
+                state=state,
+                anchor=anchor,
+                anchor_frame_field=anchor_frame_field,
+                target_player_id_field=target_player_id_field,
+                candidate_scope=candidate_scope,
+                required_anchor_status_field=required_anchor_status_field,
+                required_anchor_status_value=required_anchor_status_value,
+                minimum_observed_candidates=minimum_observed_candidates,
+                default_defending_team_role=state.defending_team_role,
+            )
+        )
+    records = [record for record in records if record is not None]
+    frame_ids = [int(record["anchor_frame_id"]) for record in records]
+    status_values = [
+        None if str(record["defender_distance_candidate_status"]) == "UNKNOWN" else str(record["defender_distance_candidate_status"])
+        for record in records
+    ]
+    state.signals[node.node_id] = {
+        "anchor_evaluations": records,
+        "anchor_evaluations_records": records,
+        "defender_distance_candidate_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=status_values,
+            unknown_mask=[value is None for value in status_values],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "defender_distance_candidate_status").entity_scope,
+        ),
+        "defender_distance_candidate_status_records": records,
+        "candidate_distance_m": FrameSignal(
+            frame_ids=frame_ids,
+            values=[record.get("candidate_distance_m") for record in records],
+            unknown_mask=[record.get("candidate_distance_m") is None for record in records],
+            unit=Unit.METRE,
+            entity_scope=catalog_output(node, "candidate_distance_m").entity_scope,
+        ),
+        "candidate_distance_m_records": records,
+    }
+
+
 def relation_team_press(state: PeriodState, node: BoundCatalogNode) -> None:
     anchor_value = catalog_input_value(state, node, "anchors")
     anchor_records = anchor_value.value
@@ -854,6 +916,192 @@ def pressure_on_carrier_anchor_record(
         "lookback_seconds": lookback_seconds,
         **evidence,
     }
+
+
+def defender_distance_candidate_records(
+    *,
+    state: PeriodState,
+    anchor: dict[str, Any],
+    anchor_frame_field: str,
+    target_player_id_field: str,
+    candidate_scope: str,
+    required_anchor_status_field: str,
+    required_anchor_status_value: str,
+    minimum_observed_candidates: int,
+    default_defending_team_role: str,
+) -> list[dict[str, Any]]:
+    anchor_frame_id = optional_int(anchor.get("anchor_frame_id"))
+    candidate_frame_id = anchor_frame_id if anchor_frame_field == "anchor_frame_id" else optional_int(anchor.get(anchor_frame_field))
+    source_anchor_id = str(anchor.get("anchor_id") or "")
+    target_player_id = str(anchor.get(target_player_id_field) or "")
+    target_team_role = str(anchor.get("team_role") or "")
+    defending_team_role = pressure_defending_team_role(anchor, default_defending_team_role)
+    known_outfield_ids = sorted(str(item) for item in outfield_player_ids(state.canonical_root, state.match_id, defending_team_role))
+    if anchor_frame_id is None:
+        return []
+    base = {
+        **anchor,
+        "match_id": state.match_id,
+        "period": state.period,
+        "source_anchor_id": source_anchor_id,
+        "team_role": target_team_role or anchor.get("team_role"),
+        "candidate_frame_field": anchor_frame_field,
+        "candidate_frame_id": candidate_frame_id,
+        "target_player_id_field": target_player_id_field,
+        "target_player_id": target_player_id or None,
+        "target_player_team_role": target_team_role or None,
+        "candidate_scope": candidate_scope,
+        "candidate_team_role": defending_team_role,
+        "candidate_defender_ids": known_outfield_ids,
+        "minimum_observed_candidates": int(minimum_observed_candidates),
+        "defender_distance_candidate_model": "observed_defender_target_distance_candidates_v0_1",
+        "defender_distance_candidate_claim_boundary": (
+            "Observed defender-target distance candidates only; no selection, marking assignment, pressure quality, "
+            "defender intent, scheme, causation, or optimality claim."
+        ),
+    }
+    if required_anchor_status_field != "none" and str(anchor.get(required_anchor_status_field)) != required_anchor_status_value:
+        return [
+            _defender_distance_unknown_record(
+                state=state,
+                anchor=anchor,
+                base=base,
+                anchor_frame_id=anchor_frame_id,
+                reason="required_anchor_status_not_met",
+                status="FAIL" if anchor.get(required_anchor_status_field) is not None else "UNKNOWN",
+            )
+        ]
+    if candidate_frame_id is None:
+        return [
+            _defender_distance_unknown_record(
+                state=state,
+                anchor=anchor,
+                base=base,
+                anchor_frame_id=anchor_frame_id,
+                reason="candidate_frame_missing",
+            )
+        ]
+    target_point = tracked_point_at_frame(state, candidate_frame_id, target_player_id)
+    if not target_player_id or target_point is None:
+        return [
+            _defender_distance_unknown_record(
+                state=state,
+                anchor=anchor,
+                base=base,
+                anchor_frame_id=anchor_frame_id,
+                reason="target_tracking_missing",
+            )
+        ]
+    defenders = [
+        record
+        for record in player_records_at_frame_for_team(state, candidate_frame_id, defending_team_role)
+        if str(record["player_id"]) in known_outfield_ids
+        and record.get("x_m") is not None
+        and record.get("y_m") is not None
+    ]
+    observed_ids = sorted(str(record["player_id"]) for record in defenders)
+    if candidate_scope == "observed_defending_outfield":
+        candidate_defender_ids = list(observed_ids)
+        missing_ids: list[str] = []
+    else:
+        candidate_defender_ids = list(known_outfield_ids)
+        missing_ids = sorted(player_id for player_id in known_outfield_ids if player_id not in set(observed_ids))
+    if len(defenders) < max(1, int(minimum_observed_candidates)):
+        return [
+            _defender_distance_unknown_record(
+                state=state,
+                anchor=anchor,
+                base={
+                    **base,
+                    "candidate_defender_ids": candidate_defender_ids,
+                    "target_point": point_from_xy(target_point[0], target_point[1]),
+                    "observed_candidate_ids": observed_ids,
+                    "missing_candidate_ids": missing_ids,
+                    "observed_candidate_count": len(observed_ids),
+                },
+                anchor_frame_id=anchor_frame_id,
+                reason="insufficient_observed_candidates",
+            )
+        ]
+    coverage_status = "COMPLETE" if not missing_ids else "INCOMPLETE"
+    rows: list[dict[str, Any]] = []
+    for defender in defenders:
+        defender_id = str(defender["player_id"])
+        defender_point = (float(defender["x_m"]), float(defender["y_m"]))
+        distance_m = math.dist(target_point, defender_point)
+        row = {
+            **base,
+            "anchor_frame_id": candidate_frame_id,
+            "start_frame_id": candidate_frame_id,
+            "end_frame_id": candidate_frame_id,
+            "entity_refs": [target_player_id, defender_id],
+            "defender_distance_candidate_status": "PASS",
+            "defender_distance_candidate_reason": "candidate_distance_observed",
+            "candidate_defender_id": defender_id,
+            "candidate_distance_m": round(float(distance_m), 3),
+            "target_point": point_from_xy(target_point[0], target_point[1]),
+            "candidate_point": point_from_xy(defender_point[0], defender_point[1]),
+            "candidate_defender_ids": candidate_defender_ids,
+            "observed_candidate_ids": observed_ids,
+            "missing_candidate_ids": missing_ids,
+            "observed_candidate_count": len(observed_ids),
+            "coverage_status": coverage_status,
+        }
+        row["anchor_id"] = anchor_record_id(
+            match_id=state.match_id,
+            period=state.period,
+            anchor_frame_id=candidate_frame_id,
+            start_frame_id=candidate_frame_id,
+            end_frame_id=candidate_frame_id,
+            entity_refs=row["entity_refs"],
+        )
+        row["candidate_record_id"] = row["anchor_id"]
+        rows.append(row)
+    rows.sort(key=lambda item: (float(item["candidate_distance_m"]), str(item["candidate_defender_id"])))
+    return rows
+
+
+def _defender_distance_unknown_record(
+    *,
+    state: PeriodState,
+    anchor: dict[str, Any],
+    base: dict[str, Any],
+    anchor_frame_id: int,
+    reason: str,
+    status: str = "UNKNOWN",
+) -> dict[str, Any]:
+    target_id = str(base.get("target_player_id") or "")
+    entity_refs = [target_id] if target_id else []
+    frame_id = optional_int(base.get("candidate_frame_id")) or anchor_frame_id
+    row = {
+        **base,
+        "anchor_frame_id": frame_id,
+        "start_frame_id": frame_id,
+        "end_frame_id": frame_id,
+        "entity_refs": entity_refs,
+        "defender_distance_candidate_status": status,
+        "defender_distance_candidate_reason": reason,
+        "candidate_defender_id": None,
+        "candidate_distance_m": None,
+        "candidate_point": None,
+        "target_point": base.get("target_point"),
+        "observed_candidate_ids": list(base.get("observed_candidate_ids") or []),
+        "missing_candidate_ids": list(base.get("missing_candidate_ids") or base.get("candidate_defender_ids") or []),
+        "observed_candidate_count": int(base.get("observed_candidate_count") or 0),
+        "coverage_status": "UNKNOWN",
+    }
+    row["anchor_id"] = anchor_record_id(
+        match_id=state.match_id,
+        period=state.period,
+        anchor_frame_id=frame_id,
+        start_frame_id=frame_id,
+        end_frame_id=frame_id,
+        entity_refs=entity_refs,
+    )
+    row["candidate_record_id"] = row["anchor_id"]
+    return row
+
+
 def team_press_anchor_record(
     *,
     state: PeriodState,
