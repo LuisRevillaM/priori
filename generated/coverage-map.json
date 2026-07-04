@@ -9790,5 +9790,35 @@
   "composition_constraint_note": "",
   "composition_maturity": "handwired",
   "composition_maturity_applicable": false
+ },
+ {
+  "concept": "fragile_possession_state",
+  "family": "Phases of play and team behavioral states",
+  "classification": "supported",
+  "justification": "Typed composition of same-team possession continuity, observed pressure on the carrier, and support-arrival evidence. This claims an observed fragile possession state only; it does not infer risk value, intent, quality, causation, or decision correctness.",
+  "required_missing_capability": "",
+  "closest_supported_substitute": "window(same_possession) + pressure_on_carrier + support_arrival_relation + typed_join",
+  "composition_constraint_needed": true,
+  "priority_unlock": "HIGH",
+  "composition_constraint_note": "Requires typed_join constraints: same_anchor/frame alignment across pressure/support, then same-team-perspective with the possession window.",
+  "composition_maturity": "compiler_reachable",
+  "composition_maturity_applicable": true,
+  "compiler_reachability_status": "compiler_reachable",
+  "compiler_reachability_evidence": {
+   "synthesizer_version": "search_synthesizer.v0.1",
+   "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+   "target_id": "r1_5_fragile_possession_state_v0",
+   "report_path": "artifacts/autonomous/compiler-search-v0-report.json",
+   "document_hash": "920362fb79e7353907373e286214eb5aac81375695f440cc2ef175749d9b61fd",
+   "held_out": true,
+   "result_count": 20,
+   "honest_zero": false,
+   "semantic_correspondence": {
+    "coverage_row": "fragile_possession_state",
+    "meaning": "A same-team possession continuation window whose anchor also has observed carrier pressure and no observed support arrival in the declared support window.",
+    "composition": "window(after, same_possession) joined by declared anchor/team constraints to a pressure/support evidence join",
+    "claim_boundary": "Observed composition only; no risk, value, intent, causation, trap, quality, or decision correctness."
+   }
+  }
  }
 ]

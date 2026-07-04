@@ -45,6 +45,7 @@ from tqe.runtime.ir import (  # noqa: E402
 from tqe.runtime.operators.delta_across_anchor import DELTA_ACROSS_ANCHOR_SIGNATURE  # noqa: E402
 from tqe.runtime.operators.extremum_over_set import EXTREMUM_OVER_SET_SIGNATURE  # noqa: E402
 from tqe.runtime.operators.project_onto_axis import PROJECT_ONTO_AXIS_SIGNATURE  # noqa: E402
+from tqe.runtime.operators.typed_join import TYPED_JOIN_SIGNATURE  # noqa: E402
 from tqe.runtime.operators.window import WINDOW_SIGNATURE  # noqa: E402
 
 
@@ -100,6 +101,7 @@ SUPPORTED_COMPOSITION_CONSTRAINT_KINDS = {
     "temporal_order",
     "delta_across_anchor",
     "extremum_over_set",
+    "typed_join",
     "window",
     "vector_projection",
 }
@@ -476,9 +478,64 @@ PROJECT_ONTO_AXIS_FIELDS = declared_operator_fields(PROJECT_ONTO_AXIS_SIGNATURE)
 DELTA_ACROSS_ANCHOR_FIELDS = declared_operator_fields(DELTA_ACROSS_ANCHOR_SIGNATURE)
 EXTREMUM_OVER_SET_FIELDS = declared_operator_fields(EXTREMUM_OVER_SET_SIGNATURE)
 WINDOW_FIELDS = declared_operator_fields(WINDOW_SIGNATURE)
+TYPED_JOIN_FIELDS = declared_operator_fields(TYPED_JOIN_SIGNATURE)
+TYPED_JOIN_CORE_FIELDS = {
+    "typed_join_records",
+    "typed_join_status",
+    "typed_join_reason",
+    "join_key",
+    "no_match_policy",
+    "unconstrained",
+    "unconstrained_rationale",
+    "same_team_perspective_required",
+    "entity_identity_preserved_required",
+    "frame_alignment_required",
+    "left_anchor_id_field",
+    "right_anchor_id_field",
+    "left_frame_field",
+    "right_frame_field",
+    "left_entity_id_field",
+    "right_entity_id_field",
+    "left_start_frame_field",
+    "left_end_frame_field",
+    "right_start_frame_field",
+    "right_end_frame_field",
+    "left_team_role_field",
+    "right_team_role_field",
+    "left_status_field",
+    "right_status_field",
+    "required_status_value",
+    "maximum_frame_delta",
+    "left_anchor_id",
+    "right_anchor_id",
+    "left_frame_id",
+    "right_frame_id",
+    "left_entity_id",
+    "right_entity_id",
+    "left_start_frame_id",
+    "left_end_frame_id",
+    "right_start_frame_id",
+    "right_end_frame_id",
+    "left_team_role",
+    "right_team_role",
+    "left_status",
+    "right_status",
+    "typed_join_match_count",
+    "typed_join_dropped_no_match_count",
+    "typed_join_constraint_failures",
+    "left_record_hash",
+    "right_record_hash",
+    "left_record_index",
+    "right_record_index",
+    "witness_left_node_id",
+    "witness_left_output_name",
+    "witness_right_node_id",
+    "witness_right_output_name",
+}
 OPERATOR_SIGNATURES_BY_CONSTRAINT_KIND = {
     "delta_across_anchor": DELTA_ACROSS_ANCHOR_SIGNATURE,
     "extremum_over_set": EXTREMUM_OVER_SET_SIGNATURE,
+    "typed_join": TYPED_JOIN_SIGNATURE,
     "window": WINDOW_SIGNATURE,
     "vector_projection": PROJECT_ONTO_AXIS_SIGNATURE,
 }
@@ -830,8 +887,19 @@ def operator_composition_fields(contract: dict[str, Any], required_fields: set[s
     for constraint in contract.get("composition_constraints", []):
         if not isinstance(constraint, dict):
             continue
-        kind = str(constraint.get("kind", ""))
-        fields.update(required_fields & OPERATOR_FIELDS_BY_CONSTRAINT_KIND.get(kind, set()))
+        fields.update(operator_constraint_fields(constraint, required_fields))
+    return fields
+
+
+def operator_constraint_fields(constraint: dict[str, Any], required_fields: set[str]) -> set[str]:
+    kind = str(constraint.get("kind", ""))
+    fields = set(required_fields & OPERATOR_FIELDS_BY_CONSTRAINT_KIND.get(kind, set()))
+    if kind == "typed_join":
+        for side in ("left", "right"):
+            fields.update(required_fields & {str(item) for item in constraint.get(f"{side}_required_fields", [])})
+            for nested in constraint.get(f"{side}_composition_constraints", []):
+                if isinstance(nested, dict):
+                    fields.update(operator_constraint_fields(nested, required_fields))
     return fields
 
 
@@ -1540,6 +1608,348 @@ def extremum_over_set_candidates(
     ]
 
 
+def build_typed_join_operator(
+    context: SearchContext,
+    required_fields: set[str],
+    *,
+    depth: int,
+) -> BuildResult:
+    constraint = first_target_constraint(context, "typed_join")
+    join_constraint = typed_join_constraint_payload(constraint)
+    attempts: list[dict[str, Any]] = []
+    left_required = typed_join_side_required_fields(join_constraint, "left")
+    right_required = typed_join_side_required_fields(join_constraint, "right")
+    left_candidates = typed_join_side_candidates(
+        context,
+        required_fields=left_required,
+        input_name="left",
+        input_context=join_constraint["left_input_context"],
+        nested_constraints=join_constraint["left_composition_constraints"],
+    )
+    right_candidates = typed_join_side_candidates(
+        context,
+        required_fields=right_required,
+        input_name="right",
+        input_context=join_constraint["right_input_context"],
+        nested_constraints=join_constraint["right_composition_constraints"],
+    )
+    candidate_summaries = {
+        "left": [
+            {
+                "source": candidate["source_name"],
+                "output": candidate["output_name"],
+                "required_fields": sorted(left_required),
+                "source_kind": candidate["source_kind"],
+            }
+            for candidate in left_candidates[: context.max_branching]
+        ],
+        "right": [
+            {
+                "source": candidate["source_name"],
+                "output": candidate["output_name"],
+                "required_fields": sorted(right_required),
+                "source_kind": candidate["source_kind"],
+            }
+            for candidate in right_candidates[: context.max_branching]
+        ],
+    }
+    for left_candidate in left_candidates[: context.max_branching]:
+        for right_candidate in right_candidates[: context.max_branching]:
+            try:
+                left = build_typed_join_side(context, left_candidate, depth=depth + 1)
+                right = build_typed_join_side(context, right_candidate, depth=depth + 1)
+                missing_left = sorted(field for field in left_required if field not in left.field_sources)
+                missing_right = sorted(field for field in right_required if field not in right.field_sources)
+                if missing_left or missing_right:
+                    raise SynthesisError(
+                        "missing_constraint",
+                        "typed_join side did not expose all declared fields.",
+                        {"missing_left_fields": missing_left, "missing_right_fields": missing_right},
+                    )
+                node_id = context.node_id("typed_join")
+                nodes = [*left.nodes, *right.nodes]
+                nodes.append(
+                    operator_node(
+                        node_id=node_id,
+                        operator_name="typed_join",
+                        version="0.1.0",
+                        inputs={
+                            "left": ref(left.terminal_node_id, left.terminal_output),
+                            "right": ref(right.terminal_node_id, right.terminal_output),
+                        },
+                        parameters={
+                            "join_key": enum(join_constraint["join_key"]),
+                            "no_match_policy": enum(join_constraint["no_match_policy"]),
+                            "same_team_perspective_required": boolean(join_constraint["same_team_perspective_required"]),
+                            "entity_identity_preserved_required": boolean(join_constraint["entity_identity_preserved_required"]),
+                            "frame_alignment_required": boolean(join_constraint["frame_alignment_required"]),
+                            "unconstrained": boolean(join_constraint["unconstrained"]),
+                            "unconstrained_rationale": enum(join_constraint["unconstrained_rationale"]),
+                            "left_anchor_id_field": enum(join_constraint["left_anchor_id_field"]),
+                            "right_anchor_id_field": enum(join_constraint["right_anchor_id_field"]),
+                            "left_frame_field": enum(join_constraint["left_frame_field"]),
+                            "right_frame_field": enum(join_constraint["right_frame_field"]),
+                            "left_entity_id_field": enum(join_constraint["left_entity_id_field"]),
+                            "right_entity_id_field": enum(join_constraint["right_entity_id_field"]),
+                            "left_start_frame_field": enum(join_constraint["left_start_frame_field"]),
+                            "left_end_frame_field": enum(join_constraint["left_end_frame_field"]),
+                            "right_start_frame_field": enum(join_constraint["right_start_frame_field"]),
+                            "right_end_frame_field": enum(join_constraint["right_end_frame_field"]),
+                            "left_team_role_field": enum(join_constraint["left_team_role_field"]),
+                            "right_team_role_field": enum(join_constraint["right_team_role_field"]),
+                            "left_status_field": enum(join_constraint["left_status_field"]),
+                            "right_status_field": enum(join_constraint["right_status_field"]),
+                            "required_status_value": enum(join_constraint["required_status_value"]),
+                            "maximum_frame_delta": number(join_constraint["maximum_frame_delta"], "frame"),
+                        },
+                    )
+                )
+                field_sources = {**left.field_sources, **right.field_sources}
+                for field in TYPED_JOIN_CORE_FIELDS:
+                    field_sources[field] = (node_id, typed_join_output_for_field(field))
+                return BuildResult(
+                    nodes=dedupe_nodes(nodes),
+                    terminal_node_id=node_id,
+                    terminal_entry="operator:typed_join",
+                    terminal_output="typed_join_records",
+                    field_sources=field_sources,
+                    rules_used=[*left.rules_used, *right.rules_used, "generic_typed_join_operator"],
+                    providers_used=[*left.providers_used, *right.providers_used, "operator:typed_join"],
+                    metadata={
+                        "typed_join_candidate_outputs": candidate_summaries,
+                        "typed_join_selected_output": {
+                            "left": {
+                                "source": left_candidate["source_name"],
+                                "output": left_candidate["output_name"],
+                                "source_kind": left_candidate["source_kind"],
+                            },
+                            "right": {
+                                "source": right_candidate["source_name"],
+                                "output": right_candidate["output_name"],
+                                "source_kind": right_candidate["source_kind"],
+                            },
+                        },
+                        "typed_join_constraint": join_constraint,
+                        "left_build_metadata": left.metadata,
+                        "right_build_metadata": right.metadata,
+                    },
+                )
+            except SynthesisError as error:
+                attempts.append(
+                    {
+                        "left_source": left_candidate["source_name"],
+                        "right_source": right_candidate["source_name"],
+                        "taxonomy": error.taxonomy,
+                        "message": error.message,
+                        **error.details,
+                    }
+                )
+    raise SynthesisError(
+        "missing_constraint",
+        "No declared typed_join side pairing satisfied the target contract.",
+        {"attempted": attempts[: context.max_branching], "candidate_outputs": candidate_summaries},
+    )
+
+
+def typed_join_constraint_payload(constraint: dict[str, Any]) -> dict[str, Any]:
+    allowed_keys = {
+        "kind",
+        "join_key",
+        "no_match_policy",
+        "same_team_perspective_required",
+        "entity_identity_preserved_required",
+        "frame_alignment_required",
+        "unconstrained",
+        "unconstrained_rationale",
+        "left_anchor_id_field",
+        "right_anchor_id_field",
+        "left_frame_field",
+        "right_frame_field",
+        "left_entity_id_field",
+        "right_entity_id_field",
+        "left_start_frame_field",
+        "left_end_frame_field",
+        "right_start_frame_field",
+        "right_end_frame_field",
+        "left_team_role_field",
+        "right_team_role_field",
+        "left_status_field",
+        "right_status_field",
+        "required_status_value",
+        "maximum_frame_delta",
+        "left_required_fields",
+        "right_required_fields",
+        "left_input_context",
+        "right_input_context",
+        "left_composition_constraints",
+        "right_composition_constraints",
+    }
+    unapplied = sorted(key for key in constraint if key not in allowed_keys)
+    if unapplied:
+        raise SynthesisError(
+            "missing_constraint",
+            "typed_join supplied unsupported keys that synthesis cannot apply.",
+            {"unapplied_typed_join_constraint_keys": unapplied},
+        )
+    return {
+        "join_key": required_typed_join_constraint(constraint, "join_key"),
+        "no_match_policy": str(constraint.get("no_match_policy", "UNKNOWN")),
+        "same_team_perspective_required": bool(constraint.get("same_team_perspective_required", False)),
+        "entity_identity_preserved_required": bool(constraint.get("entity_identity_preserved_required", False)),
+        "frame_alignment_required": bool(constraint.get("frame_alignment_required", False)),
+        "unconstrained": bool(constraint.get("unconstrained", False)),
+        "unconstrained_rationale": str(constraint.get("unconstrained_rationale", "none")),
+        "left_anchor_id_field": str(constraint.get("left_anchor_id_field", "anchor_id")),
+        "right_anchor_id_field": str(constraint.get("right_anchor_id_field", "anchor_id")),
+        "left_frame_field": str(constraint.get("left_frame_field", "anchor_frame_id")),
+        "right_frame_field": str(constraint.get("right_frame_field", "anchor_frame_id")),
+        "left_entity_id_field": str(constraint.get("left_entity_id_field", "none")),
+        "right_entity_id_field": str(constraint.get("right_entity_id_field", "none")),
+        "left_start_frame_field": str(constraint.get("left_start_frame_field", "start_frame_id")),
+        "left_end_frame_field": str(constraint.get("left_end_frame_field", "end_frame_id")),
+        "right_start_frame_field": str(constraint.get("right_start_frame_field", "start_frame_id")),
+        "right_end_frame_field": str(constraint.get("right_end_frame_field", "end_frame_id")),
+        "left_team_role_field": str(constraint.get("left_team_role_field", "none")),
+        "right_team_role_field": str(constraint.get("right_team_role_field", "none")),
+        "left_status_field": str(constraint.get("left_status_field", "none")),
+        "right_status_field": str(constraint.get("right_status_field", "none")),
+        "required_status_value": str(constraint.get("required_status_value", "PASS")),
+        "maximum_frame_delta": float(constraint.get("maximum_frame_delta", 0.0)),
+        "left_required_fields": [str(item) for item in constraint.get("left_required_fields", [])],
+        "right_required_fields": [str(item) for item in constraint.get("right_required_fields", [])],
+        "left_input_context": dict(constraint.get("left_input_context", {})),
+        "right_input_context": dict(constraint.get("right_input_context", {})),
+        "left_composition_constraints": list(constraint.get("left_composition_constraints", [])),
+        "right_composition_constraints": list(constraint.get("right_composition_constraints", [])),
+    }
+
+
+def required_typed_join_constraint(constraint: dict[str, Any], key: str) -> str:
+    value = constraint.get(key)
+    if value is None or str(value) == "" or str(value) == "none":
+        raise SynthesisError(
+            "missing_constraint",
+            f"typed_join requires declared {key}; no provider-field default is allowed.",
+            {"missing_typed_join_constraint_key": key},
+        )
+    return str(value)
+
+
+def typed_join_side_required_fields(constraint: dict[str, Any], side: str) -> set[str]:
+    fields = set(str(item) for item in constraint[f"{side}_required_fields"])
+    for key in typed_join_side_field_parameter_names(side, str(constraint["join_key"])):
+        fields.add(str(constraint[key]))
+    if bool(constraint["same_team_perspective_required"]):
+        fields.add(str(constraint[f"{side}_team_role_field"]))
+    if bool(constraint["entity_identity_preserved_required"]):
+        fields.add(str(constraint[f"{side}_entity_id_field"]))
+    if bool(constraint["frame_alignment_required"]):
+        fields.add(str(constraint[f"{side}_frame_field"]))
+    status_field = str(constraint[f"{side}_status_field"])
+    if status_field != "none":
+        fields.add(status_field)
+    fields.discard("none")
+    return fields
+
+
+def typed_join_side_field_parameter_names(side: str, join_key: str) -> tuple[str, ...]:
+    if join_key == "same_anchor":
+        return (f"{side}_anchor_id_field",)
+    if join_key == "same_frame_window":
+        return (f"{side}_frame_field",)
+    if join_key == "same_entity":
+        return (f"{side}_entity_id_field",)
+    if join_key == "episode_overlap":
+        return (f"{side}_start_frame_field", f"{side}_end_frame_field")
+    return ()
+
+
+def typed_join_side_candidates(
+    context: SearchContext,
+    *,
+    required_fields: set[str],
+    input_name: str,
+    input_context: dict[str, Any],
+    nested_constraints: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    if nested_constraints:
+        return [
+            {
+                "source_kind": "operator_composition",
+                "source_name": "nested_operator_composition",
+                "output_name": "<terminal>",
+                "required_fields": sorted(required_fields),
+                "input_context": {},
+                "composition_constraints": nested_constraints,
+            }
+        ]
+    input_def = {item.name: item for item in TYPED_JOIN_SIGNATURE.inputs}[input_name]
+    scored: list[tuple[int, str, str, CatalogEntry, CatalogOutput]] = []
+    for entry in context.catalog.entries.values():
+        fields = context.catalog.field_set(entry)
+        if not required_fields.issubset(fields):
+            continue
+        for output in entry.outputs:
+            if not composition_output_matches_operator_input(output, input_def):
+                continue
+            output_fields = {output.name, *output.evidence_fields}
+            if not required_fields.issubset(output_fields):
+                continue
+            score = 20 * len(required_fields & output_fields)
+            scored.append((-score, entry.name, output.name, entry, output))
+    return [
+        {
+            "source_kind": "catalog_entry",
+            "source_name": entry.name,
+            "output_name": output.name,
+            "entry": entry,
+            "output": output,
+            "required_fields": sorted(required_fields),
+            "input_context": input_context,
+            "composition_constraints": [],
+        }
+        for _score, _entry_name, _output_name, entry, output in sorted(scored)
+    ]
+
+
+def build_typed_join_side(
+    context: SearchContext,
+    candidate: dict[str, Any],
+    *,
+    depth: int,
+) -> BuildResult:
+    if candidate["source_kind"] == "operator_composition":
+        nested_context = SearchContext(
+            catalog=context.catalog,
+            target_contract={
+                **context.target_contract,
+                "required_evidence": list(candidate["required_fields"]),
+                "composition_constraints": list(candidate["composition_constraints"]),
+            },
+            counter=context.counter,
+            max_depth=context.max_depth,
+            max_branching=context.max_branching,
+        )
+        return build_operator_composition(
+            nested_context,
+            set(candidate["required_fields"]),
+            depth=depth,
+        )
+    return build_entry(
+        context,
+        candidate["entry"],
+        set(candidate["required_fields"]),
+        depth=depth,
+        input_context=dict(candidate["input_context"]),
+    )
+
+
+def typed_join_output_for_field(field: str) -> str:
+    if field == "typed_join_status":
+        return "typed_join_status"
+    return "typed_join_records"
+
+
 def build_window_operator(
     context: SearchContext,
     required_fields: set[str],
@@ -1944,6 +2354,7 @@ def delta_across_anchor_candidates(
 OPERATOR_COMPOSITION_BUILDERS = {
     "delta_across_anchor": build_delta_across_anchor_operator,
     "extremum_over_set": build_extremum_over_set_operator,
+    "typed_join": build_typed_join_operator,
     "window": build_window_operator,
     "vector_projection": build_project_onto_axis,
 }
@@ -3273,9 +3684,13 @@ def assemble_document(
 ) -> dict[str, Any]:
     contract = target["target_contract"]
     predicates = predicates_for_contract(contract, build.field_sources)
+    terminal_evidence_fields = terminal_output_fields(build)
     requested_evidence = [
         {
-            "source": {"source_node_id": build.field_sources[field][0], "output_name": build.field_sources[field][1]},
+            "source": {
+                "source_node_id": build.terminal_node_id if field in terminal_evidence_fields else build.field_sources[field][0],
+                "output_name": build.terminal_output if field in terminal_evidence_fields else build.field_sources[field][1],
+            },
             "field": field,
             "alias": field,
             "required": True,
@@ -3294,6 +3709,20 @@ def assemble_document(
         claim_boundary=contract["claim_boundary"],
         perspective_team_role=perspective_team_role or PERSPECTIVE_TEAM_ROLES[0],
     )
+
+
+def terminal_output_fields(build: BuildResult) -> set[str]:
+    if build.terminal_entry == "operator:typed_join":
+        return set(TYPED_JOIN_FIELDS)
+    if build.terminal_entry == "operator:window":
+        return set(WINDOW_FIELDS)
+    if build.terminal_entry == "operator:extremum_over_set":
+        return set(EXTREMUM_OVER_SET_FIELDS)
+    if build.terminal_entry == "operator:delta_across_anchor":
+        return set(DELTA_ACROSS_ANCHOR_FIELDS)
+    if build.terminal_entry == "operator:project_onto_axis":
+        return set(PROJECT_ONTO_AXIS_FIELDS)
+    return set()
 
 
 def predicates_for_contract(contract: dict[str, Any], field_sources: dict[str, tuple[str, str]]) -> list[dict[str, Any]]:
@@ -3786,6 +4215,10 @@ def ref(node_id: str, output_name: str) -> dict[str, str]:
 
 def enum(value: str) -> dict[str, str]:
     return {"payload_type": "enum", "unit": "none", "value": value}
+
+
+def boolean(value: bool) -> dict[str, Any]:
+    return {"payload_type": "boolean", "unit": "none", "value": bool(value)}
 
 
 def number(value: float, unit: str) -> dict[str, Any]:

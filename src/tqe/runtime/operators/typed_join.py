@@ -24,7 +24,7 @@ from tqe.runtime.ir import (
     Unit,
     stable_hash,
 )
-from tqe.runtime.values import FrameSignal, RuntimeValue
+from tqe.runtime.values import FrameSignal, RuntimeValue, canonical_anchor_record_id
 
 
 JOIN_KEY_VALUES = ("same_anchor", "same_frame_window", "same_entity", "episode_overlap")
@@ -81,6 +81,22 @@ EVIDENCE_FIELDS = [
     "witness_left_output_name",
     "witness_right_node_id",
     "witness_right_output_name",
+    "window_status",
+    "window_reason",
+    "continuity_status",
+    "continuity_reason",
+    "anchor_team_role",
+    "continuity_team_role",
+    "pressure_status",
+    "pressure_reason",
+    "pressure_frame_id",
+    "carrier_id",
+    "nearest_defender_distance_m",
+    "support_arrival_status",
+    "support_arrival_reason",
+    "support_anchor_frame_id",
+    "supporting_player_ids",
+    "first_arrival_seconds_after_anchor",
 ]
 
 
@@ -584,8 +600,13 @@ def _join_record(
     left_frame = _record_frame_id(left, fields.left_frame_field)
     right_frame = _record_frame_id(right, fields.right_frame_field)
     anchor_frame_id = left_frame or _record_frame_id(left, "anchor_frame_id") or 0
+    joined_payload = dict(left)
+    if right is not None:
+        for key, value in right.items():
+            if key not in joined_payload or joined_payload[key] is None:
+                joined_payload[key] = value
     record = {
-        **left,
+        **joined_payload,
         "match_id": str(left.get("match_id") or getattr(state, "match_id", "")),
         "period": str(left.get("period") or getattr(state, "period", "")),
         "anchor_frame_id": int(anchor_frame_id),
@@ -640,15 +661,7 @@ def _join_record(
         "witness_right_node_id": right_node_id,
         "witness_right_output_name": right_output_name,
     }
-    record["anchor_id"] = stable_hash(
-        {
-            "operator": "typed_join",
-            "left": record["left_record_hash"],
-            "right": record["right_record_hash"],
-            "join_key": join_key,
-            "status": status,
-        }
-    )[:16]
+    record["anchor_id"] = canonical_anchor_record_id(record)
     return record
 
 
