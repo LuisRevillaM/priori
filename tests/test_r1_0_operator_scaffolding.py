@@ -109,12 +109,12 @@ def bind_with_signature(payload: dict, signature: CompositionOperatorSignature) 
 
 
 class R10OperatorScaffoldingTests(unittest.TestCase):
-    def test_operator_registry_is_empty_and_complete(self) -> None:
-        self.assertEqual((), OPERATOR_SIGNATURES)
-        self.assertEqual({}, declared_operator_signatures())
-        self.assertEqual({}, build_operator_registry({}))
+    def test_operator_registry_is_explicit_and_complete(self) -> None:
+        self.assertEqual(("project_onto_axis",), tuple(signature.name for signature in OPERATOR_SIGNATURES))
+        self.assertEqual({("project_onto_axis", "0.1.0")}, set(declared_operator_signatures()))
+        self.assertEqual({("project_onto_axis", "0.1.0")}, set(build_operator_registry({})))
         self.assertEqual([], registry_completeness_findings())
-        self.assertEqual({}, executor_module.TacticalQueryExecutor().operators)
+        self.assertEqual({("project_onto_axis", "0.1.0")}, set(executor_module.TacticalQueryExecutor().operators))
 
     def test_r1_operator_names_do_not_leak_into_shared_runtime_code(self) -> None:
         for module in (binder_module, executor_module):

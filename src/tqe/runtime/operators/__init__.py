@@ -12,14 +12,19 @@ from importlib import import_module
 from typing import Any
 
 from tqe.runtime.ir import CompositionOperatorSignature
+from tqe.runtime.operators.project_onto_axis import PROJECT_ONTO_AXIS_SIGNATURE
 
 OperatorImplementation = Callable[..., None]
 OperatorKey = tuple[str, str]
 
 
-OPERATOR_SIGNATURES: tuple[CompositionOperatorSignature, ...] = ()
-OPERATOR_IMPLEMENTATION_NAMES: tuple[tuple[str, str, str], ...] = ()
-OPERATOR_IMPLEMENTATION_MODULES: dict[str, str] = {}
+OPERATOR_SIGNATURES: tuple[CompositionOperatorSignature, ...] = (PROJECT_ONTO_AXIS_SIGNATURE,)
+OPERATOR_IMPLEMENTATION_NAMES: tuple[tuple[str, str, str], ...] = (
+    ("project_onto_axis", "0.1.0", "execute_project_onto_axis"),
+)
+OPERATOR_IMPLEMENTATION_MODULES: dict[str, str] = {
+    "execute_project_onto_axis": "tqe.runtime.operators.project_onto_axis",
+}
 
 
 def declared_operator_signatures() -> dict[OperatorKey, CompositionOperatorSignature]:
