@@ -18,12 +18,12 @@
   "freeze_provenance": {
     "freeze_mechanism": "explicit_AFL09A_FREEZE_EXPECTATIONS=1",
     "review": "controller_self_verified_original_real_data_verifier",
-    "runtime_semantics_dirty": true,
-    "source_commit": "882b7ced6cf8168ec8e11c4c51b843295de92df1",
+    "runtime_semantics_dirty": false,
+    "source_commit": "48175df0c6023dae28baff721bfca2449dc5159d",
     "source_verifier": "tqe.verification.afl_substrate_q4",
     "source_verifier_status": "PASS",
     "threshold_version": "q4_compact_then_switch_partial.v0.1.0",
-    "worktree_dirty": true
+    "worktree_dirty": false
   },
   "schema_version": "afl09a.frozen_expectation.v1",
   "subject_ref": "recipe:q4_compact_then_switch_partial_v1:0.1.0"
