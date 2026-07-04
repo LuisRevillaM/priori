@@ -1,6 +1,6 @@
 {
-  "passport_count": 44,
-  "passport_revision": "5f657c5d6c882d8dc4cb08fabec2ce20b21c33da72f89fd25dde0910c1321e4f",
+  "passport_count": 45,
+  "passport_revision": "c43ae4de4048b0635890e77466aa2829d36f520efa07800f5568c5117a4ace14",
   "passports": [
     {
       "binding": {
@@ -23011,6 +23011,762 @@
     {
       "binding": {
         "conformance": "PARTIAL",
+        "id": "binding.relation.support_arrival_point_pair.0_1_0",
+        "input_bindings": {
+          "anchors": {
+            "runtime_port": "anchors",
+            "source": "NODE_INPUT"
+          },
+          "observed_candidate_positions": {
+            "context_ref": "canonical_match_state.outfield_positions",
+            "source": "RUNTIME_CONTEXT"
+          }
+        },
+        "known_deviations": [
+          "Exposes the observed first-supporter point pair for projection operators and does not prove tactical intent or support quality."
+        ],
+        "output_bindings": {
+          "anchor_evaluations": {
+            "runtime_port": "anchor_evaluations"
+          },
+          "support_arrival_status": {
+            "runtime_port": "support_point_pair_status"
+          }
+        },
+        "parameter_bindings": {
+          "anchor_frame_field": "anchor_frame_field",
+          "candidate_scope": "candidate_scope",
+          "maximum_arrival_seconds": "maximum_arrival_seconds",
+          "maximum_support_distance_m": "maximum_support_distance_m",
+          "minimum_duration_seconds": "minimum_duration_seconds",
+          "minimum_supporting_players": "minimum_supporting_players",
+          "required_anchor_status_field": "required_anchor_status_field",
+          "required_anchor_status_value": "required_anchor_status_value",
+          "support_region_mode": "support_region_mode"
+        },
+        "semantic_parameters": [
+          {
+            "allowed_values": [
+              "controlled_reception_frame_id",
+              "anchor_frame_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "controlled_reception_frame_id"
+            },
+            "description": "",
+            "name": "anchor_frame_field",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
+            }
+          },
+          {
+            "allowed_values": [
+              "perspective_outfield",
+              "defending_outfield"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "perspective_outfield"
+            },
+            "description": "",
+            "name": "candidate_scope",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
+            }
+          },
+          {
+            "allowed_values": [
+              "WITHIN_DISTANCE_OF_REFERENCE_POINT",
+              "BEHIND_BALL_OUTLET",
+              "AHEAD_OF_BALL_OPTION"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "WITHIN_DISTANCE_OF_REFERENCE_POINT"
+            },
+            "description": "",
+            "name": "support_region_mode",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
+            }
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 2.0
+            },
+            "description": "",
+            "maximum": 10.0,
+            "minimum": 0.0,
+            "name": "maximum_arrival_seconds",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "second",
+              "value": "Scalar"
+            }
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 0.4
+            },
+            "description": "",
+            "maximum": 5.0,
+            "minimum": 0.0,
+            "name": "minimum_duration_seconds",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "second",
+              "value": "Scalar"
+            }
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 8.0
+            },
+            "description": "",
+            "maximum": 30.0,
+            "minimum": 0.5,
+            "name": "maximum_support_distance_m",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "metre",
+              "value": "Scalar"
+            }
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "count",
+              "value": 1
+            },
+            "description": "",
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "name": "minimum_supporting_players",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "count",
+              "value": "Scalar"
+            }
+          },
+          {
+            "allowed_values": [
+              "none",
+              "controlled_pass_status",
+              "line_break_status",
+              "receiver_line_transition_status"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "",
+            "name": "required_anchor_status_field",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
+            }
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "PASS"
+            },
+            "description": "",
+            "name": "required_anchor_status_value",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
+            }
+          }
+        ],
+        "uncovered_runtime_inputs": [],
+        "uncovered_runtime_outputs": [],
+        "uncovered_runtime_parameters": [],
+        "uncovered_semantic_inputs": [],
+        "uncovered_semantic_outputs": [],
+        "uncovered_semantic_parameters": []
+      },
+      "claim_contracts": [
+        {
+          "contract_ref": "claim.observed_support_arrival.v1",
+          "inherits": [],
+          "permitted": [
+            "declared_support_timing_requirement_evaluated",
+            "observed_candidate_entered_declared_support_region"
+          ],
+          "prohibited": [
+            "communication_inferred",
+            "line_break_caused_support",
+            "pass_probability_inferred",
+            "pass_was_optimal",
+            "player_intent_inferred",
+            "scanning_inferred",
+            "support_quality_inferred",
+            "tactical_role_identified"
+          ],
+          "unknown_conditions": [
+            "anchor_frame_missing",
+            "invalid_or_missing_candidate_coordinates",
+            "observed_candidate_positions_missing",
+            "reference_point_missing",
+            "timing_coverage_incomplete"
+          ]
+        }
+      ],
+      "concepts": [
+        {
+          "aliases": [],
+          "claim_contract_ref": "claim.observed_support_arrival.v1",
+          "created_from": [],
+          "description": "Observed candidate teammates entering a declared geometric support region around an anchor reference point within a declared time window.",
+          "display_name": "Observed Support Arrival",
+          "evidence_contract_ref": "evidence.observed_support_arrival.v1",
+          "id": "concept.observed_support_arrival",
+          "kind": "Concept",
+          "owners": [],
+          "reviewers": [],
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [
+            "support",
+            "relation",
+            "geometry",
+            "timing"
+          ],
+          "version": "1.0.0"
+        }
+      ],
+      "description": "Canonical runtime binding for support_arrival_point_pair 0.1.0.",
+      "display_name": "support_arrival_point_pair runtime binding",
+      "evidence_contracts": [
+        {
+          "contract_ref": "evidence.observed_support_arrival.v1",
+          "inherits": [],
+          "optional": [
+            "first_arrival_frame_id",
+            "first_arrival_seconds_after_anchor",
+            "invalid_candidate_player_ids",
+            "invalid_frame_ids",
+            "missing_candidate_player_ids",
+            "missing_frame_ids",
+            "per_player_evidence",
+            "support_duration_seconds"
+          ],
+          "replay_projection": [
+            "arrival_window",
+            "candidate_player_markers",
+            "reference_marker",
+            "support_radius",
+            "supporting_player_badge"
+          ],
+          "required": [
+            "anchor_frame_id",
+            "anchor_id",
+            "candidate_player_ids",
+            "coverage_status",
+            "evaluated_candidate_player_ids",
+            "maximum_arrival_seconds",
+            "maximum_support_distance_m",
+            "minimum_duration_seconds",
+            "minimum_supporting_players",
+            "reference_point",
+            "support_anchor_frame_id",
+            "support_arrival_reason",
+            "support_arrival_status",
+            "support_region_mode",
+            "support_window_end_frame_id",
+            "support_window_start_frame_id",
+            "supporting_player_ids"
+          ]
+        }
+      ],
+      "exposure_policy": {
+        "ai_compiler": "ALLOWED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Exposure policy for support_arrival_point_pair.",
+        "display_name": "support_arrival_point_pair exposure",
+        "id": "exposure.runtime.support_arrival_point_pair.0_1_0",
+        "kind": "ExposurePolicy",
+        "owners": [],
+        "parameter_overrides": {},
+        "product": "ALLOWED",
+        "reasons": [],
+        "reviewed_recipes": "ALLOWED",
+        "reviewers": [],
+        "status": "CURRENT",
+        "subject_ref": "runtime:relation:support_arrival_point_pair:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "implementation": {
+        "aliases": [],
+        "created_from": [],
+        "description": "Additive observed support-arrival point-pair view for projection operators.",
+        "display_name": "Support Arrival Point Pair Python Implementation",
+        "id": "impl.support_arrival_point_pair.python.v1",
+        "implementation_type": "python",
+        "implements": [
+          "op.observed_geometric_support_arrival.v1"
+        ],
+        "kind": "Implementation",
+        "owners": [],
+        "reviewers": [],
+        "source_refs": [
+          "src/tqe/runtime/support_arrival.py",
+          "src/tqe/runtime/capabilities/offball_family.py",
+          "src/tqe/runtime/catalog.py"
+        ],
+        "status": "CURRENT",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "maturity_assessment": {
+        "agent_safety": "APPROVED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Maturity assessment for support_arrival_point_pair.",
+        "display_name": "support_arrival_point_pair maturity",
+        "id": "maturity.runtime.support_arrival_point_pair.0_1_0",
+        "implementation": "IMPLEMENTED",
+        "kind": "MaturityAssessment",
+        "owners": [],
+        "product": "EXPOSED",
+        "reviewers": [],
+        "semantic": "REVIEWED",
+        "status": "CURRENT",
+        "subject_ref": "runtime:relation:support_arrival_point_pair:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "validation": "VERIFIED",
+        "version": "1.0.0"
+      },
+      "operationalizations": [
+        {
+          "aliases": [],
+          "applicability": [
+            "anchor_available",
+            "reference_point_available",
+            "observed_candidate_positions_available",
+            "support_definition_declared",
+            "time_window_declared"
+          ],
+          "claim_contract_ref": "claim.observed_support_arrival.v1",
+          "concept_refs": [
+            "concept.observed_support_arrival"
+          ],
+          "created_from": [],
+          "description": "Evaluate whether observed candidate teammates enter a declared geometric support region around an anchor reference point within a declared time window and duration.",
+          "display_name": "Observed Geometric Support Arrival",
+          "evidence_contract_ref": "evidence.observed_support_arrival.v1",
+          "id": "op.observed_geometric_support_arrival.v1",
+          "inputs": [
+            {
+              "description": "",
+              "name": "anchors",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "anchor",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "observed_candidate_positions",
+              "required": true,
+              "type": {
+                "container": "EntitySetSignal",
+                "coordinate_frame": "pitch_absolute",
+                "entity_scope": "team",
+                "nullable": true,
+                "temporal_basis": "canonical_frame_time",
+                "unit": "metre",
+                "value": "Point"
+              }
+            }
+          ],
+          "kind": "Operationalization",
+          "lowering": [
+            "anchor_frame_selection",
+            "reference_point_resolution",
+            "candidate_outfield_lookup",
+            "support_region_evaluation",
+            "arrival_window_evaluation"
+          ],
+          "outputs": [
+            {
+              "description": "",
+              "name": "anchor_evaluations",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "support_arrival_evaluation",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "support_arrival_status",
+              "required": true,
+              "type": {
+                "container": "FrameSignal",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "support_arrival_status",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "Enum"
+              }
+            }
+          ],
+          "owners": [],
+          "required_modalities": [
+            "tracking"
+          ],
+          "reviewers": [],
+          "semantic_basis": "DETERMINISTIC",
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [],
+          "version": "1.0.0"
+        }
+      ],
+      "passport_hash": "a7480258e37db1edd6bd40dace10a56d7897fae54658931c71e3bd04dde98f70",
+      "projection_membership": {
+        "ai": true,
+        "product": true
+      },
+      "runtime_capability": {
+        "id": "support_arrival_point_pair",
+        "kind": "relation",
+        "version": "0.1.0"
+      },
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "support_point_pair_status",
+          "support_point_pair_reason",
+          "support_arrival_status",
+          "support_arrival_reason",
+          "support_anchor_frame_id",
+          "candidate_scope",
+          "candidate_team_role",
+          "first_supporter_id",
+          "first_supporter_point",
+          "first_support_reference_point",
+          "first_arrival_frame_id",
+          "first_arrival_seconds_after_anchor",
+          "support_duration_seconds",
+          "supporting_player_ids",
+          "candidate_player_ids",
+          "evaluated_candidate_player_ids",
+          "coverage_status",
+          "reference_point",
+          "required_anchor_status_field",
+          "required_anchor_status_value"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "anchors",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "kind": "relation",
+        "limitations": [
+          "Observed support-arrival point pair only; does not infer support quality or decision quality.",
+          "First supporter is selected from the observed support-arrival evidence, not inferred from intent.",
+          "This additive view exists to expose point-pair evidence without changing the legacy support-arrival contract."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "support_arrival_point_pair",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "coverage": {
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "support_point_pair_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "support_point_pair_status",
+              "support_point_pair_reason",
+              "support_arrival_status",
+              "support_arrival_reason",
+              "support_anchor_frame_id",
+              "candidate_scope",
+              "candidate_team_role",
+              "first_supporter_id",
+              "first_supporter_point",
+              "first_support_reference_point",
+              "first_arrival_frame_id",
+              "first_arrival_seconds_after_anchor",
+              "support_duration_seconds",
+              "supporting_player_ids",
+              "candidate_player_ids",
+              "evaluated_candidate_player_ids",
+              "coverage_status",
+              "reference_point",
+              "required_anchor_status_field",
+              "required_anchor_status_value"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchor_evaluations",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "support_point_pair_status",
+              "support_point_pair_reason",
+              "support_arrival_status",
+              "coverage_status"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "support_point_pair_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "parameters": [
+          {
+            "allowed_values": [
+              "controlled_reception_frame_id",
+              "anchor_frame_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "controlled_reception_frame_id"
+            },
+            "description": "Anchor record frame field where support timing starts.",
+            "name": "anchor_frame_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "perspective_outfield",
+              "defending_outfield"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "perspective_outfield"
+            },
+            "description": "Observed outfield player scope for candidate supporters.",
+            "name": "candidate_scope",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "WITHIN_DISTANCE_OF_REFERENCE_POINT",
+              "BEHIND_BALL_OUTLET",
+              "AHEAD_OF_BALL_OPTION"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "WITHIN_DISTANCE_OF_REFERENCE_POINT"
+            },
+            "description": "Geometry used to decide whether a candidate is in the support region.",
+            "name": "support_region_mode",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 2.0
+            },
+            "description": "Latest arrival after the support anchor frame.",
+            "maximum": 10.0,
+            "minimum": 0.0,
+            "name": "maximum_arrival_seconds",
+            "payload_type": "number",
+            "required": false,
+            "unit": "second"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 0.4
+            },
+            "description": "Minimum continuous observed duration inside the support region.",
+            "maximum": 5.0,
+            "minimum": 0.0,
+            "name": "minimum_duration_seconds",
+            "payload_type": "number",
+            "required": false,
+            "unit": "second"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 8.0
+            },
+            "description": "Maximum distance from the anchor reference point.",
+            "maximum": 30.0,
+            "minimum": 0.5,
+            "name": "maximum_support_distance_m",
+            "payload_type": "number",
+            "required": false,
+            "unit": "metre"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "count",
+              "value": 1
+            },
+            "description": "Minimum number of observed candidates that must satisfy the support relation.",
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "name": "minimum_supporting_players",
+            "payload_type": "number",
+            "required": false,
+            "unit": "count"
+          },
+          {
+            "allowed_values": [
+              "none",
+              "controlled_pass_status",
+              "line_break_status",
+              "receiver_line_transition_status"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Optional upstream status field that must equal the required value before support is evaluated.",
+            "name": "required_anchor_status_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "PASS"
+            },
+            "description": "Required upstream status value when required_anchor_status_field is not none.",
+            "name": "required_anchor_status_value",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          }
+        ],
+        "purpose": "Expose the observed first-supporter point pair for a support-arrival evaluation so generic projection operators can measure support depth.",
+        "runtime_id": "relation:support_arrival_point_pair:0.1.0",
+        "version": "0.1.0"
+      },
+      "status": "CURRENT",
+      "subject_ref": "runtime:relation:support_arrival_point_pair:0.1.0"
+    },
+    {
+      "binding": {
+        "conformance": "PARTIAL",
         "id": "binding.relation.support_arrival_relation.0_1_0",
         "input_bindings": {
           "anchors": {
@@ -23188,7 +23944,6 @@
           {
             "allowed_values": [
               "none",
-              "controlled_pass_status",
               "line_break_status",
               "receiver_line_transition_status"
             ],
@@ -23494,7 +24249,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "2f0586df8ea938e805b891d847106d8a06249a76ac818469440da8f6b4fd93c2",
+      "passport_hash": "8a5d5e5c3f75660a4a3cd83abf39b81a82604eecd64a06bb4b3cf1906180f005",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -23517,14 +24272,9 @@
           "minimum_duration_seconds",
           "maximum_support_distance_m",
           "minimum_supporting_players",
-          "candidate_scope",
-          "candidate_team_role",
           "supporting_player_ids",
-          "first_supporter_id",
           "first_arrival_frame_id",
           "first_arrival_seconds_after_anchor",
-          "first_supporter_point",
-          "first_support_reference_point",
           "support_duration_seconds",
           "candidate_player_ids",
           "evaluated_candidate_player_ids",
@@ -23583,14 +24333,9 @@
               "minimum_duration_seconds",
               "maximum_support_distance_m",
               "minimum_supporting_players",
-              "candidate_scope",
-              "candidate_team_role",
               "supporting_player_ids",
-              "first_supporter_id",
               "first_arrival_frame_id",
               "first_arrival_seconds_after_anchor",
-              "first_supporter_point",
-              "first_support_reference_point",
               "support_duration_seconds",
               "candidate_player_ids",
               "evaluated_candidate_player_ids",
@@ -23735,7 +24480,6 @@
           {
             "allowed_values": [
               "none",
-              "controlled_pass_status",
               "line_break_status",
               "receiver_line_transition_status"
             ],
@@ -24611,16 +25355,16 @@
   "projection_id": "priori.capability_passport_projection.afl08",
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "c59bcee736687f05574cffa53e49b6cb94776f1fb5eee2c73d028d73edf87f09",
+    "baseline_artifact_revision": "84261cc8405dab1bbbd74c6f8e5bf36b0dd4524d52425813c57fa55d5b4b53ea",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "ebe7100d6124b4ce6f873eba6e09f64532ff5444547bceb26c4bb5d87dd4c8de",
+    "lock_hash": "8a621555917b425dfcfb3b3bec931017a91062252e999089b5c6ebc3ce95856c",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "aae13db910c8c38320ac3798ceb72322bcd821201afeca49b6084f91b91ae202",
+    "registry_revision": "f0b72489f384bae0042784cb6b197ede893864f45375f257a23f58897feefde4",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "2090705e21da86e0713e6d8797a81bd4f15a3740d52c3604b88724f1c8ae1b68",
+    "runtime_manifest_revision": "50d399ef8b47bf7eac9a615c59c32fc6ce01a9589dfd2717fcb89ba26321dcc7",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"
