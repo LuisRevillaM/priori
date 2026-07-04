@@ -1,0 +1,81 @@
+{
+  "schema_version": "compiler_search_targets.v0",
+  "strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+  "sample_policy": "r1_1_project_onto_axis_acceptance",
+  "note": "R1-1 acceptance target. Concept id is a reporting label only; synthesis consumes the generic vector_projection constraint and evidence fields.",
+  "targets": [
+    {
+      "target_id": "r1_1_goalward_axis_projection_v0",
+      "concept": "support_depth",
+      "held_out": true,
+      "multi_step": true,
+      "semantic_correspondence": {
+        "coverage_row": "support_depth",
+        "meaning": "Longitudinal component of the first observed supporter relative to the carrier/reference point at support arrival.",
+        "source_relation": "support_arrival_point_pair.anchor_evaluations",
+        "point_pair": [
+          "first_support_reference_point",
+          "first_supporter_point"
+        ],
+        "axis": "acting-team goalward",
+        "orientation_team_field": "candidate_team_role"
+      },
+      "target_contract": {
+        "desired_output": "classification",
+        "required_evidence": [
+          "axis_projection_status",
+          "axis_projection_reason",
+          "axis",
+          "orientation_basis",
+          "orientation_team_role",
+          "attack_x_sign",
+          "source_start_point_field",
+          "source_end_point_field",
+          "source_start_point",
+          "source_end_point",
+          "signed_projection_m",
+          "angle_between_degrees",
+          "angle_unit",
+          "source_anchor_id",
+          "source_frame_id",
+          "witness_source_node_id",
+          "witness_source_output_name",
+          "zero_length_policy"
+        ],
+        "status_semantics": [
+          {
+            "field": "axis_projection_status",
+            "required_value": "PASS"
+          }
+        ],
+        "composition_constraints": [
+          {
+            "kind": "relation_on_anchor",
+            "relation_status_field": "support_point_pair_status",
+            "anchor_status_field": "controlled_pass_status",
+            "anchor_status_value": "PASS",
+            "anchor_frame_field": "controlled_reception_frame_id",
+            "candidate_scope": "perspective_outfield",
+            "support_region_mode": "WITHIN_DISTANCE_OF_REFERENCE_POINT",
+            "maximum_arrival_seconds": 3.0,
+            "minimum_duration_seconds": 0.0,
+            "maximum_support_distance_m": 30.0,
+            "minimum_supporting_players": 1
+          },
+          {
+            "kind": "vector_projection",
+            "axis": "goalward",
+            "start_point_field": "first_support_reference_point",
+            "end_point_field": "first_supporter_point",
+            "acting_team_field": "candidate_team_role",
+            "orientation_basis": "acting_team",
+            "required_source_status_field": "support_point_pair_status",
+            "required_source_status_value": "PASS",
+            "zero_length_policy": "unknown"
+          }
+        ],
+        "claim_boundary": "Observed projection of a source point-pair onto a declared axis only; no support quality, intent, causation, pass probability, or decision value."
+      }
+    }
+  ]
+}

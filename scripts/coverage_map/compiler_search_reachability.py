@@ -41,6 +41,7 @@ from tqe.runtime.ir import (  # noqa: E402
     Unit,
     stable_hash,
 )
+from tqe.runtime.operators.project_onto_axis import PROJECT_ONTO_AXIS_SIGNATURE  # noqa: E402
 
 
 def repo_path(value: str | Path) -> Path:
@@ -84,6 +85,7 @@ SUPPORTED_COMPOSITION_CONSTRAINT_KINDS = {
     "same_anchor_identity",
     "same_player_return",
     "temporal_order",
+    "vector_projection",
 }
 EXCLUDED_CATALOG_REFS = {
     "controlled_line_break_episode",
@@ -446,6 +448,15 @@ VALUE_FAMILY_FIELDS = {
     "pressure_distance": ["nearest_defender_distance_m"],
     "team_shape_width_or_depth": ["team_width_m", "team_depth_m", "team_area_m2"],
 }
+def declared_operator_fields(signature: Any) -> set[str]:
+    fields: set[str] = set()
+    for output in signature.outputs:
+        fields.add(output.name)
+        fields.update(output.evidence_fields)
+    return fields
+
+
+PROJECT_ONTO_AXIS_FIELDS = declared_operator_fields(PROJECT_ONTO_AXIS_SIGNATURE)
 
 
 @dataclass
@@ -457,6 +468,7 @@ class BuildResult:
     field_sources: dict[str, tuple[str, str]]
     rules_used: list[str] = field(default_factory=list)
     providers_used: list[str] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -597,8 +609,11 @@ def evaluate_target(
 def synthesize_by_search(*, target: dict[str, Any], row: dict[str, Any], context: SearchContext) -> dict[str, Any]:
     contract = target["target_contract"]
     required_fields = required_target_fields(contract)
+    operator_fields = operator_project_onto_axis_fields(contract, required_fields)
     uncovered_fields = sorted(
-        field for field in required_fields if not context.catalog.providers_covering_any({field})
+        field
+        for field in required_fields - operator_fields
+        if not context.catalog.providers_covering_any({field})
     )
     if uncovered_fields:
         raise SynthesisError(
@@ -606,6 +621,30 @@ def synthesize_by_search(*, target: dict[str, Any], row: dict[str, Any], context
             "No catalog provider exposes one or more required target fields.",
             {"fields": uncovered_fields},
         )
+    if target_constraints(context, "vector_projection"):
+        build = build_project_onto_axis(context, required_fields, depth=0)
+        document_payload = assemble_document(target=target, build=build)
+        missing_fields = sorted(field for field in required_fields if field not in build.field_sources)
+        if missing_fields:
+            raise SynthesisError(
+                "missing_constraint",
+                "Vector projection composition did not cover every required evidence/predicate field.",
+                {
+                    "missing_fields": missing_fields,
+                    "providers_used": build.providers_used,
+                },
+            )
+        return {
+            "document": document_payload,
+            "providers_used": build.providers_used,
+            "rules_used": sorted(set(build.rules_used)),
+            "terminal_provider": build.terminal_entry,
+            "build_metadata": build.metadata,
+            "field_sources": {
+                field: {"source_node_id": source[0], "output_name": source[1]}
+                for field, source in sorted(build.field_sources.items())
+            },
+        }
     providers = context.catalog.providers_covering_any(required_fields)
     if target_constraints(context, "same_player_return"):
         providers = [entry for entry in providers if entry.name == "join_episode_sets"]
@@ -664,6 +703,211 @@ def synthesize_by_search(*, target: dict[str, Any], row: dict[str, Any], context
         "No bounded provider chain could cover the typed target.",
         {"attempted": errors[: context.max_branching], "required_fields": sorted(required_fields)},
     )
+
+
+def operator_project_onto_axis_fields(contract: dict[str, Any], required_fields: set[str]) -> set[str]:
+    if not any(constraint.get("kind") == "vector_projection" for constraint in contract.get("composition_constraints", [])):
+        return set()
+    return required_fields & PROJECT_ONTO_AXIS_FIELDS
+
+
+def build_project_onto_axis(
+    context: SearchContext,
+    required_fields: set[str],
+    *,
+    depth: int,
+) -> BuildResult:
+    constraint = first_target_constraint(context, "vector_projection")
+    axis = str(constraint.get("axis", "goalward"))
+    start_point_field = required_vector_projection_constraint(constraint, "start_point_field")
+    end_point_field = required_vector_projection_constraint(constraint, "end_point_field")
+    reference_point_field = str(constraint.get("reference_point_field", "none"))
+    lane_start_point_field = str(constraint.get("lane_start_point_field", "none"))
+    lane_end_point_field = str(constraint.get("lane_end_point_field", "none"))
+    acting_team_field = (
+        required_vector_projection_constraint(constraint, "acting_team_field")
+        if axis == "goalward"
+        else str(constraint.get("acting_team_field", "none"))
+    )
+    orientation_basis = str(constraint.get("orientation_basis", "acting_team"))
+    required_source_status_field = str(constraint.get("required_source_status_field", "none"))
+    required_source_status_value = str(constraint.get("required_source_status_value", "PASS"))
+    zero_length_policy = str(constraint.get("zero_length_policy", "unknown"))
+    source_required_fields = {
+        start_point_field,
+        end_point_field,
+    }
+    source_required_fields.update(
+        field
+        for field in (reference_point_field, lane_start_point_field, lane_end_point_field, acting_team_field)
+        if field != "none"
+    )
+    if required_source_status_field != "none":
+        source_required_fields.add(required_source_status_field)
+    source_required_fields.discard("none")
+    attempts: list[dict[str, Any]] = []
+    candidates = vector_projection_candidates(context, source_required_fields)
+    candidate_summaries = [
+        {
+            "provider": candidate["entry"].name,
+            "output": candidate["output"].name,
+            "fields": sorted({candidate["output"].name, *candidate["output"].evidence_fields} & source_required_fields),
+        }
+        for candidate in candidates
+    ]
+    for candidate in candidates[: context.max_branching]:
+        entry = candidate["entry"]
+        output = candidate["output"]
+        try:
+            source = build_entry(
+                context,
+                entry,
+                source_required_fields,
+                depth=depth + 1,
+                input_context={},
+            )
+            missing_source_fields = sorted(
+                field for field in source_required_fields if field not in source.field_sources
+            )
+            if missing_source_fields:
+                raise SynthesisError(
+                    "missing_constraint",
+                    "Candidate vector source did not expose all declared point/status fields.",
+                    {
+                        "source_provider": entry.name,
+                        "source_output": output.name,
+                        "missing_source_fields": missing_source_fields,
+                    },
+                )
+            node_id = context.node_id("project_onto_axis")
+            nodes = [*source.nodes]
+            nodes.append(
+                operator_node(
+                    node_id=node_id,
+                    operator_name="project_onto_axis",
+                    version="0.1.0",
+                    inputs={"source": ref(source.terminal_node_id, output.name)},
+                    parameters={
+                        "axis": enum(axis),
+                        "start_point_field": enum(start_point_field),
+                        "end_point_field": enum(end_point_field),
+                        "reference_point_field": enum(reference_point_field),
+                        "lane_start_point_field": enum(lane_start_point_field),
+                        "lane_end_point_field": enum(lane_end_point_field),
+                        "acting_team_field": enum(acting_team_field),
+                        "orientation_basis": enum(orientation_basis),
+                        "required_source_status_field": enum(required_source_status_field),
+                        "required_source_status_value": enum(required_source_status_value),
+                        "zero_length_policy": enum(zero_length_policy),
+                    },
+                )
+            )
+            field_sources = {**source.field_sources}
+            for field in PROJECT_ONTO_AXIS_FIELDS:
+                field_sources.setdefault(field, (node_id, project_onto_axis_output_for_field(field)))
+            return BuildResult(
+                nodes=dedupe_nodes(nodes),
+                terminal_node_id=node_id,
+                terminal_entry="operator:project_onto_axis",
+                terminal_output="axis_projection_records",
+                field_sources=field_sources,
+                rules_used=[*source.rules_used, "generic_vector_projection_operator"],
+                providers_used=[*source.providers_used, "operator:project_onto_axis"],
+                metadata={
+                    "vector_projection_discovery_space_count": len(candidates),
+                    "vector_projection_candidate_outputs": candidate_summaries,
+                    "vector_projection_selected_output": {
+                        "provider": entry.name,
+                        "output": output.name,
+                    },
+                    "vector_projection_constraint": {
+                        "axis": axis,
+                        "start_point_field": start_point_field,
+                        "end_point_field": end_point_field,
+                        "reference_point_field": reference_point_field,
+                        "lane_start_point_field": lane_start_point_field,
+                        "lane_end_point_field": lane_end_point_field,
+                        "acting_team_field": acting_team_field,
+                        "orientation_basis": orientation_basis,
+                        "required_source_status_field": required_source_status_field,
+                        "required_source_status_value": required_source_status_value,
+                        "zero_length_policy": zero_length_policy,
+                    },
+                    "source_build_metadata": source.metadata,
+                },
+            )
+        except SynthesisError as error:
+            attempts.append(
+                {
+                    "source_provider": entry.name,
+                    "source_output": output.name,
+                    "taxonomy": error.taxonomy,
+                    "message": error.message,
+                    **error.details,
+                }
+            )
+    raise SynthesisError(
+        "missing_constraint",
+        "No typed point-pair source satisfied vector_projection.",
+        {"attempted": attempts[: context.max_branching], "required_fields": sorted(required_fields)},
+    )
+
+
+def required_vector_projection_constraint(constraint: dict[str, Any], key: str) -> str:
+    value = constraint.get(key)
+    if value is None or str(value) == "" or str(value) == "none":
+        raise SynthesisError(
+            "missing_constraint",
+            f"vector_projection requires declared {key}; no provider-field default is allowed.",
+            {"missing_vector_projection_constraint_key": key},
+        )
+    return str(value)
+
+
+def vector_projection_candidates(
+    context: SearchContext,
+    source_required_fields: set[str],
+) -> list[dict[str, Any]]:
+    candidates: list[tuple[int, str, str, CatalogEntry, CatalogOutput]] = []
+    operator_input = PROJECT_ONTO_AXIS_SIGNATURE.inputs[0]
+    for entry in context.catalog.entries.values():
+        fields = context.catalog.field_set(entry)
+        if not source_required_fields.issubset(fields):
+            continue
+        for output in entry.outputs:
+            if not composition_output_matches_operator_input(output, operator_input):
+                continue
+            output_fields = {output.name, *output.evidence_fields}
+            if not source_required_fields.issubset(output_fields):
+                continue
+            score = 0
+            score += 25 * len(source_required_fields & output_fields)
+            score += 8 if output.name in {"episodes", "anchor_evaluations"} else 0
+            candidates.append((-score, entry.name, output.name, entry, output))
+    return [
+        {"entry": entry, "output": output}
+        for _score, _entry_name, _output_name, entry, output in sorted(candidates)
+    ]
+
+
+def composition_output_matches_operator_input(output: CatalogOutput, input_def: Any) -> bool:
+    return (
+        output.temporal_type == input_def.temporal_type
+        and output.payload_type == input_def.payload_type
+        and output.cardinality == input_def.cardinality
+        and output.unit == input_def.unit
+        and output.entity_scope == input_def.entity_scope
+    )
+
+
+def project_onto_axis_output_for_field(field: str) -> str:
+    for output in PROJECT_ONTO_AXIS_SIGNATURE.outputs:
+        if output.name == field:
+            return output.name
+    for output in PROJECT_ONTO_AXIS_SIGNATURE.outputs:
+        if field in output.evidence_fields:
+            return output.name
+    return PROJECT_ONTO_AXIS_SIGNATURE.outputs[0].name
 
 
 def build_entry(
@@ -912,12 +1156,13 @@ def build_relation_on_anchor(
             node_id = context.node_id(entry.name)
             nodes = [*anchor.nodes]
             node_input_context = relation_on_anchor_input_context(constraint)
+            relation_parameters = infer_parameters(entry, input_builds=[anchor], input_context=node_input_context)
             nodes.append(
                 catalog_node(
                     node_id,
                     entry,
                     inputs={"anchors": ref(anchor.terminal_node_id, output.name if output.name in {out.name for out in provider.outputs} else anchor.terminal_output)},
-                    parameters=infer_parameters(entry, input_builds=[anchor], input_context=node_input_context),
+                    parameters=relation_parameters,
                 )
             )
             field_sources = {**anchor.field_sources}
@@ -931,6 +1176,11 @@ def build_relation_on_anchor(
                 field_sources=field_sources,
                 rules_used=[*anchor.rules_used, *rules],
                 providers_used=[*anchor.providers_used, entry.name],
+                metadata={
+                    "relation_on_anchor_provider": entry.name,
+                    "relation_on_anchor_constraint": node_input_context,
+                    "relation_on_anchor_applied_parameters": relation_parameters,
+                },
             )
         except SynthesisError as error:
             attempts.append(
@@ -949,6 +1199,29 @@ def build_relation_on_anchor(
 
 
 def relation_on_anchor_input_context(constraint: dict[str, Any]) -> dict[str, Any]:
+    allowed_keys = {
+        "kind",
+        "relation_status_field",
+        "anchor_status_field",
+        "anchor_status_value",
+        "anchor_identity_field",
+        "anchor_frame_field",
+        "candidate_scope",
+        "support_region_mode",
+        "maximum_arrival_seconds",
+        "minimum_duration_seconds",
+        "maximum_support_distance_m",
+        "minimum_supporting_players",
+        "required_anchor_status_field",
+        "required_anchor_status_value",
+    }
+    unapplied = sorted(key for key in constraint if key not in allowed_keys)
+    if unapplied:
+        raise SynthesisError(
+            "missing_constraint",
+            "relation_on_anchor supplied unsupported keys that synthesis cannot apply.",
+            {"unapplied_relation_constraint_keys": unapplied},
+        )
     payload: dict[str, Any] = {}
     for key in (
         "anchor_frame_field",
@@ -1673,17 +1946,9 @@ def infer_parameters(
             "line_buffer_m": number(0.5, "metre"),
         }
     if entry.name == "support_arrival_relation":
-        return {
-            "anchor_frame_field": enum(str(input_context.get("anchor_frame_field", "controlled_reception_frame_id"))),
-            "candidate_scope": enum(str(input_context.get("candidate_scope", "perspective_outfield"))),
-            "support_region_mode": enum(str(input_context.get("support_region_mode", "WITHIN_DISTANCE_OF_REFERENCE_POINT"))),
-            "maximum_arrival_seconds": number(float(input_context.get("maximum_arrival_seconds", 3.0)), "second"),
-            "minimum_duration_seconds": number(float(input_context.get("minimum_duration_seconds", 0.0)), "second"),
-            "maximum_support_distance_m": number(float(input_context.get("maximum_support_distance_m", 8.0)), "metre"),
-            "minimum_supporting_players": number(float(input_context.get("minimum_supporting_players", 1.0)), "count"),
-            "required_anchor_status_field": enum(str(input_context.get("required_anchor_status_field", "none"))),
-            "required_anchor_status_value": enum(str(input_context.get("required_anchor_status_value", "PASS"))),
-        }
+        return support_arrival_parameters(entry, input_context=input_context)
+    if entry.name == "support_arrival_point_pair":
+        return support_arrival_parameters(entry, input_context=input_context)
     if entry.name == "pressure_on_carrier":
         return {
             "frame_field": enum(str(input_context.get("frame_field", "controlled_reception_frame_id"))),
@@ -1752,6 +2017,55 @@ def infer_parameters(
             "lookback_seconds": number(0.4, "second"),
         }
     return {}
+
+
+SUPPORT_ARRIVAL_PARAMETER_DEFAULTS: dict[str, tuple[str, object, str]] = {
+    "anchor_frame_field": ("enum", "controlled_reception_frame_id", "none"),
+    "candidate_scope": ("enum", "perspective_outfield", "none"),
+    "support_region_mode": ("enum", "WITHIN_DISTANCE_OF_REFERENCE_POINT", "none"),
+    "maximum_arrival_seconds": ("number", 3.0, "second"),
+    "minimum_duration_seconds": ("number", 0.0, "second"),
+    "maximum_support_distance_m": ("number", 8.0, "metre"),
+    "minimum_supporting_players": ("number", 1.0, "count"),
+    "required_anchor_status_field": ("enum", "none", "none"),
+    "required_anchor_status_value": ("enum", "PASS", "none"),
+}
+
+
+def support_arrival_parameters(entry: CatalogEntry, *, input_context: dict[str, Any]) -> dict[str, Any]:
+    declared_names = {parameter.name for parameter in entry.parameters}
+    unapplied = sorted(key for key in input_context if key not in declared_names)
+    if unapplied:
+        raise SynthesisError(
+            "missing_constraint",
+            "relation_on_anchor supplied keys that are not declared parameters for the relation.",
+            {
+                "relation_provider": entry.name,
+                "unapplied_relation_constraint_keys": unapplied,
+                "declared_parameter_names": sorted(declared_names),
+            },
+        )
+    unhandled = sorted(key for key in input_context if key not in SUPPORT_ARRIVAL_PARAMETER_DEFAULTS)
+    if unhandled:
+        raise SynthesisError(
+            "missing_constraint",
+            "relation_on_anchor supplied keys without synthesis support.",
+            {
+                "relation_provider": entry.name,
+                "unhandled_relation_constraint_keys": unhandled,
+            },
+        )
+
+    params: dict[str, Any] = {}
+    for key, (payload_type, default_value, unit) in SUPPORT_ARRIVAL_PARAMETER_DEFAULTS.items():
+        if key not in declared_names:
+            continue
+        value = input_context.get(key, default_value)
+        if payload_type == "enum":
+            params[key] = enum(str(value))
+        else:
+            params[key] = number(float(value), unit)
+    return params
 
 
 def field_dependencies_for_consumer(entry: CatalogEntry) -> set[str]:
@@ -1944,6 +2258,7 @@ def row_result(
         "terminal_provider": None if build is None else build.get("terminal_provider"),
         "rules_used": [] if build is None else build.get("rules_used", []),
         "field_sources": {} if build is None else build.get("field_sources", {}),
+        "build_metadata": {} if build is None else build.get("build_metadata", {}),
         "coverage_gold_chain_audit": gold_chain_audit(row),
     }
 
@@ -2052,6 +2367,7 @@ def build_report(
                 "provider_field_backward_search",
                 "generic_before_after_change",
                 "generic_binary_episode_join",
+                "generic_vector_projection_operator",
             ],
         },
         "summary": {
@@ -2169,6 +2485,27 @@ def catalog_node(
     if parameters:
         node["parameters"] = parameters
     return node
+
+
+def operator_node(
+    *,
+    node_id: str,
+    operator_name: str,
+    version: str,
+    inputs: dict[str, dict[str, str]],
+    parameters: dict[str, Any],
+) -> dict[str, Any]:
+    return {
+        "kind": "operator",
+        "node_id": node_id,
+        "operator": {"name": operator_name, "version": version},
+        "inputs": inputs,
+        "parameters": parameters,
+        "outputs": [
+            output.model_dump(mode="json")
+            for output in PROJECT_ONTO_AXIS_SIGNATURE.outputs
+        ],
+    }
 
 
 def document(

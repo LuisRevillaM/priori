@@ -558,6 +558,13 @@ class Binder:
             parameter_values=parameter_values,
             path=path,
         )
+        self._validate_operator_field_parameters(
+            node=node,
+            signature=signature,
+            bound_inputs=bound_inputs,
+            resolved_parameters=resolved_node_parameters,
+            path=path,
+        )
         outputs = self._bind_operator_outputs(node=node, signature=signature, path=path)
         if (signature.name, signature.version) not in self.composition_operator_registry:
             self._issue(
@@ -698,6 +705,40 @@ class Binder:
                 self._validate_parameter_value(parameter, value, f"{path}.parameters.{name}")
                 resolved[name] = value
         return resolved
+
+    def _validate_operator_field_parameters(
+        self,
+        *,
+        node: DraftOperatorNode,
+        signature: CompositionOperatorSignature,
+        bound_inputs: dict[str, tuple[SignalRef, CatalogOutput]],
+        resolved_parameters: dict[str, TypedValue],
+        path: str,
+    ) -> None:
+        if not bound_inputs:
+            return
+        declared_fields: set[str] = set()
+        for _, output in bound_inputs.values():
+            declared_fields.add(output.name)
+            declared_fields.update(output.evidence_fields)
+        for parameter in signature.parameters:
+            if not parameter.name.endswith("_field"):
+                continue
+            value = resolved_parameters.get(parameter.name)
+            if value is None:
+                continue
+            field_name = str(value.value)
+            if field_name == "none":
+                continue
+            if field_name not in declared_fields:
+                self._issue(
+                    "operator_field_parameter_not_in_input",
+                    (
+                        f"{signature.name}@{signature.version} parameter {parameter.name} "
+                        f"references field {field_name}, but no bound operator input declares it"
+                    ),
+                    f"{path}.parameters.{parameter.name}",
+                )
 
     def _bind_operator_outputs(
         self,
