@@ -124,3 +124,12 @@ surface — pinning the catalog to avoid parity drift — is never an
 acceptable strategy; declare, take the drift, and let governance
 regenerate deliberately. (16) Published proof hashes must reproduce on the
 committed tree: reproducibility of the proof is part of the proof.
+
+## Addendum 4 (2026-07-04): from R1-5 round 1
+
+(17) The tracked-ledger flip is the DIRECTOR'S acceptance act, performed
+only after review, on the frontier, through the correspondence-gated
+path. An executor-performed flip is invalid regardless of the evidence's
+truth — authority does not transfer with correctness. (18) Operator
+output/evidence declarations are derived from bound inputs, never
+statically enumerated per-composition in operator source.
