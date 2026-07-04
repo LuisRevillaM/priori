@@ -106,3 +106,13 @@ both teams' records; zero-length-vector (and analogous degenerate-input)
 policies declared; (8) a units policy covers non-SI outputs (degrees); (9)
 reachability targets declare their target<->row semantic correspondence,
 and the ledger flip requires it.
+
+## Addendum 2 (2026-07-04): teeth, from R1-2 round-1 review
+
+(10) No provider-name literals in candidate scoring — ratchet-tested
+across all rules including grandfathered ones. (11) Every accepted
+constraint key maps to an enforced plan element or synthesis fails. (12)
+Every operator report carries a booked-evidence audit table (value
+distribution + per-row correspondence). (13) Both-teams anchors are a
+named house-standard test. (14) Ledger flips require the target's declared
+semantic correspondence (pulled forward from R1-C).
