@@ -3482,13 +3482,17 @@
         "evidence_fields": [
           "pressure_status",
           "pressure_reason",
+          "pressure_frame_field",
           "pressure_frame_id",
+          "carrier_id_field",
           "carrier_id",
+          "pressure_defending_team_role",
           "nearest_defender_id",
           "nearest_defender_distance_m",
           "closing_speed_mps",
           "approach_angle_degrees",
           "pressure_duration_seconds",
+          "lookback_seconds",
           "coverage_status"
         ],
         "executable": true,
@@ -3507,7 +3511,8 @@
         "limitations": [
           "Observed geometric/kinematic pressure only.",
           "Does not infer pressure quality, defensive intent, scanning, decision quality, or causation.",
-          "Missing carrier or defender tracking produces UNKNOWN rather than false pressure."
+          "Missing carrier or defender tracking produces UNKNOWN rather than false pressure.",
+          "R1-2 R-F semantics: when an anchor carries team_role, pressure_on_carrier evaluates the side defending that anchor rather than the invocation's default defending side; declared non-anchor frame fields must be present, with no silent anchor-frame fallback."
         ],
         "missing_data_semantics": "unknown",
         "name": "pressure_on_carrier",
@@ -3530,10 +3535,14 @@
             "evidence_fields": [
               "anchor_id",
               "anchor_frame_id",
+              "team_role",
               "pressure_status",
               "pressure_reason",
+              "pressure_frame_field",
               "pressure_frame_id",
+              "carrier_id_field",
               "carrier_id",
+              "pressure_defending_team_role",
               "nearest_defender_id",
               "nearest_defender_distance_m",
               "closing_speed_mps",
@@ -6726,16 +6735,16 @@
   ],
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "84261cc8405dab1bbbd74c6f8e5bf36b0dd4524d52425813c57fa55d5b4b53ea",
+    "baseline_artifact_revision": "f74b50e3f8d68c9b7e9646570f74017ec63969e6b1b9e876bb57e9d288db1a20",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "8a621555917b425dfcfb3b3bec931017a91062252e999089b5c6ebc3ce95856c",
+    "lock_hash": "848edee312004998c1bc8ec5779f436d7ea49ccbf9155c751748132fa5a6e616",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "f0b72489f384bae0042784cb6b197ede893864f45375f257a23f58897feefde4",
+    "registry_revision": "564c4247848c47dbee6dfca01a645bf35381dba880ce5f8ebaab29b0e4858923",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "50d399ef8b47bf7eac9a615c59c32fc6ce01a9589dfd2717fcb89ba26321dcc7",
+    "runtime_manifest_revision": "9010966fa3dc24f9890a06a2f8f5c09d9287853ac0073ce12f919f3037d60407",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"

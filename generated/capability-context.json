@@ -36,6 +36,7 @@
         "signed_lateral_shift",
         "space_region_generation",
         "structured_zone",
+        "support_arrival_point_pair",
         "support_arrival_relation",
         "switch_of_play",
         "team_compactness",
@@ -6614,7 +6615,8 @@
           "limitations": [
             "Observed geometric/kinematic pressure only.",
             "Does not infer pressure quality, defensive intent, scanning, decision quality, or causation.",
-            "Missing carrier or defender tracking produces UNKNOWN rather than false pressure."
+            "Missing carrier or defender tracking produces UNKNOWN rather than false pressure.",
+            "R1-2 R-F semantics: when an anchor carries team_role, pressure_on_carrier evaluates the side defending that anchor rather than the invocation's default defending side; declared non-anchor frame fields must be present, with no silent anchor-frame fallback."
           ],
           "node_schema": {
             "catalog_ref": "pressure_on_carrier",
@@ -6879,10 +6881,14 @@
               "evidence_fields": [
                 "anchor_id",
                 "anchor_frame_id",
+                "team_role",
                 "pressure_status",
                 "pressure_reason",
+                "pressure_frame_field",
                 "pressure_frame_id",
+                "carrier_id_field",
                 "carrier_id",
+                "pressure_defending_team_role",
                 "nearest_defender_id",
                 "nearest_defender_distance_m",
                 "closing_speed_mps",
@@ -8242,6 +8248,383 @@
             "frame_field",
             "zone_name",
             "zone_boundary_buffer_m"
+          ],
+          "version": "0.1.0"
+        },
+        "support_arrival_point_pair": {
+          "kind": "relation",
+          "limitations": [
+            "Observed support-arrival point pair only; does not infer support quality or decision quality.",
+            "First supporter is selected from the observed support-arrival evidence, not inferred from intent.",
+            "This additive view exists to expose point-pair evidence without changing the legacy support-arrival contract."
+          ],
+          "node_schema": {
+            "catalog_ref": "support_arrival_point_pair",
+            "inputs": {
+              "anchors": {
+                "output_name": "<registered_output_name>",
+                "source_node_id": "<source_node_id>"
+              }
+            },
+            "kind": "relation",
+            "node_id": "<agent_chosen_lower_snake_id>",
+            "parameters": {
+              "anchor_frame_field": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "enum",
+                    "unit": "none",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "allowed_values": [
+                    "controlled_reception_frame_id",
+                    "anchor_frame_id"
+                  ],
+                  "default": {
+                    "payload_type": "enum",
+                    "unit": "none",
+                    "value": "controlled_reception_frame_id"
+                  },
+                  "description": "Anchor record frame field where support timing starts.",
+                  "name": "anchor_frame_field",
+                  "payload_type": "enum",
+                  "required": false,
+                  "unit": "none"
+                }
+              },
+              "candidate_scope": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "enum",
+                    "unit": "none",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "allowed_values": [
+                    "perspective_outfield",
+                    "defending_outfield"
+                  ],
+                  "default": {
+                    "payload_type": "enum",
+                    "unit": "none",
+                    "value": "perspective_outfield"
+                  },
+                  "description": "Observed outfield player scope for candidate supporters.",
+                  "name": "candidate_scope",
+                  "payload_type": "enum",
+                  "required": false,
+                  "unit": "none"
+                }
+              },
+              "maximum_arrival_seconds": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "number",
+                    "unit": "second",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "second",
+                    "value": 2.0
+                  },
+                  "description": "Latest arrival after the support anchor frame.",
+                  "maximum": 10.0,
+                  "minimum": 0.0,
+                  "name": "maximum_arrival_seconds",
+                  "payload_type": "number",
+                  "required": false,
+                  "unit": "second"
+                }
+              },
+              "maximum_support_distance_m": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "number",
+                    "unit": "metre",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "metre",
+                    "value": 8.0
+                  },
+                  "description": "Maximum distance from the anchor reference point.",
+                  "maximum": 30.0,
+                  "minimum": 0.5,
+                  "name": "maximum_support_distance_m",
+                  "payload_type": "number",
+                  "required": false,
+                  "unit": "metre"
+                }
+              },
+              "minimum_duration_seconds": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "number",
+                    "unit": "second",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "second",
+                    "value": 0.4
+                  },
+                  "description": "Minimum continuous observed duration inside the support region.",
+                  "maximum": 5.0,
+                  "minimum": 0.0,
+                  "name": "minimum_duration_seconds",
+                  "payload_type": "number",
+                  "required": false,
+                  "unit": "second"
+                }
+              },
+              "minimum_supporting_players": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "number",
+                    "unit": "count",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "count",
+                    "value": 1
+                  },
+                  "description": "Minimum number of observed candidates that must satisfy the support relation.",
+                  "maximum": 10.0,
+                  "minimum": 1.0,
+                  "name": "minimum_supporting_players",
+                  "payload_type": "number",
+                  "required": false,
+                  "unit": "count"
+                }
+              },
+              "required_anchor_status_field": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "enum",
+                    "unit": "none",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "allowed_values": [
+                    "none",
+                    "controlled_pass_status",
+                    "line_break_status",
+                    "receiver_line_transition_status"
+                  ],
+                  "default": {
+                    "payload_type": "enum",
+                    "unit": "none",
+                    "value": "none"
+                  },
+                  "description": "Optional upstream status field that must equal the required value before support is evaluated.",
+                  "name": "required_anchor_status_field",
+                  "payload_type": "enum",
+                  "required": false,
+                  "unit": "none"
+                }
+              },
+              "required_anchor_status_value": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "enum",
+                    "unit": "none",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "allowed_values": [
+                    "PASS",
+                    "FAIL",
+                    "UNKNOWN"
+                  ],
+                  "default": {
+                    "payload_type": "enum",
+                    "unit": "none",
+                    "value": "PASS"
+                  },
+                  "description": "Required upstream status value when required_anchor_status_field is not none.",
+                  "name": "required_anchor_status_value",
+                  "payload_type": "enum",
+                  "required": false,
+                  "unit": "none"
+                }
+              },
+              "support_region_mode": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "enum",
+                    "unit": "none",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "allowed_values": [
+                    "WITHIN_DISTANCE_OF_REFERENCE_POINT",
+                    "BEHIND_BALL_OUTLET",
+                    "AHEAD_OF_BALL_OPTION"
+                  ],
+                  "default": {
+                    "payload_type": "enum",
+                    "unit": "none",
+                    "value": "WITHIN_DISTANCE_OF_REFERENCE_POINT"
+                  },
+                  "description": "Geometry used to decide whether a candidate is in the support region.",
+                  "name": "support_region_mode",
+                  "payload_type": "enum",
+                  "required": false,
+                  "unit": "none"
+                }
+              }
+            },
+            "version": "0.1.0"
+          },
+          "outputs": [
+            {
+              "allowed_values": null,
+              "cardinality": "collection",
+              "coverage": {
+                "count_field": null,
+                "fail_values": [
+                  "FAIL"
+                ],
+                "pass_values": [
+                  "PASS"
+                ],
+                "status_field": "support_point_pair_status",
+                "unknown_values": [
+                  "UNKNOWN"
+                ]
+              },
+              "entity_scope": "anchor",
+              "evidence_fields": [
+                "anchor_id",
+                "anchor_frame_id",
+                "support_point_pair_status",
+                "support_point_pair_reason",
+                "support_arrival_status",
+                "support_arrival_reason",
+                "support_anchor_frame_id",
+                "candidate_scope",
+                "candidate_team_role",
+                "first_supporter_id",
+                "first_supporter_point",
+                "first_support_reference_point",
+                "first_arrival_frame_id",
+                "first_arrival_seconds_after_anchor",
+                "support_duration_seconds",
+                "supporting_player_ids",
+                "candidate_player_ids",
+                "evaluated_candidate_player_ids",
+                "coverage_status",
+                "reference_point",
+                "required_anchor_status_field",
+                "required_anchor_status_value"
+              ],
+              "missing_data_semantics": "unknown",
+              "name": "anchor_evaluations",
+              "payload_type": "anchor_ref",
+              "temporal_type": "episode_set",
+              "unit": "none"
+            },
+            {
+              "allowed_values": [
+                "PASS",
+                "FAIL",
+                "UNKNOWN"
+              ],
+              "cardinality": "single",
+              "coverage": null,
+              "entity_scope": "anchor",
+              "evidence_fields": [
+                "support_point_pair_status",
+                "support_point_pair_reason",
+                "support_arrival_status",
+                "coverage_status"
+              ],
+              "missing_data_semantics": "unknown",
+              "name": "support_point_pair_status",
+              "payload_type": "enum",
+              "temporal_type": "frame_signal",
+              "unit": "none"
+            }
+          ],
+          "registered_catalog_ref": "support_arrival_point_pair",
+          "required_inputs": [
+            {
+              "cardinality": "collection",
+              "entity_scope": "anchor",
+              "name": "anchors",
+              "payload_type": "anchor_ref",
+              "required": true,
+              "temporal_type": "episode_set",
+              "unit": "none"
+            }
+          ],
+          "valid_output_names": [
+            "anchor_evaluations",
+            "support_point_pair_status"
+          ],
+          "valid_parameter_names": [
+            "anchor_frame_field",
+            "candidate_scope",
+            "support_region_mode",
+            "maximum_arrival_seconds",
+            "minimum_duration_seconds",
+            "maximum_support_distance_m",
+            "minimum_supporting_players",
+            "required_anchor_status_field",
+            "required_anchor_status_value"
           ],
           "version": "0.1.0"
         },
@@ -13456,11 +13839,15 @@
     "pressure_on_carrier": [
       "approach_angle_degrees",
       "carrier_id",
+      "carrier_id_field",
       "closing_speed_mps",
       "coverage_status",
+      "lookback_seconds",
       "nearest_defender_distance_m",
       "nearest_defender_id",
+      "pressure_defending_team_role",
       "pressure_duration_seconds",
+      "pressure_frame_field",
       "pressure_frame_id",
       "pressure_reason",
       "pressure_status"
@@ -13561,6 +13948,28 @@
       "zone_normalized_ball_x_m",
       "zone_reason",
       "zone_status"
+    ],
+    "support_arrival_point_pair": [
+      "candidate_player_ids",
+      "candidate_scope",
+      "candidate_team_role",
+      "coverage_status",
+      "evaluated_candidate_player_ids",
+      "first_arrival_frame_id",
+      "first_arrival_seconds_after_anchor",
+      "first_support_reference_point",
+      "first_supporter_id",
+      "first_supporter_point",
+      "reference_point",
+      "required_anchor_status_field",
+      "required_anchor_status_value",
+      "support_anchor_frame_id",
+      "support_arrival_reason",
+      "support_arrival_status",
+      "support_duration_seconds",
+      "support_point_pair_reason",
+      "support_point_pair_status",
+      "supporting_player_ids"
     ],
     "support_arrival_relation": [
       "candidate_player_ids",
@@ -21013,15 +21422,276 @@
     {
       "agent_authorable": true,
       "evidence_fields": [
+        "support_point_pair_status",
+        "support_point_pair_reason",
+        "support_arrival_status",
+        "support_arrival_reason",
+        "support_anchor_frame_id",
+        "candidate_scope",
+        "candidate_team_role",
+        "first_supporter_id",
+        "first_supporter_point",
+        "first_support_reference_point",
+        "first_arrival_frame_id",
+        "first_arrival_seconds_after_anchor",
+        "support_duration_seconds",
+        "supporting_player_ids",
+        "candidate_player_ids",
+        "evaluated_candidate_player_ids",
+        "coverage_status",
+        "reference_point",
+        "required_anchor_status_field",
+        "required_anchor_status_value"
+      ],
+      "inputs": [
+        {
+          "cardinality": "collection",
+          "entity_scope": "anchor",
+          "name": "anchors",
+          "payload_type": "anchor_ref",
+          "required": true,
+          "temporal_type": "episode_set",
+          "unit": "none"
+        }
+      ],
+      "kind": "relation",
+      "limitations": [
+        "Observed support-arrival point pair only; does not infer support quality or decision quality.",
+        "First supporter is selected from the observed support-arrival evidence, not inferred from intent.",
+        "This additive view exists to expose point-pair evidence without changing the legacy support-arrival contract."
+      ],
+      "name": "support_arrival_point_pair",
+      "outputs": [
+        {
+          "allowed_values": null,
+          "cardinality": "collection",
+          "coverage": {
+            "count_field": null,
+            "fail_values": [
+              "FAIL"
+            ],
+            "pass_values": [
+              "PASS"
+            ],
+            "status_field": "support_point_pair_status",
+            "unknown_values": [
+              "UNKNOWN"
+            ]
+          },
+          "entity_scope": "anchor",
+          "evidence_fields": [
+            "anchor_id",
+            "anchor_frame_id",
+            "support_point_pair_status",
+            "support_point_pair_reason",
+            "support_arrival_status",
+            "support_arrival_reason",
+            "support_anchor_frame_id",
+            "candidate_scope",
+            "candidate_team_role",
+            "first_supporter_id",
+            "first_supporter_point",
+            "first_support_reference_point",
+            "first_arrival_frame_id",
+            "first_arrival_seconds_after_anchor",
+            "support_duration_seconds",
+            "supporting_player_ids",
+            "candidate_player_ids",
+            "evaluated_candidate_player_ids",
+            "coverage_status",
+            "reference_point",
+            "required_anchor_status_field",
+            "required_anchor_status_value"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "anchor_evaluations",
+          "payload_type": "anchor_ref",
+          "temporal_type": "episode_set",
+          "unit": "none"
+        },
+        {
+          "allowed_values": [
+            "PASS",
+            "FAIL",
+            "UNKNOWN"
+          ],
+          "cardinality": "single",
+          "coverage": null,
+          "entity_scope": "anchor",
+          "evidence_fields": [
+            "support_point_pair_status",
+            "support_point_pair_reason",
+            "support_arrival_status",
+            "coverage_status"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "support_point_pair_status",
+          "payload_type": "enum",
+          "temporal_type": "frame_signal",
+          "unit": "none"
+        }
+      ],
+      "parameters": [
+        {
+          "allowed_values": [
+            "controlled_reception_frame_id",
+            "anchor_frame_id"
+          ],
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "controlled_reception_frame_id"
+          },
+          "description": "Anchor record frame field where support timing starts.",
+          "name": "anchor_frame_field",
+          "payload_type": "enum",
+          "required": false,
+          "unit": "none"
+        },
+        {
+          "allowed_values": [
+            "perspective_outfield",
+            "defending_outfield"
+          ],
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "perspective_outfield"
+          },
+          "description": "Observed outfield player scope for candidate supporters.",
+          "name": "candidate_scope",
+          "payload_type": "enum",
+          "required": false,
+          "unit": "none"
+        },
+        {
+          "allowed_values": [
+            "WITHIN_DISTANCE_OF_REFERENCE_POINT",
+            "BEHIND_BALL_OUTLET",
+            "AHEAD_OF_BALL_OPTION"
+          ],
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "WITHIN_DISTANCE_OF_REFERENCE_POINT"
+          },
+          "description": "Geometry used to decide whether a candidate is in the support region.",
+          "name": "support_region_mode",
+          "payload_type": "enum",
+          "required": false,
+          "unit": "none"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "second",
+            "value": 2.0
+          },
+          "description": "Latest arrival after the support anchor frame.",
+          "maximum": 10.0,
+          "minimum": 0.0,
+          "name": "maximum_arrival_seconds",
+          "payload_type": "number",
+          "required": false,
+          "unit": "second"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "second",
+            "value": 0.4
+          },
+          "description": "Minimum continuous observed duration inside the support region.",
+          "maximum": 5.0,
+          "minimum": 0.0,
+          "name": "minimum_duration_seconds",
+          "payload_type": "number",
+          "required": false,
+          "unit": "second"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 8.0
+          },
+          "description": "Maximum distance from the anchor reference point.",
+          "maximum": 30.0,
+          "minimum": 0.5,
+          "name": "maximum_support_distance_m",
+          "payload_type": "number",
+          "required": false,
+          "unit": "metre"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "count",
+            "value": 1
+          },
+          "description": "Minimum number of observed candidates that must satisfy the support relation.",
+          "maximum": 10.0,
+          "minimum": 1.0,
+          "name": "minimum_supporting_players",
+          "payload_type": "number",
+          "required": false,
+          "unit": "count"
+        },
+        {
+          "allowed_values": [
+            "none",
+            "controlled_pass_status",
+            "line_break_status",
+            "receiver_line_transition_status"
+          ],
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "none"
+          },
+          "description": "Optional upstream status field that must equal the required value before support is evaluated.",
+          "name": "required_anchor_status_field",
+          "payload_type": "enum",
+          "required": false,
+          "unit": "none"
+        },
+        {
+          "allowed_values": [
+            "PASS",
+            "FAIL",
+            "UNKNOWN"
+          ],
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "PASS"
+          },
+          "description": "Required upstream status value when required_anchor_status_field is not none.",
+          "name": "required_anchor_status_value",
+          "payload_type": "enum",
+          "required": false,
+          "unit": "none"
+        }
+      ],
+      "purpose": "Expose the observed first-supporter point pair for a support-arrival evaluation so generic projection operators can measure support depth.",
+      "version": "0.1.0"
+    },
+    {
+      "agent_authorable": true,
+      "evidence_fields": [
         "pressure_status",
         "pressure_reason",
+        "pressure_frame_field",
         "pressure_frame_id",
+        "carrier_id_field",
         "carrier_id",
+        "pressure_defending_team_role",
         "nearest_defender_id",
         "nearest_defender_distance_m",
         "closing_speed_mps",
         "approach_angle_degrees",
         "pressure_duration_seconds",
+        "lookback_seconds",
         "coverage_status"
       ],
       "inputs": [
@@ -21039,7 +21709,8 @@
       "limitations": [
         "Observed geometric/kinematic pressure only.",
         "Does not infer pressure quality, defensive intent, scanning, decision quality, or causation.",
-        "Missing carrier or defender tracking produces UNKNOWN rather than false pressure."
+        "Missing carrier or defender tracking produces UNKNOWN rather than false pressure.",
+        "R1-2 R-F semantics: when an anchor carries team_role, pressure_on_carrier evaluates the side defending that anchor rather than the invocation's default defending side; declared non-anchor frame fields must be present, with no silent anchor-frame fallback."
       ],
       "name": "pressure_on_carrier",
       "outputs": [
@@ -21063,10 +21734,14 @@
           "evidence_fields": [
             "anchor_id",
             "anchor_frame_id",
+            "team_role",
             "pressure_status",
             "pressure_reason",
+            "pressure_frame_field",
             "pressure_frame_id",
+            "carrier_id_field",
             "carrier_id",
+            "pressure_defending_team_role",
             "nearest_defender_id",
             "nearest_defender_distance_m",
             "closing_speed_mps",
@@ -23517,6 +24192,61 @@
             "title": "DraftCatalogNode",
             "type": "object"
           },
+          "DraftOperatorNode": {
+            "additionalProperties": false,
+            "properties": {
+              "inputs": {
+                "additionalProperties": {
+                  "$ref": "#/$defs/SignalRef"
+                },
+                "title": "Inputs",
+                "type": "object"
+              },
+              "kind": {
+                "const": "operator",
+                "default": "operator",
+                "title": "Kind",
+                "type": "string"
+              },
+              "node_id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Node Id",
+                "type": "string"
+              },
+              "operator": {
+                "$ref": "#/$defs/OperatorRef"
+              },
+              "outputs": {
+                "items": {
+                  "$ref": "#/$defs/OperatorOutputDeclaration"
+                },
+                "minItems": 1,
+                "title": "Outputs",
+                "type": "array"
+              },
+              "parameters": {
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/TypedValue"
+                    },
+                    {
+                      "$ref": "#/$defs/ParameterRef"
+                    }
+                  ]
+                },
+                "title": "Parameters",
+                "type": "object"
+              }
+            },
+            "required": [
+              "node_id",
+              "operator",
+              "outputs"
+            ],
+            "title": "DraftOperatorNode",
+            "type": "object"
+          },
           "DraftPredicateNode": {
             "additionalProperties": false,
             "properties": {
@@ -23630,6 +24360,7 @@
                 "items": {
                   "discriminator": {
                     "mapping": {
+                      "operator": "#/$defs/DraftOperatorNode",
                       "predicate": "#/$defs/DraftPredicateNode",
                       "primitive": "#/$defs/DraftCatalogNode",
                       "relation": "#/$defs/DraftCatalogNode"
@@ -23642,6 +24373,9 @@
                     },
                     {
                       "$ref": "#/$defs/DraftPredicateNode"
+                    },
+                    {
+                      "$ref": "#/$defs/DraftOperatorNode"
                     }
                   ]
                 },
@@ -23761,6 +24495,61 @@
             ],
             "title": "ExecutionMode",
             "type": "string"
+          },
+          "MissingDataSemantics": {
+            "enum": [
+              "unknown",
+              "quality_fail",
+              "not_applicable"
+            ],
+            "title": "MissingDataSemantics",
+            "type": "string"
+          },
+          "OperatorOutputDeclaration": {
+            "additionalProperties": false,
+            "properties": {
+              "cardinality": {
+                "$ref": "#/$defs/Cardinality"
+              },
+              "entity_scope": {
+                "$ref": "#/$defs/EntityScope",
+                "default": "none"
+              },
+              "evidence_fields": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Evidence Fields",
+                "type": "array"
+              },
+              "missing_data_semantics": {
+                "$ref": "#/$defs/MissingDataSemantics",
+                "default": "unknown"
+              },
+              "name": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Name",
+                "type": "string"
+              },
+              "payload_type": {
+                "$ref": "#/$defs/PayloadType"
+              },
+              "temporal_type": {
+                "$ref": "#/$defs/TemporalContainer"
+              },
+              "unit": {
+                "$ref": "#/$defs/Unit",
+                "default": "none"
+              }
+            },
+            "required": [
+              "name",
+              "temporal_type",
+              "payload_type",
+              "cardinality"
+            ],
+            "title": "OperatorOutputDeclaration",
+            "type": "object"
           },
           "OperatorRef": {
             "additionalProperties": false,
@@ -24104,6 +24893,16 @@
             ],
             "title": "TacticalQueryDocument",
             "type": "object"
+          },
+          "TemporalContainer": {
+            "enum": [
+              "scalar",
+              "frame_signal",
+              "episode_set",
+              "relation_episode_set"
+            ],
+            "title": "TemporalContainer",
+            "type": "string"
           },
           "TypedValue": {
             "additionalProperties": false,

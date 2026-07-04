@@ -5182,12 +5182,6 @@ projection_policies:
         permitted_fields: []
         rationale: Verified Hermes-authored composition is intentionally new relative to the model-visible knowledge-pack baseline.
         review_condition: Remove or update this waiver when the AI baseline intentionally includes the composition.
-      - subject_ref: runtime:relation:support_arrival_point_pair:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: e1ce6791d966b81241383b871eeb4bff9596f6c6c84cc9d93217c7bcd49a95b8
-        permitted_fields: []
-        rationale: R1-1 adds a support-arrival point-pair view for projection operators without changing the legacy support-arrival relation contract.
-        review_condition: Remove or update this waiver when the model-visible baseline intentionally includes the support-arrival point-pair view.
       - subject_ref: runtime:primitive:acceleration:0.1.0
         difference_kind: REMOVED
         baseline_contract_hash: 8044338ee752d7de324f50f6913f20afe30a5dd313d277d712733cd8bb11d49f

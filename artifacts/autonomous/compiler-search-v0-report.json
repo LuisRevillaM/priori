@@ -1,26 +1,19 @@
 {
-  "failure_distribution": {
-    "missing_constraint": 1,
-    "unsupported_modality": 1
-  },
+  "failure_distribution": {},
   "findings": [],
   "held_out_multi_step_successes": [
-    "shape_expansion_episode"
+    "pressure_change_after"
   ],
   "held_out_successes": [
-    "carry_displacement",
-    "support_arrival_relation",
-    "shape_expansion_episode"
+    "pressure_change_after"
   ],
   "multi_step_successes": [
-    "shape_expansion_episode",
-    "carry_out_of_pressure"
+    "pressure_change_after"
   ],
   "plan_dir": "generated/compiler-search-v0/plans",
   "report_priority": "Held-out successes and real failure distribution are the meaningful outputs.",
   "result_distribution": {
-    "compiler_reachable": 7,
-    "not_compiler_reachable": 2
+    "compiler_reachable": 1
   },
   "row_csv_path": "generated/compiler-search-v0/row-ledger.csv",
   "row_ledger_path": "generated/compiler-search-v0/row-ledger.json",
@@ -29,19 +22,25 @@
     "atlas_wide_execution": false,
     "concept_name_allowed_as_input": false,
     "coverage_gold_chain_allowed_as_input": false,
-    "mode": "bounded_stratified_sample_with_held_out_targets",
+    "coverage_ledger_update_enabled": true,
+    "mode": "r1_2_delta_across_anchor_acceptance",
     "natural_language": false,
     "pattern_dispatch_allowed": false,
-    "target_count": 9
+    "persistent_node_cache_enabled": false,
+    "search_worker_count": 1,
+    "shared_node_cache_enabled": true,
+    "target_count": 1
   },
   "search_budget": {
     "allowed_catalog_refs": [
+      "acceleration",
       "action_chain",
       "action_event_anchor",
       "ball_lateral_fraction",
       "carry_episode",
       "change_across_anchor",
       "controlled_pass_episode",
+      "cover_shadow",
       "defensive_line_model",
       "defensive_outfield_centroid",
       "geometric_progressive_corridor",
@@ -49,7 +48,10 @@
       "join_episode_sets",
       "lane_occupancy",
       "local_number_relation",
+      "marking",
       "multi_line_model",
+      "off_ball_run",
+      "off_ball_run_type",
       "one_touch_relay_episode",
       "opponents_bypassed_by_action",
       "outcome_window",
@@ -60,11 +62,15 @@
       "receiver_line_transition_during_pass_leg",
       "relation_destination_entry",
       "relative_position_to_line",
+      "set_piece_structure",
       "signed_lateral_shift",
+      "space_region_generation",
       "structured_zone",
+      "support_arrival_point_pair",
       "support_arrival_relation",
       "switch_of_play",
       "team_compactness",
+      "team_press",
       "time_to_arrival",
       "tracking_quality",
       "transition_anchor",
@@ -81,27 +87,44 @@
     "rules": [
       "provider_field_backward_search",
       "generic_before_after_change",
-      "generic_binary_episode_join"
+      "generic_binary_episode_join",
+      "generic_delta_across_anchor_operator",
+      "generic_vector_projection_operator"
     ]
   },
   "status": "PASS",
   "summary": {
-    "compiler_reachable_count": 7,
-    "compiler_reachable_pct": 0.9,
-    "coverage_supported_count": 350,
-    "coverage_supported_pct": 47.2,
-    "held_out_compiler_reachable_count": 3,
+    "compiler_reachable_count": 9,
+    "compiler_reachable_pct": 1.2,
+    "coverage_supported_count": 362,
+    "coverage_supported_pct": 48.9,
+    "execution_cache_backend": {
+      "backend": "memory",
+      "enabled": true,
+      "entry_count": 42
+    },
+    "execution_node_cache": {
+      "bypassed": 0,
+      "disabled": 0,
+      "hits": 0,
+      "local_hits": 0,
+      "misses": 42,
+      "shared_hits": 0
+    },
+    "execution_reuse_enabled": true,
+    "held_out_compiler_reachable_count": 1,
     "held_out_compiler_reachable_pct": 100.0,
     "held_out_multi_step_compiler_reachable_count": 1,
     "held_out_multi_step_target_count": 1,
-    "held_out_target_count": 3,
-    "multi_step_compiler_reachable_count": 2,
-    "multi_step_target_count": 2,
-    "sample_compiler_reachable_count": 7,
-    "sample_compiler_reachable_pct": 77.8,
-    "sample_target_count": 9
+    "held_out_target_count": 1,
+    "multi_step_compiler_reachable_count": 1,
+    "multi_step_target_count": 1,
+    "sample_compiler_reachable_count": 1,
+    "sample_compiler_reachable_pct": 100.0,
+    "sample_only_note": "sample_* fields are the measurement for non-updating runs; compiler_reachable_count reflects the supplied coverage ledger after mutation only when ledger updates are enabled.",
+    "sample_target_count": 1
   },
   "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
   "synthesizer_version": "search_synthesizer.v0.1",
-  "targets_path": "config/compiler-reachability/search-targets.v0.json"
+  "targets_path": "config/compiler-reachability/r1-2-delta-across-anchor-targets.v0.json"
 }

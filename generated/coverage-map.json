@@ -1010,8 +1010,28 @@
   "composition_constraint_needed": false,
   "priority_unlock": "HIGH",
   "composition_constraint_note": "",
-  "composition_maturity": "handwired",
-  "composition_maturity_applicable": true
+  "composition_maturity": "compiler_reachable",
+  "composition_maturity_applicable": true,
+  "compiler_reachability_status": "compiler_reachable",
+  "compiler_reachability_evidence": {
+   "synthesizer_version": "search_synthesizer.v0.1",
+   "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+   "target_id": "r1_2_pressure_distance_delta_v0",
+   "report_path": "artifacts/autonomous/compiler-search-v0-report.json",
+   "document_hash": "d36254e978a014419f0139cfe9aed0ce3f674c82965d01b7dc3f7234422eaa4a",
+   "held_out": true,
+   "result_count": 20,
+   "honest_zero": false,
+   "semantic_correspondence": {
+    "coverage_row": "pressure_change_after",
+    "meaning": "Signed change in nearest-opponent distance from the passer at physical release to the receiver at controlled reception for the same controlled-pass anchor.",
+    "anchor_source": "controlled_pass_episode.anchors",
+    "before_relation": "pressure_on_carrier.anchor_evaluations at physical_release_frame_id with carrier_id_field=passer_id",
+    "after_relation": "pressure_on_carrier.anchor_evaluations at controlled_reception_frame_id with carrier_id_field=receiver_id",
+    "scalar": "nearest_defender_distance_m",
+    "unit": "metre"
+   }
+  }
  },
  {
   "concept": "restart_won_within",
@@ -2139,8 +2159,30 @@
   "composition_constraint_needed": false,
   "priority_unlock": "LOW",
   "composition_constraint_note": "",
-  "composition_maturity": "handwired",
-  "composition_maturity_applicable": true
+  "composition_maturity": "compiler_reachable",
+  "composition_maturity_applicable": true,
+  "compiler_reachability_status": "compiler_reachable",
+  "compiler_reachability_evidence": {
+   "synthesizer_version": "search_synthesizer.v0.1",
+   "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+   "target_id": "r1_1_goalward_axis_projection_v0",
+   "report_path": "artifacts/autonomous/compiler-search-v0-report.json",
+   "document_hash": "5158d67088773ac758a2c59eb8d6de32456f334e0a4883dcea6d156b72360521",
+   "held_out": true,
+   "result_count": 20,
+   "honest_zero": false,
+   "semantic_correspondence": {
+    "coverage_row": "support_depth",
+    "meaning": "Longitudinal component of the first observed supporter relative to the carrier/reference point at support arrival.",
+    "source_relation": "support_arrival_point_pair.anchor_evaluations",
+    "point_pair": [
+     "first_support_reference_point",
+     "first_supporter_point"
+    ],
+    "axis": "acting-team goalward",
+    "orientation_team_field": "candidate_team_role"
+   }
+  }
  },
  {
   "concept": "support_distance",
@@ -5864,8 +5906,8 @@
   "composition_maturity_applicable": false
  },
  {
- "concept": "set_piece_attacking_shape",
- "family": "Restarts and set-piece behavior",
+  "concept": "set_piece_attacking_shape",
+  "family": "Restarts and set-piece behavior",
   "classification": "supported",
   "justification": "set_piece_structure exposes the recognized restart and observed attacking outfield width/depth/centroid at the event anchor. It does not claim runner stations, near/far-post roles, or routine design.",
   "required_missing_capability": null,
@@ -5916,8 +5958,8 @@
   "composition_maturity_applicable": true
  },
  {
- "concept": "set_piece_defensive_shape",
- "family": "Restarts and set-piece behavior",
+  "concept": "set_piece_defensive_shape",
+  "family": "Restarts and set-piece behavior",
   "classification": "supported",
   "justification": "set_piece_structure exposes the recognized restart and observed defending outfield width/depth/centroid at the event anchor. It does not claim zonal/man marking, assignments, or routine design.",
   "required_missing_capability": null,

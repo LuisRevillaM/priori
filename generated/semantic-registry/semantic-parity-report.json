@@ -726,18 +726,14 @@
   "projection_differences": {
     "ai": {
       "added": [
-        "composition:composition.ai_corridor_destination.2026_06_23",
-        "runtime:relation:support_arrival_point_pair:0.1.0"
+        "composition:composition.ai_corridor_destination.2026_06_23"
       ],
       "added_details": {
         "composition:composition.ai_corridor_destination.2026_06_23": {
           "projection_contract_hash": "a796f3d6ca9399358c6bf535d0d7d8f57509bbf9763661cf191c76e346af9d3b"
-        },
-        "runtime:relation:support_arrival_point_pair:0.1.0": {
-          "projection_contract_hash": "e1ce6791d966b81241383b871eeb4bff9596f6c6c84cc9d93217c7bcd49a95b8"
         }
       },
-      "baseline_count": 56,
+      "baseline_count": 57,
       "contract_changed": [
         "recipe:ball_side_block_shift_v1:1.0.0",
         "recipe:first_time_relay_after_receiver_line_transition_v1:0.1.0",
@@ -841,14 +837,14 @@
           "baseline_contract_hash": "4cf1558ccf3ed95deb1fea53b10166cb7144b63af1b1b8fa8b45b623425a6708"
         }
       },
-      "shared_count": 47
+      "shared_count": 48
     },
     "baseline_sources": {
-      "baseline_artifact_revision": "84261cc8405dab1bbbd74c6f8e5bf36b0dd4524d52425813c57fa55d5b4b53ea",
+      "baseline_artifact_revision": "f74b50e3f8d68c9b7e9646570f74017ec63969e6b1b9e876bb57e9d288db1a20",
       "capability_catalog": {
         "exists": true,
         "path": "generated/capability-catalog.json",
-        "source_artifact_sha256": "8733314d560b1f58e9a7f15fe81e8df1fb1bdd3450dff7edc9174d1d633e8aac"
+        "source_artifact_sha256": "d5cd99e271435ff5f3c7bdd8981d8ca39a369c7611369e01415288ff1c8e8289"
       },
       "product_recipe_contracts": {
         "frozen_baseline": false,
@@ -859,7 +855,7 @@
       "tactical_knowledge_pack": {
         "exists": true,
         "path": "generated/tactical-knowledge-pack.json",
-        "source_artifact_sha256": "2106c6faa901c94e9375ff8480502ae6230d71510921d450c5be94850082215c"
+        "source_artifact_sha256": "a3aba2911f5fbfe607be644d41964225d32555c708a1105ddd75eb7e40eb7e29"
       }
     },
     "product": {
@@ -930,16 +926,16 @@
   },
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "84261cc8405dab1bbbd74c6f8e5bf36b0dd4524d52425813c57fa55d5b4b53ea",
+    "baseline_artifact_revision": "f74b50e3f8d68c9b7e9646570f74017ec63969e6b1b9e876bb57e9d288db1a20",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "8a621555917b425dfcfb3b3bec931017a91062252e999089b5c6ebc3ce95856c",
+    "lock_hash": "848edee312004998c1bc8ec5779f436d7ea49ccbf9155c751748132fa5a6e616",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "f0b72489f384bae0042784cb6b197ede893864f45375f257a23f58897feefde4",
+    "registry_revision": "564c4247848c47dbee6dfca01a645bf35381dba880ce5f8ebaab29b0e4858923",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "50d399ef8b47bf7eac9a615c59c32fc6ce01a9589dfd2717fcb89ba26321dcc7",
+    "runtime_manifest_revision": "9010966fa3dc24f9890a06a2f8f5c09d9287853ac0073ce12f919f3037d60407",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"
