@@ -47,3 +47,27 @@ reachability delta re-measured blind (and the discovery space size
 reported honestly); update the target file with the semantic
 correspondence; full-suite table; the pinned gates; report the corrected
 20-row evidence with per-record orientation basis visible.
+
+---
+
+# R1-1 Round-2 Review: ACCEPT-WITH-FIXES — the 8 is earned in substance, certified after fix 1
+
+Reviewed 2026-07-04 at 853cf27. B1 verified empirically (400 records
+hand-recomputed against the shared orientation table, 0 mismatches,
+adversarial half checked); B2 probed fixed with declared zero-length
+policy; B3's view legitimate (kernel untouched, purely additive, real
+supporter+reference points, first-by-arrival semantics), values
+football-plausible both signs, discovery space honestly 1 and verifiable,
+correspondence declared, 7->8 reproduced on a fresh ledger. Suite 385
+green, attestation VERIFIED, pinned gates exact to frozen hashes.
+
+BLOCKING FIX 1: the synthesized proof plan drops the target's declared
+relation constraints (infer_parameters has no support_arrival_point_pair
+branch -> catalog defaults bound, divergence unreported). Apply the
+declared constraint parameters in synthesis, make unapplied constraint
+keys a synthesis FAILURE or reported divergence, re-run both proof
+commands, republish. Fix 2: remove tool-side provider defaults
+(release/reception_ball_point). Fix 3 (minor): derive the tool's field
+list from the signature; state the angle-units policy explicitly.
+
+The 8 is certified upon fix 1's regenerated proof.
