@@ -5237,6 +5237,12 @@ projection_policies:
         permitted_fields: []
         rationale: Acceleration is runtime-executable substrate but is intentionally denied from the product projection pending exposure and product-claim review.
         review_condition: Remove this waiver when the capability passes exposure review and enters the product projection.
+      - subject_ref: runtime:relation:defender_distance_candidate_set:0.1.0
+        difference_kind: REMOVED
+        baseline_contract_hash: 8ac52b22780e6deb81c5b10a06f1b5bd20246935bc905a97d327141073c9fb52
+        permitted_fields: []
+        rationale: Defender-distance candidate set is runtime-executable substrate (R1-3 extremum provider) intentionally denied from this projection pending exposure and product-claim review.
+        review_condition: Remove this waiver when the capability passes exposure review and enters the product projection.
       - subject_ref: runtime:primitive:cover_shadow:0.1.0
         difference_kind: REMOVED
         baseline_contract_hash: 7ae43012a6725d814b7484c7c92de81096359754b7911cb77c3663ab0449c453
@@ -5304,6 +5310,12 @@ projection_policies:
         baseline_contract_hash: 8044338ee752d7de324f50f6913f20afe30a5dd313d277d712733cd8bb11d49f
         permitted_fields: []
         rationale: Acceleration is Hermes-authorable substrate (agent exposure is still blocklist-gated, audit finding V5) but is intentionally denied from the AI projection pending exposure review.
+        review_condition: Remove this waiver when the capability passes exposure review and enters the AI projection, or when Hermes exposure becomes registry-driven.
+      - subject_ref: runtime:relation:defender_distance_candidate_set:0.1.0
+        difference_kind: REMOVED
+        baseline_contract_hash: 8ac52b22780e6deb81c5b10a06f1b5bd20246935bc905a97d327141073c9fb52
+        permitted_fields: []
+        rationale: Defender-distance candidate set is runtime-executable substrate (R1-3 extremum provider) intentionally denied from this projection pending exposure and product-claim review.
         review_condition: Remove this waiver when the capability passes exposure review and enters the AI projection, or when Hermes exposure becomes registry-driven.
       - subject_ref: runtime:primitive:cover_shadow:0.1.0
         difference_kind: REMOVED

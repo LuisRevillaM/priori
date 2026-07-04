@@ -1,6 +1,6 @@
 {
-  "passport_count": 45,
-  "passport_revision": "c947d10db12b654ef1ae6d0a8dc615a496d8fb201392189687cabd77774521b2",
+  "passport_count": 46,
+  "passport_revision": "6e0b85b32689b4278aba6c2efd8127bdca6f309811155b7063ab21c7b2d5c6f5",
   "passports": [
     {
       "binding": {
@@ -19852,6 +19852,704 @@
     },
     {
       "binding": {
+        "conformance": "PARTIAL",
+        "id": "binding.relation.defender_distance_candidate_set.0_1_0",
+        "input_bindings": {
+          "anchors": {
+            "runtime_port": "anchors",
+            "source": "NODE_INPUT"
+          },
+          "observed_defending_positions": {
+            "context_ref": "canonical_match_state.defending_outfield_positions",
+            "source": "RUNTIME_CONTEXT"
+          }
+        },
+        "known_deviations": [
+          "Observed candidate-set mode can intentionally scope to observed defending outfield players only; it does not claim untracked defenders were farther away."
+        ],
+        "output_bindings": {
+          "anchor_evaluations": {
+            "runtime_port": "anchor_evaluations"
+          },
+          "candidate_distance_m": {
+            "runtime_port": "candidate_distance_m"
+          },
+          "defender_distance_candidate_status": {
+            "runtime_port": "defender_distance_candidate_status"
+          }
+        },
+        "parameter_bindings": {
+          "anchor_frame_field": "anchor_frame_field",
+          "candidate_scope": "candidate_scope",
+          "minimum_observed_candidates": "minimum_observed_candidates",
+          "required_anchor_status_field": "required_anchor_status_field",
+          "required_anchor_status_value": "required_anchor_status_value",
+          "target_player_id_field": "target_player_id_field"
+        },
+        "semantic_parameters": [
+          {
+            "allowed_values": [
+              "anchor_frame_id",
+              "physical_release_frame_id",
+              "controlled_reception_frame_id",
+              "carry_start_frame_id",
+              "carry_end_frame_id",
+              "terminal_release_frame_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "controlled_reception_frame_id"
+            },
+            "description": "",
+            "name": "anchor_frame_field",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
+            }
+          },
+          {
+            "allowed_values": [
+              "receiver_id",
+              "passer_id",
+              "relay_player_id",
+              "terminal_receiver_id",
+              "carrier_id",
+              "run_player_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "receiver_id"
+            },
+            "description": "",
+            "name": "target_player_id_field",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
+            }
+          },
+          {
+            "allowed_values": [
+              "defending_outfield",
+              "observed_defending_outfield"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "defending_outfield"
+            },
+            "description": "",
+            "name": "candidate_scope",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
+            }
+          },
+          {
+            "allowed_values": [
+              "none",
+              "controlled_pass_status",
+              "carry_status",
+              "join_status",
+              "transition_status"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "",
+            "name": "required_anchor_status_field",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
+            }
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "PASS"
+            },
+            "description": "",
+            "name": "required_anchor_status_value",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
+            }
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "count",
+              "value": 6.0
+            },
+            "description": "",
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "name": "minimum_observed_candidates",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "count",
+              "value": "Scalar"
+            }
+          }
+        ],
+        "uncovered_runtime_inputs": [],
+        "uncovered_runtime_outputs": [],
+        "uncovered_runtime_parameters": [],
+        "uncovered_semantic_inputs": [],
+        "uncovered_semantic_outputs": [],
+        "uncovered_semantic_parameters": []
+      },
+      "claim_contracts": [
+        {
+          "contract_ref": "claim.observed_defender_distance_candidate_set.v1",
+          "inherits": [],
+          "permitted": [
+            "observed_defender_target_distance_candidates_emitted"
+          ],
+          "prohibited": [
+            "defender_intent_inferred",
+            "marking_assignment_inferred",
+            "nearest_defender_selected",
+            "optimality_inferred",
+            "player_intent_inferred",
+            "pressure_quality_inferred",
+            "tactical_causation_inferred"
+          ],
+          "unknown_conditions": [
+            "defender_positions_missing",
+            "incomplete_candidate_coverage",
+            "insufficient_observed_candidates",
+            "target_position_missing"
+          ]
+        }
+      ],
+      "concepts": [
+        {
+          "aliases": [],
+          "claim_contract_ref": "claim.observed_defender_distance_candidate_set.v1",
+          "created_from": [],
+          "description": "Observed defender-to-target distance candidate records at a declared anchor frame.",
+          "display_name": "Observed Defender Distance Candidate Set",
+          "evidence_contract_ref": "evidence.observed_defender_distance_candidate_set.v1",
+          "id": "concept.observed_defender_distance_candidate_set",
+          "kind": "Concept",
+          "owners": [],
+          "reviewers": [],
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [
+            "distance",
+            "defending",
+            "candidate-set",
+            "geometry"
+          ],
+          "version": "1.0.0"
+        }
+      ],
+      "description": "Canonical runtime binding for defender_distance_candidate_set 0.1.0.",
+      "display_name": "defender_distance_candidate_set runtime binding",
+      "evidence_contracts": [
+        {
+          "contract_ref": "evidence.observed_defender_distance_candidate_set.v1",
+          "inherits": [],
+          "optional": [
+            "candidate_defender_ids",
+            "candidate_frame_field",
+            "candidate_point",
+            "defender_distance_candidate_claim_boundary",
+            "defender_distance_candidate_model",
+            "missing_candidate_ids",
+            "target_player_id_field",
+            "target_player_team_role",
+            "target_point"
+          ],
+          "replay_projection": [
+            "candidate_defender_markers",
+            "distance_badge",
+            "target_marker"
+          ],
+          "required": [
+            "anchor_frame_id",
+            "anchor_id",
+            "candidate_defender_id",
+            "candidate_distance_m",
+            "candidate_frame_id",
+            "candidate_record_id",
+            "candidate_scope",
+            "candidate_team_role",
+            "coverage_status",
+            "defender_distance_candidate_reason",
+            "defender_distance_candidate_status",
+            "minimum_observed_candidates",
+            "observed_candidate_count",
+            "observed_candidate_ids",
+            "source_anchor_id",
+            "target_player_id"
+          ]
+        }
+      ],
+      "exposure_policy": {
+        "ai_compiler": "DENIED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Conservative substrate exposure policy for defender_distance_candidate_set; denied from product and AI projection pending exposure review.",
+        "display_name": "defender_distance_candidate_set exposure",
+        "id": "exposure.runtime.defender_distance_candidate_set.0_1_0",
+        "kind": "ExposurePolicy",
+        "owners": [],
+        "parameter_overrides": {},
+        "product": "DENIED",
+        "reasons": [
+          "substrate_candidate_set_helper_pending_exposure_review"
+        ],
+        "reviewed_recipes": "ALLOWED",
+        "reviewers": [],
+        "status": "CURRENT",
+        "subject_ref": "runtime:relation:defender_distance_candidate_set:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "implementation": {
+        "aliases": [],
+        "created_from": [],
+        "description": "Current defender_distance_candidate_set implementation.",
+        "display_name": "Observed Defender Distance Candidate Set Python Implementation",
+        "id": "impl.defender_distance_candidate_set.python.v1",
+        "implementation_type": "python",
+        "implements": [
+          "op.observed_defender_distance_candidate_set.v1"
+        ],
+        "kind": "Implementation",
+        "owners": [],
+        "reviewers": [],
+        "source_refs": [
+          "src/tqe/runtime/capabilities/teamshape_family.py",
+          "src/tqe/runtime/catalog.py"
+        ],
+        "status": "CURRENT",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "maturity_assessment": {
+        "agent_safety": "REVIEWED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Maturity assessment for defender_distance_candidate_set; substrate helper for witnessed extremum selection without product-claim validation.",
+        "display_name": "defender_distance_candidate_set maturity",
+        "id": "maturity.runtime.defender_distance_candidate_set.0_1_0",
+        "implementation": "IMPLEMENTED",
+        "kind": "MaturityAssessment",
+        "owners": [],
+        "product": "NOT_EXPOSED",
+        "reviewers": [],
+        "semantic": "PROPOSED",
+        "status": "CURRENT",
+        "subject_ref": "runtime:relation:defender_distance_candidate_set:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "validation": "VERIFIED",
+        "version": "1.0.0"
+      },
+      "operationalizations": [
+        {
+          "aliases": [],
+          "applicability": [
+            "anchor_available",
+            "target_coordinates_available",
+            "defender_coordinates_available"
+          ],
+          "claim_contract_ref": "claim.observed_defender_distance_candidate_set.v1",
+          "concept_refs": [
+            "concept.observed_defender_distance_candidate_set"
+          ],
+          "created_from": [],
+          "description": "Emit observed defender-to-target distance candidate records for downstream witnessed selection.",
+          "display_name": "Observed Defender Distance Candidate Set",
+          "evidence_contract_ref": "evidence.observed_defender_distance_candidate_set.v1",
+          "id": "op.observed_defender_distance_candidate_set.v1",
+          "inputs": [
+            {
+              "description": "",
+              "name": "anchors",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "anchor",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "observed_defending_positions",
+              "required": true,
+              "type": {
+                "container": "EntitySetSignal",
+                "coordinate_frame": "pitch_absolute",
+                "entity_scope": "team",
+                "nullable": true,
+                "temporal_basis": "canonical_frame_time",
+                "unit": "metre",
+                "value": "Point"
+              }
+            }
+          ],
+          "kind": "Operationalization",
+          "lowering": [
+            "anchor_frame_selection",
+            "target_entity_resolution",
+            "observed_defender_coordinate_lookup",
+            "euclidean_distance_candidate_records"
+          ],
+          "outputs": [
+            {
+              "description": "",
+              "name": "anchor_evaluations",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "defender_distance_candidate_evaluation",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "defender_distance_candidate_status",
+              "required": true,
+              "type": {
+                "container": "FrameSignal",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "defender_distance_candidate_status",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "Enum"
+              }
+            },
+            {
+              "description": "",
+              "name": "candidate_distance_m",
+              "required": true,
+              "type": {
+                "container": "FrameSignal",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "distance",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "metre",
+                "value": "Scalar"
+              }
+            }
+          ],
+          "owners": [],
+          "required_modalities": [
+            "tracking"
+          ],
+          "reviewers": [],
+          "semantic_basis": "DETERMINISTIC",
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [],
+          "version": "1.0.0"
+        }
+      ],
+      "passport_hash": "b99ac8547455e80383b72497f0f3eb27b0a25beb23ec27fe06f3dae79aa9726b",
+      "projection_membership": {
+        "ai": false,
+        "product": false
+      },
+      "runtime_capability": {
+        "id": "defender_distance_candidate_set",
+        "kind": "relation",
+        "version": "0.1.0"
+      },
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "defender_distance_candidate_status",
+          "defender_distance_candidate_reason",
+          "candidate_record_id",
+          "source_anchor_id",
+          "candidate_frame_field",
+          "candidate_frame_id",
+          "target_player_id_field",
+          "target_player_id",
+          "candidate_scope",
+          "candidate_team_role",
+          "candidate_defender_id",
+          "candidate_distance_m",
+          "candidate_defender_ids",
+          "observed_candidate_ids",
+          "missing_candidate_ids",
+          "observed_candidate_count",
+          "minimum_observed_candidates",
+          "coverage_status"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "anchors",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "kind": "relation",
+        "limitations": [
+          "Claims only observed defender-target distance candidate records at a declared frame.",
+          "observed_defending_outfield scopes selection to the observed candidate set; it does not claim untracked defenders were farther away.",
+          "Does not itself select nearest/farthest defenders; selection is delegated to composition operators.",
+          "Does not infer marking assignment, pressure quality, intent, scheme, causation, or optimality.",
+          "Missing target or insufficient candidate tracking produces UNKNOWN rather than fabricated set membership."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "defender_distance_candidate_set",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "coverage": {
+              "count_field": "observed_candidate_count",
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "defender_distance_candidate_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "source_anchor_id",
+              "team_role",
+              "defender_distance_candidate_status",
+              "defender_distance_candidate_reason",
+              "candidate_record_id",
+              "candidate_frame_field",
+              "candidate_frame_id",
+              "target_player_id_field",
+              "target_player_id",
+              "target_player_team_role",
+              "candidate_scope",
+              "candidate_team_role",
+              "candidate_defender_id",
+              "candidate_distance_m",
+              "target_point",
+              "candidate_point",
+              "candidate_defender_ids",
+              "observed_candidate_ids",
+              "missing_candidate_ids",
+              "observed_candidate_count",
+              "minimum_observed_candidates",
+              "coverage_status",
+              "defender_distance_candidate_model",
+              "defender_distance_candidate_claim_boundary"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchor_evaluations",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "defender_distance_candidate_status",
+              "defender_distance_candidate_reason",
+              "coverage_status"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "defender_distance_candidate_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          },
+          {
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "candidate_distance_m",
+              "candidate_defender_id",
+              "target_player_id"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "candidate_distance_m",
+            "payload_type": "number",
+            "temporal_type": "frame_signal",
+            "unit": "metre"
+          }
+        ],
+        "parameters": [
+          {
+            "allowed_values": [
+              "anchor_frame_id",
+              "physical_release_frame_id",
+              "controlled_reception_frame_id",
+              "carry_start_frame_id",
+              "carry_end_frame_id",
+              "terminal_release_frame_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "controlled_reception_frame_id"
+            },
+            "description": "Anchor-record frame field where defender distance candidates are evaluated.",
+            "name": "anchor_frame_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "receiver_id",
+              "passer_id",
+              "relay_player_id",
+              "terminal_receiver_id",
+              "carrier_id",
+              "run_player_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "receiver_id"
+            },
+            "description": "Anchor-record field containing the target player id.",
+            "name": "target_player_id_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "defending_outfield",
+              "observed_defending_outfield"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "defending_outfield"
+            },
+            "description": "Candidate defender scope. defending_outfield tracks missing known players; observed_defending_outfield selects only observed candidates.",
+            "name": "candidate_scope",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "none",
+              "controlled_pass_status",
+              "carry_status",
+              "join_status",
+              "transition_status"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Optional anchor status field that must equal required_anchor_status_value.",
+            "name": "required_anchor_status_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "PASS"
+            },
+            "description": "Required anchor status value when required_anchor_status_field is not none.",
+            "name": "required_anchor_status_value",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "count",
+              "value": 6.0
+            },
+            "description": "Minimum observed candidate defenders before PASS/FAIL set membership can be claimed.",
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "name": "minimum_observed_candidates",
+            "payload_type": "number",
+            "required": false,
+            "unit": "count"
+          }
+        ],
+        "purpose": "Expose observed defender-to-anchor-target distance candidate records so generic extremum operators can select nearest/farthest witnesses.",
+        "runtime_id": "relation:defender_distance_candidate_set:0.1.0",
+        "version": "0.1.0"
+      },
+      "status": "CURRENT",
+      "subject_ref": "runtime:relation:defender_distance_candidate_set:0.1.0"
+    },
+    {
+      "binding": {
         "conformance": "EXACT",
         "id": "binding.relation.geometric_progressive_corridor.0_1_0",
         "input_bindings": {
@@ -25364,16 +26062,16 @@
   "projection_id": "priori.capability_passport_projection.afl08",
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "f74b50e3f8d68c9b7e9646570f74017ec63969e6b1b9e876bb57e9d288db1a20",
+    "baseline_artifact_revision": "ed232a4f8f4bc919d6d98779a908d077d51847b72a570d3c6d0759ced1a2f00f",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "848edee312004998c1bc8ec5779f436d7ea49ccbf9155c751748132fa5a6e616",
+    "lock_hash": "e04d951d0c0d62f7784eebbebcf5297c260056e8c272aa605260c6434dbe1b84",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "564c4247848c47dbee6dfca01a645bf35381dba880ce5f8ebaab29b0e4858923",
+    "registry_revision": "09cd2b1304750e8c6ca08fc9c0f48389b833e8b2e7bb3018ffac9696d086a407",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "9010966fa3dc24f9890a06a2f8f5c09d9287853ac0073ce12f919f3037d60407",
+    "runtime_manifest_revision": "591551595889634882d311aff978e6c4ce00aa4ec9935109dea6df4554554d53",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"

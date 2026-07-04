@@ -4578,8 +4578,29 @@
   "composition_constraint_needed": false,
   "priority_unlock": "LOW",
   "composition_constraint_note": "",
-  "composition_maturity": "handwired",
-  "composition_maturity_applicable": true
+  "composition_maturity": "compiler_reachable",
+  "composition_maturity_applicable": true,
+  "compiler_reachability_status": "compiler_reachable",
+  "compiler_reachability_evidence": {
+   "synthesizer_version": "search_synthesizer.v0.1",
+   "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+   "target_id": "r1_3_argmin_defender_distance_v0",
+   "report_path": "artifacts/autonomous/compiler-search-v0-report.json",
+   "document_hash": "740acb05d9e9b84dbaa7283c9b292782b6f4a271a60fd413dbf6f43d289dce30",
+   "held_out": true,
+   "result_count": 20,
+   "honest_zero": false,
+   "semantic_correspondence": {
+    "coverage_row": "nearest_defender_relation",
+    "meaning": "Select the observed defender with minimum distance to an anchor target player at the declared frame.",
+    "source_relation": "defender_distance_candidate_set.anchor_evaluations + extremum_over_set argmin(candidate_distance_m)",
+    "anchor_source": "controlled_pass_episode.anchors",
+    "target_player_field": "receiver_id",
+    "candidate_set": "observed_defending_outfield candidate defenders at controlled_reception_frame_id",
+    "selection": "argmin over observed candidate_distance_m with defender id and frame witnesses",
+    "unit": "metre"
+   }
+  }
  },
  {
   "concept": "passing_lane_denial",
