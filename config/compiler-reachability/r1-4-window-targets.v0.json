@@ -1,0 +1,90 @@
+{
+  "schema_version": "compiler_search_targets.v0",
+  "strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+  "sample_policy": "r1_4_window_acceptance",
+  "note": "R1-4 acceptance target. Concept id is a reporting label only; synthesis consumes the generic window constraint and evidence fields.",
+  "targets": [
+    {
+      "target_id": "r1_4_same_team_control_after_reception_v0",
+      "concept": "same_team_control_after",
+      "held_out": true,
+      "multi_step": true,
+      "semantic_correspondence": {
+        "coverage_row": "same_team_control_after",
+        "meaning": "Construct a declared four-second post-reception window for each controlled-pass anchor, requiring same-team possession continuity over that window.",
+        "source_relation": "controlled_pass_episode.anchors + possession_segment.episodes + window(after, same_possession continuity)",
+        "anchor_source": "controlled_pass_episode.anchors",
+        "anchor_frame_field": "controlled_reception_frame_id",
+        "continuity_source": "possession_segment.episodes",
+        "continuity_policy": "same_possession",
+        "window": "4.0 seconds after controlled reception",
+        "unit": "second"
+      },
+      "target_contract": {
+        "desired_output": "classification",
+        "required_evidence": [
+          "window_status",
+          "window_reason",
+          "window_mode",
+          "source_anchor_id",
+          "source_anchor_frame_id",
+          "anchor_frame_field",
+          "anchor_status_field",
+          "anchor_status_value",
+          "anchor_status",
+          "requested_before_seconds",
+          "requested_after_seconds",
+          "requested_start_frame_id",
+          "requested_end_frame_id",
+          "window_start_frame_id",
+          "window_end_frame_id",
+          "window_duration_frames",
+          "window_duration_seconds",
+          "frame_rate_hz",
+          "truncated_start",
+          "truncated_end",
+          "truncation_policy",
+          "continuity_policy",
+          "continuity_status",
+          "continuity_reason",
+          "continuity_start_frame_field",
+          "continuity_end_frame_field",
+          "continuity_evidence_id",
+          "continuity_start_frame_id",
+          "continuity_end_frame_id",
+          "continuity_evidence_record_hash",
+          "witness_anchor_node_id",
+          "witness_anchor_output_name",
+          "witness_anchor_record_hash",
+          "overlap_policy"
+        ],
+        "status_semantics": [
+          {
+            "field": "window_status",
+            "required_value": "PASS"
+          }
+        ],
+        "composition_constraints": [
+          {
+            "kind": "window",
+            "window_mode": "after",
+            "anchor_frame_field": "controlled_reception_frame_id",
+            "before_duration_seconds": 0.0,
+            "after_duration_seconds": 4.0,
+            "frame_rate_hz": 25.0,
+            "anchor_status_field": "controlled_pass_status",
+            "anchor_status_value": "PASS",
+            "truncation_policy": "emit_with_flag",
+            "continuity_policy": "same_possession",
+            "continuity_start_frame_field": "possession_start_frame_id",
+            "continuity_end_frame_field": "possession_end_frame_id",
+            "continuity_status_field": "none",
+            "continuity_status_value": "PASS",
+            "overlap_policy": "preserve_all"
+          }
+        ],
+        "claim_boundary": "Observed same-team possession continuity across a declared four-second post-reception window only; does not claim clean individual control, pass value, tactical causation, intent, quality, or optimality."
+      }
+    }
+  ]
+}

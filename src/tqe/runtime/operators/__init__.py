@@ -15,6 +15,7 @@ from tqe.runtime.ir import CompositionOperatorSignature
 from tqe.runtime.operators.delta_across_anchor import DELTA_ACROSS_ANCHOR_SIGNATURE
 from tqe.runtime.operators.extremum_over_set import EXTREMUM_OVER_SET_SIGNATURE
 from tqe.runtime.operators.project_onto_axis import PROJECT_ONTO_AXIS_SIGNATURE
+from tqe.runtime.operators.window import WINDOW_SIGNATURE
 
 OperatorImplementation = Callable[..., None]
 OperatorKey = tuple[str, str]
@@ -24,16 +25,19 @@ OPERATOR_SIGNATURES: tuple[CompositionOperatorSignature, ...] = (
     PROJECT_ONTO_AXIS_SIGNATURE,
     DELTA_ACROSS_ANCHOR_SIGNATURE,
     EXTREMUM_OVER_SET_SIGNATURE,
+    WINDOW_SIGNATURE,
 )
 OPERATOR_IMPLEMENTATION_NAMES: tuple[tuple[str, str, str], ...] = (
     ("project_onto_axis", "0.1.0", "execute_project_onto_axis"),
     ("delta_across_anchor", "0.1.0", "execute_delta_across_anchor"),
     ("extremum_over_set", "0.1.0", "execute_extremum_over_set"),
+    ("window", "0.1.0", "execute_window"),
 )
 OPERATOR_IMPLEMENTATION_MODULES: dict[str, str] = {
     "execute_delta_across_anchor": "tqe.runtime.operators.delta_across_anchor",
     "execute_extremum_over_set": "tqe.runtime.operators.extremum_over_set",
     "execute_project_onto_axis": "tqe.runtime.operators.project_onto_axis",
+    "execute_window": "tqe.runtime.operators.window",
 }
 
 
