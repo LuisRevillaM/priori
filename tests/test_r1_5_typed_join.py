@@ -106,6 +106,9 @@ def run_join(
     unconstrained: bool = False,
     rationale: str = "none",
     max_frame_delta: int = 0,
+    required_status: str = "PASS",
+    left_required_status: str | None = None,
+    right_required_status: str | None = None,
 ) -> dict[str, object]:
     state = SimpleNamespace(match_id="TST", period="firstHalf", signals={})
     execute_typed_join(
@@ -137,7 +140,9 @@ def run_join(
             "right_team_role_field": typed_enum("team_role"),
             "left_status_field": typed_enum("join_status"),
             "right_status_field": typed_enum("join_status"),
-            "required_status_value": typed_enum("PASS"),
+            "required_status_value": typed_enum(required_status),
+            "left_required_status_value": typed_enum(left_required_status or required_status),
+            "right_required_status_value": typed_enum(right_required_status or required_status),
             "maximum_frame_delta": typed_number(max_frame_delta, "frame"),
         },
     )
@@ -221,6 +226,23 @@ class TypedJoinOperatorTests(unittest.TestCase):
 
         self.assertEqual("UNKNOWN", records[0]["typed_join_status"])
         self.assertEqual("join_side_status_unknown", records[0]["typed_join_reason"])
+
+    def test_side_specific_required_status_values_allow_asymmetric_join(self) -> None:
+        left = anchor_record("left", 100, status="PASS")
+        right = dict(left)
+        right["join_status"] = "FAIL"
+
+        records = run_join(
+            [left],
+            [right],
+            left_required_status="PASS",
+            right_required_status="FAIL",
+        )["typed_join_records"]
+
+        self.assertEqual("PASS", records[0]["typed_join_status"])
+        self.assertEqual("PASS", records[0]["left_required_status_value"])
+        self.assertEqual("FAIL", records[0]["right_required_status_value"])
+        self.assertEqual("FAIL", records[0]["right_status"])
 
     def test_bind_rejects_join_without_constraint_or_rationale(self) -> None:
         payload = json.loads(PLAN_PATH.read_text(encoding="utf-8"))

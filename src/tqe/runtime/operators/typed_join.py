@@ -55,6 +55,8 @@ EVIDENCE_FIELDS = [
     "left_status_field",
     "right_status_field",
     "required_status_value",
+    "left_required_status_value",
+    "right_required_status_value",
     "maximum_frame_delta",
     "left_anchor_id",
     "right_anchor_id",
@@ -81,22 +83,6 @@ EVIDENCE_FIELDS = [
     "witness_left_output_name",
     "witness_right_node_id",
     "witness_right_output_name",
-    "window_status",
-    "window_reason",
-    "continuity_status",
-    "continuity_reason",
-    "anchor_team_role",
-    "continuity_team_role",
-    "pressure_status",
-    "pressure_reason",
-    "pressure_frame_id",
-    "carrier_id",
-    "nearest_defender_distance_m",
-    "support_arrival_status",
-    "support_arrival_reason",
-    "support_anchor_frame_id",
-    "supporting_player_ids",
-    "first_arrival_seconds_after_anchor",
 ]
 
 
@@ -302,7 +288,23 @@ TYPED_JOIN_SIGNATURE = CompositionOperatorSignature(
             required=False,
             default=TypedValue(payload_type=PayloadType.ENUM, value="PASS"),
             allowed_values=list(STATUS_VALUE_VALUES),
-            description="Required status when status fields are declared.",
+            description="Legacy default status when a side-specific required status is not declared.",
+        ),
+        ParameterDefinition(
+            name="left_required_status_value",
+            payload_type=PayloadType.ENUM,
+            required=False,
+            default=TypedValue(payload_type=PayloadType.ENUM, value="PASS"),
+            allowed_values=list(STATUS_VALUE_VALUES),
+            description="Required status for the left status field when declared.",
+        ),
+        ParameterDefinition(
+            name="right_required_status_value",
+            payload_type=PayloadType.ENUM,
+            required=False,
+            default=TypedValue(payload_type=PayloadType.ENUM, value="PASS"),
+            allowed_values=list(STATUS_VALUE_VALUES),
+            description="Required status for the right status field when declared.",
         ),
         ParameterDefinition(
             name="maximum_frame_delta",
@@ -359,6 +361,8 @@ def execute_typed_join(
         right_status_field=_parameter_enum(parameters, "right_status_field", "none"),
     )
     required_status_value = _parameter_enum(parameters, "required_status_value", "PASS")
+    left_required_status_value = _parameter_enum(parameters, "left_required_status_value", required_status_value)
+    right_required_status_value = _parameter_enum(parameters, "right_required_status_value", required_status_value)
     maximum_frame_delta = int(round(_parameter_number(parameters, "maximum_frame_delta", 0.0)))
 
     records: list[dict[str, Any]] = []
@@ -402,6 +406,8 @@ def execute_typed_join(
                     frame_required=frame_required,
                     fields=fields,
                     required_status_value=required_status_value,
+                    left_required_status_value=left_required_status_value,
+                    right_required_status_value=right_required_status_value,
                     maximum_frame_delta=maximum_frame_delta,
                     match_count=0,
                     dropped_count=dropped,
@@ -415,7 +421,13 @@ def execute_typed_join(
             )
             continue
         for right_index, right in matches:
-            status, reason = _status_from_sides(left, right, fields, required_status_value)
+            status, reason = _status_from_sides(
+                left,
+                right,
+                fields,
+                left_required_status_value=left_required_status_value,
+                right_required_status_value=right_required_status_value,
+            )
             records.append(
                 _join_record(
                     state=state,
@@ -432,6 +444,8 @@ def execute_typed_join(
                     frame_required=frame_required,
                     fields=fields,
                     required_status_value=required_status_value,
+                    left_required_status_value=left_required_status_value,
+                    right_required_status_value=right_required_status_value,
                     maximum_frame_delta=maximum_frame_delta,
                     match_count=len(matches),
                     dropped_count=dropped,
@@ -556,15 +570,17 @@ def _status_from_sides(
     left: dict[str, Any],
     right: dict[str, Any],
     fields: _JoinFields,
-    required_status_value: str,
+    *,
+    left_required_status_value: str,
+    right_required_status_value: str,
 ) -> tuple[str, str]:
     left_status = _status_value(left, fields.left_status_field)
     right_status = _status_value(right, fields.right_status_field)
     if left_status == "UNKNOWN" or right_status == "UNKNOWN":
         return "UNKNOWN", "join_side_status_unknown"
-    if fields.left_status_field != "none" and left_status != required_status_value:
+    if fields.left_status_field != "none" and left_status != left_required_status_value:
         return "FAIL", "left_status_not_required_value"
-    if fields.right_status_field != "none" and right_status != required_status_value:
+    if fields.right_status_field != "none" and right_status != right_required_status_value:
         return "FAIL", "right_status_not_required_value"
     return "PASS", "typed_join_matched"
 
@@ -585,6 +601,8 @@ def _join_record(
     frame_required: bool,
     fields: _JoinFields,
     required_status_value: str,
+    left_required_status_value: str,
+    right_required_status_value: str,
     maximum_frame_delta: int,
     match_count: int,
     dropped_count: int,
@@ -634,6 +652,8 @@ def _join_record(
         "left_status_field": fields.left_status_field,
         "right_status_field": fields.right_status_field,
         "required_status_value": required_status_value,
+        "left_required_status_value": left_required_status_value,
+        "right_required_status_value": right_required_status_value,
         "maximum_frame_delta": int(maximum_frame_delta),
         "left_anchor_id": _record_text(left, fields.left_anchor_id_field),
         "right_anchor_id": _record_text(right, fields.right_anchor_id_field),

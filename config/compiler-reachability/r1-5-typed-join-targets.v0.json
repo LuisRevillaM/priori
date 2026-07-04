@@ -48,18 +48,6 @@
           {
             "field": "typed_join_status",
             "required_value": "PASS"
-          },
-          {
-            "field": "window_status",
-            "required_value": "PASS"
-          },
-          {
-            "field": "pressure_status",
-            "required_value": "PASS"
-          },
-          {
-            "field": "support_arrival_status",
-            "required_value": "FAIL"
           }
         ],
         "composition_constraints": [
@@ -151,8 +139,10 @@
                 "right_start_frame_field": "none",
                 "right_end_frame_field": "none",
                 "left_status_field": "pressure_status",
-                "right_status_field": "none",
+                "right_status_field": "support_arrival_status",
                 "required_status_value": "PASS",
+                "left_required_status_value": "PASS",
+                "right_required_status_value": "FAIL",
                 "maximum_frame_delta": 0,
                 "left_required_fields": [
                   "anchor_id",

@@ -109,14 +109,14 @@
     "execution_cache_backend": {
       "backend": "memory",
       "enabled": true,
-      "entry_count": 196
+      "entry_count": 28
     },
     "execution_node_cache": {
       "bypassed": 0,
       "disabled": 0,
-      "hits": 56,
-      "local_hits": 56,
-      "misses": 196,
+      "hits": 8,
+      "local_hits": 8,
+      "misses": 28,
       "shared_hits": 0
     },
     "execution_reuse_enabled": true,

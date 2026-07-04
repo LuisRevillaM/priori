@@ -505,6 +505,8 @@ TYPED_JOIN_CORE_FIELDS = {
     "left_status_field",
     "right_status_field",
     "required_status_value",
+    "left_required_status_value",
+    "right_required_status_value",
     "maximum_frame_delta",
     "left_anchor_id",
     "right_anchor_id",
@@ -1667,6 +1669,11 @@ def build_typed_join_operator(
                         {"missing_left_fields": missing_left, "missing_right_fields": missing_right},
                     )
                 node_id = context.node_id("typed_join")
+                output_fields = set(TYPED_JOIN_CORE_FIELDS)
+                output_fields.update(left.field_sources)
+                output_fields.update(right.field_sources)
+                output_fields.update(required_fields)
+                output_fields.discard("none")
                 nodes = [*left.nodes, *right.nodes]
                 nodes.append(
                     operator_node(
@@ -1700,12 +1707,15 @@ def build_typed_join_operator(
                             "left_status_field": enum(join_constraint["left_status_field"]),
                             "right_status_field": enum(join_constraint["right_status_field"]),
                             "required_status_value": enum(join_constraint["required_status_value"]),
+                            "left_required_status_value": enum(join_constraint["left_required_status_value"]),
+                            "right_required_status_value": enum(join_constraint["right_required_status_value"]),
                             "maximum_frame_delta": number(join_constraint["maximum_frame_delta"], "frame"),
                         },
+                        output_evidence_fields=output_fields,
                     )
                 )
-                field_sources = {**left.field_sources, **right.field_sources}
-                for field in TYPED_JOIN_CORE_FIELDS:
+                field_sources: dict[str, tuple[str, str]] = {}
+                for field in output_fields:
                     field_sources[field] = (node_id, typed_join_output_for_field(field))
                 return BuildResult(
                     nodes=dedupe_nodes(nodes),
@@ -1730,6 +1740,7 @@ def build_typed_join_operator(
                             },
                         },
                         "typed_join_constraint": join_constraint,
+                        "typed_join_output_fields": sorted(output_fields),
                         "left_build_metadata": left.metadata,
                         "right_build_metadata": right.metadata,
                     },
@@ -1776,6 +1787,8 @@ def typed_join_constraint_payload(constraint: dict[str, Any]) -> dict[str, Any]:
         "left_status_field",
         "right_status_field",
         "required_status_value",
+        "left_required_status_value",
+        "right_required_status_value",
         "maximum_frame_delta",
         "left_required_fields",
         "right_required_fields",
@@ -1814,6 +1827,12 @@ def typed_join_constraint_payload(constraint: dict[str, Any]) -> dict[str, Any]:
         "left_status_field": str(constraint.get("left_status_field", "none")),
         "right_status_field": str(constraint.get("right_status_field", "none")),
         "required_status_value": str(constraint.get("required_status_value", "PASS")),
+        "left_required_status_value": str(
+            constraint.get("left_required_status_value", constraint.get("required_status_value", "PASS"))
+        ),
+        "right_required_status_value": str(
+            constraint.get("right_required_status_value", constraint.get("required_status_value", "PASS"))
+        ),
         "maximum_frame_delta": float(constraint.get("maximum_frame_delta", 0.0)),
         "left_required_fields": [str(item) for item in constraint.get("left_required_fields", [])],
         "right_required_fields": [str(item) for item in constraint.get("right_required_fields", [])],
@@ -3713,6 +3732,8 @@ def assemble_document(
 
 def terminal_output_fields(build: BuildResult) -> set[str]:
     if build.terminal_entry == "operator:typed_join":
+        if "typed_join_output_fields" in build.metadata:
+            return set(str(field) for field in build.metadata["typed_join_output_fields"])
         return set(TYPED_JOIN_FIELDS)
     if build.terminal_entry == "operator:window":
         return set(WINDOW_FIELDS)
@@ -4099,15 +4120,21 @@ def operator_node(
     version: str,
     inputs: dict[str, dict[str, str]],
     parameters: dict[str, Any],
+    output_evidence_fields: set[str] | None = None,
 ) -> dict[str, Any]:
     signature = operator_signature(operator_name, version)
+    outputs = [output.model_dump(mode="json") for output in signature.outputs]
+    if output_evidence_fields is not None:
+        evidence_fields = sorted(str(field) for field in output_evidence_fields if str(field) != "none")
+        for output in outputs:
+            output["evidence_fields"] = evidence_fields
     return {
         "kind": "operator",
         "node_id": node_id,
         "operator": {"name": operator_name, "version": version},
         "inputs": inputs,
         "parameters": parameters,
-        "outputs": [output.model_dump(mode="json") for output in signature.outputs],
+        "outputs": outputs,
     }
 
 

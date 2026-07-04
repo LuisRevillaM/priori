@@ -1,31 +1,58 @@
 {
-  "after": {
+  "after_copy": {
     "compiler_reachable_count": 12,
-    "ledger_hash": "53a2145c7067b40198ecab1c78b81881d7c80a1def1267978099c2e95cdc5b64",
-    "supported_count": 363
+    "coverage_map_json_hash": "27aadc65fb0aca5bbf60332275a3bfde44bf8c24fbd8c34ee9fc47662708938b",
+    "coverage_supported_count": 363
   },
-  "authority_boundary": "Measured on a copied coverage ledger only; tracked compiler_reachable flip remains reserved for director acceptance.",
+  "artifacts": {
+    "copy_ledger": {
+      "path": "/private/tmp/r1-5-copy-ledger/coverage-map.work.json",
+      "sha256": "27aadc65fb0aca5bbf60332275a3bfde44bf8c24fbd8c34ee9fc47662708938b"
+    },
+    "plan_bundle": {
+      "path": "delivery/packets/r1-5-copy-proof/search-run/plans/r1_5_fragile_possession_state_v0.json",
+      "sha256": "44f90db1cf9949323d30dc2fe90587b61549edab0942994732901f75c8db060c"
+    },
+    "report": {
+      "path": "delivery/packets/r1-5-copy-proof/compiler-search-v0-report.json",
+      "sha256": "ea585bb7207b5fbee5bb562e1685f9048083a9218dd785028dc20840b40630d3"
+    },
+    "row_ledger": {
+      "path": "delivery/packets/r1-5-copy-proof/search-run/row-ledger.json",
+      "sha256": "717aa853b4290ae49457bb4e8f469d227ac74dd6c733422682adc0933a66d2f3"
+    }
+  },
   "before": {
     "compiler_reachable_count": 11,
-    "ledger_hash": "f62472c941e78e8128ed2837319d0ec0761e0ac49b82770924109cbd55e5b375",
-    "supported_count": 363
+    "coverage_map_json_hash": "f62472c941e78e8128ed2837319d0ec0761e0ac49b82770924109cbd55e5b375",
+    "coverage_supported_count": 363
   },
-  "copy_after_path": "/private/tmp/r1-5-copy-ledger/coverage-map.work.json",
-  "copy_before_path": "/private/tmp/r1-5-copy-ledger/coverage-map.before.json",
-  "proof": {
-    "document_hash": "e62cd3147bca35e432b087bc4767215c6830f4987121888b6e5934f66e269bef",
-    "plan_hash": "83dbcec28e97aaf9262680c284e1848c58555e0911cede73f5a36de6fc425cee",
-    "plan_path": "delivery/packets/r1-5-copy-proof/search-run/plans/r1_5_fragile_possession_state_v0.json",
-    "report_hash": "24a022eb3ba275c92ac8fde2431046ecb08a836fe6a4a14fdf056c060929750d",
-    "report_path": "delivery/packets/r1-5-copy-proof/compiler-search-v0-report.json",
+  "delta": {
+    "compiler_reachable_count": 1,
+    "coverage_supported_count": 0
+  },
+  "schema_version": "r1_5_copy_ledger_delta.v1",
+  "scope": {
+    "ledger_mutation": "copy_only",
+    "match_ids": [
+      "J03WOH"
+    ],
+    "periods": [
+      "firstHalf",
+      "secondHalf"
+    ],
+    "perspective_team_roles": [
+      "home",
+      "away"
+    ],
+    "tracked_generated_ledger_mutated": false
+  },
+  "target_result": {
+    "document_hash": "ae4d5b3915454e78ff11b81f88cd302b3564c12de1af978a52b3c420ba69c20e",
     "requested_evidence_failure_count": 0,
     "result": "compiler_reachable",
-    "result_count": 40,
-    "row_ledger_hash": "db8d8eb0dac08635f7a4968a1fea48a5a45e07c4446afd1f653d6a57157b6320",
-    "row_ledger_path": "delivery/packets/r1-5-copy-proof/search-run/row-ledger.json",
-    "runtime_trace_hash": "a84895fc56d20ada23928fcac5ec3bf05e0a5742f4b648eb17400191307b7129",
+    "result_count": 24,
+    "runtime_trace_hash": "cdf7a6d45b873193acbde88990b3b72322cf56e1ba81935c498e96efb93b066e",
     "target_id": "r1_5_fragile_possession_state_v0"
-  },
-  "schema_version": "r1_5.copy_delta.v1",
-  "source_ledger_path": "generated/coverage-map.json"
+  }
 }
