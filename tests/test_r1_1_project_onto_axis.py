@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import copy
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -7,6 +9,7 @@ from types import SimpleNamespace
 
 import pandas as pd
 
+from scripts.coverage_map import compiler_search_reachability as search
 from tqe.runtime.binder import BindError, bind_document
 from tqe.runtime.executor import TacticalQueryExecutor, execution_result_rows
 from tqe.runtime.ir import CatalogOutput, MissingDataSemantics, TacticalQueryDocument, TypedValue
@@ -154,6 +157,12 @@ class ProjectOntoAxisTests(unittest.TestCase):
         self.assertEqual(("acting_team", "perspective_team"), tuple(orientation.allowed_values))
         self.assertEqual(tuple(orientation.allowed_values), ORIENTATION_BASIS_VALUES)
         self.assertEqual(["unknown"], zero_length.allowed_values)
+        signature_fields = {
+            field
+            for output in PROJECT_ONTO_AXIS_SIGNATURE.outputs
+            for field in [output.name, *output.evidence_fields]
+        }
+        self.assertEqual(signature_fields, search.PROJECT_ONTO_AXIS_FIELDS)
 
     def test_goalward_projection_uses_per_record_acting_team(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -273,6 +282,54 @@ class ProjectOntoAxisTests(unittest.TestCase):
         self.assertEqual("acting_team", evidence["orientation_basis"])
         self.assertIn(evidence["orientation_team_role"], {"home", "away"})
         self.assertIsInstance(evidence["signed_projection_m"], float)
+
+    def test_search_synthesis_applies_declared_relation_constraints(self) -> None:
+        target = r1_1_target()
+        context = search.SearchContext(
+            catalog=search.CatalogIndex(),
+            target_contract=target["target_contract"],
+        )
+        required_fields = search.required_target_fields(target["target_contract"])
+
+        build = search.build_project_onto_axis(context, required_fields, depth=0)
+
+        support_nodes = [
+            node for node in build.nodes if node.get("catalog_ref") == "support_arrival_point_pair"
+        ]
+        self.assertEqual(1, len(support_nodes))
+        parameters = support_nodes[0]["parameters"]
+        self.assertEqual("controlled_reception_frame_id", parameters["anchor_frame_field"]["value"])
+        self.assertEqual("perspective_outfield", parameters["candidate_scope"]["value"])
+        self.assertEqual("WITHIN_DISTANCE_OF_REFERENCE_POINT", parameters["support_region_mode"]["value"])
+        self.assertEqual(3.0, parameters["maximum_arrival_seconds"]["value"])
+        self.assertEqual(0.0, parameters["minimum_duration_seconds"]["value"])
+        self.assertEqual(30.0, parameters["maximum_support_distance_m"]["value"])
+        self.assertEqual(1.0, parameters["minimum_supporting_players"]["value"])
+        self.assertEqual("controlled_pass_status", parameters["required_anchor_status_field"]["value"])
+        self.assertEqual("PASS", parameters["required_anchor_status_value"]["value"])
+        source_metadata = build.metadata["source_build_metadata"]
+        self.assertEqual(
+            30.0,
+            source_metadata["relation_on_anchor_applied_parameters"]["maximum_support_distance_m"]["value"],
+        )
+
+    def test_search_synthesis_fails_on_unapplied_relation_constraint_key(self) -> None:
+        target = r1_1_target()
+        target = copy.deepcopy(target)
+        target["target_contract"]["composition_constraints"][0]["unsupported_relation_key"] = "must_not_drop"
+        context = search.SearchContext(
+            catalog=search.CatalogIndex(),
+            target_contract=target["target_contract"],
+        )
+        required_fields = search.required_target_fields(target["target_contract"])
+
+        with self.assertRaises(search.SynthesisError) as error:
+            search.build_project_onto_axis(context, required_fields, depth=0)
+
+        self.assertEqual("missing_constraint", error.exception.taxonomy)
+        payload = json.dumps(error.exception.details, sort_keys=True)
+        self.assertIn("unapplied_relation_constraint_keys", payload)
+        self.assertIn("unsupported_relation_key", payload)
 
 
 def support_depth_document() -> dict[str, object]:
@@ -445,6 +502,16 @@ def support_depth_document() -> dict[str, object]:
             ],
         },
     }
+
+
+def r1_1_target() -> dict[str, object]:
+    target_path = (
+        Path(__file__).resolve().parents[1]
+        / "config"
+        / "compiler-reachability"
+        / "r1-1-project-onto-axis-targets.v0.json"
+    )
+    return json.loads(target_path.read_text(encoding="utf-8"))["targets"][0]
 
 
 if __name__ == "__main__":
