@@ -1,0 +1,31 @@
+{
+  "after": {
+    "compiler_reachable_count": 12,
+    "ledger_hash": "53a2145c7067b40198ecab1c78b81881d7c80a1def1267978099c2e95cdc5b64",
+    "supported_count": 363
+  },
+  "authority_boundary": "Measured on a copied coverage ledger only; tracked compiler_reachable flip remains reserved for director acceptance.",
+  "before": {
+    "compiler_reachable_count": 11,
+    "ledger_hash": "f62472c941e78e8128ed2837319d0ec0761e0ac49b82770924109cbd55e5b375",
+    "supported_count": 363
+  },
+  "copy_after_path": "/private/tmp/r1-5-copy-ledger/coverage-map.work.json",
+  "copy_before_path": "/private/tmp/r1-5-copy-ledger/coverage-map.before.json",
+  "proof": {
+    "document_hash": "e62cd3147bca35e432b087bc4767215c6830f4987121888b6e5934f66e269bef",
+    "plan_hash": "83dbcec28e97aaf9262680c284e1848c58555e0911cede73f5a36de6fc425cee",
+    "plan_path": "delivery/packets/r1-5-copy-proof/search-run/plans/r1_5_fragile_possession_state_v0.json",
+    "report_hash": "24a022eb3ba275c92ac8fde2431046ecb08a836fe6a4a14fdf056c060929750d",
+    "report_path": "delivery/packets/r1-5-copy-proof/compiler-search-v0-report.json",
+    "requested_evidence_failure_count": 0,
+    "result": "compiler_reachable",
+    "result_count": 40,
+    "row_ledger_hash": "db8d8eb0dac08635f7a4968a1fea48a5a45e07c4446afd1f653d6a57157b6320",
+    "row_ledger_path": "delivery/packets/r1-5-copy-proof/search-run/row-ledger.json",
+    "runtime_trace_hash": "a84895fc56d20ada23928fcac5ec3bf05e0a5742f4b648eb17400191307b7129",
+    "target_id": "r1_5_fragile_possession_state_v0"
+  },
+  "schema_version": "r1_5.copy_delta.v1",
+  "source_ledger_path": "generated/coverage-map.json"
+}

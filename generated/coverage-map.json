@@ -9801,24 +9801,7 @@
   "composition_constraint_needed": true,
   "priority_unlock": "HIGH",
   "composition_constraint_note": "Requires typed_join constraints: same_anchor/frame alignment across pressure/support, then same-team-perspective with the possession window.",
-  "composition_maturity": "compiler_reachable",
-  "composition_maturity_applicable": true,
-  "compiler_reachability_status": "compiler_reachable",
-  "compiler_reachability_evidence": {
-   "synthesizer_version": "search_synthesizer.v0.1",
-   "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
-   "target_id": "r1_5_fragile_possession_state_v0",
-   "report_path": "artifacts/autonomous/compiler-search-v0-report.json",
-   "document_hash": "e62cd3147bca35e432b087bc4767215c6830f4987121888b6e5934f66e269bef",
-   "held_out": true,
-   "result_count": 40,
-   "honest_zero": false,
-   "semantic_correspondence": {
-    "coverage_row": "fragile_possession_state",
-    "meaning": "A same-team possession continuation window whose anchor also has observed carrier pressure and no observed support arrival in the declared support window.",
-    "composition": "window(after, same_possession) joined by declared anchor/team constraints to a pressure/support evidence join",
-    "claim_boundary": "Observed composition only; no risk, value, intent, causation, trap, quality, or decision correctness."
-   }
-  }
+  "composition_maturity": "handwired",
+  "composition_maturity_applicable": true
  }
 ]
