@@ -12,17 +12,23 @@ from importlib import import_module
 from typing import Any
 
 from tqe.runtime.ir import CompositionOperatorSignature
+from tqe.runtime.operators.delta_across_anchor import DELTA_ACROSS_ANCHOR_SIGNATURE
 from tqe.runtime.operators.project_onto_axis import PROJECT_ONTO_AXIS_SIGNATURE
 
 OperatorImplementation = Callable[..., None]
 OperatorKey = tuple[str, str]
 
 
-OPERATOR_SIGNATURES: tuple[CompositionOperatorSignature, ...] = (PROJECT_ONTO_AXIS_SIGNATURE,)
+OPERATOR_SIGNATURES: tuple[CompositionOperatorSignature, ...] = (
+    PROJECT_ONTO_AXIS_SIGNATURE,
+    DELTA_ACROSS_ANCHOR_SIGNATURE,
+)
 OPERATOR_IMPLEMENTATION_NAMES: tuple[tuple[str, str, str], ...] = (
     ("project_onto_axis", "0.1.0", "execute_project_onto_axis"),
+    ("delta_across_anchor", "0.1.0", "execute_delta_across_anchor"),
 )
 OPERATOR_IMPLEMENTATION_MODULES: dict[str, str] = {
+    "execute_delta_across_anchor": "tqe.runtime.operators.delta_across_anchor",
     "execute_project_onto_axis": "tqe.runtime.operators.project_onto_axis",
 }
 

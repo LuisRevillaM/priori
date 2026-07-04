@@ -41,6 +41,7 @@ from tqe.runtime.ir import (  # noqa: E402
     Unit,
     stable_hash,
 )
+from tqe.runtime.operators.delta_across_anchor import DELTA_ACROSS_ANCHOR_SIGNATURE  # noqa: E402
 from tqe.runtime.operators.project_onto_axis import PROJECT_ONTO_AXIS_SIGNATURE  # noqa: E402
 
 
@@ -85,6 +86,7 @@ SUPPORTED_COMPOSITION_CONSTRAINT_KINDS = {
     "same_anchor_identity",
     "same_player_return",
     "temporal_order",
+    "delta_across_anchor",
     "vector_projection",
 }
 EXCLUDED_CATALOG_REFS = {
@@ -457,6 +459,15 @@ def declared_operator_fields(signature: Any) -> set[str]:
 
 
 PROJECT_ONTO_AXIS_FIELDS = declared_operator_fields(PROJECT_ONTO_AXIS_SIGNATURE)
+DELTA_ACROSS_ANCHOR_FIELDS = declared_operator_fields(DELTA_ACROSS_ANCHOR_SIGNATURE)
+OPERATOR_SIGNATURES_BY_CONSTRAINT_KIND = {
+    "delta_across_anchor": DELTA_ACROSS_ANCHOR_SIGNATURE,
+    "vector_projection": PROJECT_ONTO_AXIS_SIGNATURE,
+}
+OPERATOR_FIELDS_BY_CONSTRAINT_KIND = {
+    kind: declared_operator_fields(signature)
+    for kind, signature in OPERATOR_SIGNATURES_BY_CONSTRAINT_KIND.items()
+}
 
 
 @dataclass
@@ -609,7 +620,7 @@ def evaluate_target(
 def synthesize_by_search(*, target: dict[str, Any], row: dict[str, Any], context: SearchContext) -> dict[str, Any]:
     contract = target["target_contract"]
     required_fields = required_target_fields(contract)
-    operator_fields = operator_project_onto_axis_fields(contract, required_fields)
+    operator_fields = operator_composition_fields(contract, required_fields)
     uncovered_fields = sorted(
         field
         for field in required_fields - operator_fields
@@ -621,14 +632,14 @@ def synthesize_by_search(*, target: dict[str, Any], row: dict[str, Any], context
             "No catalog provider exposes one or more required target fields.",
             {"fields": uncovered_fields},
         )
-    if target_constraints(context, "vector_projection"):
-        build = build_project_onto_axis(context, required_fields, depth=0)
+    if operator_composition_constraints(context):
+        build = build_operator_composition(context, required_fields, depth=0)
         document_payload = assemble_document(target=target, build=build)
         missing_fields = sorted(field for field in required_fields if field not in build.field_sources)
         if missing_fields:
             raise SynthesisError(
                 "missing_constraint",
-                "Vector projection composition did not cover every required evidence/predicate field.",
+                "Operator composition did not cover every required evidence/predicate field.",
                 {
                     "missing_fields": missing_fields,
                     "providers_used": build.providers_used,
@@ -705,10 +716,50 @@ def synthesize_by_search(*, target: dict[str, Any], row: dict[str, Any], context
     )
 
 
-def operator_project_onto_axis_fields(contract: dict[str, Any], required_fields: set[str]) -> set[str]:
-    if not any(constraint.get("kind") == "vector_projection" for constraint in contract.get("composition_constraints", [])):
-        return set()
-    return required_fields & PROJECT_ONTO_AXIS_FIELDS
+def operator_composition_fields(contract: dict[str, Any], required_fields: set[str]) -> set[str]:
+    fields: set[str] = set()
+    for constraint in contract.get("composition_constraints", []):
+        if not isinstance(constraint, dict):
+            continue
+        kind = str(constraint.get("kind", ""))
+        fields.update(required_fields & OPERATOR_FIELDS_BY_CONSTRAINT_KIND.get(kind, set()))
+    return fields
+
+
+def operator_composition_constraints(context: SearchContext) -> list[dict[str, Any]]:
+    return [
+        constraint
+        for constraint in target_constraints(context)
+        if str(constraint.get("kind", "")) in OPERATOR_COMPOSITION_BUILDERS
+    ]
+
+
+def build_operator_composition(
+    context: SearchContext,
+    required_fields: set[str],
+    *,
+    depth: int,
+) -> BuildResult:
+    attempts: list[dict[str, Any]] = []
+    for constraint in operator_composition_constraints(context):
+        kind = str(constraint.get("kind"))
+        builder = OPERATOR_COMPOSITION_BUILDERS[kind]
+        try:
+            return builder(context, required_fields, depth=depth)
+        except SynthesisError as error:
+            attempts.append(
+                {
+                    "constraint_kind": kind,
+                    "taxonomy": error.taxonomy,
+                    "message": error.message,
+                    **error.details,
+                }
+            )
+    raise SynthesisError(
+        "missing_constraint",
+        "No registered operator composition satisfied the target contract.",
+        {"attempted_operator_compositions": attempts[: context.max_branching]},
+    )
 
 
 def build_project_onto_axis(
@@ -901,13 +952,356 @@ def composition_output_matches_operator_input(output: CatalogOutput, input_def: 
 
 
 def project_onto_axis_output_for_field(field: str) -> str:
-    for output in PROJECT_ONTO_AXIS_SIGNATURE.outputs:
+    return operator_output_for_field(PROJECT_ONTO_AXIS_SIGNATURE, field)
+
+
+def delta_across_anchor_output_for_field(field: str) -> str:
+    return operator_output_for_field(DELTA_ACROSS_ANCHOR_SIGNATURE, field)
+
+
+def operator_output_for_field(signature: Any, field: str) -> str:
+    for output in signature.outputs:
         if output.name == field:
             return output.name
-    for output in PROJECT_ONTO_AXIS_SIGNATURE.outputs:
+    for output in signature.outputs:
         if field in output.evidence_fields:
             return output.name
-    return PROJECT_ONTO_AXIS_SIGNATURE.outputs[0].name
+    return signature.outputs[0].name
+
+
+def build_delta_across_anchor_operator(
+    context: SearchContext,
+    required_fields: set[str],
+    *,
+    depth: int,
+) -> BuildResult:
+    constraint = first_target_constraint(context, "delta_across_anchor")
+    delta_constraint = delta_across_anchor_constraint(constraint)
+    attempts: list[dict[str, Any]] = []
+    candidates = delta_across_anchor_candidates(context, delta_constraint)
+    candidate_summaries = [
+        {
+            "anchor_provider": candidate["anchor_entry"].name,
+            "evaluator_provider": candidate["evaluator_entry"].name,
+            "before_frame_field": candidate["before_frame_field"],
+            "after_frame_field": candidate["after_frame_field"],
+            "before_value_field": candidate["before_value_field"],
+            "after_value_field": candidate["after_value_field"],
+        }
+        for candidate in candidates
+    ]
+    for candidate in candidates[: context.max_branching]:
+        try:
+            anchor = build_entry(
+                context,
+                candidate["anchor_entry"],
+                set(candidate["anchor_required_fields"]),
+                depth=depth + 1,
+                input_context={},
+            )
+            before = build_entry(
+                context,
+                candidate["evaluator_entry"],
+                set(candidate["before_required_fields"]),
+                depth=depth + 1,
+                input_context=evaluator_input_context(anchor=anchor, context=candidate["before_input_context"]),
+            )
+            after = build_entry(
+                context,
+                candidate["evaluator_entry"],
+                set(candidate["after_required_fields"]),
+                depth=depth + 1,
+                input_context=evaluator_input_context(anchor=anchor, context=candidate["after_input_context"]),
+            )
+            missing_anchor_fields = sorted(
+                field for field in candidate["anchor_required_fields"] if field not in anchor.field_sources
+            )
+            missing_before_fields = sorted(
+                field for field in candidate["before_required_fields"] if field not in before.field_sources
+            )
+            missing_after_fields = sorted(
+                field for field in candidate["after_required_fields"] if field not in after.field_sources
+            )
+            if missing_anchor_fields or missing_before_fields or missing_after_fields:
+                raise SynthesisError(
+                    "missing_constraint",
+                    "Delta source composition did not cover declared anchor/evaluator fields.",
+                    {
+                        "missing_anchor_fields": missing_anchor_fields,
+                        "missing_before_fields": missing_before_fields,
+                        "missing_after_fields": missing_after_fields,
+                    },
+                )
+            node_id = context.node_id("delta_across_anchor")
+            nodes = [*anchor.nodes, *before.nodes, *after.nodes]
+            nodes.append(
+                operator_node(
+                    node_id=node_id,
+                    operator_name="delta_across_anchor",
+                    version="0.1.0",
+                    inputs={
+                        "anchors": ref(anchor.terminal_node_id, anchor.terminal_output),
+                        "before_evaluations": ref(before.terminal_node_id, before.terminal_output),
+                        "after_evaluations": ref(after.terminal_node_id, after.terminal_output),
+                    },
+                    parameters={
+                        "before_value_field": enum(candidate["before_value_field"]),
+                        "after_value_field": enum(candidate["after_value_field"]),
+                        "anchor_status_field": enum(delta_constraint["anchor_status_field"]),
+                        "anchor_status_value": enum(delta_constraint["anchor_status_value"]),
+                        "before_subject_field": enum(candidate["before_input_context"].get("carrier_id_field", "none")),
+                        "after_subject_field": enum(candidate["after_input_context"].get("carrier_id_field", "none")),
+                        "before_frame_field": enum(delta_constraint["before_record_frame_field"]),
+                        "after_frame_field": enum(delta_constraint["after_record_frame_field"]),
+                        "before_status_field": enum(candidate["before_status_field"]),
+                        "after_status_field": enum(candidate["after_status_field"]),
+                        "required_status_value": enum(delta_constraint["required_status_value"]),
+                        "edge_threshold": number(float(delta_constraint["edge_threshold"]), "none"),
+                        "hysteresis_margin": number(float(delta_constraint["hysteresis_margin"]), "none"),
+                        "value_unit": enum(delta_constraint["value_unit"]),
+                        "missing_evidence_policy": enum(delta_constraint["missing_evidence_policy"]),
+                    },
+                )
+            )
+            field_sources = {**anchor.field_sources, **before.field_sources, **after.field_sources}
+            for field in DELTA_ACROSS_ANCHOR_FIELDS:
+                field_sources.setdefault(field, (node_id, delta_across_anchor_output_for_field(field)))
+            return BuildResult(
+                nodes=dedupe_nodes(nodes),
+                terminal_node_id=node_id,
+                terminal_entry="operator:delta_across_anchor",
+                terminal_output="delta_records",
+                field_sources=field_sources,
+                rules_used=[
+                    *anchor.rules_used,
+                    *before.rules_used,
+                    *after.rules_used,
+                    "generic_delta_across_anchor_operator",
+                ],
+                providers_used=[
+                    *anchor.providers_used,
+                    *before.providers_used,
+                    *after.providers_used,
+                    "operator:delta_across_anchor",
+                ],
+                metadata={
+                    "delta_across_anchor_discovery_space_count": len(candidates),
+                    "delta_across_anchor_candidate_outputs": candidate_summaries,
+                    "delta_across_anchor_selected_output": {
+                        "anchor_provider": candidate["anchor_entry"].name,
+                        "evaluator_provider": candidate["evaluator_entry"].name,
+                    },
+                    "delta_across_anchor_constraint": delta_constraint,
+                    "anchor_build_metadata": anchor.metadata,
+                    "before_build_metadata": before.metadata,
+                    "after_build_metadata": after.metadata,
+                },
+            )
+        except SynthesisError as error:
+            attempts.append(
+                {
+                    "anchor_provider": candidate["anchor_entry"].name,
+                    "evaluator_provider": candidate["evaluator_entry"].name,
+                    "taxonomy": error.taxonomy,
+                    "message": error.message,
+                    **error.details,
+                }
+            )
+    raise SynthesisError(
+        "missing_constraint",
+        "No typed before/after scalar source satisfied delta_across_anchor.",
+        {"attempted": attempts[: context.max_branching], "candidate_count": len(candidates)},
+    )
+
+
+def delta_across_anchor_constraint(constraint: dict[str, Any]) -> dict[str, Any]:
+    allowed_keys = {
+        "kind",
+        "before_value_field",
+        "after_value_field",
+        "before_status_field",
+        "after_status_field",
+        "required_status_value",
+        "edge_threshold",
+        "hysteresis_margin",
+        "value_unit",
+        "missing_evidence_policy",
+        "anchor_status_field",
+        "anchor_status_value",
+        "before_frame_field",
+        "after_frame_field",
+        "before_record_frame_field",
+        "after_record_frame_field",
+        "carrier_id_field",
+        "before_input_context",
+        "after_input_context",
+    }
+    unapplied = sorted(key for key in constraint if key not in allowed_keys)
+    if unapplied:
+        raise SynthesisError(
+            "missing_constraint",
+            "delta_across_anchor supplied unsupported keys that synthesis cannot apply.",
+            {"unapplied_delta_constraint_keys": unapplied},
+        )
+    payload = {
+        "before_value_field": required_delta_constraint(constraint, "before_value_field"),
+        "after_value_field": required_delta_constraint(constraint, "after_value_field"),
+        "before_status_field": str(constraint.get("before_status_field", "none")),
+        "after_status_field": str(constraint.get("after_status_field", "none")),
+        "required_status_value": str(constraint.get("required_status_value", "PASS")),
+        "edge_threshold": float(constraint.get("edge_threshold", 0.0)),
+        "hysteresis_margin": float(constraint.get("hysteresis_margin", 0.0)),
+        "value_unit": str(constraint.get("value_unit", "none")),
+        "missing_evidence_policy": str(constraint.get("missing_evidence_policy", "unknown")),
+        "anchor_status_field": str(constraint.get("anchor_status_field", "none")),
+        "anchor_status_value": str(constraint.get("anchor_status_value", "PASS")),
+        "before_frame_field": required_delta_constraint(constraint, "before_frame_field"),
+        "after_frame_field": required_delta_constraint(constraint, "after_frame_field"),
+        "before_record_frame_field": required_delta_constraint(constraint, "before_record_frame_field"),
+        "after_record_frame_field": required_delta_constraint(constraint, "after_record_frame_field"),
+        "carrier_id_field": str(constraint.get("carrier_id_field", "none")),
+    }
+    for context_key in ("before_input_context", "after_input_context"):
+        raw_context = constraint.get(context_key, {})
+        if raw_context is None:
+            raw_context = {}
+        if not isinstance(raw_context, dict):
+            raise SynthesisError(
+                "missing_constraint",
+                f"delta_across_anchor {context_key} must be an object.",
+                {f"invalid_{context_key}": raw_context},
+            )
+        payload[context_key] = dict(raw_context)
+    for context_key, frame_key in (
+        ("before_input_context", "before_frame_field"),
+        ("after_input_context", "after_frame_field"),
+    ):
+        context_payload = payload[context_key]
+        declared_frame = payload[frame_key]
+        if "frame_field" in context_payload and str(context_payload["frame_field"]) != declared_frame:
+            raise SynthesisError(
+                "missing_constraint",
+                f"delta_across_anchor {context_key}.frame_field conflicts with declared {frame_key}.",
+                {
+                    "context_key": context_key,
+                    "declared_frame_field": declared_frame,
+                    "context_frame_field": context_payload["frame_field"],
+                },
+            )
+        context_payload.setdefault("frame_field", declared_frame)
+        legacy_carrier = str(payload.get("carrier_id_field", "none"))
+        if legacy_carrier != "none":
+            context_payload.setdefault("carrier_id_field", legacy_carrier)
+    return payload
+
+
+def required_delta_constraint(constraint: dict[str, Any], key: str) -> str:
+    value = constraint.get(key)
+    if value is None or str(value) == "" or str(value) == "none":
+        raise SynthesisError(
+            "missing_constraint",
+            f"delta_across_anchor requires declared {key}; no provider-field default is allowed.",
+            {"missing_delta_constraint_key": key},
+        )
+    return str(value)
+
+
+def delta_across_anchor_candidates(
+    context: SearchContext,
+    constraint: dict[str, Any],
+) -> list[dict[str, Any]]:
+    operator_inputs = {item.name: item for item in DELTA_ACROSS_ANCHOR_SIGNATURE.inputs}
+    before_value_field = str(constraint["before_value_field"])
+    after_value_field = str(constraint["after_value_field"])
+    before_status_field = str(constraint["before_status_field"])
+    after_status_field = str(constraint["after_status_field"])
+    before_frame_field = str(constraint["before_frame_field"])
+    after_frame_field = str(constraint["after_frame_field"])
+    before_input_context = dict(constraint["before_input_context"])
+    after_input_context = dict(constraint["after_input_context"])
+    before_carrier_id_field = str(before_input_context.get("carrier_id_field", "none"))
+    after_carrier_id_field = str(after_input_context.get("carrier_id_field", "none"))
+    anchor_status_field = str(constraint["anchor_status_field"])
+    anchor_required_fields = {before_frame_field, after_frame_field}
+    if before_carrier_id_field != "none":
+        anchor_required_fields.add(before_carrier_id_field)
+    if after_carrier_id_field != "none":
+        anchor_required_fields.add(after_carrier_id_field)
+    if anchor_status_field != "none":
+        anchor_required_fields.add(anchor_status_field)
+    before_required_fields = {before_value_field}
+    after_required_fields = {after_value_field}
+    if before_status_field != "none":
+        before_required_fields.add(before_status_field)
+    if after_status_field != "none":
+        after_required_fields.add(after_status_field)
+    scored: list[tuple[int, str, str, dict[str, Any]]] = []
+    for evaluator in context.catalog.entries.values():
+        if not has_single_anchor_input(evaluator):
+            continue
+        evaluator_fields = context.catalog.field_set(evaluator)
+        if not before_required_fields.issubset(evaluator_fields):
+            continue
+        if not after_required_fields.issubset(evaluator_fields):
+            continue
+        evaluator_input = evaluator.inputs[0]
+        if not composition_output_matches_operator_input(
+            context.catalog.anchor_output(evaluator),
+            operator_inputs["before_evaluations"],
+        ):
+            continue
+        for anchor_entry, anchor_output in context.catalog.compatible_outputs(evaluator_input):
+            if anchor_entry.name == evaluator.name:
+                continue
+            if not composition_output_matches_operator_input(anchor_output, operator_inputs["anchors"]):
+                continue
+            anchor_fields = context.catalog.field_set(anchor_entry)
+            if not runtime_or_catalog_field_compatible(anchor_fields, anchor_required_fields):
+                continue
+            allowed_frames = set(
+                allowed_parameter_values(evaluator, "frame_field")
+                or allowed_parameter_values(evaluator, "anchor_frame_field")
+            )
+            if before_frame_field not in allowed_frames or after_frame_field not in allowed_frames:
+                continue
+            if validate_input_context_for_evaluator(evaluator, before_input_context, anchor_fields=anchor_fields):
+                continue
+            if validate_input_context_for_evaluator(evaluator, after_input_context, anchor_fields=anchor_fields):
+                continue
+            score = 0
+            target_fields = required_target_fields(context.target_contract)
+            score += 20 * len(({before_value_field, after_value_field} | before_required_fields | after_required_fields) & target_fields)
+            score += 12 if anchor_status_field != "none" and anchor_status_field in anchor_fields else 0
+            score += 8 if before_frame_field != after_frame_field else 0
+            scored.append(
+                (
+                    -score,
+                    anchor_entry.name,
+                    evaluator.name,
+                    {
+                        "anchor_entry": anchor_entry,
+                        "evaluator_entry": evaluator,
+                        "anchor_required_fields": sorted(anchor_required_fields),
+                        "before_required_fields": sorted(before_required_fields),
+                        "after_required_fields": sorted(after_required_fields),
+                        "before_value_field": before_value_field,
+                        "after_value_field": after_value_field,
+                        "before_status_field": before_status_field,
+                        "after_status_field": after_status_field,
+                        "before_frame_field": before_frame_field,
+                        "after_frame_field": after_frame_field,
+                        "before_input_context": before_input_context,
+                        "after_input_context": after_input_context,
+                    },
+                )
+            )
+    return [candidate for *_prefix, candidate in sorted(scored)]
+
+
+OPERATOR_COMPOSITION_BUILDERS = {
+    "delta_across_anchor": build_delta_across_anchor_operator,
+    "vector_projection": build_project_onto_axis,
+}
 
 
 def build_entry(
@@ -926,6 +1320,11 @@ def build_entry(
         )
     if entry.name == "join_episode_sets":
         return build_join_episode_sets(context, entry, required_fields, depth=depth)
+    # Builder boundary: R1 operators are synthesized through
+    # OPERATOR_COMPOSITION_BUILDERS from target constraints. change_across_anchor
+    # is a grandfathered catalog-specific composition provider and remains on
+    # this branch until a later extraction packet migrates it to the operator
+    # registry.
     if entry.name == "change_across_anchor":
         return build_change_across_anchor(context, entry, required_fields, depth=depth, input_context=input_context)
     if entry.name == "controlled_line_break_episode":
@@ -1271,8 +1670,14 @@ def build_change_across_anchor(
                 depth=depth + 1,
                 input_context=evaluator_input_context(
                     anchor=anchor,
-                    frame_field=candidate["before_frame_field"],
-                    carrier_id_field=candidate.get("carrier_id_field"),
+                    context={
+                        "frame_field": candidate["before_frame_field"],
+                        **(
+                            {}
+                            if candidate.get("carrier_id_field") is None
+                            else {"carrier_id_field": candidate["carrier_id_field"]}
+                        ),
+                    },
                 ),
             )
             after = build_entry(
@@ -1282,8 +1687,14 @@ def build_change_across_anchor(
                 depth=depth + 1,
                 input_context=evaluator_input_context(
                     anchor=anchor,
-                    frame_field=candidate["after_frame_field"],
-                    carrier_id_field=candidate.get("carrier_id_field"),
+                    context={
+                        "frame_field": candidate["after_frame_field"],
+                        **(
+                            {}
+                            if candidate.get("carrier_id_field") is None
+                            else {"carrier_id_field": candidate["carrier_id_field"]}
+                        ),
+                    },
                 ),
             )
             node_id = context.node_id(entry.name)
@@ -1420,12 +1831,10 @@ def prebuilt_input(input_context: dict[str, Any], input_name: str) -> BuildResul
 def evaluator_input_context(
     *,
     anchor: BuildResult,
-    frame_field: str,
-    carrier_id_field: str | None,
+    context: dict[str, Any],
 ) -> dict[str, Any]:
-    payload: dict[str, Any] = {"anchors": anchor, "frame_field": frame_field}
-    if carrier_id_field is not None:
-        payload["carrier_id_field"] = carrier_id_field
+    payload: dict[str, Any] = {"anchors": anchor}
+    payload.update(context)
     return payload
 
 
@@ -1469,6 +1878,74 @@ def allowed_parameter_values(entry: CatalogEntry, parameter_name: str) -> list[s
         if parameter.default is not None:
             return [str(getattr(parameter.default.value, "value", parameter.default.value))]
     return []
+
+
+def validate_input_context_for_evaluator(
+    evaluator: CatalogEntry,
+    input_context: dict[str, Any],
+    *,
+    anchor_fields: set[str],
+) -> dict[str, Any] | None:
+    declared = {parameter.name: parameter for parameter in evaluator.parameters}
+    unapplied = sorted(key for key in input_context if key not in declared)
+    if unapplied:
+        return {
+            "evaluator_provider": evaluator.name,
+            "unapplied_input_context_keys": unapplied,
+            "declared_parameter_names": sorted(declared),
+        }
+    for key, value in input_context.items():
+        string_value = str(value)
+        parameter = declared[key]
+        allowed = []
+        for allowed_value in parameter.allowed_values or []:
+            value_text = getattr(allowed_value, "value", allowed_value)
+            allowed.append(str(value_text))
+        if allowed and string_value not in allowed:
+            return {
+                "evaluator_provider": evaluator.name,
+                "input_context_key": key,
+                "input_context_value": string_value,
+                "allowed_values": allowed,
+            }
+        if key in {"frame_field", "anchor_frame_field", "carrier_id_field", "entity_id_field", "target_entity_field"}:
+            if string_value not in anchor_fields:
+                return {
+                    "evaluator_provider": evaluator.name,
+                    "input_context_key": key,
+                    "input_context_value": string_value,
+                    "anchor_fields": sorted(anchor_fields),
+                }
+    return None
+
+
+def declared_parameter_context(entry: CatalogEntry, input_context: dict[str, Any]) -> dict[str, Any]:
+    declared = {parameter.name for parameter in entry.parameters}
+    payload = {key: value for key, value in input_context.items() if key in declared}
+    unapplied = sorted(
+        key
+        for key, value in input_context.items()
+        if key not in declared and not isinstance(value, BuildResult)
+    )
+    if unapplied:
+        raise SynthesisError(
+            "missing_constraint",
+            "Input context supplied keys that are not declared parameters for the provider.",
+            {
+                "provider": entry.name,
+                "unapplied_input_context_keys": unapplied,
+                "declared_parameter_names": sorted(declared),
+            },
+        )
+    return payload
+
+
+def context_enum_value(context: dict[str, Any], name: str, default: str) -> str:
+    return str(context.get(name, default))
+
+
+def context_number_value(context: dict[str, Any], name: str, default: float) -> float:
+    return float(context.get(name, default))
 
 
 def constrained_value_fields(context: SearchContext, entry: CatalogEntry) -> list[str]:
@@ -1554,8 +2031,6 @@ def change_composition_candidates(
             score = 0
             score += 20 * len(set(matched_values) & required_target_fields(context.target_contract))
             score += 8 if before_frame != after_frame else 0
-            score += 6 if evaluator.name in {"pressure_on_carrier", "team_compactness"} else 0
-            score += 4 if anchor_entry.name in {"carry_episode", "controlled_pass_episode", "switch_of_play"} else 0
             candidate = {
                 "anchor_entry": anchor_entry,
                 "evaluator_entry": evaluator,
@@ -1950,15 +2425,16 @@ def infer_parameters(
     if entry.name == "support_arrival_point_pair":
         return support_arrival_parameters(entry, input_context=input_context)
     if entry.name == "pressure_on_carrier":
+        context = declared_parameter_context(entry, input_context)
         return {
-            "frame_field": enum(str(input_context.get("frame_field", "controlled_reception_frame_id"))),
-            "carrier_id_field": enum(str(input_context.get("carrier_id_field", "receiver_id"))),
-            "maximum_pressure_distance_m": number(4.0, "metre"),
-            "minimum_closing_speed_mps": number(0.2 if not input_context else -5.0, "none"),
-            "maximum_approach_angle_degrees": number(100.0 if not input_context else 180.0, "none"),
-            "minimum_pressure_duration_seconds": number(0.0, "second"),
-            "lookback_seconds": number(0.4, "second"),
-            "candidate_scope": enum("defending_outfield"),
+            "frame_field": enum(context_enum_value(context, "frame_field", "controlled_reception_frame_id")),
+            "carrier_id_field": enum(context_enum_value(context, "carrier_id_field", "receiver_id")),
+            "maximum_pressure_distance_m": number(context_number_value(context, "maximum_pressure_distance_m", 4.0), "metre"),
+            "minimum_closing_speed_mps": number(context_number_value(context, "minimum_closing_speed_mps", 0.2), "none"),
+            "maximum_approach_angle_degrees": number(context_number_value(context, "maximum_approach_angle_degrees", 100.0), "none"),
+            "minimum_pressure_duration_seconds": number(context_number_value(context, "minimum_pressure_duration_seconds", 0.0), "second"),
+            "lookback_seconds": number(context_number_value(context, "lookback_seconds", 0.4), "second"),
+            "candidate_scope": enum(context_enum_value(context, "candidate_scope", "defending_outfield")),
         }
     if entry.name == "team_compactness":
         return {
@@ -2234,6 +2710,7 @@ def row_result(
         "coverage_classification": row.get("classification"),
         "input_composition_maturity": row.get("composition_maturity", "handwired"),
         "target_contract_hash": target_contract_hash,
+        "semantic_correspondence": target.get("semantic_correspondence"),
         "concept_name_used_as_hint": concept_name_used_as_hint(target),
         "gold_chain_used_as_input": False,
         "pattern_dispatch_used": False,
@@ -2275,6 +2752,8 @@ def update_coverage_rows(rows: list[dict[str, Any]], results: list[dict[str, Any
         result = by_concept.get(row.get("concept"))
         if result is None or result["result"] != "compiler_reachable":
             continue
+        if not result.get("semantic_correspondence"):
+            continue
         row["composition_maturity"] = "compiler_reachable"
         row["composition_maturity_applicable"] = row.get("classification") == "supported"
         row["compiler_reachability_status"] = "compiler_reachable"
@@ -2287,6 +2766,7 @@ def update_coverage_rows(rows: list[dict[str, Any]], results: list[dict[str, Any
             "held_out": result["held_out"],
             "result_count": result["result_count"],
             "honest_zero": result["honest_zero"],
+            "semantic_correspondence": result["semantic_correspondence"],
         }
 
 
@@ -2367,6 +2847,7 @@ def build_report(
                 "provider_field_backward_search",
                 "generic_before_after_change",
                 "generic_binary_episode_join",
+                "generic_delta_across_anchor_operator",
                 "generic_vector_projection_operator",
             ],
         },
@@ -2495,17 +2976,26 @@ def operator_node(
     inputs: dict[str, dict[str, str]],
     parameters: dict[str, Any],
 ) -> dict[str, Any]:
+    signature = operator_signature(operator_name, version)
     return {
         "kind": "operator",
         "node_id": node_id,
         "operator": {"name": operator_name, "version": version},
         "inputs": inputs,
         "parameters": parameters,
-        "outputs": [
-            output.model_dump(mode="json")
-            for output in PROJECT_ONTO_AXIS_SIGNATURE.outputs
-        ],
+        "outputs": [output.model_dump(mode="json") for output in signature.outputs],
     }
+
+
+def operator_signature(operator_name: str, version: str) -> Any:
+    for signature in OPERATOR_SIGNATURES_BY_CONSTRAINT_KIND.values():
+        if signature.name == operator_name and signature.version == version:
+            return signature
+    raise SynthesisError(
+        "missing_constraint",
+        "No declared operator signature for generated operator node.",
+        {"operator_name": operator_name, "operator_version": version},
+    )
 
 
 def document(
