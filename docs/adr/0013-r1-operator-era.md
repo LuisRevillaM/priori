@@ -116,3 +116,11 @@ Every operator report carries a booked-evidence audit table (value
 distribution + per-row correspondence). (13) Both-teams anchors are a
 named house-standard test. (14) Ledger flips require the target's declared
 semantic correspondence (pulled forward from R1-C).
+
+## Addendum 3 (2026-07-04): from R1-2 round-2
+
+(15) Changing runtime semantics under a deliberately frozen declared
+surface — pinning the catalog to avoid parity drift — is never an
+acceptable strategy; declare, take the drift, and let governance
+regenerate deliberately. (16) Published proof hashes must reproduce on the
+committed tree: reproducibility of the proof is part of the proof.
