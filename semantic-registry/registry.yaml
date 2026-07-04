@@ -155,6 +155,14 @@ concepts:
     evidence_contract_ref: evidence.observed_pressure_on_carrier.v1
     tags: [pressure, defending, relation, movement]
 
+  - id: concept.observed_defender_distance_candidate_set
+    kind: Concept
+    display_name: Observed Defender Distance Candidate Set
+    description: Observed defender-to-target distance candidate records at a declared anchor frame.
+    claim_contract_ref: claim.observed_defender_distance_candidate_set.v1
+    evidence_contract_ref: evidence.observed_defender_distance_candidate_set.v1
+    tags: [distance, defending, candidate-set, geometry]
+
   - id: concept.observed_team_compactness
     kind: Concept
     display_name: Observed Team Compactness
@@ -1387,6 +1395,30 @@ operationalizations:
     claim_contract_ref: claim.observed_team_press_geometry.v1
     evidence_contract_ref: evidence.observed_team_press_geometry.v1
 
+  - id: op.observed_defender_distance_candidate_set.v1
+    kind: Operationalization
+    display_name: Observed Defender Distance Candidate Set
+    description: Emit observed defender-to-target distance candidate records for downstream witnessed selection.
+    concept_refs: [concept.observed_defender_distance_candidate_set]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking]
+    applicability: [anchor_available, target_coordinates_available, defender_coordinates_available]
+    inputs:
+      - name: anchors
+        type: {container: EpisodeSet, value: AnchorRef, quantity: anchor, unit: none, entity_scope: anchor}
+      - name: observed_defending_positions
+        type: {container: EntitySetSignal, value: Point, unit: metre, coordinate_frame: pitch_absolute, entity_scope: team}
+    outputs:
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, quantity: defender_distance_candidate_evaluation, unit: none, entity_scope: anchor}
+      - name: defender_distance_candidate_status
+        type: {container: FrameSignal, value: Enum, quantity: defender_distance_candidate_status, unit: none, entity_scope: anchor}
+      - name: candidate_distance_m
+        type: {container: FrameSignal, value: Scalar, quantity: distance, unit: metre, entity_scope: anchor}
+    lowering: [anchor_frame_selection, target_entity_resolution, observed_defender_coordinate_lookup, euclidean_distance_candidate_records]
+    claim_contract_ref: claim.observed_defender_distance_candidate_set.v1
+    evidence_contract_ref: evidence.observed_defender_distance_candidate_set.v1
+
 definition_profiles:
   - id: profile.high_bypass_default.v1
     kind: DefinitionProfile
@@ -1751,6 +1783,13 @@ implementations:
     description: Current team_press implementation.
     implements: [op.observed_multi_defender_pressure_geometry.v1]
     source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+
+  - id: impl.defender_distance_candidate_set.python.v1
+    kind: Implementation
+    display_name: Observed Defender Distance Candidate Set Python Implementation
+    description: Current defender_distance_candidate_set implementation.
+    implements: [op.observed_defender_distance_candidate_set.v1]
+    source_refs: [src/tqe/runtime/capabilities/teamshape_family.py, src/tqe/runtime/catalog.py]
 
 runtime_bindings:
   - id: binding.primitive.possession_segment.0_1_0
@@ -2692,6 +2731,62 @@ runtime_bindings:
       minimum_pressure_duration_seconds: minimum_pressure_duration_seconds
       lookback_seconds: lookback_seconds
       candidate_scope: candidate_scope
+
+  - id: binding.relation.defender_distance_candidate_set.0_1_0
+    kind: RuntimeBinding
+    display_name: defender_distance_candidate_set runtime binding
+    description: Canonical runtime binding for defender_distance_candidate_set 0.1.0.
+    runtime_capability: {id: defender_distance_candidate_set, version: 0.1.0, kind: relation}
+    implementation_ref: impl.defender_distance_candidate_set.python.v1
+    implements: [op.observed_defender_distance_candidate_set.v1]
+    conformance_status: PARTIAL
+    known_deviations: [Observed candidate-set mode can intentionally scope to observed defending outfield players only; it does not claim untracked defenders were farther away.]
+    input_bindings:
+      anchors: {source: NODE_INPUT, runtime_port: anchors}
+      observed_defending_positions: {source: RUNTIME_CONTEXT, context_ref: canonical_match_state.defending_outfield_positions}
+    output_bindings:
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+      defender_distance_candidate_status: {runtime_port: defender_distance_candidate_status}
+      candidate_distance_m: {runtime_port: candidate_distance_m}
+    semantic_parameters:
+      - name: anchor_frame_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: controlled_reception_frame_id, unit: none}
+        allowed_values: [anchor_frame_id, physical_release_frame_id, controlled_reception_frame_id, carry_start_frame_id, carry_end_frame_id, terminal_release_frame_id]
+      - name: target_player_id_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: receiver_id, unit: none}
+        allowed_values: [receiver_id, passer_id, relay_player_id, terminal_receiver_id, carrier_id, run_player_id]
+      - name: candidate_scope
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: defending_outfield, unit: none}
+        allowed_values: [defending_outfield, observed_defending_outfield]
+      - name: required_anchor_status_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: none, unit: none}
+        allowed_values: [none, controlled_pass_status, carry_status, join_status, transition_status]
+      - name: required_anchor_status_value
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: PASS, unit: none}
+        allowed_values: [PASS, FAIL, UNKNOWN]
+      - name: minimum_observed_candidates
+        type: {container: Scalar, value: Scalar, unit: count}
+        required: false
+        default: {payload_type: number, value: 6.0, unit: count}
+        minimum: 1.0
+        maximum: 10.0
+    parameter_bindings:
+      anchor_frame_field: anchor_frame_field
+      target_player_id_field: target_player_id_field
+      candidate_scope: candidate_scope
+      required_anchor_status_field: required_anchor_status_field
+      required_anchor_status_value: required_anchor_status_value
+      minimum_observed_candidates: minimum_observed_candidates
 
   - id: binding.primitive.team_compactness.0_1_0
     kind: RuntimeBinding
@@ -4132,6 +4227,13 @@ claim_contracts:
     permitted: [nearest_defender_pressure_condition_evaluated_under_declared_thresholds]
     prohibited: [pressure_quality_inferred, defender_intent_inferred, player_intent_inferred, decision_quality_inferred, tactical_causation_inferred, pass_was_optimal]
     unknown_conditions: [carrier_position_missing, defender_positions_missing, velocity_endpoint_missing, duration_coverage_incomplete]
+  - id: claim.observed_defender_distance_candidate_set.v1
+    kind: ClaimContract
+    display_name: Observed Defender Distance Candidate Set Claims
+    description: Claims permitted for observed defender-to-target distance candidate records.
+    permitted: [observed_defender_target_distance_candidates_emitted]
+    prohibited: [nearest_defender_selected, marking_assignment_inferred, pressure_quality_inferred, defender_intent_inferred, player_intent_inferred, tactical_causation_inferred, optimality_inferred]
+    unknown_conditions: [target_position_missing, defender_positions_missing, insufficient_observed_candidates, incomplete_candidate_coverage]
   - id: claim.observed_team_compactness.v1
     kind: ClaimContract
     display_name: Observed Team Compactness Claims
@@ -4489,6 +4591,13 @@ evidence_contracts:
     required: [anchor_id, anchor_frame_id, pressure_status, pressure_reason, pressure_frame_id, carrier_id, nearest_defender_distance_m, closing_speed_mps, approach_angle_degrees, pressure_duration_seconds, maximum_pressure_distance_m, minimum_closing_speed_mps, maximum_approach_angle_degrees, minimum_pressure_duration_seconds, coverage_status]
     optional: [nearest_defender_id]
     replay_projection: [carrier_marker, nearest_defender_marker, pressure_distance_badge, closing_speed_badge]
+  - id: evidence.observed_defender_distance_candidate_set.v1
+    kind: EvidenceContract
+    display_name: Observed Defender Distance Candidate Set Evidence
+    description: Evidence required for observed defender-to-target distance candidate records.
+    required: [anchor_id, anchor_frame_id, source_anchor_id, defender_distance_candidate_status, defender_distance_candidate_reason, candidate_record_id, candidate_frame_id, target_player_id, candidate_scope, candidate_team_role, candidate_defender_id, candidate_distance_m, observed_candidate_ids, observed_candidate_count, minimum_observed_candidates, coverage_status]
+    optional: [candidate_frame_field, target_player_id_field, target_player_team_role, target_point, candidate_point, candidate_defender_ids, missing_candidate_ids, defender_distance_candidate_model, defender_distance_candidate_claim_boundary]
+    replay_projection: [target_marker, candidate_defender_markers, distance_badge]
   - id: evidence.observed_team_compactness.v1
     kind: EvidenceContract
     display_name: Observed Team Compactness Evidence
@@ -4868,6 +4977,14 @@ exposure_policies:
     subject_ref: runtime:relation:pressure_on_carrier:0.1.0
     ai_compiler: ALLOWED
     product: ALLOWED
+  - id: exposure.runtime.defender_distance_candidate_set.0_1_0
+    kind: ExposurePolicy
+    display_name: defender_distance_candidate_set exposure
+    description: Conservative substrate exposure policy for defender_distance_candidate_set; denied from product and AI projection pending exposure review.
+    subject_ref: runtime:relation:defender_distance_candidate_set:0.1.0
+    ai_compiler: DENIED
+    product: DENIED
+    reasons: [substrate_candidate_set_helper_pending_exposure_review]
   - id: exposure.runtime.team_compactness.0_1_0
     kind: ExposurePolicy
     display_name: team_compactness exposure
@@ -5531,6 +5648,16 @@ maturity_assessments:
     validation: VERIFIED
     agent_safety: APPROVED
     product: EXPOSED
+  - id: maturity.runtime.defender_distance_candidate_set.0_1_0
+    kind: MaturityAssessment
+    display_name: defender_distance_candidate_set maturity
+    description: Maturity assessment for defender_distance_candidate_set; substrate helper for witnessed extremum selection without product-claim validation.
+    subject_ref: runtime:relation:defender_distance_candidate_set:0.1.0
+    semantic: PROPOSED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: REVIEWED
+    product: NOT_EXPOSED
   - id: maturity.runtime.team_compactness.0_1_0
     kind: MaturityAssessment
     display_name: team_compactness maturity
