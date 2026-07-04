@@ -5375,6 +5375,18 @@ projection_policies:
         permitted_fields: []
         rationale: Defender-distance candidate set is runtime-executable substrate (R1-3 extremum provider) intentionally denied from this projection pending exposure and product-claim review.
         review_condition: Remove this waiver when the capability passes exposure review and enters the AI projection, or when Hermes exposure becomes registry-driven.
+      - subject_ref: runtime:relation:controlled_pass_team_keyed_anchors:0.1.0
+        difference_kind: REMOVED
+        baseline_contract_hash: dab448cbabeb1b37af7f625defeeac5d7c82b74a98f1074711b0e932d6d5443c
+        permitted_fields: []
+        rationale: controlled_pass_team_keyed_anchors is R1-4 team-keying substrate intentionally denied from the AI projection pending exposure review.
+        review_condition: Remove this waiver when the capability passes exposure review and enters the AI projection, or when Hermes exposure becomes registry-driven.
+      - subject_ref: runtime:relation:possession_segment_team_keyed_episodes:0.1.0
+        difference_kind: REMOVED
+        baseline_contract_hash: 2c0f16143b178a076d567abe3a7d74086a21ecc584a87e8b5299fb7ec8690a35
+        permitted_fields: []
+        rationale: possession_segment_team_keyed_episodes is R1-4 team-keying substrate intentionally denied from the AI projection pending exposure review.
+        review_condition: Remove this waiver when the capability passes exposure review and enters the AI projection, or when Hermes exposure becomes registry-driven.
       - subject_ref: runtime:primitive:cover_shadow:0.1.0
         difference_kind: REMOVED
         baseline_contract_hash: 7ae43012a6725d814b7484c7c92de81096359754b7911cb77c3663ab0449c453

@@ -1069,8 +1069,30 @@
   "composition_constraint_needed": false,
   "priority_unlock": "HIGH",
   "composition_constraint_note": "",
-  "composition_maturity": "handwired",
-  "composition_maturity_applicable": true
+  "composition_maturity": "compiler_reachable",
+  "composition_maturity_applicable": true,
+  "compiler_reachability_status": "compiler_reachable",
+  "compiler_reachability_evidence": {
+   "synthesizer_version": "search_synthesizer.v0.1",
+   "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+   "target_id": "r1_4_same_team_control_after_reception_v0",
+   "report_path": "artifacts/autonomous/compiler-search-v0-report.json",
+   "document_hash": "0592e94a1f1bf20ccd0e0ccd10f3b3dc2d51088d9ecd0dd5c882130ae267c973",
+   "held_out": true,
+   "result_count": 40,
+   "honest_zero": false,
+   "semantic_correspondence": {
+    "coverage_row": "same_team_control_after",
+    "meaning": "Construct a declared four-second post-reception window for each controlled-pass anchor, requiring same-team possession continuity over that window.",
+    "source_relation": "controlled-pass anchors with declared team role + possession episodes with declared team role + window(after, same_possession continuity)",
+    "anchor_source": "controlled-pass team-keyed anchors",
+    "anchor_frame_field": "controlled_reception_frame_id",
+    "continuity_source": "team-keyed possession episodes",
+    "continuity_policy": "same_possession",
+    "window": "4.0 seconds after controlled reception",
+    "unit": "second"
+   }
+  }
  },
  {
   "concept": "shape_change_after",

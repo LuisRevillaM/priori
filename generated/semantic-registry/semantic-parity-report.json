@@ -733,7 +733,7 @@
           "projection_contract_hash": "a796f3d6ca9399358c6bf535d0d7d8f57509bbf9763661cf191c76e346af9d3b"
         }
       },
-      "baseline_count": 58,
+      "baseline_count": 60,
       "contract_changed": [
         "recipe:ball_side_block_shift_v1:1.0.0",
         "recipe:first_time_relay_after_receiver_line_transition_v1:0.1.0",
@@ -806,7 +806,9 @@
         "runtime:primitive:off_ball_run_type:0.1.0",
         "runtime:primitive:set_piece_structure:0.1.0",
         "runtime:primitive:space_region_generation:0.1.0",
+        "runtime:relation:controlled_pass_team_keyed_anchors:0.1.0",
         "runtime:relation:defender_distance_candidate_set:0.1.0",
+        "runtime:relation:possession_segment_team_keyed_episodes:0.1.0",
         "runtime:relation:team_press:0.1.0"
       ],
       "removed_details": {
@@ -834,8 +836,14 @@
         "runtime:primitive:space_region_generation:0.1.0": {
           "baseline_contract_hash": "3ae62e6ad6caceb2e14343362d5578780d25891e9fb9e8a4014e5a7a835a578a"
         },
+        "runtime:relation:controlled_pass_team_keyed_anchors:0.1.0": {
+          "baseline_contract_hash": "dab448cbabeb1b37af7f625defeeac5d7c82b74a98f1074711b0e932d6d5443c"
+        },
         "runtime:relation:defender_distance_candidate_set:0.1.0": {
           "baseline_contract_hash": "8ac52b22780e6deb81c5b10a06f1b5bd20246935bc905a97d327141073c9fb52"
+        },
+        "runtime:relation:possession_segment_team_keyed_episodes:0.1.0": {
+          "baseline_contract_hash": "2c0f16143b178a076d567abe3a7d74086a21ecc584a87e8b5299fb7ec8690a35"
         },
         "runtime:relation:team_press:0.1.0": {
           "baseline_contract_hash": "4cf1558ccf3ed95deb1fea53b10166cb7144b63af1b1b8fa8b45b623425a6708"
@@ -844,7 +852,7 @@
       "shared_count": 48
     },
     "baseline_sources": {
-      "baseline_artifact_revision": "eadfb82615ae38901b17b1d208449a99c1ccb22f6928b453f1b8c184654ceae1",
+      "baseline_artifact_revision": "5c1ef8d21508558aad77737bf1fd556a1552bdffe49835e028f2e27dcc63d66e",
       "capability_catalog": {
         "exists": true,
         "path": "generated/capability-catalog.json",
@@ -859,7 +867,7 @@
       "tactical_knowledge_pack": {
         "exists": true,
         "path": "generated/tactical-knowledge-pack.json",
-        "source_artifact_sha256": "26dd3e5a8381a7e586ad380dc5edcf2df49ad7f47b1819644a4eb05271711cc0"
+        "source_artifact_sha256": "b89220114333eb228af81babd94321f35e79d843d5e34d3e2dc996656c403ef2"
       }
     },
     "product": {
@@ -942,14 +950,14 @@
   },
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "eadfb82615ae38901b17b1d208449a99c1ccb22f6928b453f1b8c184654ceae1",
+    "baseline_artifact_revision": "5c1ef8d21508558aad77737bf1fd556a1552bdffe49835e028f2e27dcc63d66e",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "b333b9df051bff30b2757f6173830d6dfc2d072dcaa9d370408ba0adaef8cbae",
+    "lock_hash": "3d2ca1969d57d0ee6e1c92b461ae6cf02cea89ec0a9485b6e53d4a0d90837aee",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "7acce6c761e5b8bc750ad471daf38c024d4df8b8c7636f69f621ac8dd3836cf8",
+    "registry_revision": "b84a6bf0d7bf020c4e66cbf07fcaeef89f4bce7d736b0a645fc638839139e08e",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
     "runtime_manifest_revision": "c9190051ffd9b5022809d0026244a1e520b3fd2a4040fab076b4cc947e11963d",
     "schema_version": "1.0",
