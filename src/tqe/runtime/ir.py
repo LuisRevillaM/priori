@@ -88,6 +88,7 @@ class NodeKind(StrEnum):
     PRIMITIVE = "primitive"
     RELATION = "relation"
     PREDICATE = "predicate"
+    OPERATOR = "operator"
 
 
 class ExecutionMode(StrEnum):
@@ -243,6 +244,27 @@ class EvidenceRequest(StrictModel):
     required: bool = True
 
 
+class OperatorInputDefinition(StrictModel):
+    name: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
+    temporal_type: TemporalContainer
+    payload_type: PayloadType
+    cardinality: Cardinality
+    unit: Unit = Unit.NONE
+    entity_scope: EntityScope = EntityScope.NONE
+    required: bool = True
+
+
+class OperatorOutputDeclaration(StrictModel):
+    name: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
+    temporal_type: TemporalContainer
+    payload_type: PayloadType
+    cardinality: Cardinality
+    unit: Unit = Unit.NONE
+    entity_scope: EntityScope = EntityScope.NONE
+    missing_data_semantics: MissingDataSemantics = MissingDataSemantics.UNKNOWN
+    evidence_fields: list[str] = Field(default_factory=list)
+
+
 class DraftCatalogNode(StrictModel):
     kind: Literal[NodeKind.PRIMITIVE, NodeKind.RELATION]
     node_id: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
@@ -263,7 +285,16 @@ class DraftPredicateNode(StrictModel):
     required_entity_scope: EntityScope | None = None
 
 
-DraftPlanNode = Annotated[DraftCatalogNode | DraftPredicateNode, Field(discriminator="kind")]
+class DraftOperatorNode(StrictModel):
+    kind: Literal[NodeKind.OPERATOR] = NodeKind.OPERATOR
+    node_id: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
+    operator: OperatorRef
+    inputs: dict[str, SignalRef] = Field(default_factory=dict)
+    parameters: dict[str, TypedArgument] = Field(default_factory=dict)
+    outputs: list[OperatorOutputDeclaration] = Field(min_length=1)
+
+
+DraftPlanNode = Annotated[DraftCatalogNode | DraftPredicateNode | DraftOperatorNode, Field(discriminator="kind")]
 
 
 class ClassificationRule(StrictModel):
@@ -437,6 +468,48 @@ class OperatorSignature(StrictModel):
     limitations: list[str] = Field(default_factory=list)
 
 
+class CompositionOperatorSignature(StrictModel):
+    name: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
+    version: str
+    purpose: str
+    inputs: list[OperatorInputDefinition] = Field(default_factory=list)
+    outputs: list[OperatorOutputDeclaration] = Field(min_length=1)
+    parameters: list[ParameterDefinition] = Field(default_factory=list)
+    coverage_propagation_rule_id: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
+    witness_rule_id: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
+    limitations: list[str] = Field(default_factory=list)
+
+    @field_validator("inputs")
+    @classmethod
+    def input_names_are_unique(
+        cls, inputs: list[OperatorInputDefinition]
+    ) -> list[OperatorInputDefinition]:
+        names = [item.name for item in inputs]
+        if len(set(names)) != len(names):
+            raise ValueError("operator input names must be unique")
+        return inputs
+
+    @field_validator("outputs")
+    @classmethod
+    def output_names_are_unique(
+        cls, outputs: list[OperatorOutputDeclaration]
+    ) -> list[OperatorOutputDeclaration]:
+        names = [item.name for item in outputs]
+        if len(set(names)) != len(names):
+            raise ValueError("operator output names must be unique")
+        return outputs
+
+    @field_validator("parameters")
+    @classmethod
+    def parameter_names_are_unique(
+        cls, parameters: list[ParameterDefinition]
+    ) -> list[ParameterDefinition]:
+        names = [parameter.name for parameter in parameters]
+        if len(set(names)) != len(names):
+            raise ValueError("operator parameter names must be unique")
+        return parameters
+
+
 class CapabilityCatalog(StrictModel):
     schema_version: Literal["1.0"] = "1.0"
     primitives: list[CatalogEntry] = Field(default_factory=list)
@@ -474,7 +547,18 @@ class BoundPredicateNode(StrictModel):
     output: CatalogOutput
 
 
-BoundPlanNode = Annotated[BoundCatalogNode | BoundPredicateNode, Field(discriminator="kind")]
+class BoundOperatorNode(StrictModel):
+    kind: Literal[NodeKind.OPERATOR] = NodeKind.OPERATOR
+    node_id: str
+    operator: OperatorRef
+    operator_signature: CompositionOperatorSignature
+    inputs: dict[str, SignalRef] = Field(default_factory=dict)
+    input_types: dict[str, CatalogOutput] = Field(default_factory=dict)
+    outputs: list[CatalogOutput]
+    resolved_parameters: dict[str, TypedValue] = Field(default_factory=dict)
+
+
+BoundPlanNode = Annotated[BoundCatalogNode | BoundPredicateNode | BoundOperatorNode, Field(discriminator="kind")]
 
 
 class BoundQueryPlan(StrictModel):

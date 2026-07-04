@@ -32,6 +32,7 @@ from tqe.runtime.capabilities import (
 )
 from tqe.runtime.ir import (
     BoundCatalogNode,
+    BoundOperatorNode,
     BoundPredicateNode,
     BoundQueryPlan,
     BoundPlanNode,
@@ -50,6 +51,7 @@ from tqe.runtime.ir import (
     UnknownEvidencePolicy,
     stable_hash,
 )
+from tqe.runtime.operators import OperatorImplementation, OperatorKey, build_operator_registry
 from tqe.runtime import legacy_m1
 from tqe.runtime.values import FrameSignal, RuntimeValue, canonical_anchor_record_id, runtime_value_from_raw
 from tqe.runtime.envelope import conformance_enabled, shadow_check_legacy_outputs
@@ -230,6 +232,7 @@ class TacticalQueryExecutor:
         registry_namespace = globals()
         self.primitives: dict[str, PrimitiveImplementation] = build_primitive_registry(registry_namespace)
         self.relations: dict[str, RelationImplementation] = build_relation_registry(registry_namespace)
+        self.operators: dict[OperatorKey, OperatorImplementation] = build_operator_registry(registry_namespace)
 
     def execute(self, bound_plan: BoundQueryPlan) -> QueryExecution:
         if bound_plan.execution_mode == ExecutionMode.BIND_ONLY:
@@ -542,6 +545,8 @@ class TacticalQueryExecutor:
             progress_base["version"] = node.version
         elif isinstance(node, BoundPredicateNode):
             progress_base["operator"] = node.operator.name
+        elif isinstance(node, BoundOperatorNode):
+            progress_base["operator"] = node.operator.name
         self._record_progress(state, {"event": "node_start", **progress_base})
 
         cache_status = "bypassed"
@@ -607,6 +612,13 @@ class TacticalQueryExecutor:
                 inputs=inputs,
                 parameters=parameters,
             )
+        elif isinstance(node, BoundOperatorNode):
+            implementation = self.operators.get((node.operator.name, node.operator.version))
+            if implementation is None:
+                raise RuntimeError(
+                    f"No composition operator implementation for {node.operator.name}@{node.operator.version}"
+                )
+            implementation(state=state, node=node, inputs=inputs, parameters=parameters)
         else:
             raise RuntimeError(f"Unsupported bound node {node}")
         runtime_values = record_runtime_values(state, node)
@@ -1475,7 +1487,7 @@ def record_runtime_values(state: PeriodState, node: BoundPlanNode) -> dict[str, 
     raw_outputs = state.signals.get(node.node_id)
     if raw_outputs is None:
         raise RuntimeError(f"{node.node_id} did not emit any outputs")
-    if isinstance(node, BoundCatalogNode):
+    if isinstance(node, BoundCatalogNode | BoundOperatorNode):
         outputs = node.outputs
     else:
         outputs = [node.output]
@@ -1498,7 +1510,7 @@ def record_runtime_values(state: PeriodState, node: BoundPlanNode) -> dict[str, 
 
 
 def resolved_node_inputs(state: PeriodState, node: BoundPlanNode) -> dict[str, RuntimeValue]:
-    if isinstance(node, BoundCatalogNode):
+    if isinstance(node, BoundCatalogNode | BoundOperatorNode):
         return {
             name: catalog_input_value(state, node, name)
             for name in sorted(node.inputs)
@@ -1509,7 +1521,7 @@ def resolved_node_inputs(state: PeriodState, node: BoundPlanNode) -> dict[str, R
 
 
 def resolved_node_parameters(node: BoundPlanNode) -> dict[str, TypedValue]:
-    if isinstance(node, BoundCatalogNode):
+    if isinstance(node, BoundCatalogNode | BoundOperatorNode):
         return dict(node.resolved_parameters)
     if isinstance(node, BoundPredicateNode):
         parameters: dict[str, TypedValue] = {}

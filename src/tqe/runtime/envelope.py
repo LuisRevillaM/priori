@@ -102,6 +102,19 @@ class CapabilityEnvelope:
 
 
 @dataclass(frozen=True)
+class OperatorEnvelope:
+    """Lossless envelope shape for future composition operator execution."""
+
+    operator_name: str
+    operator_version: str
+    node_id: str
+    input_channels: dict[str, CapabilityChannel]
+    output_channels: dict[str, CapabilityChannel]
+    witness_refs: tuple[WitnessRef, ...] = ()
+    aux: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
 class ConformanceFinding:
     capability_name: str
     node_id: str

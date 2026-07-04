@@ -13,6 +13,7 @@ from tqe.runtime.catalog import default_catalog
 from tqe.runtime.ir import (
     BindIssue,
     BoundCatalogNode,
+    BoundOperatorNode,
     BoundPlanNode,
     BoundPredicateNode,
     BoundQueryPlan,
@@ -22,12 +23,16 @@ from tqe.runtime.ir import (
     CatalogInput,
     CatalogOutput,
     ClassificationMode,
+    CompositionOperatorSignature,
     DraftCatalogNode,
+    DraftOperatorNode,
     DraftPredicateNode,
     DraftQueryPlan,
     EntityScope,
     MissingDataSemantics,
     NodeKind,
+    OperatorInputDefinition,
+    OperatorOutputDeclaration,
     OperatorSignature,
     ParameterDefinition,
     ParameterRef,
@@ -43,6 +48,12 @@ from tqe.runtime.ir import (
     Unit,
     model_payload,
     stable_hash,
+)
+from tqe.runtime.operators import (
+    OperatorImplementation,
+    OperatorKey,
+    build_operator_registry,
+    declared_operator_signatures,
 )
 
 
@@ -126,8 +137,24 @@ def bind_plan(
 
 
 class Binder:
-    def __init__(self, catalog: CapabilityCatalog) -> None:
+    def __init__(
+        self,
+        catalog: CapabilityCatalog,
+        *,
+        composition_operator_signatures: dict[OperatorKey, CompositionOperatorSignature] | None = None,
+        composition_operator_registry: dict[OperatorKey, OperatorImplementation] | None = None,
+    ) -> None:
         self.catalog = catalog
+        self.composition_operator_signatures = (
+            composition_operator_signatures
+            if composition_operator_signatures is not None
+            else declared_operator_signatures()
+        )
+        self.composition_operator_registry = (
+            composition_operator_registry
+            if composition_operator_registry is not None
+            else build_operator_registry({})
+        )
         self.issues: list[BindIssue] = []
         self.catalog_outputs: dict[str, tuple[CatalogEntry | None, CatalogOutput]] = {}
         self.bound_nodes: list[BoundPlanNode] = []
@@ -375,6 +402,8 @@ class Binder:
                 self._bind_catalog_node(node, parameter_values, path)
             elif isinstance(node, DraftPredicateNode):
                 self._bind_predicate_node(node, parameter_values, path)
+            elif isinstance(node, DraftOperatorNode):
+                self._bind_operator_node(node, parameter_values, path)
             else:
                 self._issue("unsupported_node_type", f"unsupported node {node}", path)
 
@@ -504,6 +533,56 @@ class Binder:
         self.bound_nodes.append(bound)
         self.catalog_outputs[f"{node.node_id}.{output.name}"] = (None, output)
 
+    def _bind_operator_node(
+        self,
+        node: DraftOperatorNode,
+        parameter_values: dict[str, TypedValue],
+        path: str,
+    ) -> None:
+        signature = self._find_composition_operator(node.operator.name, node.operator.version)
+        if signature is None:
+            self._issue(
+                "operator_not_implemented",
+                (
+                    f"composition operator {node.operator.name}@{node.operator.version} "
+                    "has no registered signature or implementation"
+                ),
+                f"{path}.operator",
+            )
+            return
+
+        bound_inputs = self._bind_operator_inputs(node=node, signature=signature, path=path)
+        resolved_node_parameters = self._bind_operator_parameters(
+            node=node,
+            signature=signature,
+            parameter_values=parameter_values,
+            path=path,
+        )
+        outputs = self._bind_operator_outputs(node=node, signature=signature, path=path)
+        if (signature.name, signature.version) not in self.composition_operator_registry:
+            self._issue(
+                "operator_not_implemented",
+                (
+                    f"composition operator {signature.name}@{signature.version} "
+                    "has a signature but no registered implementation"
+                ),
+                f"{path}.operator",
+            )
+            return
+
+        bound = BoundOperatorNode(
+            node_id=node.node_id,
+            operator=node.operator,
+            operator_signature=signature,
+            inputs={name: reference for name, (reference, _) in bound_inputs.items()},
+            input_types={name: output for name, (_, output) in bound_inputs.items()},
+            outputs=outputs,
+            resolved_parameters=resolved_node_parameters,
+        )
+        self.bound_nodes.append(bound)
+        for output in outputs:
+            self.catalog_outputs[f"{node.node_id}.{output.name}"] = (None, output)
+
     def _bind_catalog_inputs(
         self,
         *,
@@ -543,6 +622,115 @@ class Binder:
             )
             bound_inputs[name] = (reference, output)
         return bound_inputs
+
+    def _bind_operator_inputs(
+        self,
+        *,
+        node: DraftOperatorNode,
+        signature: CompositionOperatorSignature,
+        path: str,
+    ) -> dict[str, tuple[SignalRef, CatalogOutput]]:
+        bound_inputs: dict[str, tuple[SignalRef, CatalogOutput]] = {}
+        input_defs = {item.name: item for item in signature.inputs}
+
+        for name in sorted(node.inputs):
+            if name not in input_defs:
+                self._issue(
+                    "unknown_operator_input",
+                    f"{signature.name}@{signature.version} does not accept input {name}",
+                    f"{path}.inputs.{name}",
+                )
+
+        for name, input_def in sorted(input_defs.items()):
+            reference = node.inputs.get(name)
+            if reference is None:
+                if input_def.required:
+                    self._issue(
+                        "missing_operator_input",
+                        f"{signature.name}@{signature.version} requires input {name}",
+                        f"{path}.inputs.{name}",
+                    )
+                continue
+            resolved = self._resolve_signal(reference, f"{path}.inputs.{name}")
+            if resolved is None:
+                continue
+            _, output = resolved
+            self._validate_operator_input(
+                input_def=input_def,
+                output=output,
+                path=f"{path}.inputs.{name}",
+            )
+            bound_inputs[name] = (reference, output)
+        return bound_inputs
+
+    def _bind_operator_parameters(
+        self,
+        *,
+        node: DraftOperatorNode,
+        signature: CompositionOperatorSignature,
+        parameter_values: dict[str, TypedValue],
+        path: str,
+    ) -> dict[str, TypedValue]:
+        resolved: dict[str, TypedValue] = {}
+        parameter_defs = {parameter.name: parameter for parameter in signature.parameters}
+        for name in sorted(node.parameters):
+            if name not in parameter_defs:
+                self._issue(
+                    "unknown_operator_parameter",
+                    f"{signature.name}@{signature.version} does not accept parameter {name}",
+                    f"{path}.parameters.{name}",
+                )
+        for name, parameter in sorted(parameter_defs.items()):
+            argument = node.parameters.get(name)
+            if argument is None:
+                if parameter.default is None:
+                    if parameter.required:
+                        self._issue(
+                            "missing_operator_parameter",
+                            f"{signature.name}@{signature.version} requires parameter {name}",
+                            f"{path}.parameters.{name}",
+                        )
+                    continue
+                value = parameter.default
+            else:
+                value = self._resolve_argument(argument, parameter_values, f"{path}.parameters.{name}")
+            if value is not None:
+                self._validate_parameter_value(parameter, value, f"{path}.parameters.{name}")
+                resolved[name] = value
+        return resolved
+
+    def _bind_operator_outputs(
+        self,
+        *,
+        node: DraftOperatorNode,
+        signature: CompositionOperatorSignature,
+        path: str,
+    ) -> list[CatalogOutput]:
+        declared = {output.name: output for output in node.outputs}
+        expected = {output.name: output for output in signature.outputs}
+        for name in sorted(set(declared) - set(expected)):
+            self._issue(
+                "unknown_operator_output",
+                f"{signature.name}@{signature.version} does not declare output {name}",
+                f"{path}.outputs.{name}",
+            )
+        outputs: list[CatalogOutput] = []
+        for name, output_def in sorted(expected.items()):
+            output = declared.get(name)
+            if output is None:
+                self._issue(
+                    "missing_operator_output",
+                    f"{signature.name}@{signature.version} requires declared output {name}",
+                    f"{path}.outputs.{name}",
+                )
+                continue
+            self._validate_operator_output(
+                output_def=output_def,
+                output=output,
+                path=f"{path}.outputs.{name}",
+            )
+            outputs.append(operator_output_to_catalog_output(output))
+        return outputs
 
     def _validate_catalog_input(
         self,
@@ -590,6 +778,103 @@ class Binder:
                 (
                     f"input {input_def.name} expects {input_def.entity_scope.value}, "
                     f"got {output.entity_scope.value}"
+                ),
+                path,
+            )
+
+    def _validate_operator_input(
+        self,
+        *,
+        input_def: OperatorInputDefinition,
+        output: CatalogOutput,
+        path: str,
+    ) -> None:
+        if output.temporal_type != input_def.temporal_type:
+            self._issue(
+                "operator_input_temporal_mismatch",
+                (
+                    f"input {input_def.name} expects {input_def.temporal_type.value}, "
+                    f"got {output.temporal_type.value}"
+                ),
+                path,
+            )
+        if output.payload_type != input_def.payload_type:
+            self._issue(
+                "operator_input_payload_mismatch",
+                (
+                    f"input {input_def.name} expects {input_def.payload_type.value}, "
+                    f"got {output.payload_type.value}"
+                ),
+                path,
+            )
+        if output.cardinality != input_def.cardinality:
+            self._issue(
+                "operator_input_cardinality_mismatch",
+                (
+                    f"input {input_def.name} expects {input_def.cardinality.value}, "
+                    f"got {output.cardinality.value}"
+                ),
+                path,
+            )
+        if output.unit != input_def.unit:
+            self._issue(
+                "operator_input_unit_mismatch",
+                f"input {input_def.name} expects {input_def.unit.value}, got {output.unit.value}",
+                path,
+            )
+        if output.entity_scope != input_def.entity_scope:
+            self._issue(
+                "operator_input_entity_scope_mismatch",
+                (
+                    f"input {input_def.name} expects {input_def.entity_scope.value}, "
+                    f"got {output.entity_scope.value}"
+                ),
+                path,
+            )
+
+    def _validate_operator_output(
+        self,
+        *,
+        output_def: OperatorOutputDeclaration,
+        output: OperatorOutputDeclaration,
+        path: str,
+    ) -> None:
+        if output.temporal_type != output_def.temporal_type:
+            self._issue(
+                "operator_output_temporal_mismatch",
+                f"output {output_def.name} expects {output_def.temporal_type.value}, got {output.temporal_type.value}",
+                path,
+            )
+        if output.payload_type != output_def.payload_type:
+            self._issue(
+                "operator_output_payload_mismatch",
+                f"output {output_def.name} expects {output_def.payload_type.value}, got {output.payload_type.value}",
+                path,
+            )
+        if output.cardinality != output_def.cardinality:
+            self._issue(
+                "operator_output_cardinality_mismatch",
+                f"output {output_def.name} expects {output_def.cardinality.value}, got {output.cardinality.value}",
+                path,
+            )
+        if output.unit != output_def.unit:
+            self._issue(
+                "operator_output_unit_mismatch",
+                f"output {output_def.name} expects {output_def.unit.value}, got {output.unit.value}",
+                path,
+            )
+        if output.entity_scope != output_def.entity_scope:
+            self._issue(
+                "operator_output_entity_scope_mismatch",
+                f"output {output_def.name} expects {output_def.entity_scope.value}, got {output.entity_scope.value}",
+                path,
+            )
+        if output.missing_data_semantics != output_def.missing_data_semantics:
+            self._issue(
+                "operator_output_missing_data_mismatch",
+                (
+                    f"output {output_def.name} expects {output_def.missing_data_semantics.value}, "
+                    f"got {output.missing_data_semantics.value}"
                 ),
                 path,
             )
@@ -863,6 +1148,9 @@ class Binder:
                 return signature
         return None
 
+    def _find_composition_operator(self, name: str, version: str) -> CompositionOperatorSignature | None:
+        return self.composition_operator_signatures.get((name, version))
+
     def _resolve_signal(
         self,
         reference: SignalRef,
@@ -926,6 +1214,12 @@ def draft_plan_dependency_depth(draft_plan: DraftQueryPlan) -> int:
                 if node.input.source_node_id in node_ids
                 else []
             )
+        elif isinstance(node, DraftOperatorNode):
+            inputs_by_node[node.node_id] = [
+                reference.source_node_id
+                for reference in node.inputs.values()
+                if reference.source_node_id in node_ids
+            ]
 
     visiting: set[str] = set()
     visited: dict[str, int] = {}
@@ -947,6 +1241,19 @@ def draft_plan_dependency_depth(draft_plan: DraftQueryPlan) -> int:
 
 def bind_document_from_path(path: Path) -> BoundQueryPlan:
     return bind_document(load_tactical_query_document(path))
+
+
+def operator_output_to_catalog_output(output: OperatorOutputDeclaration) -> CatalogOutput:
+    return CatalogOutput(
+        name=output.name,
+        temporal_type=output.temporal_type,
+        payload_type=output.payload_type,
+        cardinality=output.cardinality,
+        unit=output.unit,
+        entity_scope=output.entity_scope,
+        missing_data_semantics=output.missing_data_semantics,
+        evidence_fields=list(output.evidence_fields),
+    )
 
 
 def bind_document_json(path: Path) -> str:
