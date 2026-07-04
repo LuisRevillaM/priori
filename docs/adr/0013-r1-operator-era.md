@@ -89,3 +89,20 @@ sparse-signal trap (R1-4's window work touches that code); fabricated-
 trace deletion coupled to opposite-corridor plan retirement (R1-C
 cleanup); stale R3/S2 gate pins re-pin decision (R1-C); count-field vs
 multiplicity limits review (R1-3).
+
+## Addendum (2026-07-04): the operator template, from R1-1 round-1 review
+
+Binding for R1-2..R1-5: (1) input typing derives from the census's channel
+family, not the acceptance chain — signature unions are supported; (2) no
+field-name whitelists inside operators — field parameters validate at bind
+time against the bound input's declared evidence_fields; (3) no
+provider-specific defaults — point/field parameters are required; (4)
+orientation/frame basis is a declared parameter, per-record resolved, and
+recorded in evidence; (5) search-tool insertion is signature-driven, never
+per-operator hand-built, and "generic" rules carry no provider-name
+bonuses; (6) coverage/witness rule ids come from a registered vocabulary;
+(7) every axis/enum value tested, shared-source conventions exercised with
+both teams' records; zero-length-vector (and analogous degenerate-input)
+policies declared; (8) a units policy covers non-SI outputs (degrees); (9)
+reachability targets declare their target<->row semantic correspondence,
+and the ledger flip requires it.
