@@ -2862,17 +2862,26 @@ def operator_node(
     inputs: dict[str, dict[str, str]],
     parameters: dict[str, Any],
 ) -> dict[str, Any]:
+    signature = operator_signature(operator_name, version)
     return {
         "kind": "operator",
         "node_id": node_id,
         "operator": {"name": operator_name, "version": version},
         "inputs": inputs,
         "parameters": parameters,
-        "outputs": [
-            output.model_dump(mode="json")
-            for output in PROJECT_ONTO_AXIS_SIGNATURE.outputs
-        ],
+        "outputs": [output.model_dump(mode="json") for output in signature.outputs],
     }
+
+
+def operator_signature(operator_name: str, version: str) -> Any:
+    for signature in OPERATOR_SIGNATURES_BY_CONSTRAINT_KIND.values():
+        if signature.name == operator_name and signature.version == version:
+            return signature
+    raise SynthesisError(
+        "missing_constraint",
+        "No declared operator signature for generated operator node.",
+        {"operator_name": operator_name, "operator_version": version},
+    )
 
 
 def document(

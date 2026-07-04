@@ -6,11 +6,11 @@
   "targets": [
     {
       "target_id": "r1_2_pressure_distance_delta_v0",
-      "concept": "pressure_distance_delta",
+      "concept": "pressure_change_after",
       "held_out": true,
       "multi_step": true,
       "semantic_correspondence": {
-        "coverage_row": "pressure_distance_delta",
+        "coverage_row": "pressure_change_after",
         "meaning": "Signed change in nearest-defender distance from pass release to controlled reception for the same controlled-pass anchor.",
         "anchor_source": "controlled_pass_episode.anchors",
         "before_relation": "pressure_on_carrier.anchor_evaluations at physical_release_frame_id",
