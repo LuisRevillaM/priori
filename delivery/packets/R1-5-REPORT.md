@@ -260,7 +260,7 @@ population denominator.
 | `PYTHONPATH=src ... uv run --no-sync python -m unittest tests.test_r1_0_operator_scaffolding tests.test_r1_4_window tests.test_r1_5_typed_join` | PASS | 37 tests in 110.520s. |
 | `TQE_SEARCH_TARGETS=config/compiler-reachability/r1-5-typed-join-targets.v0.json ... TQE_SEARCH_MATCH_IDS=J03WOH ... uv run --no-sync python scripts/coverage_map/compiler_search_reachability.py` | PASS | Copy-ledger proof: compiler-reachable, 24 rows, 0 requested evidence failures, copy delta 11 -> 12. |
 | R1-5 full-population audit generator | PASS | 8,414 terminal rows; PASS 145 / FAIL 2,615 / UNKNOWN 5,654; artifacts committed in-tree. |
-| `UV_CACHE_DIR=/private/tmp/uv-cache make PYTHON="uv run --no-sync python" test` | PASS | 448 tests in 486.152s; runtime attestation `VERIFIED`, blocking reasons `[]`. Required temporary ignored symlinks from clone-local `data/canonical/v1` and `data/raw/idsse/figshare-28196177-v1` to the canonical corpus, then symlinks were removed. |
+| `UV_CACHE_DIR=/private/tmp/uv-cache make PYTHON="uv run --no-sync python" test` | PASS | Post-report-commit run on `e8f9d7a`: 448 tests in 449.634s; runtime attestation `VERIFIED`, blocking reasons `[]`. Required temporary ignored symlinks from clone-local `data/canonical/v1` and `data/raw/idsse/figshare-28196177-v1` to the canonical corpus, then symlinks were removed. |
 
 ## Notes for Review
 
