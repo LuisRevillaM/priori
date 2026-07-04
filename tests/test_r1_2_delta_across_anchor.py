@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import ast
 import json
 import tempfile
 import unittest
@@ -118,6 +119,8 @@ def run_delta(
             "anchor_status_value": typed_enum("PASS"),
             "before_subject_field": typed_enum("carrier_id"),
             "after_subject_field": typed_enum("carrier_id"),
+            "before_frame_field": typed_enum("pressure_frame_id"),
+            "after_frame_field": typed_enum("pressure_frame_id"),
             "before_status_field": typed_enum(before_status_field),
             "after_status_field": typed_enum(after_status_field),
             "required_status_value": typed_enum("PASS"),
@@ -184,6 +187,26 @@ class DeltaAcrossAnchorTests(unittest.TestCase):
         self.assertEqual("carrier_id", record["after_subject_field"])
         self.assertEqual("passer", record["before_subject_id"])
         self.assertEqual("receiver", record["after_subject_id"])
+        self.assertEqual("pressure_frame_id", record["before_frame_field"])
+        self.assertEqual("pressure_frame_id", record["after_frame_field"])
+
+    def test_missing_declared_frame_field_is_unknown(self) -> None:
+        anchor = anchor_record("declared-frame", 100)
+        before = evaluation_record(anchor, 0.8, pressure_frame_id=92)
+        after = evaluation_record(anchor, 1.2, pressure_frame_id=108)
+        before.pop("pressure_frame_id")
+
+        signals = run_delta(
+            anchors=[anchor],
+            before=[before],
+            after=[after],
+        )
+
+        record = signals["delta_records"][0]
+        self.assertEqual("UNKNOWN", record["delta_status"])
+        self.assertEqual("before_or_after_frame_missing", record["delta_reason"])
+        self.assertIsNone(record["before_evaluation_frame_id"])
+        self.assertEqual(108, record["after_evaluation_frame_id"])
 
     def test_missing_after_record_is_unknown(self) -> None:
         anchor = anchor_record("missing", 10)
@@ -301,8 +324,12 @@ class DeltaAcrossAnchorTests(unittest.TestCase):
         parameters = operator_nodes[0]["parameters"]
         self.assertEqual("nearest_defender_distance_m", parameters["before_value_field"]["value"])
         self.assertEqual("nearest_defender_distance_m", parameters["after_value_field"]["value"])
+        self.assertEqual("pressure_frame_id", parameters["before_frame_field"]["value"])
+        self.assertEqual("pressure_frame_id", parameters["after_frame_field"]["value"])
         self.assertEqual("physical_release_frame_id", build.metadata["delta_across_anchor_constraint"]["before_frame_field"])
         self.assertEqual("controlled_reception_frame_id", build.metadata["delta_across_anchor_constraint"]["after_frame_field"])
+        self.assertEqual("pressure_frame_id", build.metadata["delta_across_anchor_constraint"]["before_record_frame_field"])
+        self.assertEqual("pressure_frame_id", build.metadata["delta_across_anchor_constraint"]["after_record_frame_field"])
         self.assertEqual(
             "passer_id",
             build.metadata["delta_across_anchor_constraint"]["before_input_context"]["carrier_id_field"],
@@ -357,6 +384,61 @@ class DeltaAcrossAnchorTests(unittest.TestCase):
         self.assertNotIn('score += 5 if evaluator.name in {"pressure_on_carrier", "team_compactness"}', source)
         self.assertNotIn('score += 6 if evaluator.name in {"pressure_on_carrier", "team_compactness"}', source)
         self.assertNotIn('score += 4 if anchor_entry.name in {"carry_episode", "controlled_pass_episode", "switch_of_play"}', source)
+
+    def test_candidate_score_ratcheted_against_provider_name_literals(self) -> None:
+        tree = ast.parse(Path(search.__file__).read_text(encoding="utf-8"))
+        violations: list[int] = []
+
+        def contains_string_literal(node: ast.AST) -> bool:
+            return any(isinstance(child, ast.Constant) and isinstance(child.value, str) for child in ast.walk(node))
+
+        def contains_provider_name_reference(node: ast.AST) -> bool:
+            provider_names = {
+                "entry",
+                "provider",
+                "evaluator",
+                "anchor_entry",
+                "left_entry",
+                "right_entry",
+                "consumer",
+                "change_entry",
+                "join_entry",
+            }
+            for child in ast.walk(node):
+                if not isinstance(child, ast.Attribute) or child.attr != "name":
+                    continue
+                if isinstance(child.value, ast.Name) and child.value.id in provider_names:
+                    return True
+            return False
+
+        for node in ast.walk(tree):
+            if isinstance(node, ast.AugAssign) and isinstance(node.target, ast.Name) and node.target.id == "score":
+                if contains_string_literal(node.value) and contains_provider_name_reference(node.value):
+                    violations.append(node.lineno)
+            if isinstance(node, ast.Assign):
+                if any(isinstance(target, ast.Name) and target.id == "score" for target in node.targets):
+                    if contains_string_literal(node.value) and contains_provider_name_reference(node.value):
+                        violations.append(node.lineno)
+
+        self.assertEqual([], violations)
+
+    def test_pressure_on_carrier_declares_r1_2_semantics_fields(self) -> None:
+        catalog = search.CatalogIndex()
+        pressure = catalog.entries["pressure_on_carrier"]
+        fields = catalog.field_set(pressure)
+
+        for field in (
+            "team_role",
+            "pressure_frame_field",
+            "pressure_frame_id",
+            "carrier_id_field",
+            "pressure_defending_team_role",
+            "lookback_seconds",
+        ):
+            self.assertIn(field, fields)
+        self.assertTrue(
+            any("R1-2 R-F semantics" in limitation for limitation in pressure.limitations)
+        )
 
 
 def r1_2_target() -> dict[str, object]:
@@ -470,6 +552,8 @@ def delta_pressure_document() -> dict[str, object]:
                         "anchor_status_value": {"payload_type": "enum", "value": "PASS"},
                         "before_subject_field": {"payload_type": "enum", "value": "carrier_id"},
                         "after_subject_field": {"payload_type": "enum", "value": "carrier_id"},
+                        "before_frame_field": {"payload_type": "enum", "value": "pressure_frame_id"},
+                        "after_frame_field": {"payload_type": "enum", "value": "pressure_frame_id"},
                         "before_status_field": {"payload_type": "enum", "value": "none"},
                         "after_status_field": {"payload_type": "enum", "value": "none"},
                         "required_status_value": {"payload_type": "enum", "value": "PASS"},
@@ -511,6 +595,8 @@ def delta_pressure_document() -> dict[str, object]:
                     "anchor_status_field",
                     "anchor_status_value",
                     "anchor_status",
+                    "before_frame_field",
+                    "after_frame_field",
                     "before_status_field",
                     "after_status_field",
                     "before_value",

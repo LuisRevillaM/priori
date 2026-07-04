@@ -5067,10 +5067,14 @@ def default_relations() -> list[CatalogEntry]:
                     evidence_fields=[
                         "anchor_id",
                         "anchor_frame_id",
+                        "team_role",
                         "pressure_status",
                         "pressure_reason",
+                        "pressure_frame_field",
                         "pressure_frame_id",
+                        "carrier_id_field",
                         "carrier_id",
+                        "pressure_defending_team_role",
                         "nearest_defender_id",
                         "nearest_defender_distance_m",
                         "closing_speed_mps",
@@ -5169,19 +5173,28 @@ def default_relations() -> list[CatalogEntry]:
             evidence_fields=[
                 "pressure_status",
                 "pressure_reason",
+                "pressure_frame_field",
                 "pressure_frame_id",
+                "carrier_id_field",
                 "carrier_id",
+                "pressure_defending_team_role",
                 "nearest_defender_id",
                 "nearest_defender_distance_m",
                 "closing_speed_mps",
                 "approach_angle_degrees",
                 "pressure_duration_seconds",
+                "lookback_seconds",
                 "coverage_status",
             ],
             limitations=[
                 "Observed geometric/kinematic pressure only.",
                 "Does not infer pressure quality, defensive intent, scanning, decision quality, or causation.",
                 "Missing carrier or defender tracking produces UNKNOWN rather than false pressure.",
+                (
+                    "R1-2 R-F semantics: when an anchor carries team_role, pressure_on_carrier evaluates "
+                    "the side defending that anchor rather than the invocation's default defending side; "
+                    "declared non-anchor frame fields must be present, with no silent anchor-frame fallback."
+                ),
             ],
         ),
         relation(

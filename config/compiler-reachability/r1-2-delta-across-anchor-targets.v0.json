@@ -28,6 +28,8 @@
           "anchor_status_field",
           "anchor_status_value",
           "anchor_status",
+          "before_frame_field",
+          "after_frame_field",
           "before_status_field",
           "after_status_field",
           "required_status_value",
@@ -72,6 +74,8 @@
             "anchor_status_value": "PASS",
             "before_frame_field": "physical_release_frame_id",
             "after_frame_field": "controlled_reception_frame_id",
+            "before_record_frame_field": "pressure_frame_id",
+            "after_record_frame_field": "pressure_frame_id",
             "before_input_context": {
               "frame_field": "physical_release_frame_id",
               "carrier_id_field": "passer_id",

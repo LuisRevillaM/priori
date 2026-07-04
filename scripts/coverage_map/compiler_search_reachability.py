@@ -1051,6 +1051,8 @@ def build_delta_across_anchor_operator(
                         "anchor_status_value": enum(delta_constraint["anchor_status_value"]),
                         "before_subject_field": enum(candidate["before_input_context"].get("carrier_id_field", "none")),
                         "after_subject_field": enum(candidate["after_input_context"].get("carrier_id_field", "none")),
+                        "before_frame_field": enum(delta_constraint["before_record_frame_field"]),
+                        "after_frame_field": enum(delta_constraint["after_record_frame_field"]),
                         "before_status_field": enum(candidate["before_status_field"]),
                         "after_status_field": enum(candidate["after_status_field"]),
                         "required_status_value": enum(delta_constraint["required_status_value"]),
@@ -1128,6 +1130,8 @@ def delta_across_anchor_constraint(constraint: dict[str, Any]) -> dict[str, Any]
         "anchor_status_value",
         "before_frame_field",
         "after_frame_field",
+        "before_record_frame_field",
+        "after_record_frame_field",
         "carrier_id_field",
         "before_input_context",
         "after_input_context",
@@ -1153,6 +1157,8 @@ def delta_across_anchor_constraint(constraint: dict[str, Any]) -> dict[str, Any]
         "anchor_status_value": str(constraint.get("anchor_status_value", "PASS")),
         "before_frame_field": required_delta_constraint(constraint, "before_frame_field"),
         "after_frame_field": required_delta_constraint(constraint, "after_frame_field"),
+        "before_record_frame_field": required_delta_constraint(constraint, "before_record_frame_field"),
+        "after_record_frame_field": required_delta_constraint(constraint, "after_record_frame_field"),
         "carrier_id_field": str(constraint.get("carrier_id_field", "none")),
     }
     for context_key in ("before_input_context", "after_input_context"):
@@ -1314,6 +1320,11 @@ def build_entry(
         )
     if entry.name == "join_episode_sets":
         return build_join_episode_sets(context, entry, required_fields, depth=depth)
+    # Builder boundary: R1 operators are synthesized through
+    # OPERATOR_COMPOSITION_BUILDERS from target constraints. change_across_anchor
+    # is a grandfathered catalog-specific composition provider and remains on
+    # this branch until a later extraction packet migrates it to the operator
+    # registry.
     if entry.name == "change_across_anchor":
         return build_change_across_anchor(context, entry, required_fields, depth=depth, input_context=input_context)
     if entry.name == "controlled_line_break_episode":

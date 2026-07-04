@@ -42,6 +42,8 @@ EVIDENCE_FIELDS = [
     "anchor_status_field",
     "anchor_status_value",
     "anchor_status",
+    "before_frame_field",
+    "after_frame_field",
     "before_status_field",
     "after_status_field",
     "required_status_value",
@@ -199,6 +201,18 @@ DELTA_ACROSS_ANCHOR_SIGNATURE = CompositionOperatorSignature(
             description="After-record subject/entity field used for audit, or none.",
         ),
         ParameterDefinition(
+            name="before_frame_field",
+            payload_type=PayloadType.ENUM,
+            required=True,
+            description="Before-record frame evidence field used to audit the evaluated instant.",
+        ),
+        ParameterDefinition(
+            name="after_frame_field",
+            payload_type=PayloadType.ENUM,
+            required=True,
+            description="After-record frame evidence field used to audit the evaluated instant.",
+        ),
+        ParameterDefinition(
             name="before_status_field",
             payload_type=PayloadType.ENUM,
             required=True,
@@ -269,6 +283,8 @@ def execute_delta_across_anchor(
     anchor_status_value = _parameter_enum(parameters, "anchor_status_value")
     before_subject_field = _parameter_enum(parameters, "before_subject_field", "none")
     after_subject_field = _parameter_enum(parameters, "after_subject_field", "none")
+    before_frame_field = _parameter_enum(parameters, "before_frame_field")
+    after_frame_field = _parameter_enum(parameters, "after_frame_field")
     before_status_field = _parameter_enum(parameters, "before_status_field")
     after_status_field = _parameter_enum(parameters, "after_status_field")
     required_status_value = _parameter_enum(parameters, "required_status_value")
@@ -289,6 +305,8 @@ def execute_delta_across_anchor(
             anchor_status_value=anchor_status_value,
             before_subject_field=before_subject_field,
             after_subject_field=after_subject_field,
+            before_frame_field=before_frame_field,
+            after_frame_field=after_frame_field,
             before_status_field=before_status_field,
             after_status_field=after_status_field,
             required_status_value=required_status_value,
@@ -343,6 +361,8 @@ def _delta_record(
     anchor_status_value: str,
     before_subject_field: str,
     after_subject_field: str,
+    before_frame_field: str,
+    after_frame_field: str,
     before_status_field: str,
     after_status_field: str,
     required_status_value: str,
@@ -360,8 +380,8 @@ def _delta_record(
     anchor_frame_id = _optional_int(anchor.get("anchor_frame_id"))
     if anchor_frame_id is None:
         return None
-    before_frame_id = _record_frame_id(before_record)
-    after_frame_id = _record_frame_id(after_record)
+    before_frame_id = _record_frame_id(before_record, before_frame_field)
+    after_frame_id = _record_frame_id(after_record, after_frame_field)
     before_value = None if before_record is None else _optional_float(before_record.get(before_value_field))
     after_value = None if after_record is None else _optional_float(after_record.get(after_value_field))
     anchor_status = _status_value(anchor, anchor_status_field)
@@ -428,6 +448,8 @@ def _delta_record(
         "anchor_status_field": anchor_status_field,
         "anchor_status_value": anchor_status_value,
         "anchor_status": anchor_status,
+        "before_frame_field": before_frame_field,
+        "after_frame_field": after_frame_field,
         "before_status_field": before_status_field,
         "after_status_field": after_status_field,
         "required_status_value": required_status_value,
@@ -533,22 +555,12 @@ def _status_matches(value: str | None, field: str, required: str) -> bool:
     return value == required
 
 
-def _record_frame_id(record: dict[str, Any] | None) -> int | None:
+def _record_frame_id(record: dict[str, Any] | None, frame_field: str) -> int | None:
     if record is None:
         return None
-    for key in (
-        "line_evaluation_frame_id",
-        "pressure_frame_id",
-        "team_compactness_frame_id",
-        "lane_evaluation_frame_id",
-        "local_number_frame_id",
-        "frame_id",
-        "anchor_frame_id",
-    ):
-        value = _optional_int(record.get(key))
-        if value is not None:
-            return value
-    return None
+    if frame_field == "none":
+        return None
+    return _optional_int(record.get(frame_field))
 
 
 def _subject_value(record: dict[str, Any] | None, field: str) -> str | None:
