@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import copy
+import json
 import unittest
+from pathlib import Path
 
+from scripts.audits import r1_5_population_audit
 from scripts.coverage_map import compiler_search_reachability as search
 
 
@@ -74,6 +77,13 @@ class R1CCheckpointTests(unittest.TestCase):
         search.update_coverage_rows(rows, [result])
 
         self.assertEqual("handwired", rows[0]["composition_maturity"])
+
+    def test_r1_5_population_audit_markdown_regenerates_from_json(self) -> None:
+        audit_path = Path("delivery/packets/r1-5-population-audit/audit.json")
+        expected = Path("delivery/packets/r1-5-population-audit/audit.md").read_text(encoding="utf-8")
+        audit = json.loads(audit_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(expected, r1_5_population_audit.render_markdown(audit))
 
 
 if __name__ == "__main__":

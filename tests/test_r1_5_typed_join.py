@@ -325,6 +325,7 @@ class TypedJoinCompositionSuiteTests(unittest.TestCase):
                 self.assertEqual("FAIL", requested["support_arrival_status"])
                 self.assertEqual(role, requested["left_team_role"])
                 self.assertEqual(role, requested["right_team_role"])
+                self.assertEqual(requested["anchor_team_role"], requested["continuity_team_role"])
 
         self.assertEqual({"away", "home"}, set(role_counts))
         self.assertGreater(role_counts["away"], 0)

@@ -9,7 +9,7 @@ Branch: `packet/r1-c` from `codex/afl08-passport-loop` at
 | --- | --- | --- |
 | C1 unified sweep | DONE_WITH_CONCERNS | `delivery/packets/r1-c-sweep/` and `generated/compiler-search-v0/` |
 | C2 KPI semantic-correspondence hardening | DONE | `scripts/coverage_map/compiler_search_reachability.py`, `tests/test_r1_c_checkpoint.py` |
-| C3 R1-5 riders | NOT_STARTED | Pending |
+| C3 R1-5 riders | DONE | `tests/test_r1_5_typed_join.py`, `scripts/audits/r1_5_population_audit.py`, `tests/test_r1_c_checkpoint.py` |
 | C4 gate integrity manifest latency | NOT_STARTED | Pending |
 | Full committed-tree suite | NOT_STARTED | Pending |
 
@@ -99,7 +99,23 @@ Verification:
 
 ## C3 R1-5 Riders
 
-Pending.
+Rider 1: the both-teams CAR-0 composition suite now asserts
+`continuity_team_role == anchor_team_role` for every accepted row.
+
+Rider 2: committed `scripts/audits/r1_5_population_audit.py`. It has a
+`summarize` path that renders `audit.md` from the committed `audit.json`, and
+a `generate` path for rebuilding the full terminal-population audit from the
+R1-5 plan bundle when canonical data is available.
+
+Verification:
+
+| Command | Result | Notes |
+| --- | --- | --- |
+| `UV_CACHE_DIR=/private/tmp/uv-cache uv run --no-sync python -m unittest tests.test_r1_c_checkpoint.R1CCheckpointTests.test_r1_5_population_audit_markdown_regenerates_from_json -v` | PASS | Committed `audit.json` renders committed `audit.md` byte-identically in-process. |
+| `UV_CACHE_DIR=/private/tmp/uv-cache uv run --no-sync python scripts/audits/r1_5_population_audit.py summarize --audit-json delivery/packets/r1-5-population-audit/audit.json --output /private/tmp/r1_5_audit_smoke.md` + `cmp` | PASS | CLI-rendered markdown is byte-identical to committed `audit.md`. |
+| `PYTHONPATH=src UV_CACHE_DIR=/private/tmp/uv-cache uv run --no-sync python -m unittest tests.test_r1_5_typed_join.TypedJoinCompositionSuiteTests.test_car0_composition_executes_for_both_team_perspectives -v` | PASS | 1 canonical-data composition test in 58.108s after mutation restore. |
+| Mutation: temporarily invert the new continuity-team assertion and run the same named typed-join composition test | FAIL as expected | Failed on `AssertionError: 'away' == 'away'`; assertion restored and clean test rerun passed. |
+| `PYTHONPATH=src UV_CACHE_DIR=/private/tmp/uv-cache uv run --no-sync python -m py_compile scripts/audits/r1_5_population_audit.py tests/test_r1_c_checkpoint.py tests/test_r1_5_typed_join.py` | PASS | Syntax check for changed Python files. |
 
 ## C4 Latency Manifest
 
