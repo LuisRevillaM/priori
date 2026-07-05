@@ -103,3 +103,27 @@ source remains the standing entry on the ledger).
 5. Full-suite table on the new committed tree.
 
 Round 2 appends to packet/r2-2.
+
+---
+
+# R2-2 Round 2: ACCEPTED
+
+Reviewed 2026-07-05 at 2f4131b (recovered from clone
+/private/tmp/priori-r2-2-round2-single via format-patch; clone tree
+e1558e0 suite: 499 tests PASS). All rulings verified by the director's
+hand: the deviation-and-ratification section states the degeneracy,
+its R1-5 root cause, the ratified populations, and the process law
+verbatim (R-AA); every flagship surface renamed to fragile_retention_*
+with the only case-insensitive "car" hits being carrier_id and
+cardinality (R-AB); the operator is rate@0.1.0 with share amputated
+and its correct future semantics in the limitations (R-AC); D1-only
+yields UNKNOWN with [0, 0] bounds and empty populations emit the typed
+UNKNOWN row, both with named tests (R-AD). Director's own full suite
+green on the recovered tree.
+
+The era now has its second rung: rates with exact coupled bounds. The
+fragile-retention baseline — the CAR ladder's situational layer — is
+committed evidence: observed 145/222 = 65.3% retention in
+pressure-without-support situations, bounded honestly by 2,614
+unknowns, per team per match. CAR-1 (player residuals) has its
+denominator machinery.
