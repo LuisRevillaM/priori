@@ -4,7 +4,7 @@ Branch: `packet/r2-2`
 
 ## Clone Provenance
 
-Round 2 is being executed in clone `/private/tmp/priori-r2-2-round2-single` because the main workspace git index returned `index.lock` EPERM before edits. The director should recover round 2 via `format-patch` from the clone SHAs listed in the final section. Nothing is pushed.
+Round 2 is being executed in clone `/private/tmp/priori-r2-2-round2-single` because the main workspace git index returned `index.lock` EPERM before edits. The director should recover round 2 via `format-patch` from clone SHA `e1558e0` plus the final report commit. Nothing is pushed.
 
 ## Round 1 Baseline
 
@@ -135,4 +135,22 @@ Generator verification:
 
 ## Full-suite table on committed tree
 
-Status: pending round 2 final run.
+Status: complete.
+
+Committed clone tree tested: `e1558e0`. The final report commit is report-only and follows this run.
+
+Clone data setup for the run:
+
+- `data/canonical/v1` symlinked to `/Users/luisrevilla/code/priori/data/canonical/v1`
+- `data/raw/idsse/figshare-28196177-v1` symlinked to `/Users/luisrevilla/code/priori/data/raw/idsse/figshare-28196177-v1`
+- Python interpreter: `/Users/luisrevilla/code/priori/.venv/bin/python`
+
+| Command | Result | Tests | Skipped | Failures | Errors | Duration |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| `make test PYTHON=/Users/luisrevilla/code/priori/.venv/bin/python` | PASS | 499 | 0 | 0 | 0 | 452.321s |
+
+Failure enumeration for the final committed-tree run: none.
+
+Additional suite output: `{"attestation_status": "VERIFIED", "blocking_reasons": []}`.
+
+Earlier clone-only attempts failed before the data symlinks were installed; those failures were attributable to missing canonical/raw data in the clone, not to R2-2 code.
