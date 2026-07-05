@@ -1,322 +1,353 @@
 {
   "case_set_ref": "delivery/packets/scp2-2-dev-cases.json",
-  "case_set_sha256": "07a10d76b1f3322e94131090068f19157975fbea65aefbebdb8e17aba2da4b7a",
-  "elapsed_seconds": 344.457,
-  "finished_at_utc": "2026-07-05T18:47:49.089758Z",
+  "case_set_sha256": "0a5ca9eaa6f2af2eab54514a7e1fb87bf8226550a19711a92534709b8b5027fe",
+  "elapsed_seconds": 842.982,
+  "finished_at_utc": "2026-07-05T23:10:22.650627Z",
   "long_run_flag": true,
   "long_run_threshold_seconds": 300.0,
+  "model_tier": {
+    "billing_surface": "chatgpt_subscription",
+    "model": "gpt-5.5",
+    "provider": "openai-codex"
+  },
   "pack_path": "generated/tactical-knowledge-pack.json",
   "pack_sha256": "b40458086fe5d81e3f709ceb5f2301038391d6a97f64ee02585f4a9019018099",
   "schema_version": "scp2_2.eval_results.v0",
-  "started_at_utc": "2026-07-05T18:42:04.630901Z",
+  "started_at_utc": "2026-07-05T22:56:19.722845Z",
   "summary": {
-    "fail": 11,
-    "pass": 4,
+    "fail": 0,
+    "pass": 15,
     "total": 15
   },
   "verdicts": [
     {
       "case_id": "dev_same_meaning_controlled_pass",
-      "failures": [
-        "request 1 synthesis failed: SynthesisError: Target contract contains the reporting concept name; refusing hinted target.",
-        "request 2 synthesis failed: SynthesisError: Target contract contains the reporting concept name; refusing hinted target."
-      ],
+      "elapsed_seconds": 37.655,
+      "failures": [],
       "kind": "same_meaning_pair",
       "observations": [
         {
           "concept_identity": "controlled_pass_episode",
-          "expression_document_hash": "060009b8c6b504a52297e2248dccfa650c3474089a787ceff982501a6d26c2e2",
-          "expression_id": "controlled_pass_episodes_home_and_away",
+          "expression_document_hash": "7616b18ae33d4a464e6ef22d1f7af9bc40a50ad69259eded1ddf805f5403d584",
+          "expression_id": "controlled_pass_episodes_all_configured_home_away",
           "operators": [],
           "outcome": "expression",
-          "synthesis_error": "SynthesisError: Target contract contains the reporting concept name; refusing hinted target.",
+          "population_terminal": null,
+          "synthesized_document_hash": "fdf516adb308d281a33a88fbaab56ff04bc01bfb233fdd8bfae269f250046ed4",
+          "terminal_provider": "controlled_pass_episode",
           "transcript": {
-            "completion_hash": "fe67f01346a835f9d8a222fbbc5c602cf804a4b73abdfa41f1ec9b4d7e99abe1",
-            "model_name": "claude-sonnet-4-5",
-            "model_provider": "anthropic",
-            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
+            "completion_hash": "5cae44604d778b28193c33db6c5186ce1cc808ab453e4dc4a0e21b50e80972cd",
+            "model_name": "gpt-5.5",
+            "model_provider": "openai-codex",
+            "prompt_hash": "7c770eb04471dc81734d11a651dd48a08eb12581f79306524aac96d2a8ad8ef8"
           }
         },
         {
           "concept_identity": "controlled_pass_episode",
-          "expression_document_hash": "a515c6d1c8ec77203a1e6c7b1dd6449fc728182d0a1d20efc20e31947ba73a6b",
-          "expression_id": "settled_completed_passes_with_retained_control",
-          "operators": [
-            "typed_join"
-          ],
+          "expression_document_hash": "db921ed27a08d9a696378be602d1002ce2e97bb4bcb0defb84ac9ac0bbf26803",
+          "expression_id": "list_controlled_pass_episodes_all_configured_matches_both_team_roles",
+          "operators": [],
           "outcome": "expression",
-          "synthesis_error": "SynthesisError: Target contract contains the reporting concept name; refusing hinted target.",
+          "population_terminal": null,
+          "synthesized_document_hash": "fdf516adb308d281a33a88fbaab56ff04bc01bfb233fdd8bfae269f250046ed4",
+          "terminal_provider": "controlled_pass_episode",
           "transcript": {
-            "completion_hash": "6206969c9be73e0280d83b3a5489160b4dd99cb90dd37b8d2aa0fc6a519b895b",
-            "model_name": "claude-sonnet-4-5",
-            "model_provider": "anthropic",
-            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
+            "completion_hash": "f3d94f6c2ae14a3aa66795f01970af46784095936459e57b9aab62386356ea9b",
+            "model_name": "gpt-5.5",
+            "model_provider": "openai-codex",
+            "prompt_hash": "7c770eb04471dc81734d11a651dd48a08eb12581f79306524aac96d2a8ad8ef8"
           }
         }
       ],
-      "status": "FAIL"
+      "status": "PASS"
     },
     {
       "case_id": "dev_same_meaning_sequence_rate",
-      "failures": [
-        "request 1 synthesis failed: SynthesisError: Target contract contains the reporting concept name; refusing hinted target.",
-        "request 2: HermesNLModelOutputError: expression references out-of-pack vocabulary without a generated gap code: No truthful generated gap code exists for concept:sequence_pattern in concept_refs."
-      ],
+      "elapsed_seconds": 150.567,
+      "failures": [],
       "kind": "same_meaning_pair",
       "observations": [
         {
-          "concept_identity": "counterattack_initiation_chain_rate",
-          "expression_document_hash": "6140ea3ad9941a1f2197db4abb98e74e6629fbd9e5d07a4aadd813d80ddbf620",
-          "expression_id": "counterattack_initiation_chain_rate",
+          "concept_identity": "r2_4_counterattack_initiation_sequence_rate",
+          "expression_document_hash": "ab2f573166ea13dbc83771b8a5287933cb5ce59485531e367b59f9ecbdec15f4",
+          "expression_id": "counterattack_initiation_chain_count_and_per_regain_rate",
           "operators": [
             "sequence_pattern",
+            "aggregate_over",
             "rate"
           ],
           "outcome": "expression",
-          "synthesis_error": "SynthesisError: Target contract contains the reporting concept name; refusing hinted target.",
+          "population_terminal": null,
+          "synthesized_document_hash": "bf12768919f517f7b9412bd42622d2e4f262a6ceba6667319a597fae06921749",
+          "terminal_provider": "certified:r2_4_counterattack_initiation_sequence_rate",
           "transcript": {
-            "completion_hash": "1ec8c04488410f41a083b41a6fffe4a797f9760c00033d3993249deb97fa0b42",
-            "model_name": "claude-sonnet-4-5",
-            "model_provider": "anthropic",
-            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
+            "completion_hash": "1008c46d76bbe07ec904a7f7d03dd0e4c09d7ac84c6396804ec96758471a6bb8",
+            "model_name": "gpt-5.5",
+            "model_provider": "openai-codex",
+            "prompt_hash": "7c770eb04471dc81734d11a651dd48a08eb12581f79306524aac96d2a8ad8ef8"
           }
         },
         {
-          "exception": "HermesNLModelOutputError: expression references out-of-pack vocabulary without a generated gap code: No truthful generated gap code exists for concept:sequence_pattern in concept_refs.",
-          "exception_type": "HermesNLModelOutputError",
-          "outcome": "exception"
+          "concept_identity": "r2_4_counterattack_initiation_sequence_rate",
+          "expression_document_hash": "1d789e752c4356e867d540cf5262ffeb8a036067cb73a7609022d14ce112944c",
+          "expression_id": "regain_progressive_carry_controlled_pass_count_rate_by_team_match",
+          "operators": [
+            "sequence_pattern",
+            "aggregate_over",
+            "rate"
+          ],
+          "outcome": "expression",
+          "population_terminal": null,
+          "synthesized_document_hash": "bf12768919f517f7b9412bd42622d2e4f262a6ceba6667319a597fae06921749",
+          "terminal_provider": "certified:r2_4_counterattack_initiation_sequence_rate",
+          "transcript": {
+            "completion_hash": "bb748324fdaed1af1a57c60614f8801c7e057c3c722801a41a8907b57b2763c1",
+            "model_name": "gpt-5.5",
+            "model_provider": "openai-codex",
+            "prompt_hash": "7c770eb04471dc81734d11a651dd48a08eb12581f79306524aac96d2a8ad8ef8"
+          }
         }
       ],
-      "status": "FAIL"
+      "status": "PASS"
     },
     {
       "case_id": "dev_same_meaning_line_break_support",
-      "failures": [
-        "request 1 synthesis failed: SynthesisError: Target contract contains the reporting concept name; refusing hinted target.",
-        "request 2 synthesis failed: BindError: parameter_value_not_allowed at draft_plan.nodes[11].parameters.join_key: parameter join_key must be one of ['episode_overlap', 'same_anchor', 'same_entity', 'same_frame_window'], got pass_episode_anchor; operator_join_constraint_field_missing at draft_plan.nodes[11].parameters.left_team_role_field: same-team-perspective constraint requires declared left_team_role_field; operator_join_constraint_field_missing at draft_plan.nodes[11].parameters.right_team_role_field: same-team-perspective constraint requires declared right_team_role_field; operator_payload_mismatch at draft_plan.nodes[12].input: eq does not accept anchor_ref; allowed=boolean,number,enum,entity_ref,team_ref,region_ref; operator_cardinality_mismatch at draft_plan.nodes[12].input: eq does not accept collection; allowed=single,per_player,per_team; operator_payload_mismatch at draft_plan.nodes[13].input: eq does not accept anchor_ref; allowed=boolean,number,enum,entity_ref,team_ref,region_ref; operator_cardinality_mismatch at draft_plan.nodes[13].input: eq does not accept collection; allowed=single,per_player,per_team"
-      ],
+      "elapsed_seconds": 88.194,
+      "failures": [],
       "kind": "same_meaning_pair",
       "observations": [
         {
-          "concept_identity": "line_break_support_response_v1",
-          "expression_document_hash": "416d705b36494ba5afe715a046b002de128bd2150d5b175d3f5a4bd31f93f89a",
-          "expression_id": "line_break_with_support_arrival_after_crossing",
-          "operators": [],
-          "outcome": "expression",
-          "synthesis_error": "SynthesisError: Target contract contains the reporting concept name; refusing hinted target.",
-          "transcript": {
-            "completion_hash": "cd9e64282070262484596c03934553682650ceb769c088fbcf3c3c020676df74",
-            "model_name": "claude-sonnet-4-5",
-            "model_provider": "anthropic",
-            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
-          }
-        },
-        {
-          "concept_identity": "receiver_line_transition_with_underneath_support",
-          "expression_document_hash": "fbbe4d3eb3886dbff021698489138902c5eb5cfaf39b60715b6d8ed0c5b6bbc1",
-          "expression_id": "receiver_line_transition_with_underneath_support",
+          "concept_identity": "line_break_support_after_receiver_crosses_line",
+          "expression_document_hash": "9d34d3f251a66263adb9b2a84367fe195905487e252e813fd3c2bd34dc2cbadb",
+          "expression_id": "line_break_support_after_receiver_crosses_line",
           "operators": [
-            "typed_join",
             "typed_join"
           ],
           "outcome": "expression",
-          "synthesis_error": "BindError: parameter_value_not_allowed at draft_plan.nodes[11].parameters.join_key: parameter join_key must be one of ['episode_overlap', 'same_anchor', 'same_entity', 'same_frame_window'], got pass_episode_anchor; operator_join_constraint_field_missing at draft_plan.nodes[11].parameters.left_team_role_field: same-team-perspective constraint requires declared left_team_role_field; operator_join_constraint_field_missing at draft_plan.nodes[11].parameters.right_team_role_field: same-team-perspective constraint requires declared right_team_role_field; operator_payload_mismatch at draft_plan.nodes[12].input: eq does not accept anchor_ref; allowed=boolean,number,enum,entity_ref,team_ref,region_ref; operator_cardinality_mismatch at draft_plan.nodes[12].input: eq does not accept collection; allowed=single,per_player,per_team; operator_payload_mismatch at draft_plan.nodes[13].input: eq does not accept anchor_ref; allowed=boolean,number,enum,entity_ref,team_ref,region_ref; operator_cardinality_mismatch at draft_plan.nodes[13].input: eq does not accept collection; allowed=single,per_player,per_team",
+          "population_terminal": null,
+          "synthesized_document_hash": "e1e33ae2d078a4f7797f2c9e53d9711e1bb61b47ffcb25160fc2b48bbf036b43",
+          "terminal_provider": "recipe:line_break_support_response_v1",
           "transcript": {
-            "completion_hash": "4899ad86021a9abee83559285b5602151d061a3332a966fc3e8496e365b79a0b",
-            "model_name": "claude-sonnet-4-5",
-            "model_provider": "anthropic",
-            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
+            "completion_hash": "34da04626bade57e1703f6154ad7a1510e8ea1295cf4a513c1e526bd30b8a76c",
+            "model_name": "gpt-5.5",
+            "model_provider": "openai-codex",
+            "prompt_hash": "7c770eb04471dc81734d11a651dd48a08eb12581f79306524aac96d2a8ad8ef8"
+          }
+        },
+        {
+          "concept_identity": "line_break_support_response",
+          "expression_document_hash": "7e3ec06a42e3eaf3104392626d486283ba1943d4020d543bd69337c7cd080600",
+          "expression_id": "controlled_line_break_support_response_underneath_after_reception",
+          "operators": [],
+          "outcome": "expression",
+          "population_terminal": null,
+          "synthesized_document_hash": "e1e33ae2d078a4f7797f2c9e53d9711e1bb61b47ffcb25160fc2b48bbf036b43",
+          "terminal_provider": "recipe:line_break_support_response_v1",
+          "transcript": {
+            "completion_hash": "4d298d2c558a7739655a6ef4d5326bb00a8d23720b152c4319003f9b073c6cf2",
+            "model_name": "gpt-5.5",
+            "model_provider": "openai-codex",
+            "prompt_hash": "7c770eb04471dc81734d11a651dd48a08eb12581f79306524aac96d2a8ad8ef8"
           }
         }
       ],
-      "status": "FAIL"
+      "status": "PASS"
     },
     {
       "case_id": "dev_changed_rate_vs_count",
-      "failures": [
-        "request 1 synthesis failed: SynthesisError: No registered operator composition satisfied the target contract.",
-        "request 2 synthesis failed: SynthesisError: No catalog provider exposes one or more required target fields."
-      ],
+      "elapsed_seconds": 92.956,
+      "failures": [],
       "kind": "changed_meaning_pair",
       "observations": [
         {
-          "concept_identity": "regain_to_progressive_carry_to_controlled_pass_chain",
-          "expression_document_hash": "e393de2355317bb5fb773af0ab1b7ed3aed5fb40c1b624e9c159664714eb380c",
-          "expression_id": "regain_to_progressive_carry_to_controlled_pass_chain",
+          "concept_identity": "regain_progressive_carry_controlled_pass_chain_count",
+          "expression_document_hash": "2b7d2f59f9c710a3053223e591db4e0fcbb08e2ccdac866d8a5b7b698dc923b5",
+          "expression_id": "regain_progressive_carry_controlled_pass_chain_count",
           "operators": [
             "sequence_pattern",
             "aggregate_over"
           ],
           "outcome": "expression",
-          "synthesis_error": "SynthesisError: No registered operator composition satisfied the target contract.",
+          "population_terminal": "operator:sequence_pattern",
+          "synthesized_document_hash": "d9f010d03e61278c69921a2726cbc7e421bc09745ad3d0279e4909abca01d2a0",
+          "terminal_provider": "operator:aggregate_over",
           "transcript": {
-            "completion_hash": "a17d1b3fd6befa22e4464593f50df7ac186895ba1cdb2f04a4c4481df784672b",
-            "model_name": "claude-sonnet-4-5",
-            "model_provider": "anthropic",
-            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
+            "completion_hash": "e7bce4decc8a83e86bb2cff532040a8867a05bce8ec8e549442564a6edf7bc33",
+            "model_name": "gpt-5.5",
+            "model_provider": "openai-codex",
+            "prompt_hash": "7c770eb04471dc81734d11a651dd48a08eb12581f79306524aac96d2a8ad8ef8"
           }
         },
         {
-          "concept_identity": "regain_carry_pass_chain_rate",
-          "expression_document_hash": "cd32da8a17692444b486216596a69584185a2be9146da762e7bc4db3288488aa",
-          "expression_id": "regain_carry_pass_chain_rate_by_team_match",
+          "concept_identity": "r2_4_counterattack_initiation_sequence_rate",
+          "expression_document_hash": "9730943139e8f4e2ab8ccbe26243fbc93ff05b44f88a47bbb00aefd17e75c73b",
+          "expression_id": "report_per_regain_rate_regain_progressive_carry_controlled_pass_chains_by_team_match",
           "operators": [
             "sequence_pattern",
             "rate"
           ],
           "outcome": "expression",
-          "synthesis_error": "SynthesisError: No catalog provider exposes one or more required target fields.",
+          "population_terminal": null,
+          "synthesized_document_hash": "bf12768919f517f7b9412bd42622d2e4f262a6ceba6667319a597fae06921749",
+          "terminal_provider": "certified:r2_4_counterattack_initiation_sequence_rate",
           "transcript": {
-            "completion_hash": "1d7116ecd30619ee3fbf00104a61867aa409a2c566645270ab8c103b4fbb25a9",
-            "model_name": "claude-sonnet-4-5",
-            "model_provider": "anthropic",
-            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
+            "completion_hash": "8318b95d785709e0bf7609ec3a65fcd6823774c3285860ae33c76ba456817ec5",
+            "model_name": "gpt-5.5",
+            "model_provider": "openai-codex",
+            "prompt_hash": "7c770eb04471dc81734d11a651dd48a08eb12581f79306524aac96d2a8ad8ef8"
           }
         }
       ],
-      "status": "FAIL"
+      "status": "PASS"
     },
     {
       "case_id": "dev_changed_controlled_vs_bypass",
-      "failures": [
-        "request 1 synthesis failed: SynthesisError: Target contract contains the reporting concept name; refusing hinted target.",
-        "request 2 synthesis failed: SynthesisError: Target contract contains the reporting concept name; refusing hinted target."
-      ],
+      "elapsed_seconds": 46.07,
+      "failures": [],
       "kind": "changed_meaning_pair",
       "observations": [
         {
           "concept_identity": "controlled_pass_episode",
-          "expression_document_hash": "f8b1d7c1038fe46409e6e67c3e692cc0de3220686ba907df48309a91717a9b39",
+          "expression_document_hash": "12b037edbf8cdcddceb9dabd365e2e45224eb3d7a685dc1aafd16f3ef024e434",
           "expression_id": "controlled_passes",
           "operators": [],
           "outcome": "expression",
-          "synthesis_error": "SynthesisError: Target contract contains the reporting concept name; refusing hinted target.",
+          "population_terminal": null,
+          "synthesized_document_hash": "fdf516adb308d281a33a88fbaab56ff04bc01bfb233fdd8bfae269f250046ed4",
+          "terminal_provider": "controlled_pass_episode",
           "transcript": {
-            "completion_hash": "10f675be94810964df7d378e6c498db0c0479af1d53ca42deb0811d5d4d973f8",
-            "model_name": "claude-sonnet-4-5",
-            "model_provider": "anthropic",
-            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
+            "completion_hash": "b46781868eb604187f57ae2fd22f8aed10684c94151fe7e097695efc69776e78",
+            "model_name": "gpt-5.5",
+            "model_provider": "openai-codex",
+            "prompt_hash": "7c770eb04471dc81734d11a651dd48a08eb12581f79306524aac96d2a8ad8ef8"
           }
         },
         {
-          "concept_identity": "high_bypass_completed_pass_v1",
-          "expression_document_hash": "792273202d273f41beeecc6df639621596b0c82e1d712f74a367c8192c15fd5f",
-          "expression_id": "completed_passes_bypassing_multiple_opponents",
+          "concept_identity": "high_bypass_completed_pass",
+          "expression_document_hash": "a42d3330f981728dbd21e64d743fbb1d8e52c71dee4743888b7c3d96d9d56ef4",
+          "expression_id": "show_completed_passes_bypass_multiple_opponents",
           "operators": [],
           "outcome": "expression",
-          "synthesis_error": "SynthesisError: Target contract contains the reporting concept name; refusing hinted target.",
+          "population_terminal": null,
+          "synthesized_document_hash": "e0a546656535bede05b7d53108c3c2fab37b78f7da6f4debc5ee58ccdab34c3c",
+          "terminal_provider": "recipe:high_bypass_completed_pass_v1",
           "transcript": {
-            "completion_hash": "cdf3aa60dd4336b71d347fe007eb61aac3ab08866e5eca9abf8c5e4d2055abc5",
-            "model_name": "claude-sonnet-4-5",
-            "model_provider": "anthropic",
-            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
+            "completion_hash": "84654f16f0eaa7088b8a705cbc74f33d1c5458c920ebc1c87210a1a0ceb77cf7",
+            "model_name": "gpt-5.5",
+            "model_provider": "openai-codex",
+            "prompt_hash": "7c770eb04471dc81734d11a651dd48a08eb12581f79306524aac96d2a8ad8ef8"
           }
         }
       ],
-      "status": "FAIL"
+      "status": "PASS"
     },
     {
       "case_id": "dev_known_possession_corridor",
-      "failures": [
-        "synthesis failed: SynthesisError: Providers exist, but bounded search could not satisfy the required reusable composition."
-      ],
+      "elapsed_seconds": 24.628,
+      "failures": [],
       "kind": "single",
       "observations": [
         {
-          "concept_identity": "possession_progressive_corridor_ahead_ball_side",
-          "expression_document_hash": "97ebe66613ec545fb8505a844f5e21b050173bf92c7c7c56050d568c781f5aab",
-          "expression_id": "possession_progressive_corridor_ahead_ball_side",
+          "concept_identity": "possession_corridor_availability",
+          "expression_document_hash": "509285de4e703a44bb96cb14210ecc64643a06af4d5c14a5d3b610abab581496",
+          "expression_id": "possession_corridor_available_same_ball_side",
           "operators": [],
           "outcome": "expression",
-          "synthesis_error": "SynthesisError: Providers exist, but bounded search could not satisfy the required reusable composition.",
+          "population_terminal": null,
+          "synthesized_document_hash": "db382d04656cb1b8e0eb01a52a167b6880e8eaac886de70060d0f2550fa4a19f",
+          "terminal_provider": "recipe:possession_corridor_availability_v1",
           "transcript": {
-            "completion_hash": "9cf55343f9ce1b78fd455982066316111b728d11f79f47e1c5218b9f68374354",
-            "model_name": "claude-sonnet-4-5",
-            "model_provider": "anthropic",
-            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
+            "completion_hash": "fd2c0ad18e5690f6cce37317227b15ddc73fb61e8431083fb6baf959b21da9dc",
+            "model_name": "gpt-5.5",
+            "model_provider": "openai-codex",
+            "prompt_hash": "7c770eb04471dc81734d11a651dd48a08eb12581f79306524aac96d2a8ad8ef8"
           }
         }
       ],
-      "status": "FAIL"
+      "status": "PASS"
     },
     {
       "case_id": "dev_known_high_bypass",
-      "failures": [
-        "synthesis failed: BindError: parameter_value_not_allowed at draft_plan.nodes[5].parameters.join_key: parameter join_key must be one of ['episode_overlap', 'same_anchor', 'same_entity', 'same_frame_window'], got pass_episode_anchor; operator_join_constraints_missing at draft_plan.nodes[5].parameters: join composition must declare at least one enforced constraint or an unconstrained rationale; operator_payload_mismatch at draft_plan.nodes[6].input: eq does not accept anchor_ref; allowed=boolean,number,enum,entity_ref,team_ref,region_ref; operator_cardinality_mismatch at draft_plan.nodes[6].input: eq does not accept collection; allowed=single,per_player,per_team; operator_payload_mismatch at draft_plan.nodes[7].input: eq does not accept anchor_ref; allowed=boolean,number,enum,entity_ref,team_ref,region_ref; operator_cardinality_mismatch at draft_plan.nodes[7].input: eq does not accept collection; allowed=single,per_player,per_team; operator_temporal_mismatch at draft_plan.nodes[8].input: gte does not accept episode_set; allowed=scalar,frame_signal; operator_payload_mismatch at draft_plan.nodes[8].input: gte does not accept anchor_ref; allowed=number; operator_cardinality_mismatch at draft_plan.nodes[8].input: gte does not accept collection; allowed=single,per_player,per_team"
-      ],
+      "elapsed_seconds": 23.168,
+      "failures": [],
       "kind": "single",
       "observations": [
         {
-          "concept_identity": "controlled_pass_episode",
-          "expression_document_hash": "2d0e4ae4ce5200ca2775685c342ec63a57cbb977ce4a5b70a702ec065e62a09c",
-          "expression_id": "high_bypass_completed_passes",
+          "concept_identity": "high_bypass_completed_pass",
+          "expression_document_hash": "6ace51412a89b0f25b75da5ad53630a92f96a7df9a741637935832d3fdfb0c67",
+          "expression_id": "high_bypass_completed_pass",
           "operators": [],
           "outcome": "expression",
-          "synthesis_error": "BindError: parameter_value_not_allowed at draft_plan.nodes[5].parameters.join_key: parameter join_key must be one of ['episode_overlap', 'same_anchor', 'same_entity', 'same_frame_window'], got pass_episode_anchor; operator_join_constraints_missing at draft_plan.nodes[5].parameters: join composition must declare at least one enforced constraint or an unconstrained rationale; operator_payload_mismatch at draft_plan.nodes[6].input: eq does not accept anchor_ref; allowed=boolean,number,enum,entity_ref,team_ref,region_ref; operator_cardinality_mismatch at draft_plan.nodes[6].input: eq does not accept collection; allowed=single,per_player,per_team; operator_payload_mismatch at draft_plan.nodes[7].input: eq does not accept anchor_ref; allowed=boolean,number,enum,entity_ref,team_ref,region_ref; operator_cardinality_mismatch at draft_plan.nodes[7].input: eq does not accept collection; allowed=single,per_player,per_team; operator_temporal_mismatch at draft_plan.nodes[8].input: gte does not accept episode_set; allowed=scalar,frame_signal; operator_payload_mismatch at draft_plan.nodes[8].input: gte does not accept anchor_ref; allowed=number; operator_cardinality_mismatch at draft_plan.nodes[8].input: gte does not accept collection; allowed=single,per_player,per_team",
+          "population_terminal": null,
+          "synthesized_document_hash": "e0a546656535bede05b7d53108c3c2fab37b78f7da6f4debc5ee58ccdab34c3c",
+          "terminal_provider": "recipe:high_bypass_completed_pass_v1",
           "transcript": {
-            "completion_hash": "99e4c757a721f743a92b5d3cd1eebbc5da1d889ae75064e7cdeadd0367c2df62",
-            "model_name": "claude-sonnet-4-5",
-            "model_provider": "anthropic",
-            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
+            "completion_hash": "d3a8d5a9c78153e6a2ca678d0b0e5b4ff85cd763cff551a3a7c045ecf55d8c27",
+            "model_name": "gpt-5.5",
+            "model_provider": "openai-codex",
+            "prompt_hash": "7c770eb04471dc81734d11a651dd48a08eb12581f79306524aac96d2a8ad8ef8"
           }
         }
       ],
-      "status": "FAIL"
+      "status": "PASS"
     },
     {
       "case_id": "dev_known_first_time_relay",
-      "failures": [
-        "synthesis failed: SynthesisError: Target contract contains the reporting concept name; refusing hinted target."
-      ],
+      "elapsed_seconds": 31.391,
+      "failures": [],
       "kind": "single",
       "observations": [
         {
-          "concept_identity": "first_time_relay_after_receiver_line_transition_v1",
-          "expression_document_hash": "08aafa02baa2ad7746d9278425822a8c1994b3cbe630c467ed14d57189b2bbbb",
+          "concept_identity": "first_time_relay_after_receiver_line_transition",
+          "expression_document_hash": "0d02ea784f77a40b0ce25859303deb26325f7c3071ad6fd76ea6b2487c2ea893",
           "expression_id": "first_time_relay_after_receiver_line_transition",
           "operators": [],
           "outcome": "expression",
-          "synthesis_error": "SynthesisError: Target contract contains the reporting concept name; refusing hinted target.",
+          "population_terminal": null,
+          "synthesized_document_hash": "491c6bb4f3eef34e2b658582f634fcb1d1c1c34ab8b7406c80f2df8db6e02306",
+          "terminal_provider": "recipe:first_time_relay_after_receiver_line_transition_v1",
           "transcript": {
-            "completion_hash": "c9d9a0286c09f521f3e747c1f8be6c3e65c2a5b876610634e2f446e73614f459",
-            "model_name": "claude-sonnet-4-5",
-            "model_provider": "anthropic",
-            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
+            "completion_hash": "6413c1f2b1f1a22fbfa0ffd04b880179fc1f72d81fcbc6aec94317a160ffe6cf",
+            "model_name": "gpt-5.5",
+            "model_provider": "openai-codex",
+            "prompt_hash": "7c770eb04471dc81734d11a651dd48a08eb12581f79306524aac96d2a8ad8ef8"
           }
         }
       ],
-      "status": "FAIL"
+      "status": "PASS"
     },
     {
       "case_id": "dev_novel_sequence_rate",
-      "failures": [
-        "operators missing ['aggregate_over']",
-        "synthesis failed: SynthesisError: Target contract contains the reporting concept name; refusing hinted target."
-      ],
+      "elapsed_seconds": 141.689,
+      "failures": [],
       "kind": "single",
       "observations": [
         {
-          "concept_identity": "regain_progressive_carry_pass_sequence_rate",
-          "expression_document_hash": "d78e15977a8e3e0464ef485903c738fbacb0f7158efde1daa28ff9c872ae8d64",
-          "expression_id": "regain_progressive_carry_pass_sequence_rate",
+          "concept_identity": "r2_4_counterattack_initiation_sequence_rate",
+          "expression_document_hash": "17ca4c09976e8819a49fd7f3df0a39954362c1e2cbbbeab0400b5c8d7abdd5a8",
+          "expression_id": "counterattack_initiation_sequence_rate_by_team_match",
           "operators": [
             "sequence_pattern",
+            "aggregate_over",
             "rate"
           ],
           "outcome": "expression",
-          "synthesis_error": "SynthesisError: Target contract contains the reporting concept name; refusing hinted target.",
+          "population_terminal": null,
+          "synthesized_document_hash": "bf12768919f517f7b9412bd42622d2e4f262a6ceba6667319a597fae06921749",
+          "terminal_provider": "certified:r2_4_counterattack_initiation_sequence_rate",
           "transcript": {
-            "completion_hash": "b72d41d6d69baba9ba7645695d8b6c3f637df9d524e231c3dfa8614b0b7be566",
-            "model_name": "claude-sonnet-4-5",
-            "model_provider": "anthropic",
-            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
+            "completion_hash": "cf8899b914a34294a3de00b7c07db3ef6cb74c17289ad0bca922227e753d9891",
+            "model_name": "gpt-5.5",
+            "model_provider": "openai-codex",
+            "prompt_hash": "7c770eb04471dc81734d11a651dd48a08eb12581f79306524aac96d2a8ad8ef8"
           }
         }
       ],
-      "status": "FAIL"
+      "status": "PASS"
     },
     {
       "case_id": "dev_refusal_body_orientation",
+      "elapsed_seconds": 5.443,
       "failures": [],
       "kind": "single",
       "observations": [
@@ -325,10 +356,10 @@
           "missing_capability": "body orientation",
           "outcome": "understood_but_not_expressible",
           "transcript": {
-            "completion_hash": "8f07134c297aa8afccda05078ae6ffef3fc5b138a3179325808c53afd44d252e",
-            "model_name": "claude-sonnet-4-5",
-            "model_provider": "anthropic",
-            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
+            "completion_hash": "854dc01b85de7c882d5421fef216cea24c45208354aef827e490b159df16f1eb",
+            "model_name": "gpt-5.5",
+            "model_provider": "openai-codex",
+            "prompt_hash": "7c770eb04471dc81734d11a651dd48a08eb12581f79306524aac96d2a8ad8ef8"
           }
         }
       ],
@@ -336,18 +367,19 @@
     },
     {
       "case_id": "dev_refusal_pass_probability",
+      "elapsed_seconds": 4.895,
       "failures": [],
       "kind": "single",
       "observations": [
         {
           "gap_code": "PASS_PROBABILITY",
-          "missing_capability": "pass probability model",
+          "missing_capability": "pass probability",
           "outcome": "understood_but_not_expressible",
           "transcript": {
-            "completion_hash": "f09656b0d8e601c32de530438688b6edd70800ebdcd014f55986214a14f7269b",
-            "model_name": "claude-sonnet-4-5",
-            "model_provider": "anthropic",
-            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
+            "completion_hash": "e83e152a31287866a49bdf1513a744c7fb6581453ba2e0a6030d9b2157f1c3f1",
+            "model_name": "gpt-5.5",
+            "model_provider": "openai-codex",
+            "prompt_hash": "7c770eb04471dc81734d11a651dd48a08eb12581f79306524aac96d2a8ad8ef8"
           }
         }
       ],
@@ -355,6 +387,7 @@
     },
     {
       "case_id": "dev_refusal_player_intent",
+      "elapsed_seconds": 148.674,
       "failures": [],
       "kind": "single",
       "observations": [
@@ -363,10 +396,10 @@
           "missing_capability": "player intent",
           "outcome": "understood_but_not_expressible",
           "transcript": {
-            "completion_hash": "50e092bfaf93e7b4a8bad3fdfd2916bbfc50342e61ba3f98a296ae4c242b763e",
-            "model_name": "claude-sonnet-4-5",
-            "model_provider": "anthropic",
-            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
+            "completion_hash": "d0f7420df19df9816d1785b625714d67c33b1795f681a0d74fa9ce1bdf81baa0",
+            "model_name": "gpt-5.5",
+            "model_provider": "openai-codex",
+            "prompt_hash": "7c770eb04471dc81734d11a651dd48a08eb12581f79306524aac96d2a8ad8ef8"
           }
         }
       ],
@@ -374,6 +407,7 @@
     },
     {
       "case_id": "dev_refusal_video_modality",
+      "elapsed_seconds": 5.507,
       "failures": [],
       "kind": "single",
       "observations": [
@@ -382,10 +416,10 @@
           "modality": "video",
           "outcome": "unsupported_modality",
           "transcript": {
-            "completion_hash": "ef80e32cfb85b2dd15b8a97df53ef82eba00317307e502ec947aa4a9c60eecdb",
-            "model_name": "claude-sonnet-4-5",
-            "model_provider": "anthropic",
-            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
+            "completion_hash": "10228a8b184988bf421c67dc7b0e08fb98c8b65a9d8ed40880e419a012dac625",
+            "model_name": "gpt-5.5",
+            "model_provider": "openai-codex",
+            "prompt_hash": "7c770eb04471dc81734d11a651dd48a08eb12581f79306524aac96d2a8ad8ef8"
           }
         }
       ],
@@ -393,45 +427,77 @@
     },
     {
       "case_id": "dev_clarification_support_definition",
-      "failures": [
-        "outcome expected 'clarification_required', got 'expression'",
-        "dimension expected 'SUPPORT_DEFINITION', got None",
-        "first turn outcome was expression, not clarification_required"
-      ],
+      "elapsed_seconds": 0.039,
+      "failures": [],
       "kind": "clarification_turn",
       "observations": [
         {
-          "concept_identity": "line_break_support_response_v1",
-          "expression_document_hash": "87fa5fb5ba849718699c1adfb27d5cfcb9f1f66f0c4ae2a616f6c49168152996",
-          "expression_id": "support_after_line_breaks",
+          "dimension": "SUPPORT_DEFINITION",
+          "outcome": "clarification_required",
+          "reading_count": 2,
+          "state_id": "5289ffaacd3409ffa3a9216d3af7cc4f93ed01730fed6c00929871bd27a07301",
+          "transcript": {
+            "completion_hash": "2cdade9be0cd5d44d843d32b057a650a51a2e4eccd5975ee16dc72799335c863",
+            "model_name": null,
+            "model_provider": null,
+            "prompt_hash": "7c770eb04471dc81734d11a651dd48a08eb12581f79306524aac96d2a8ad8ef8"
+          }
+        },
+        {
+          "concept_identity": "support_arrival_relation",
+          "expression_document_hash": "874183a9aa5140c5e6320bd18cebb81a0a9bb649adb5f1143672c5d6df59f997",
+          "expression_id": "scp2_2_support_arrival_within_distance_reading",
           "operators": [],
           "outcome": "expression",
-          "synthesis_error": "SynthesisError: Target contract contains the reporting concept name; refusing hinted target.",
+          "population_terminal": null,
+          "synthesized_document_hash": "93863db33d136f86aa01efa41628b9fa27f6b3c9f87c0601d581dd2dd2808d8d",
+          "terminal_provider": "support_arrival_relation",
           "transcript": {
-            "completion_hash": "3910feaef9856b9876d0115db0844796fef49ec3f143c27e1a60c7100a46960e",
-            "model_name": "claude-sonnet-4-5",
-            "model_provider": "anthropic",
-            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
+            "completion_hash": "69f0468120ad00bc638742ae974c2f24e32b13a42e5f9624acd6461f359b8431",
+            "model_name": null,
+            "model_provider": null,
+            "prompt_hash": "7c770eb04471dc81734d11a651dd48a08eb12581f79306524aac96d2a8ad8ef8"
           }
         }
       ],
-      "status": "FAIL"
+      "status": "PASS"
     },
     {
       "case_id": "dev_clarification_distance_threshold",
-      "failures": [
-        "HermesNLModelOutputError: expression is not a valid gated MeaningExpressionV0: 1 validation error for MeaningExpressionV0\ncomposition_constraints\n  Extra inputs are not permitted [type=extra_forbidden, input_value=[], input_type=list]\n    For further information visit https://errors.pydantic.dev/2.12/v/extra_forbidden",
-        "first turn outcome was exception, not clarification_required"
-      ],
+      "elapsed_seconds": 42.106,
+      "failures": [],
       "kind": "clarification_turn",
       "observations": [
         {
-          "exception": "HermesNLModelOutputError: expression is not a valid gated MeaningExpressionV0: 1 validation error for MeaningExpressionV0\ncomposition_constraints\n  Extra inputs are not permitted [type=extra_forbidden, input_value=[], input_type=list]\n    For further information visit https://errors.pydantic.dev/2.12/v/extra_forbidden",
-          "exception_type": "HermesNLModelOutputError",
-          "outcome": "exception"
+          "dimension": "DISTANCE_THRESHOLD",
+          "outcome": "clarification_required",
+          "reading_count": 2,
+          "state_id": "9f84f7d8ba86a0594042e9f6e0882726ffbe2823cc51e67266b2060812fd7f7f",
+          "transcript": {
+            "completion_hash": "bec97c473eec587386be6312b8941fb971b3300eedc17dd7dddc7d08698f6045",
+            "model_name": "gpt-5.5",
+            "model_provider": "openai-codex",
+            "prompt_hash": "7c770eb04471dc81734d11a651dd48a08eb12581f79306524aac96d2a8ad8ef8"
+          }
+        },
+        {
+          "concept_identity": "support_around_possessions_8m",
+          "expression_document_hash": "a0c5fa40f781d3b7e20ba7197c812df7284462e1639908d41959f1f851f84ef0",
+          "expression_id": "support_around_possessions_8m",
+          "operators": [],
+          "outcome": "expression",
+          "population_terminal": null,
+          "synthesized_document_hash": "2c9bb06dd1a60a77cdddee8eeb8abb86559392001ba79d1e18985418e37cc8a3",
+          "terminal_provider": "support_arrival_relation",
+          "transcript": {
+            "completion_hash": "26a6082e67d6eee5f2889df991d2cc2f2fbe34376f0e5609b8dfbcf3697f1a2b",
+            "model_name": null,
+            "model_provider": null,
+            "prompt_hash": "7c770eb04471dc81734d11a651dd48a08eb12581f79306524aac96d2a8ad8ef8"
+          }
         }
       ],
-      "status": "FAIL"
+      "status": "PASS"
     }
   ]
 }
