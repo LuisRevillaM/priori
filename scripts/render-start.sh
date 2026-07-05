@@ -39,7 +39,7 @@ prewarm_coach_compiler() {
     -X POST "http://127.0.0.1:${PORT}/api/coach/interpret" \
     -H "Content-Type: application/json" \
     --data '{"query":"Show line breaks with no underneath outlet"}' \
-    >/tmp/priori-coach-prewarm.json; then
+    >/tmp/entrelineas-coach-prewarm.json; then
     echo "Prewarmed coach compiler for line-break preview."
   else
     echo "Coach compiler prewarm did not complete; endpoint remains available for on-demand execution." >&2

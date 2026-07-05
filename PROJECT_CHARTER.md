@@ -1,4 +1,4 @@
-# Priori Tactical Evidence Explorer
+# Entrelíneas Tactical Evidence Explorer
 
 ## Product Thesis
 

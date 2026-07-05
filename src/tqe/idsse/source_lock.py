@@ -68,7 +68,7 @@ def utc_now_iso() -> str:
 
 
 def fetch_figshare_article(api_url: str = FIGSHARE_API_URL) -> dict[str, Any]:
-    request = urllib.request.Request(api_url, headers={"User-Agent": "priori-tqe/0.1"})
+    request = urllib.request.Request(api_url, headers={"User-Agent": "entrelineas-tqe/0.1"})
     with urllib.request.urlopen(request, timeout=60) as response:
         payload = response.read()
     return json.loads(payload.decode("utf-8"))
@@ -159,7 +159,7 @@ def download_file(source_file: FigshareFile, destination: Path, attempts: int = 
     for attempt in range(1, attempts + 1):
         request = urllib.request.Request(
             source_file.download_url,
-            headers={"User-Agent": "priori-tqe/0.1"},
+            headers={"User-Agent": "entrelineas-tqe/0.1"},
         )
         try:
             with urllib.request.urlopen(request, timeout=300) as response, temp_path.open("wb") as handle:

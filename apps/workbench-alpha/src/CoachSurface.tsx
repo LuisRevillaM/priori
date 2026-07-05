@@ -160,9 +160,9 @@ export function CoachSurface() {
 
   return (
     <main className="coachShell">
-      <section className="coachExperience isMoment" aria-label="Priori high-bypass replay browser">
+      <section className="coachExperience isMoment" aria-label="Entrelíneas high-bypass replay browser">
         <div className="coachHeader">
-          <span className="coachBrand">Priori</span>
+          <span className="coachBrand">Entrelíneas</span>
           <h1>High-bypass control.</h1>
         </div>
 

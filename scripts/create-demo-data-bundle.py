@@ -22,7 +22,7 @@ DEFAULT_OUTPUT_DIR = Path("artifacts/cloud-alpha")
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Build the Priori cloud demo data bundle.")
+    parser = argparse.ArgumentParser(description="Build the Entrelíneas cloud demo data bundle.")
     parser.add_argument("--dataset-root", type=Path, default=Path("data"))
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
     parser.add_argument("--attribution", type=Path, default=DEFAULT_ATTRIBUTION)
@@ -33,11 +33,11 @@ def main() -> int:
     manifest = read_json(args.manifest)
     output_dir = args.output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
-    bundle_id = str(manifest.get("bundle_id") or "priori-cloud-workbench-alpha")
+    bundle_id = str(manifest.get("bundle_id") or "entrelineas-cloud-workbench-alpha")
     archive_path = output_dir / f"{bundle_id}.tar.gz"
     manifest_path = output_dir / f"{bundle_id}.manifest.json"
 
-    with tempfile.TemporaryDirectory(prefix="priori-bundle-") as temp_dir:
+    with tempfile.TemporaryDirectory(prefix="entrelineas-bundle-") as temp_dir:
         staging = Path(temp_dir) / "dataset"
         files = stage_dataset(
             dataset_root=args.dataset_root,

@@ -66,11 +66,11 @@ Reproduce the CI (no-data) environment locally — `data/` is gitignored, so a
 fresh worktree has no corpus, exactly like CI:
 
 ```bash
-git worktree add /tmp/priori-nodata HEAD
-cd /tmp/priori-nodata
+git worktree add /tmp/entrelineas-nodata HEAD
+cd /tmp/entrelineas-nodata
 PYTHONPATH=$PWD/src <repo>/.venv/bin/python -m unittest discover -s tests
 # expect: Ran 284 tests ... OK (skipped=36)
-git worktree remove /tmp/priori-nodata
+git worktree remove /tmp/entrelineas-nodata
 ```
 
 (`TQE_DATA_ROOT=/nonexistent make test` also triggers the skips, but the
