@@ -1,0 +1,45 @@
+{
+  "schema_version": "meaning_expression.v0",
+  "expression_id": "scp2_1_body_orientation_oov",
+  "expression_version": "0.1.0",
+  "concept_identity": "scp2_1_body_orientation_gap",
+  "display_name": "Body Orientation Out Of Vocabulary Refusal",
+  "meaning": "A player body-orientation claim asks for a primitive that the generated knowledge pack does not expose.",
+  "concept_refs": [
+    "body_orientation"
+  ],
+  "operator_applications": [],
+  "population": {
+    "match_ids": [
+      "J03WOH"
+    ],
+    "periods": [
+      "firstHalf",
+      "secondHalf"
+    ],
+    "perspective_team_roles": [
+      "home"
+    ]
+  },
+  "group_by": [],
+  "team_perspective": {
+    "required": false,
+    "same_team_enforced": false,
+    "statement": "No executable team-perspective claim exists because the primitive is out of vocabulary."
+  },
+  "target": {
+    "target_id": "scp2_1_body_orientation_oov_v0",
+    "held_out": true,
+    "multi_step": false
+  },
+  "target_contract": {
+    "desired_output": "classification",
+    "required_evidence": [],
+    "status_semantics": [],
+    "claim_boundary": "No body-orientation target is constructible from the generated knowledge pack."
+  },
+  "correspondence": {},
+  "fixture_notes": [
+    "Expected refusal outcome: understood_but_not_expressible with gap_code BODY_ORIENTATION."
+  ]
+}

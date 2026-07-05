@@ -1,0 +1,9 @@
+{
+  "gap_code": "BODY_ORIENTATION",
+  "message": "Meaning expression references out-of-pack concept:body_orientation; smallest missing capability is concept:body_orientation.",
+  "missing_capability": "concept:body_orientation",
+  "outcome": "understood_but_not_expressible",
+  "pack_sha256": "536fbe4f0649eaa1557ae7638581e3fbb7eaa6d49710e3e31521df8d99c06d7a",
+  "reference": "body_orientation",
+  "vocabulary_section": "concept_refs"
+}
