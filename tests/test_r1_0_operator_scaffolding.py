@@ -40,6 +40,7 @@ R1_OPERATOR_NAMES = (
     "window",
 )
 R1_SHARED_CODE_RATCHET_NAMES = (
+    "aggregate_over",
     "typed_join",
     "extremum_over_set",
     "project_onto_axis",
@@ -122,7 +123,14 @@ def bind_with_signature(payload: dict, signature: CompositionOperatorSignature) 
 class R10OperatorScaffoldingTests(unittest.TestCase):
     def test_operator_registry_is_explicit_and_complete(self) -> None:
         self.assertEqual(
-            ("project_onto_axis", "delta_across_anchor", "extremum_over_set", "window", "typed_join"),
+            (
+                "project_onto_axis",
+                "delta_across_anchor",
+                "extremum_over_set",
+                "window",
+                "typed_join",
+                "aggregate_over",
+            ),
             tuple(signature.name for signature in OPERATOR_SIGNATURES),
         )
         self.assertEqual(
@@ -132,6 +140,7 @@ class R10OperatorScaffoldingTests(unittest.TestCase):
                 ("extremum_over_set", "0.1.0"),
                 ("window", "0.1.0"),
                 ("typed_join", "0.1.0"),
+                ("aggregate_over", "0.1.0"),
             },
             set(declared_operator_signatures()),
         )
@@ -142,6 +151,7 @@ class R10OperatorScaffoldingTests(unittest.TestCase):
                 ("extremum_over_set", "0.1.0"),
                 ("window", "0.1.0"),
                 ("typed_join", "0.1.0"),
+                ("aggregate_over", "0.1.0"),
             },
             set(build_operator_registry({})),
         )
@@ -153,8 +163,9 @@ class R10OperatorScaffoldingTests(unittest.TestCase):
                 ("extremum_over_set", "0.1.0"),
                 ("window", "0.1.0"),
                 ("typed_join", "0.1.0"),
+                ("aggregate_over", "0.1.0"),
             },
-            set(executor_module.TacticalQueryExecutor().operators),
+            set(executor_module.build_operator_registry(vars(executor_module))),
         )
 
     def test_r1_operator_names_do_not_leak_into_shared_runtime_code(self) -> None:

@@ -570,6 +570,12 @@ class Binder:
             resolved_parameters=resolved_node_parameters,
             path=path,
         )
+        self._validate_aggregate_constraints(
+            node=node,
+            signature=signature,
+            resolved_parameters=resolved_node_parameters,
+            path=path,
+        )
         outputs = self._bind_operator_outputs(node=node, signature=signature, path=path)
         if (signature.name, signature.version) not in self.composition_operator_registry:
             self._issue(
@@ -744,6 +750,26 @@ class Binder:
                     ),
                     f"{path}.parameters.{parameter.name}",
                 )
+        for parameter in signature.parameters:
+            if not parameter.name.endswith("_fields"):
+                continue
+            value = resolved_parameters.get(parameter.name)
+            if value is None:
+                continue
+            if value.payload_type != PayloadType.ENTITY_SET:
+                continue
+            for field_name in [str(item) for item in value.value]:
+                if field_name == "none":
+                    continue
+                if field_name not in declared_fields:
+                    self._issue(
+                        "operator_field_parameter_not_in_input",
+                        (
+                            f"{signature.name}@{signature.version} parameter {parameter.name} "
+                            f"references field {field_name}, but no bound operator input declares it"
+                        ),
+                        f"{path}.parameters.{parameter.name}",
+                    )
 
     def _validate_declared_join_constraints(
         self,
@@ -823,6 +849,131 @@ class Binder:
                         f"frame-alignment constraint requires declared {field_parameter}",
                         f"{path}.parameters.{field_parameter}",
                     )
+
+    def _validate_aggregate_constraints(
+        self,
+        *,
+        node: DraftOperatorNode,
+        signature: CompositionOperatorSignature,
+        resolved_parameters: dict[str, TypedValue],
+        path: str,
+    ) -> None:
+        aggregate_parameter_names = {
+            "aggregation_kind",
+            "population_expression",
+            "group_by_fields",
+            "status_field",
+            "same_team_perspective_required",
+            "entity_identity_preserved_required",
+            "frame_alignment_required",
+            "constraint_opt_out_reason",
+            "team_role_field",
+        }
+        parameter_names = {parameter.name for parameter in signature.parameters}
+        if not aggregate_parameter_names.issubset(parameter_names):
+            return
+        aggregation_kind = _resolved_text(resolved_parameters, "aggregation_kind")
+        if aggregation_kind != "count":
+            self._issue(
+                "operator_aggregate_kind_unsupported",
+                "aggregate operator supports aggregation_kind=count only in this packet",
+                f"{path}.parameters.aggregation_kind",
+            )
+        same_team_required = _resolved_bool(resolved_parameters, "same_team_perspective_required")
+        entity_required = _resolved_bool(resolved_parameters, "entity_identity_preserved_required")
+        frame_required = _resolved_bool(resolved_parameters, "frame_alignment_required")
+        opt_out_reason = _resolved_text(resolved_parameters, "constraint_opt_out_reason", "none")
+        if not all((same_team_required, entity_required, frame_required)) and opt_out_reason == "none":
+            self._issue(
+                "operator_aggregate_constraint_opt_out_reason_missing",
+                "aggregate constraint opt-out requires declared constraint_opt_out_reason",
+                f"{path}.parameters.constraint_opt_out_reason",
+            )
+        if same_team_required and _resolved_text(resolved_parameters, "team_role_field", "none") == "none":
+            self._issue(
+                "operator_aggregate_team_role_field_missing",
+                "same-team-perspective aggregate requires declared team_role_field",
+                f"{path}.parameters.team_role_field",
+            )
+        population_ref = node.inputs.get("population")
+        if population_ref is None:
+            return
+        upstream_chain = self._bound_upstream_chain(population_ref.source_node_id)
+        if not upstream_chain:
+            self._issue(
+                "operator_aggregate_population_upstream_missing",
+                "aggregate population source must be a previously bound node",
+                f"{path}.inputs.population",
+            )
+            return
+        group_by_fields = _resolved_list(resolved_parameters, "group_by_fields")
+        if "perspective_team_role" in group_by_fields and not self._chain_enforces_parameter(
+            upstream_chain,
+            "same_team_perspective_required",
+        ):
+            self._issue(
+                "operator_aggregate_perspective_group_requires_same_team",
+                "perspective_team_role grouping requires upstream same-team-perspective enforcement",
+                f"{path}.parameters.group_by_fields",
+            )
+        required = {
+            "same_team_perspective_required": same_team_required,
+            "entity_identity_preserved_required": entity_required,
+            "frame_alignment_required": frame_required,
+        }
+        for parameter_name, is_required in required.items():
+            if not is_required:
+                continue
+            if not self._chain_exposes_parameter(upstream_chain, parameter_name):
+                self._issue(
+                    "operator_aggregate_constraint_not_inherited",
+                    "aggregate operator requires upstream composition to expose declared constraint parameters",
+                    f"{path}.parameters.{parameter_name}",
+                )
+                continue
+            if not self._chain_enforces_parameter(upstream_chain, parameter_name):
+                self._issue(
+                    "operator_aggregate_constraint_not_inherited",
+                    (
+                        f"aggregate operator requires upstream composition to enforce "
+                        f"{parameter_name}"
+                    ),
+                    f"{path}.parameters.{parameter_name}",
+                )
+
+    def _bound_upstream_chain(self, source_node_id: str) -> list[BoundPlanNode]:
+        by_id = {bound.node_id: bound for bound in self.bound_nodes}
+        chain: list[BoundPlanNode] = []
+        seen: set[str] = set()
+        stack = [source_node_id]
+        while stack:
+            node_id = stack.pop()
+            if node_id in seen:
+                continue
+            seen.add(node_id)
+            bound = by_id.get(node_id)
+            if bound is None:
+                continue
+            chain.append(bound)
+            inputs = getattr(bound, "inputs", {})
+            for reference in inputs.values():
+                stack.append(reference.source_node_id)
+        return chain
+
+    @staticmethod
+    def _chain_exposes_parameter(chain: list[BoundPlanNode], parameter_name: str) -> bool:
+        return any(
+            isinstance(bound, BoundOperatorNode) and parameter_name in bound.resolved_parameters
+            for bound in chain
+        )
+
+    @staticmethod
+    def _chain_enforces_parameter(chain: list[BoundPlanNode], parameter_name: str) -> bool:
+        return any(
+            isinstance(bound, BoundOperatorNode)
+            and _resolved_bool(bound.resolved_parameters, parameter_name)
+            for bound in chain
+        )
 
     def _bind_operator_outputs(
         self,
@@ -1410,6 +1561,13 @@ def _resolved_text(
 ) -> str:
     value = parameters.get(name)
     return default if value is None else str(value.value)
+
+
+def _resolved_list(parameters: dict[str, TypedValue], name: str) -> list[str]:
+    value = parameters.get(name)
+    if value is None or not isinstance(value.value, list):
+        return []
+    return [str(item) for item in value.value]
 
 
 def _has_anchor_evaluation_coverage(output: CatalogOutput) -> bool:

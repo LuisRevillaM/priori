@@ -1,0 +1,11 @@
+{
+  "aggregate_node_id": "aggregate_over_fragile_possession_state",
+  "flagship_plan": "delivery/packets/r2-1-flagship/aggregate_over_fragile_possession_state_v0.json",
+  "flagship_plan_hash": "243655e375aaebfa4b74167a9505f856925776b71a255ce1a79cd38896756b5f",
+  "generated_by": "scripts/packets/r2_1_flagship_generator.py",
+  "generated_from": "delivery/packets/r1-c-sweep/plans/r1_5_fragile_possession_state_v0.json",
+  "generated_from_hash": "bc77278b3358106178749a72edfdc730b56b23bd6b6b650c60895598ac2edfbe",
+  "schema_version": "r2_1_flagship_provenance.v1",
+  "sealed_audit": "delivery/packets/r1-c-sweep/population-audit/audit.json",
+  "sealed_audit_hash": "7b99cabfc9d3c240b4f8eb7f1083c788e64219677c90e2e5228467167f4caa5d"
+}
