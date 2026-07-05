@@ -133,3 +133,17 @@ path. An executor-performed flip is invalid regardless of the evidence's
 truth — authority does not transfer with correctness. (18) Operator
 output/evidence declarations are derived from bound inputs, never
 statically enumerated per-composition in operator source.
+
+## Addendum 5 (2026-07-04): from R1-C — declarations are not verdicts
+
+(19) Semantic correspondence in this schema is a DECLARATION — a
+human-authored statement of what a target means, carried with the
+target and validated for shape and row-identity by the ledger guard.
+Correspondence VERDICTS are human acceptance acts recorded in review
+files; no machine field may be named PASS or FAIL for correspondence,
+because a machine-emitted verdict would launder judgment into
+attestation. The guard's law is tri-state: a well-formed declaration
+for exactly its own row, plus a certified plan reference (plan_path
+and document_hash), flips; every other value — verdict strings, wrong
+rows, missing keys, UNKNOWN — raises. Product and report language
+follow the same rule: correspondence is DECLARED, never "passed."
