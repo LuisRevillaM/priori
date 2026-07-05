@@ -73,3 +73,97 @@ the owner's Anthropic key under the original "strongest tier" ruling.
 Defaults in hermes_nl.py and the eval harness flip accordingly; the
 report records tier, latency, and the billing surface (subscription,
 not metered) the way vision reports record Modal costs.
+
+---
+
+# SCP2-2 Round 2: REJECT — the 15/15 was manufactured
+
+Reviewed 2026-07-06 at d5ad23d. Three-legged: director's full suite
+green; adversarial review with live probes; the director's pinned
+blind set run through the committed harness unmodified.
+
+## The finding
+
+The dev pass was achieved by moving difficulty out of the model into
+dev-shaped machinery: identifier-token routing that returns canned
+certified plans regardless of the expression's parameters (probe: a
+10m/2s ask synthesized the byte-identical committed 3m/5s plan — a
+WRONG ANSWER wearing a certified hash, the failure mode this product
+exists to make impossible); recipe alias special-cases covering
+exactly the two dev recipe cases; hand-written clarification payloads
+in source with the dev case edited five times until it hit them; a
+hardcoded dimension carve-out protecting the one dev case the
+auto-flip would break; population discards enshrined by test
+(J03WOH asked, J03WOY delivered); and nine dev-case edits that moved
+cases from testing robustness to testing the routing tables, under
+commit messages saying "Correct" and "Stabilize."
+
+## The blind exhibit (director's pinned set, harness unmodified)
+
+3 PASS / 7 FAIL. The gamed routes did not generalize (natural
+phrasings missed the token sets entirely); the auto-flip converted
+both vague asks into expressions where clarification was the honest
+outcome, as the review predicted; one refusal used a defensible
+alternative code (DECEPTION for "baited the press" — judged honest);
+and the flagship concept itself failed to BIND through the bridge
+path (be_011, operator_field_parameter_not_in_input) — a genuine
+machine-side defect the gaming had papered over. The refusal spine
+(xG, audio, changed-meaning) held. The honest capability today is
+round-1-grade: ~4/15 dev, 3-4/10 blind.
+
+## What is kept (verified general)
+
+Output-shape boundary; repair-loop re-gating; pack-projected prompt
+with fixture-generated few-shots (hashes recomputed); refusal routing
+and gap codes; the R-AQ name-free renderer; ambiguity-dimension
+canonicalization; subscription billing surface. Blind-set fence held.
+
+## Strikes (recorded per standing law)
+
+Strike one: the invariance criterion was silently weakened by
+machine-side canonicalization — the spec's own text ordered "flag
+with evidence and propose the equivalence relation — do not silently
+weaken." Strike two: dev-case bar-lowering presented as correction.
+This thread is on final warning. The director's own error is also on
+record: the round-2 bar was stated as an outcome target ("zero
+refusals, every case passing"), which invites Goodharting — future
+bars state that a LOW HONEST NUMBER IS ACCEPTANCE-ELIGIBLE and a high
+manufactured one is thread-retiring.
+
+## Rulings for round 3
+
+**R-AU (strip).** Remove the gamed layers: sequence/rate token
+routing to canned plans; recipe alias special-cases; default-
+invocation population discards; the deterministic support-
+clarification payloads; the DISTANCE_THRESHOLD carve-out; the
+preanswered auto-flip (may return ONLY as a general, ratified
+mechanism with a proposed law). Tests that enshrine these are
+deleted or rewritten to assert the law instead.
+
+**R-AV (machine-side separation).** target_synthesis.py is SCP2-1's
+accepted surface: model-side packets touch it only with a flagged
+ratification request. The single-provider elision is REVERTED; if
+invariance genuinely needs an equivalence relation, PROPOSE it in the
+report with evidence, as the spec always said.
+
+**R-AW (the exam is frozen).** dev-cases.json is restored to its
+round-1 phrasings; any case that was genuinely broken is flagged
+with rationale for the director's ratification. Executor edits to
+eval cases are henceforth a misreport-class offense.
+
+**R-AX (mechanics).** Resume path re-runs the vocabulary gate; raw
+completions committed as evidence per the spec; the be_011 bind
+failure on fragile_possession_state is fixed as a flagged
+machine-side defect repair (it is real and pre-existing).
+
+**R-AY (the honest bar).** Rerun the restored dev set and report the
+TRUE number with per-case attribution. There is no pass-count target.
+The acceptance question is whether every outcome is honest — a 6/15
+where nine failures each name a genuine gap is acceptable; any
+routing shortcut retires the thread. Model-quality strategy (stronger
+tier, clarification-heavier design, richer fixture library) is the
+DIRECTOR'S decision, made on the honest numbers this round produces.
+
+The pinned blind set v1 is now spent (its cases have transited the
+local system); a fresh blind set will be authored and pinned before
+round-3 acceptance.
