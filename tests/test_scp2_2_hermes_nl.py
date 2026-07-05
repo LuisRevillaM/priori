@@ -141,6 +141,15 @@ class SCP2HermesNLTests(unittest.TestCase):
             high_bypass["required_status_semantics"],
         )
 
+    def test_prompt_projection_contains_generated_classifier_rules(self) -> None:
+        rules = self.projection.sections["compiler_classification_rules"]
+
+        self.assertIn(
+            "cover underneath",
+            rules["clarify_not_gap_when_request_contains_without_corridor_alias"],
+        )
+        self.assertIn("body orientation", rules["capability_gap_when_request_contains"])
+
     def test_invalid_raw_completion_gets_repaired_before_acceptance(self) -> None:
         payload = self.fixture_payload("fragile_possession_state_known.v0.json")
         invoker = FakeInvoker(

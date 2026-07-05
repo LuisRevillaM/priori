@@ -322,6 +322,9 @@ def build_prompt_projection(pack_path: Path = DEFAULT_KNOWLEDGE_PACK_PATH) -> Pr
         "the primitive's generated status/output fields plus predicate status_semantics. For composed asks, use "
         "composition_constraints.kind from generated constraint_kinds and only that kind's generated parameter "
         "names. Do not place unsupported join keys or field names in constraint parameters.\n"
+        "Prefer the smallest generated primitive/relation/recipe that already covers the request. Do not add "
+        "window, typed_join, aggregate, or rate composition for adjectives that are already covered by a generated "
+        "concept purpose, output status field, parameter default, or recipe authoring guide.\n"
         "Use generated certified_few_shot_examples as examples of synthesizeable MeaningExpressionV0 shape. "
         "They are generated from committed certified fixtures. Do not copy fixture IDs unless the request truly "
         "matches; copy the contract discipline: minimal required_evidence, concrete status fields, and only needed "
@@ -331,6 +334,10 @@ def build_prompt_projection(pack_path: Path = DEFAULT_KNOWLEDGE_PACK_PATH) -> Pr
         "expression rather than prose or clarification. Use generated default parameter values when the request "
         "does not override them; ask clarification only when no generated default or request phrase selects a "
         "supported value.\n"
+        "Use generated compiler_classification_rules for lexical routing. Generic alias-only language may ask for "
+        "a generated ambiguity dimension, but qualified alias language that maps to a generated recipe/relation "
+        "with parameter defaults should use those defaults instead of re-asking solely because an enum has multiple "
+        "allowed values.\n"
         "You may use read-only priori_tactical MCP tools to inspect capabilities, recipes, or field contracts "
         "before the final answer. Never submit, validate, execute, inspect results, or retrieve replay. Tool "
         "observations are not an output surface; the final answer is still only the JSON object.\n"
@@ -376,6 +383,7 @@ def prompt_sections_from_pack(pack: dict[str, Any], *, pack_path: Path) -> dict[
             predicate_operator_projection(item)
             for item in sorted(predicate_operators, key=lambda item: item["name"])
         ],
+        "compiler_classification_rules": pack.get("compiler_classification_rules") or {},
         "recipe_authoring_guides": [
             recipe_authoring_projection(item)
             for item in sorted(pack.get("recipes") or [], key=lambda item: item["recipe_id"])
