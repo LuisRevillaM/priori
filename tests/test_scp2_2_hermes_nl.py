@@ -128,6 +128,35 @@ class SCP2HermesNLTests(unittest.TestCase):
             self.assertEqual("accepted", result.outcome)
             self.assertTrue(example["minimal_contract_guidance"]["required_evidence"])
 
+    def test_prompt_projection_contains_generated_recipe_authoring_guides(self) -> None:
+        guides = self.projection.sections["recipe_authoring_guides"]
+        guide_by_id = {item["recipe_id"]: item for item in guides}
+
+        self.assertIn("high_bypass_completed_pass_v1", guide_by_id)
+        self.assertIn("first_time_relay_after_receiver_line_transition_v1", guide_by_id)
+        high_bypass = guide_by_id["high_bypass_completed_pass_v1"]
+        self.assertIn("opponents_bypassed_count", high_bypass["requested_evidence_fields"])
+        self.assertIn(
+            {"field": "opponents_bypassed_count", "operator": "gte", "required_value": {"parameter": "minimum_bypassed_opponents"}},
+            high_bypass["required_status_semantics"],
+        )
+
+    def test_invalid_raw_completion_gets_repaired_before_acceptance(self) -> None:
+        payload = self.fixture_payload("fragile_possession_state_known.v0.json")
+        invoker = FakeInvoker(
+            "The request is expressible as controlled_pass_status PASS.",
+            json.dumps({"outcome": "expression", "expression": payload}),
+        )
+
+        outcome = compile_nl_request("show controlled passes", invoker=invoker)
+
+        self.assertEqual("expression", outcome.outcome)
+        self.assertEqual(payload["expression_id"], outcome.expression.expression_id)
+        self.assertEqual(2, len(invoker.prompts))
+        self.assertIn("previous final answer was rejected", invoker.prompts[1])
+        self.assertEqual(1, outcome.transcript.invocation["repair_attempt_count"])
+        self.assertEqual(1, len(outcome.transcript.invocation["rejected_attempts"]))
+
     def test_multi_turn_clarification_state_resumes_without_reasking_model(self) -> None:
         controlled = self.fixture_payload("fragile_possession_state_known.v0.json")
         sequence = self.fixture_payload("fragile_window_join_count_novel.v0.json")

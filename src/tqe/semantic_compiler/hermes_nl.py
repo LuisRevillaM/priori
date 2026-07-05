@@ -29,6 +29,7 @@ from tqe.semantic_compiler.meaning_expression import (
 DEFAULT_PROVIDER = "anthropic"
 DEFAULT_MODEL = "claude-opus-4-8"
 DEFAULT_TOOLSET = "mcp-priori_tactical"
+MAX_MODEL_REPAIR_ATTEMPTS = 2
 CERTIFIED_FEW_SHOT_PATHS = (
     Path("delivery/packets/scp2-1-roundtrip/meaning-expressions/fragile_possession_state_known.v0.json"),
     Path("delivery/packets/scp2-1-roundtrip/meaning-expressions/fragile_window_join_count_novel.v0.json"),
@@ -248,14 +249,41 @@ def compile_nl_request(
         model=os.environ.get("HERMES_SCP2_2_MODEL", DEFAULT_MODEL),
     )
     raw_completion = active_invoker.invoke(prompt)
-    transcript = transcript_for(
-        projection=projection,
-        raw_completion=raw_completion,
-        provider=active_invoker.provider,
-        model=active_invoker.model,
-        invocation={"request_text": text},
-    )
-    return parse_hermes_completion(raw_completion, transcript=transcript, vocabulary=vocabulary)
+    rejected_attempts: list[dict[str, str]] = []
+    for attempt_index in range(MAX_MODEL_REPAIR_ATTEMPTS + 1):
+        transcript = transcript_for(
+            projection=projection,
+            raw_completion=raw_completion,
+            provider=active_invoker.provider,
+            model=active_invoker.model,
+            invocation={
+                "request_text": text,
+                "repair_attempt_count": len(rejected_attempts),
+                "rejected_attempts": list(rejected_attempts),
+            },
+        )
+        try:
+            return parse_hermes_completion(raw_completion, transcript=transcript, vocabulary=vocabulary)
+        except HermesNLModelOutputError as exc:
+            if attempt_index >= MAX_MODEL_REPAIR_ATTEMPTS:
+                raise
+            rejected_attempts.append(
+                {
+                    "completion_hash": stable_hash({"completion": raw_completion}),
+                    "error": str(exc),
+                }
+            )
+            raw_completion = active_invoker.invoke(
+                render_repair_prompt(
+                    projection,
+                    text=text,
+                    context=context,
+                    rejected_completion=raw_completion,
+                    validation_error=str(exc),
+                    repair_attempt=len(rejected_attempts),
+                )
+            )
+    raise AssertionError("unreachable model repair loop exit")
 
 
 def build_prompt_projection(pack_path: Path = DEFAULT_KNOWLEDGE_PACK_PATH) -> PromptProjection:
@@ -266,6 +294,8 @@ def build_prompt_projection(pack_path: Path = DEFAULT_KNOWLEDGE_PACK_PATH) -> Pr
         "You are the SCP2-2 Hermes NL-to-meaning compiler.\n"
         "Your only valid output is one JSON object with outcome equal to exactly one of: "
         "expression, clarification_required, understood_but_not_expressible, unsupported_modality.\n"
+        "The first byte of the final answer must be { and the last byte must be }. "
+        "Never put a sentence, label, markdown fence, or tool summary outside that JSON object.\n"
         "For expression outcomes, output a complete MeaningExpressionV0 in the expression field. "
         "It must use only vocabulary present in the generated knowledge projection below.\n"
         "For clarification_required, name one ambiguity dimension and provide at least two concrete readings; "
@@ -296,6 +326,11 @@ def build_prompt_projection(pack_path: Path = DEFAULT_KNOWLEDGE_PACK_PATH) -> Pr
         "They are generated from committed certified fixtures. Do not copy fixture IDs unless the request truly "
         "matches; copy the contract discipline: minimal required_evidence, concrete status fields, and only needed "
         "composition constraints.\n"
+        "Use generated recipe_authoring_guides for recipe-backed requests. If the request matches a generated "
+        "recipe display name, description, output classification, or declared defaulted parameter set, return an "
+        "expression rather than prose or clarification. Use generated default parameter values when the request "
+        "does not override them; ask clarification only when no generated default or request phrase selects a "
+        "supported value.\n"
         "You may use read-only priori_tactical MCP tools to inspect capabilities, recipes, or field contracts "
         "before the final answer. Never submit, validate, execute, inspect results, or retrieve replay. Tool "
         "observations are not an output surface; the final answer is still only the JSON object.\n"
@@ -340,6 +375,10 @@ def prompt_sections_from_pack(pack: dict[str, Any], *, pack_path: Path) -> dict[
         "predicate_operators": [
             predicate_operator_projection(item)
             for item in sorted(predicate_operators, key=lambda item: item["name"])
+        ],
+        "recipe_authoring_guides": [
+            recipe_authoring_projection(item)
+            for item in sorted(pack.get("recipes") or [], key=lambda item: item["recipe_id"])
         ],
         "composition_operators": [
             operator_projection(item) for item in sorted(operators, key=lambda item: item["name"])
@@ -394,9 +433,13 @@ def concept_projection(item: dict[str, Any], *, kind: str) -> dict[str, Any]:
                 "name": str(parameter.get("name")),
                 "unit": str(parameter.get("unit", "none")),
                 "payload_type": str(parameter.get("payload_type")),
+                "default": parameter_default_value(parameter),
+                "allowed_values": list(parameter.get("allowed_values") or []),
             }
             for parameter in item.get("parameters") or []
         ],
+        "purpose": str(item.get("purpose") or ""),
+        "limitations": [str(value) for value in item.get("limitations") or []],
     }
 
 
@@ -451,6 +494,75 @@ def predicate_operator_projection(item: dict[str, Any]) -> dict[str, Any]:
         "output_temporal_type": str(item.get("output_temporal_type")),
         "limitations": [str(value) for value in item.get("limitations") or []],
     }
+
+
+def recipe_authoring_projection(item: dict[str, Any]) -> dict[str, Any]:
+    contract = item.get("authoring_contract") or {}
+    return {
+        "recipe_id": str(item.get("recipe_id")),
+        "display_name": str(item.get("display_name")),
+        "description": str(item.get("description") or ""),
+        "output_classifications": [str(value) for value in item.get("output_classifications") or []],
+        "allowed_claims": [str(value) for value in item.get("allowed_claims") or []],
+        "limitations": [str(value) for value in item.get("limitations") or []],
+        "parameters": [
+            {
+                "name": str(parameter.get("name")),
+                "payload_type": str(parameter.get("payload_type")),
+                "unit": str(parameter.get("unit", "none")),
+                "default": parameter_default_value(parameter),
+                "allowed_values": list(parameter.get("allowed_values") or []),
+            }
+            for parameter in item.get("parameters") or []
+        ],
+        "authorable_catalog_refs": [
+            {
+                "kind": str(node.get("kind")),
+                "catalog_ref": str(node.get("catalog_ref")),
+                "required_inputs": sorted((node.get("required_inputs") or {}).keys()),
+                "parameters": sorted((node.get("parameters") or {}).keys()),
+            }
+            for node in contract.get("authorable_nodes") or []
+        ],
+        "requested_evidence_fields": dedupe_strings(
+            str(evidence.get("field"))
+            for evidence in contract.get("requested_evidence") or []
+        ),
+        "required_status_semantics": [
+            {
+                "field": str((predicate.get("input") or {}).get("output_name")),
+                "operator": str((predicate.get("operator") or {}).get("name")),
+                "required_value": predicate_required_value(predicate),
+            }
+            for predicate in contract.get("required_predicates") or []
+        ],
+    }
+
+
+def parameter_default_value(parameter: dict[str, Any]) -> Any:
+    default = parameter.get("default")
+    if isinstance(default, dict) and "value" in default:
+        return default.get("value")
+    return None
+
+
+def predicate_required_value(predicate: dict[str, Any]) -> Any:
+    compare = predicate.get("compare") or {}
+    if "value" in compare:
+        return compare.get("value")
+    if "name" in compare:
+        return {"parameter": compare.get("name")}
+    return None
+
+
+def dedupe_strings(values: Any) -> list[str]:
+    seen: set[str] = set()
+    result: list[str] = []
+    for value in values:
+        if value and value not in seen:
+            seen.add(value)
+            result.append(value)
+    return result
 
 
 def refusal_routing_projection(pack: dict[str, Any]) -> dict[str, Any]:
@@ -537,7 +649,42 @@ def render_model_prompt(
         projection.prompt
         + "\nREQUEST:\n"
         + json.dumps(request, indent=2, sort_keys=True)
-        + "\nReturn only the JSON object.\n"
+        + "\nReturn only the JSON object. No prose before or after it.\n"
+    )
+
+
+def render_repair_prompt(
+    projection: PromptProjection,
+    *,
+    text: str,
+    context: HermesNLContext | None,
+    rejected_completion: str,
+    validation_error: str,
+    repair_attempt: int,
+) -> str:
+    request = {
+        "request_text": text,
+        "pending_clarification": (
+            context.pending_clarification.model_dump(mode="json", exclude_none=True)
+            if context and context.pending_clarification
+            else None
+        ),
+        "answer": context.answer if context else None,
+    }
+    repair_payload = {
+        "repair_attempt": repair_attempt,
+        "request": request,
+        "rejected_output": rejected_completion,
+        "validation_error": validation_error,
+    }
+    return (
+        projection.prompt
+        + "\nThe previous final answer was rejected by the bridge. It was not accepted as an output surface.\n"
+        + "Convert the same intended semantics into exactly one allowed JSON object. "
+        + "Do not explain the repair. If the intended semantics are unsupported, emit a typed refusal JSON object.\n"
+        + "REPAIR_INPUT:\n"
+        + json.dumps(repair_payload, indent=2, sort_keys=True)
+        + "\nReturn only the corrected JSON object. No prose before or after it.\n"
     )
 
 
