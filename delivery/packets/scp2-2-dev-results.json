@@ -1,0 +1,437 @@
+{
+  "case_set_ref": "delivery/packets/scp2-2-dev-cases.json",
+  "case_set_sha256": "07a10d76b1f3322e94131090068f19157975fbea65aefbebdb8e17aba2da4b7a",
+  "elapsed_seconds": 344.457,
+  "finished_at_utc": "2026-07-05T18:47:49.089758Z",
+  "long_run_flag": true,
+  "long_run_threshold_seconds": 300.0,
+  "pack_path": "generated/tactical-knowledge-pack.json",
+  "pack_sha256": "b40458086fe5d81e3f709ceb5f2301038391d6a97f64ee02585f4a9019018099",
+  "schema_version": "scp2_2.eval_results.v0",
+  "started_at_utc": "2026-07-05T18:42:04.630901Z",
+  "summary": {
+    "fail": 11,
+    "pass": 4,
+    "total": 15
+  },
+  "verdicts": [
+    {
+      "case_id": "dev_same_meaning_controlled_pass",
+      "failures": [
+        "request 1 synthesis failed: SynthesisError: Target contract contains the reporting concept name; refusing hinted target.",
+        "request 2 synthesis failed: SynthesisError: Target contract contains the reporting concept name; refusing hinted target."
+      ],
+      "kind": "same_meaning_pair",
+      "observations": [
+        {
+          "concept_identity": "controlled_pass_episode",
+          "expression_document_hash": "060009b8c6b504a52297e2248dccfa650c3474089a787ceff982501a6d26c2e2",
+          "expression_id": "controlled_pass_episodes_home_and_away",
+          "operators": [],
+          "outcome": "expression",
+          "synthesis_error": "SynthesisError: Target contract contains the reporting concept name; refusing hinted target.",
+          "transcript": {
+            "completion_hash": "fe67f01346a835f9d8a222fbbc5c602cf804a4b73abdfa41f1ec9b4d7e99abe1",
+            "model_name": "claude-sonnet-4-5",
+            "model_provider": "anthropic",
+            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
+          }
+        },
+        {
+          "concept_identity": "controlled_pass_episode",
+          "expression_document_hash": "a515c6d1c8ec77203a1e6c7b1dd6449fc728182d0a1d20efc20e31947ba73a6b",
+          "expression_id": "settled_completed_passes_with_retained_control",
+          "operators": [
+            "typed_join"
+          ],
+          "outcome": "expression",
+          "synthesis_error": "SynthesisError: Target contract contains the reporting concept name; refusing hinted target.",
+          "transcript": {
+            "completion_hash": "6206969c9be73e0280d83b3a5489160b4dd99cb90dd37b8d2aa0fc6a519b895b",
+            "model_name": "claude-sonnet-4-5",
+            "model_provider": "anthropic",
+            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
+          }
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_same_meaning_sequence_rate",
+      "failures": [
+        "request 1 synthesis failed: SynthesisError: Target contract contains the reporting concept name; refusing hinted target.",
+        "request 2: HermesNLModelOutputError: expression references out-of-pack vocabulary without a generated gap code: No truthful generated gap code exists for concept:sequence_pattern in concept_refs."
+      ],
+      "kind": "same_meaning_pair",
+      "observations": [
+        {
+          "concept_identity": "counterattack_initiation_chain_rate",
+          "expression_document_hash": "6140ea3ad9941a1f2197db4abb98e74e6629fbd9e5d07a4aadd813d80ddbf620",
+          "expression_id": "counterattack_initiation_chain_rate",
+          "operators": [
+            "sequence_pattern",
+            "rate"
+          ],
+          "outcome": "expression",
+          "synthesis_error": "SynthesisError: Target contract contains the reporting concept name; refusing hinted target.",
+          "transcript": {
+            "completion_hash": "1ec8c04488410f41a083b41a6fffe4a797f9760c00033d3993249deb97fa0b42",
+            "model_name": "claude-sonnet-4-5",
+            "model_provider": "anthropic",
+            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
+          }
+        },
+        {
+          "exception": "HermesNLModelOutputError: expression references out-of-pack vocabulary without a generated gap code: No truthful generated gap code exists for concept:sequence_pattern in concept_refs.",
+          "exception_type": "HermesNLModelOutputError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_same_meaning_line_break_support",
+      "failures": [
+        "request 1 synthesis failed: SynthesisError: Target contract contains the reporting concept name; refusing hinted target.",
+        "request 2 synthesis failed: BindError: parameter_value_not_allowed at draft_plan.nodes[11].parameters.join_key: parameter join_key must be one of ['episode_overlap', 'same_anchor', 'same_entity', 'same_frame_window'], got pass_episode_anchor; operator_join_constraint_field_missing at draft_plan.nodes[11].parameters.left_team_role_field: same-team-perspective constraint requires declared left_team_role_field; operator_join_constraint_field_missing at draft_plan.nodes[11].parameters.right_team_role_field: same-team-perspective constraint requires declared right_team_role_field; operator_payload_mismatch at draft_plan.nodes[12].input: eq does not accept anchor_ref; allowed=boolean,number,enum,entity_ref,team_ref,region_ref; operator_cardinality_mismatch at draft_plan.nodes[12].input: eq does not accept collection; allowed=single,per_player,per_team; operator_payload_mismatch at draft_plan.nodes[13].input: eq does not accept anchor_ref; allowed=boolean,number,enum,entity_ref,team_ref,region_ref; operator_cardinality_mismatch at draft_plan.nodes[13].input: eq does not accept collection; allowed=single,per_player,per_team"
+      ],
+      "kind": "same_meaning_pair",
+      "observations": [
+        {
+          "concept_identity": "line_break_support_response_v1",
+          "expression_document_hash": "416d705b36494ba5afe715a046b002de128bd2150d5b175d3f5a4bd31f93f89a",
+          "expression_id": "line_break_with_support_arrival_after_crossing",
+          "operators": [],
+          "outcome": "expression",
+          "synthesis_error": "SynthesisError: Target contract contains the reporting concept name; refusing hinted target.",
+          "transcript": {
+            "completion_hash": "cd9e64282070262484596c03934553682650ceb769c088fbcf3c3c020676df74",
+            "model_name": "claude-sonnet-4-5",
+            "model_provider": "anthropic",
+            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
+          }
+        },
+        {
+          "concept_identity": "receiver_line_transition_with_underneath_support",
+          "expression_document_hash": "fbbe4d3eb3886dbff021698489138902c5eb5cfaf39b60715b6d8ed0c5b6bbc1",
+          "expression_id": "receiver_line_transition_with_underneath_support",
+          "operators": [
+            "typed_join",
+            "typed_join"
+          ],
+          "outcome": "expression",
+          "synthesis_error": "BindError: parameter_value_not_allowed at draft_plan.nodes[11].parameters.join_key: parameter join_key must be one of ['episode_overlap', 'same_anchor', 'same_entity', 'same_frame_window'], got pass_episode_anchor; operator_join_constraint_field_missing at draft_plan.nodes[11].parameters.left_team_role_field: same-team-perspective constraint requires declared left_team_role_field; operator_join_constraint_field_missing at draft_plan.nodes[11].parameters.right_team_role_field: same-team-perspective constraint requires declared right_team_role_field; operator_payload_mismatch at draft_plan.nodes[12].input: eq does not accept anchor_ref; allowed=boolean,number,enum,entity_ref,team_ref,region_ref; operator_cardinality_mismatch at draft_plan.nodes[12].input: eq does not accept collection; allowed=single,per_player,per_team; operator_payload_mismatch at draft_plan.nodes[13].input: eq does not accept anchor_ref; allowed=boolean,number,enum,entity_ref,team_ref,region_ref; operator_cardinality_mismatch at draft_plan.nodes[13].input: eq does not accept collection; allowed=single,per_player,per_team",
+          "transcript": {
+            "completion_hash": "4899ad86021a9abee83559285b5602151d061a3332a966fc3e8496e365b79a0b",
+            "model_name": "claude-sonnet-4-5",
+            "model_provider": "anthropic",
+            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
+          }
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_changed_rate_vs_count",
+      "failures": [
+        "request 1 synthesis failed: SynthesisError: No registered operator composition satisfied the target contract.",
+        "request 2 synthesis failed: SynthesisError: No catalog provider exposes one or more required target fields."
+      ],
+      "kind": "changed_meaning_pair",
+      "observations": [
+        {
+          "concept_identity": "regain_to_progressive_carry_to_controlled_pass_chain",
+          "expression_document_hash": "e393de2355317bb5fb773af0ab1b7ed3aed5fb40c1b624e9c159664714eb380c",
+          "expression_id": "regain_to_progressive_carry_to_controlled_pass_chain",
+          "operators": [
+            "sequence_pattern",
+            "aggregate_over"
+          ],
+          "outcome": "expression",
+          "synthesis_error": "SynthesisError: No registered operator composition satisfied the target contract.",
+          "transcript": {
+            "completion_hash": "a17d1b3fd6befa22e4464593f50df7ac186895ba1cdb2f04a4c4481df784672b",
+            "model_name": "claude-sonnet-4-5",
+            "model_provider": "anthropic",
+            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
+          }
+        },
+        {
+          "concept_identity": "regain_carry_pass_chain_rate",
+          "expression_document_hash": "cd32da8a17692444b486216596a69584185a2be9146da762e7bc4db3288488aa",
+          "expression_id": "regain_carry_pass_chain_rate_by_team_match",
+          "operators": [
+            "sequence_pattern",
+            "rate"
+          ],
+          "outcome": "expression",
+          "synthesis_error": "SynthesisError: No catalog provider exposes one or more required target fields.",
+          "transcript": {
+            "completion_hash": "1d7116ecd30619ee3fbf00104a61867aa409a2c566645270ab8c103b4fbb25a9",
+            "model_name": "claude-sonnet-4-5",
+            "model_provider": "anthropic",
+            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
+          }
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_changed_controlled_vs_bypass",
+      "failures": [
+        "request 1 synthesis failed: SynthesisError: Target contract contains the reporting concept name; refusing hinted target.",
+        "request 2 synthesis failed: SynthesisError: Target contract contains the reporting concept name; refusing hinted target."
+      ],
+      "kind": "changed_meaning_pair",
+      "observations": [
+        {
+          "concept_identity": "controlled_pass_episode",
+          "expression_document_hash": "f8b1d7c1038fe46409e6e67c3e692cc0de3220686ba907df48309a91717a9b39",
+          "expression_id": "controlled_passes",
+          "operators": [],
+          "outcome": "expression",
+          "synthesis_error": "SynthesisError: Target contract contains the reporting concept name; refusing hinted target.",
+          "transcript": {
+            "completion_hash": "10f675be94810964df7d378e6c498db0c0479af1d53ca42deb0811d5d4d973f8",
+            "model_name": "claude-sonnet-4-5",
+            "model_provider": "anthropic",
+            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
+          }
+        },
+        {
+          "concept_identity": "high_bypass_completed_pass_v1",
+          "expression_document_hash": "792273202d273f41beeecc6df639621596b0c82e1d712f74a367c8192c15fd5f",
+          "expression_id": "completed_passes_bypassing_multiple_opponents",
+          "operators": [],
+          "outcome": "expression",
+          "synthesis_error": "SynthesisError: Target contract contains the reporting concept name; refusing hinted target.",
+          "transcript": {
+            "completion_hash": "cdf3aa60dd4336b71d347fe007eb61aac3ab08866e5eca9abf8c5e4d2055abc5",
+            "model_name": "claude-sonnet-4-5",
+            "model_provider": "anthropic",
+            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
+          }
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_known_possession_corridor",
+      "failures": [
+        "synthesis failed: SynthesisError: Providers exist, but bounded search could not satisfy the required reusable composition."
+      ],
+      "kind": "single",
+      "observations": [
+        {
+          "concept_identity": "possession_progressive_corridor_ahead_ball_side",
+          "expression_document_hash": "97ebe66613ec545fb8505a844f5e21b050173bf92c7c7c56050d568c781f5aab",
+          "expression_id": "possession_progressive_corridor_ahead_ball_side",
+          "operators": [],
+          "outcome": "expression",
+          "synthesis_error": "SynthesisError: Providers exist, but bounded search could not satisfy the required reusable composition.",
+          "transcript": {
+            "completion_hash": "9cf55343f9ce1b78fd455982066316111b728d11f79f47e1c5218b9f68374354",
+            "model_name": "claude-sonnet-4-5",
+            "model_provider": "anthropic",
+            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
+          }
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_known_high_bypass",
+      "failures": [
+        "synthesis failed: BindError: parameter_value_not_allowed at draft_plan.nodes[5].parameters.join_key: parameter join_key must be one of ['episode_overlap', 'same_anchor', 'same_entity', 'same_frame_window'], got pass_episode_anchor; operator_join_constraints_missing at draft_plan.nodes[5].parameters: join composition must declare at least one enforced constraint or an unconstrained rationale; operator_payload_mismatch at draft_plan.nodes[6].input: eq does not accept anchor_ref; allowed=boolean,number,enum,entity_ref,team_ref,region_ref; operator_cardinality_mismatch at draft_plan.nodes[6].input: eq does not accept collection; allowed=single,per_player,per_team; operator_payload_mismatch at draft_plan.nodes[7].input: eq does not accept anchor_ref; allowed=boolean,number,enum,entity_ref,team_ref,region_ref; operator_cardinality_mismatch at draft_plan.nodes[7].input: eq does not accept collection; allowed=single,per_player,per_team; operator_temporal_mismatch at draft_plan.nodes[8].input: gte does not accept episode_set; allowed=scalar,frame_signal; operator_payload_mismatch at draft_plan.nodes[8].input: gte does not accept anchor_ref; allowed=number; operator_cardinality_mismatch at draft_plan.nodes[8].input: gte does not accept collection; allowed=single,per_player,per_team"
+      ],
+      "kind": "single",
+      "observations": [
+        {
+          "concept_identity": "controlled_pass_episode",
+          "expression_document_hash": "2d0e4ae4ce5200ca2775685c342ec63a57cbb977ce4a5b70a702ec065e62a09c",
+          "expression_id": "high_bypass_completed_passes",
+          "operators": [],
+          "outcome": "expression",
+          "synthesis_error": "BindError: parameter_value_not_allowed at draft_plan.nodes[5].parameters.join_key: parameter join_key must be one of ['episode_overlap', 'same_anchor', 'same_entity', 'same_frame_window'], got pass_episode_anchor; operator_join_constraints_missing at draft_plan.nodes[5].parameters: join composition must declare at least one enforced constraint or an unconstrained rationale; operator_payload_mismatch at draft_plan.nodes[6].input: eq does not accept anchor_ref; allowed=boolean,number,enum,entity_ref,team_ref,region_ref; operator_cardinality_mismatch at draft_plan.nodes[6].input: eq does not accept collection; allowed=single,per_player,per_team; operator_payload_mismatch at draft_plan.nodes[7].input: eq does not accept anchor_ref; allowed=boolean,number,enum,entity_ref,team_ref,region_ref; operator_cardinality_mismatch at draft_plan.nodes[7].input: eq does not accept collection; allowed=single,per_player,per_team; operator_temporal_mismatch at draft_plan.nodes[8].input: gte does not accept episode_set; allowed=scalar,frame_signal; operator_payload_mismatch at draft_plan.nodes[8].input: gte does not accept anchor_ref; allowed=number; operator_cardinality_mismatch at draft_plan.nodes[8].input: gte does not accept collection; allowed=single,per_player,per_team",
+          "transcript": {
+            "completion_hash": "99e4c757a721f743a92b5d3cd1eebbc5da1d889ae75064e7cdeadd0367c2df62",
+            "model_name": "claude-sonnet-4-5",
+            "model_provider": "anthropic",
+            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
+          }
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_known_first_time_relay",
+      "failures": [
+        "synthesis failed: SynthesisError: Target contract contains the reporting concept name; refusing hinted target."
+      ],
+      "kind": "single",
+      "observations": [
+        {
+          "concept_identity": "first_time_relay_after_receiver_line_transition_v1",
+          "expression_document_hash": "08aafa02baa2ad7746d9278425822a8c1994b3cbe630c467ed14d57189b2bbbb",
+          "expression_id": "first_time_relay_after_receiver_line_transition",
+          "operators": [],
+          "outcome": "expression",
+          "synthesis_error": "SynthesisError: Target contract contains the reporting concept name; refusing hinted target.",
+          "transcript": {
+            "completion_hash": "c9d9a0286c09f521f3e747c1f8be6c3e65c2a5b876610634e2f446e73614f459",
+            "model_name": "claude-sonnet-4-5",
+            "model_provider": "anthropic",
+            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
+          }
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_novel_sequence_rate",
+      "failures": [
+        "operators missing ['aggregate_over']",
+        "synthesis failed: SynthesisError: Target contract contains the reporting concept name; refusing hinted target."
+      ],
+      "kind": "single",
+      "observations": [
+        {
+          "concept_identity": "regain_progressive_carry_pass_sequence_rate",
+          "expression_document_hash": "d78e15977a8e3e0464ef485903c738fbacb0f7158efde1daa28ff9c872ae8d64",
+          "expression_id": "regain_progressive_carry_pass_sequence_rate",
+          "operators": [
+            "sequence_pattern",
+            "rate"
+          ],
+          "outcome": "expression",
+          "synthesis_error": "SynthesisError: Target contract contains the reporting concept name; refusing hinted target.",
+          "transcript": {
+            "completion_hash": "b72d41d6d69baba9ba7645695d8b6c3f637df9d524e231c3dfa8614b0b7be566",
+            "model_name": "claude-sonnet-4-5",
+            "model_provider": "anthropic",
+            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
+          }
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_refusal_body_orientation",
+      "failures": [],
+      "kind": "single",
+      "observations": [
+        {
+          "gap_code": "BODY_ORIENTATION",
+          "missing_capability": "body orientation",
+          "outcome": "understood_but_not_expressible",
+          "transcript": {
+            "completion_hash": "8f07134c297aa8afccda05078ae6ffef3fc5b138a3179325808c53afd44d252e",
+            "model_name": "claude-sonnet-4-5",
+            "model_provider": "anthropic",
+            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
+          }
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "case_id": "dev_refusal_pass_probability",
+      "failures": [],
+      "kind": "single",
+      "observations": [
+        {
+          "gap_code": "PASS_PROBABILITY",
+          "missing_capability": "pass probability model",
+          "outcome": "understood_but_not_expressible",
+          "transcript": {
+            "completion_hash": "f09656b0d8e601c32de530438688b6edd70800ebdcd014f55986214a14f7269b",
+            "model_name": "claude-sonnet-4-5",
+            "model_provider": "anthropic",
+            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
+          }
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "case_id": "dev_refusal_player_intent",
+      "failures": [],
+      "kind": "single",
+      "observations": [
+        {
+          "gap_code": "PLAYER_INTENT",
+          "missing_capability": "player intent",
+          "outcome": "understood_but_not_expressible",
+          "transcript": {
+            "completion_hash": "50e092bfaf93e7b4a8bad3fdfd2916bbfc50342e61ba3f98a296ae4c242b763e",
+            "model_name": "claude-sonnet-4-5",
+            "model_provider": "anthropic",
+            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
+          }
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "case_id": "dev_refusal_video_modality",
+      "failures": [],
+      "kind": "single",
+      "observations": [
+        {
+          "gap_code": "VIDEO",
+          "modality": "video",
+          "outcome": "unsupported_modality",
+          "transcript": {
+            "completion_hash": "ef80e32cfb85b2dd15b8a97df53ef82eba00317307e502ec947aa4a9c60eecdb",
+            "model_name": "claude-sonnet-4-5",
+            "model_provider": "anthropic",
+            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
+          }
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "case_id": "dev_clarification_support_definition",
+      "failures": [
+        "outcome expected 'clarification_required', got 'expression'",
+        "dimension expected 'SUPPORT_DEFINITION', got None",
+        "first turn outcome was expression, not clarification_required"
+      ],
+      "kind": "clarification_turn",
+      "observations": [
+        {
+          "concept_identity": "line_break_support_response_v1",
+          "expression_document_hash": "87fa5fb5ba849718699c1adfb27d5cfcb9f1f66f0c4ae2a616f6c49168152996",
+          "expression_id": "support_after_line_breaks",
+          "operators": [],
+          "outcome": "expression",
+          "synthesis_error": "SynthesisError: Target contract contains the reporting concept name; refusing hinted target.",
+          "transcript": {
+            "completion_hash": "3910feaef9856b9876d0115db0844796fef49ec3f143c27e1a60c7100a46960e",
+            "model_name": "claude-sonnet-4-5",
+            "model_provider": "anthropic",
+            "prompt_hash": "a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6"
+          }
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_clarification_distance_threshold",
+      "failures": [
+        "HermesNLModelOutputError: expression is not a valid gated MeaningExpressionV0: 1 validation error for MeaningExpressionV0\ncomposition_constraints\n  Extra inputs are not permitted [type=extra_forbidden, input_value=[], input_type=list]\n    For further information visit https://errors.pydantic.dev/2.12/v/extra_forbidden",
+        "first turn outcome was exception, not clarification_required"
+      ],
+      "kind": "clarification_turn",
+      "observations": [
+        {
+          "exception": "HermesNLModelOutputError: expression is not a valid gated MeaningExpressionV0: 1 validation error for MeaningExpressionV0\ncomposition_constraints\n  Extra inputs are not permitted [type=extra_forbidden, input_value=[], input_type=list]\n    For further information visit https://errors.pydantic.dev/2.12/v/extra_forbidden",
+          "exception_type": "HermesNLModelOutputError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    }
+  ]
+}
