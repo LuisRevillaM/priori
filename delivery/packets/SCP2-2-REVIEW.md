@@ -61,3 +61,15 @@ clarification case either PASSES or fails with an attributed cause
 that names a genuine missing capability — zero anti-hint refusals,
 zero output-shape errors. The blind set stays sealed until the
 director's run. Full-suite table on the committed tree.
+
+## Round-1 addendum (owner directive, 2026-07-06): R-AS2 amended
+
+Hermes runs on the ChatGPT subscription: provider `openai-codex`
+through the Hermes CLI (the same auth the executors use), model the
+strongest available under that subscription (config default gpt-5.5).
+Metered API providers (anthropic or otherwise) require an EXPLICIT
+owner grant per packet — standing law, recorded after round 2 ran on
+the owner's Anthropic key under the original "strongest tier" ruling.
+Defaults in hermes_nl.py and the eval harness flip accordingly; the
+report records tier, latency, and the billing surface (subscription,
+not metered) the way vision reports record Modal costs.
