@@ -96,7 +96,7 @@ class SCP2HermesNLTests(unittest.TestCase):
         sentinel = "scp2_2_projection_sentinel"
         self.assertNotIn(sentinel, baseline.prompt)
         payload = json.loads(Path("generated/tactical-knowledge-pack.json").read_text(encoding="utf-8"))
-        payload["primitives"][0]["limitations"].append(sentinel)
+        payload["primitives"][0].setdefault("evidence_fields", []).append(sentinel)
         with tempfile.TemporaryDirectory() as tmp:
             pack_path = Path(tmp) / "pack.json"
             pack_path.write_text(json.dumps(payload), encoding="utf-8")

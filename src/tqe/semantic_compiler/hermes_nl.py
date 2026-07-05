@@ -304,6 +304,7 @@ def prompt_sections_from_pack(pack: dict[str, Any]) -> dict[str, Any]:
         + [
             concept_projection(item, kind="relation") for item in sorted(relations, key=lambda item: item["name"])
         ],
+        "field_names": field_name_projection(pack),
         "predicate_operators": [
             predicate_operator_projection(item)
             for item in sorted(predicate_operators, key=lambda item: item["name"])
@@ -344,14 +345,11 @@ def concept_projection(item: dict[str, Any], *, kind: str) -> dict[str, Any]:
         "kind": kind,
         "name": str(item.get("name")),
         "agent_authorable": bool(item.get("agent_authorable")),
-        "evidence_fields": sorted(str(field) for field in item.get("evidence_fields") or []),
         "outputs": [
             {
                 "name": str(output.get("name")),
                 "payload_type": str(output.get("payload_type")),
                 "temporal_type": str(output.get("temporal_type")),
-                "evidence_fields": sorted(str(field) for field in output.get("evidence_fields") or []),
-                "coverage": output.get("coverage"),
             }
             for output in outputs
         ],
@@ -363,8 +361,24 @@ def concept_projection(item: dict[str, Any], *, kind: str) -> dict[str, Any]:
             }
             for parameter in item.get("parameters") or []
         ],
-        "limitations": [str(value) for value in item.get("limitations") or []],
     }
+
+
+def field_name_projection(pack: dict[str, Any]) -> list[str]:
+    names: set[str] = set()
+    for bucket, values in (pack.get("evidence_fields") or {}).items():
+        names.add(str(bucket))
+        names.update(str(value) for value in values)
+    for item in [
+        *(pack.get("primitives") or []),
+        *(pack.get("relations") or []),
+        *((pack.get("composition_grammar") or {}).get("operators") or []),
+    ]:
+        names.update(str(field) for field in item.get("evidence_fields") or [])
+        for output in item.get("outputs") or []:
+            names.add(str(output.get("name")))
+            names.update(str(field) for field in output.get("evidence_fields") or [])
+    return sorted(names)
 
 
 def operator_projection(item: dict[str, Any]) -> dict[str, Any]:
@@ -384,11 +398,9 @@ def operator_projection(item: dict[str, Any]) -> dict[str, Any]:
                 "name": str(output.get("name")),
                 "payload_type": str(output.get("payload_type")),
                 "temporal_type": str(output.get("temporal_type")),
-                "evidence_fields": sorted(str(field) for field in output.get("evidence_fields") or []),
             }
             for output in item.get("outputs") or []
         ],
-        "limitations": [str(value) for value in item.get("limitations") or []],
     }
 
 
