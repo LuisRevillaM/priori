@@ -45,3 +45,16 @@ paragraph is the human acceptance act for these seven declarations.
 Verdict: ACCEPT-WITH-FIXES. No finding invalidates a declaration.
 Round 2 appends to packet/r2-0; the director's sweep (ledger-updating,
 evidence-refreshing) follows the fix round at merge — director's act.
+
+---
+
+# R2-0 Round 2: ACCEPTED
+
+Reviewed 2026-07-05 at 8095564. All seven fix items verified by the
+director's hand: glob discovery over config/compiler-reachability
+(test line 51), env override removed, result_anchor naming, the 0.4s
+prior-possession constraint, and the settled-segment clause admitting
+an intervening loss — the declaration now exactly as honest as the
+code. Checkpoint module re-run green; diff confined to the three
+permitted files. The seven declarations stand accepted; the director's
+ledger-updating sweep follows at merge.
