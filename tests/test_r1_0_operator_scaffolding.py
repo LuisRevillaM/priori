@@ -122,7 +122,7 @@ def bind_with_signature(payload: dict, signature: CompositionOperatorSignature) 
 class R10OperatorScaffoldingTests(unittest.TestCase):
     def test_operator_registry_is_explicit_and_complete(self) -> None:
         self.assertEqual(
-            ("project_onto_axis", "delta_across_anchor", "extremum_over_set", "window"),
+            ("project_onto_axis", "delta_across_anchor", "extremum_over_set", "window", "typed_join"),
             tuple(signature.name for signature in OPERATOR_SIGNATURES),
         )
         self.assertEqual(
@@ -131,6 +131,7 @@ class R10OperatorScaffoldingTests(unittest.TestCase):
                 ("delta_across_anchor", "0.1.0"),
                 ("extremum_over_set", "0.1.0"),
                 ("window", "0.1.0"),
+                ("typed_join", "0.1.0"),
             },
             set(declared_operator_signatures()),
         )
@@ -140,6 +141,7 @@ class R10OperatorScaffoldingTests(unittest.TestCase):
                 ("delta_across_anchor", "0.1.0"),
                 ("extremum_over_set", "0.1.0"),
                 ("window", "0.1.0"),
+                ("typed_join", "0.1.0"),
             },
             set(build_operator_registry({})),
         )
@@ -150,6 +152,7 @@ class R10OperatorScaffoldingTests(unittest.TestCase):
                 ("delta_across_anchor", "0.1.0"),
                 ("extremum_over_set", "0.1.0"),
                 ("window", "0.1.0"),
+                ("typed_join", "0.1.0"),
             },
             set(executor_module.TacticalQueryExecutor().operators),
         )

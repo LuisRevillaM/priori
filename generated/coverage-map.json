@@ -9790,5 +9790,18 @@
   "composition_constraint_note": "",
   "composition_maturity": "handwired",
   "composition_maturity_applicable": false
+ },
+ {
+  "concept": "fragile_possession_state",
+  "family": "Phases of play and team behavioral states",
+  "classification": "supported",
+  "justification": "Typed composition of same-team possession continuity, observed pressure on the carrier, and support-arrival evidence. This claims an observed fragile possession state only; it does not infer risk value, intent, quality, causation, or decision correctness.",
+  "required_missing_capability": "",
+  "closest_supported_substitute": "window(same_possession) + pressure_on_carrier + support_arrival_relation + typed_join",
+  "composition_constraint_needed": true,
+  "priority_unlock": "HIGH",
+  "composition_constraint_note": "Requires typed_join constraints: same_anchor/frame alignment across pressure/support, then same-team-perspective with the possession window.",
+  "composition_maturity": "handwired",
+  "composition_maturity_applicable": true
  }
 ]

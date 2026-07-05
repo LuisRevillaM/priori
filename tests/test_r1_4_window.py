@@ -104,7 +104,7 @@ def run_window(
     after_seconds: float = 1.0,
     truncation_policy: str = "emit_with_flag",
     continuity_policy: str = "fixed_duration",
-    continuity_overlap_policy: str = "latest_start",
+    continuity_overlap_policy: str = "latest_start_covering_anchor",
     frame_ids: list[int] | None = None,
 ) -> dict[str, object]:
     state = SimpleNamespace(
@@ -280,6 +280,23 @@ class WindowOperatorTests(unittest.TestCase):
         self.assertEqual(100, record["window_start_frame_id"])
         self.assertFalse(record["truncated_start"])
         self.assertEqual("trace_back_bounded_by_continuity", record["continuity_reason"])
+
+    def test_same_team_continuity_is_judged_against_clipped_observed_window(self) -> None:
+        [record] = run_window(
+            [anchor_record("late-home-reception", 145, team_role="home")],
+            continuity=[continuity_record("home-possession-to-boundary", 130, 150, team_role="home")],
+            window_mode="after",
+            after_seconds=1.0,
+            truncation_policy="emit_with_flag",
+            continuity_policy="same_possession",
+            frame_ids=list(range(100, 151)),
+        )["window_records"]
+
+        self.assertEqual("PASS", record["window_status"])
+        self.assertEqual(145, record["window_start_frame_id"])
+        self.assertEqual(150, record["window_end_frame_id"])
+        self.assertTrue(record["truncated_end"])
+        self.assertEqual("continuity_evidence_observed", record["continuity_reason"])
 
     def test_anchor_outside_observed_bounds_is_unknown_not_phantom_pass(self) -> None:
         [record] = run_window(
