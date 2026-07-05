@@ -159,8 +159,6 @@ def exact_recipe_plan_for_expression(
     *,
     pack_path: Path = DEFAULT_KNOWLEDGE_PACK_PATH,
 ) -> tuple[str, Path, dict[str, Any]] | None:
-    if expression.operator_applications or expression.target_contract.composition_constraints:
-        return None
     candidates = recipe_identity_candidates(expression)
     if not candidates or not pack_path.exists():
         return None

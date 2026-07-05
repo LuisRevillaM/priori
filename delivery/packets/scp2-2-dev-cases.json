@@ -33,7 +33,7 @@
       "kind": "same_meaning_pair",
       "request_texts": [
         "Show line breaks where a support option arrives after the receiver crosses the line.",
-        "Find receiver line transitions during passes with an underneath support arrival response."
+        "Find controlled line-break support responses where an underneath option arrives after reception."
       ],
       "expected": {
         "outcome": "expression"
