@@ -115,3 +115,30 @@ one shared helper — fold into round 2.
    with a ratification request.
 
 Round 2 appends to packet/r2-4, executed by a fresh thread.
+
+---
+
+# R2-4 Round 2: ACCEPTED (fresh executor's first round)
+
+Reviewed 2026-07-05 at ae1b8e4. Every ruling verified by the
+director's own execution: ONE meaning expression
+(counterattack_initiation_sequence_rate.v0) carries sequence_pattern +
+aggregate_over + rate, passes the vocabulary gate with zero refusals,
+and synthesizes document_hash bf127689… — byte-identical to the
+flagship plan the generator consumed; the ratchet carries
+sequence_pattern with zero bare literals left in the binder; missing
+numeric-threshold values route to UNKNOWN with the named test
+(unmeasured is never disproven); all five ordered fixtures present
+including edge and edge-plus-one; the report now states plainly what
+round 1 did ("deep-copied that document and hand-inserted the rate
+node") and remarks the flagship degeneracy honestly. Director's full
+suite green.
+
+R-AP ratification: the round-1 contract-refresh ripple (waiver
+baseline hashes, additive evidence-surface fields) is RATIFIED —
+mechanically verified byte-faithful by the adversarial review; the
+merge-time regeneration below is the standing re-verification.
+
+The grammar's situation-finding rung is in: moments compose into
+narratives, narratives carry per-stage witnesses, and a sentence-shaped
+document can now ask for all of it without a hand-authored target.
