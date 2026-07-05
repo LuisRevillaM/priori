@@ -14208,6 +14208,2665 @@
       "max_temporal_horizon_seconds": 15.0
     }
   },
+  "composition_grammar": {
+    "constraint_kinds": [
+      {
+        "kind": "aggregate_over",
+        "operator": "aggregate_over",
+        "operator_version": "0.1.0",
+        "parameters": [
+          "aggregation_kind",
+          "constraint_opt_out_reason",
+          "entity_identity_preserved_required",
+          "frame_alignment_required",
+          "group_by_fields",
+          "population_composition_constraints",
+          "population_expression",
+          "population_required_fields",
+          "same_team_perspective_required",
+          "status_field",
+          "team_role_field"
+        ]
+      },
+      {
+        "kind": "before_after_same_anchor",
+        "operator": null,
+        "parameters": [
+          "after_status_field",
+          "change_mode",
+          "maximum_before_value_m",
+          "minimum_change_m",
+          "status_fields",
+          "value_family",
+          "value_fields"
+        ]
+      },
+      {
+        "kind": "delta_across_anchor",
+        "operator": "delta_across_anchor",
+        "operator_version": "0.1.0",
+        "parameters": [
+          "after_frame_field",
+          "after_status_field",
+          "after_subject_field",
+          "after_value_field",
+          "anchor_status_field",
+          "anchor_status_value",
+          "before_frame_field",
+          "before_status_field",
+          "before_subject_field",
+          "before_value_field",
+          "edge_threshold",
+          "hysteresis_margin",
+          "missing_evidence_policy",
+          "required_status_value",
+          "value_unit"
+        ]
+      },
+      {
+        "kind": "distinct_entity_fields",
+        "operator": null,
+        "parameters": [
+          "fields"
+        ]
+      },
+      {
+        "kind": "extremum_over_set",
+        "operator": "extremum_over_set",
+        "operator_version": "0.1.0",
+        "parameters": [
+          "anchor_id_field",
+          "coverage_policy",
+          "coverage_status_field",
+          "entity_id_field",
+          "frame_field",
+          "missing_evidence_policy",
+          "record_id_field",
+          "required_status_value",
+          "secondary_tie_breaker_field",
+          "selection_mode",
+          "status_field",
+          "subject_id_field",
+          "tie_breaker_field",
+          "top_k",
+          "value_bound",
+          "value_bound_kind",
+          "value_field",
+          "value_unit"
+        ]
+      },
+      {
+        "kind": "frame_alignment",
+        "operator": null,
+        "parameters": [
+          "after_frame_field",
+          "before_frame_field"
+        ]
+      },
+      {
+        "kind": "rate",
+        "operator": "rate",
+        "operator_version": "0.1.0",
+        "parameters": [
+          "constraint_opt_out_reason",
+          "denominator_composition_constraints",
+          "denominator_required_fields",
+          "denominator_status_field",
+          "entity_identity_preserved_required",
+          "frame_alignment_required",
+          "group_by_fields",
+          "numerator_composition_constraints",
+          "numerator_required_fields",
+          "numerator_status_field",
+          "population_expression",
+          "rate_kind",
+          "removed_denominator_predicate_fields",
+          "same_team_perspective_required",
+          "subset_declaration",
+          "subset_predicate_fields",
+          "team_role_field"
+        ]
+      },
+      {
+        "kind": "relation_on_anchor",
+        "operator": null,
+        "parameters": [
+          "anchor_frame_field",
+          "anchor_status_field",
+          "anchor_status_value",
+          "candidate_scope",
+          "maximum_arrival_seconds",
+          "maximum_support_distance_m",
+          "minimum_duration_seconds",
+          "minimum_supporting_players",
+          "relation_status_field",
+          "support_region_mode"
+        ]
+      },
+      {
+        "kind": "same_anchor_identity",
+        "operator": null,
+        "parameters": [
+          "left_key_field",
+          "right_key_field"
+        ]
+      },
+      {
+        "kind": "same_player_return",
+        "operator": null,
+        "parameters": [
+          "first_player_field",
+          "return_player_field"
+        ]
+      },
+      {
+        "kind": "temporal_order",
+        "operator": null,
+        "parameters": [
+          "after_frame_field",
+          "before_frame_field",
+          "maximum_gap_seconds"
+        ]
+      },
+      {
+        "kind": "typed_join",
+        "operator": "typed_join",
+        "operator_version": "0.1.0",
+        "parameters": [
+          "entity_identity_preserved_required",
+          "frame_alignment_required",
+          "join_key",
+          "left_anchor_id_field",
+          "left_composition_constraints",
+          "left_end_frame_field",
+          "left_entity_id_field",
+          "left_frame_field",
+          "left_input_context",
+          "left_required_fields",
+          "left_required_status_value",
+          "left_start_frame_field",
+          "left_status_field",
+          "left_team_role_field",
+          "maximum_frame_delta",
+          "no_match_policy",
+          "required_status_value",
+          "right_anchor_id_field",
+          "right_composition_constraints",
+          "right_end_frame_field",
+          "right_entity_id_field",
+          "right_frame_field",
+          "right_input_context",
+          "right_required_fields",
+          "right_required_status_value",
+          "right_start_frame_field",
+          "right_status_field",
+          "right_team_role_field",
+          "same_team_perspective_required",
+          "unconstrained",
+          "unconstrained_rationale"
+        ]
+      },
+      {
+        "kind": "vector_projection",
+        "operator": "project_onto_axis",
+        "operator_version": "0.1.0",
+        "parameters": [
+          "acting_team_field",
+          "axis",
+          "end_point_field",
+          "lane_end_point_field",
+          "lane_start_point_field",
+          "orientation_basis",
+          "reference_point_field",
+          "required_source_status_field",
+          "required_source_status_value",
+          "start_point_field",
+          "zero_length_policy"
+        ]
+      },
+      {
+        "kind": "window",
+        "operator": "window",
+        "operator_version": "0.1.0",
+        "parameters": [
+          "after_duration_seconds",
+          "anchor_frame_field",
+          "anchor_status_field",
+          "anchor_status_value",
+          "anchor_team_role_field",
+          "before_duration_seconds",
+          "continuity_end_frame_field",
+          "continuity_overlap_policy",
+          "continuity_policy",
+          "continuity_start_frame_field",
+          "continuity_status_field",
+          "continuity_status_value",
+          "continuity_team_role_field",
+          "frame_rate_hz",
+          "overlap_policy",
+          "team_binding_policy",
+          "truncation_policy",
+          "window_mode"
+        ]
+      }
+    ],
+    "operator_count": 7,
+    "operators": [
+      {
+        "coverage_propagation_rule_id": "missing_vector_evidence_to_unknown",
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "source",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "limitations": [],
+        "name": "project_onto_axis",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "axis_projection_status",
+              "axis_projection_reason",
+              "axis",
+              "orientation_basis",
+              "orientation_team_role",
+              "attack_x_sign",
+              "source_start_point_field",
+              "source_end_point_field",
+              "reference_point_field",
+              "lane_start_point_field",
+              "lane_end_point_field",
+              "source_start_point",
+              "source_end_point",
+              "axis_unit_vector",
+              "signed_projection_m",
+              "angle_between_degrees",
+              "angle_unit",
+              "source_anchor_id",
+              "source_frame_id",
+              "source_record_hash",
+              "witness_source_node_id",
+              "witness_source_output_name",
+              "zero_length_policy"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "axis_projection_records",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "axis_projection_status",
+              "axis_projection_reason",
+              "axis",
+              "orientation_basis",
+              "orientation_team_role",
+              "attack_x_sign",
+              "source_start_point_field",
+              "source_end_point_field",
+              "reference_point_field",
+              "lane_start_point_field",
+              "lane_end_point_field",
+              "source_start_point",
+              "source_end_point",
+              "axis_unit_vector",
+              "signed_projection_m",
+              "angle_between_degrees",
+              "angle_unit",
+              "source_anchor_id",
+              "source_frame_id",
+              "source_record_hash",
+              "witness_source_node_id",
+              "witness_source_output_name",
+              "zero_length_policy"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "axis_projection_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          },
+          {
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "axis_projection_status",
+              "axis_projection_reason",
+              "axis",
+              "orientation_basis",
+              "orientation_team_role",
+              "attack_x_sign",
+              "source_start_point_field",
+              "source_end_point_field",
+              "reference_point_field",
+              "lane_start_point_field",
+              "lane_end_point_field",
+              "source_start_point",
+              "source_end_point",
+              "axis_unit_vector",
+              "signed_projection_m",
+              "angle_between_degrees",
+              "angle_unit",
+              "source_anchor_id",
+              "source_frame_id",
+              "source_record_hash",
+              "witness_source_node_id",
+              "witness_source_output_name",
+              "zero_length_policy"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "signed_projection_m",
+            "payload_type": "number",
+            "temporal_type": "frame_signal",
+            "unit": "metre"
+          },
+          {
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "axis_projection_status",
+              "axis_projection_reason",
+              "axis",
+              "orientation_basis",
+              "orientation_team_role",
+              "attack_x_sign",
+              "source_start_point_field",
+              "source_end_point_field",
+              "reference_point_field",
+              "lane_start_point_field",
+              "lane_end_point_field",
+              "source_start_point",
+              "source_end_point",
+              "axis_unit_vector",
+              "signed_projection_m",
+              "angle_between_degrees",
+              "angle_unit",
+              "source_anchor_id",
+              "source_frame_id",
+              "source_record_hash",
+              "witness_source_node_id",
+              "witness_source_output_name",
+              "zero_length_policy"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "angle_between_degrees",
+            "payload_type": "number",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "parameters": [
+          {
+            "allowed_values": [
+              "goalward",
+              "lateral",
+              "toward_point",
+              "along_lane_normal"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "goalward"
+            },
+            "description": "Projection axis.",
+            "name": "axis",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "description": "Source record point field used as vector start.",
+            "name": "start_point_field",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "description": "Source record point field used as vector end.",
+            "name": "end_point_field",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Reference point for toward_point axes, when record-backed.",
+            "name": "reference_point_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Lane start point for along_lane_normal axes.",
+            "name": "lane_start_point_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Lane end point for along_lane_normal axes.",
+            "name": "lane_end_point_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "description": "Source record field that names the acting team for goalward orientation.",
+            "name": "acting_team_field",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "acting_team",
+              "perspective_team"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "acting_team"
+            },
+            "description": "Team basis used for goalward orientation.",
+            "name": "orientation_basis",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Optional source status field that must equal required_source_status_value.",
+            "name": "required_source_status_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "PASS"
+            },
+            "description": "Required source status value when required_source_status_field is set.",
+            "name": "required_source_status_value",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "unknown"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "unknown"
+            },
+            "description": "Policy for zero-length source or axis vectors.",
+            "name": "zero_length_policy",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          }
+        ],
+        "purpose": "Project a source point-pair vector onto a declared axis, producing witnessed signed scalar and angle channels.",
+        "version": "0.1.0",
+        "witness_rule_id": "source_record_frame"
+      },
+      {
+        "coverage_propagation_rule_id": "missing_delta_evidence_to_unknown",
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "anchors",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "before_evaluations",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "after_evaluations",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "limitations": [],
+        "name": "delta_across_anchor",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "delta_status",
+              "delta_reason",
+              "rising_edge_status",
+              "rising_edge_reason",
+              "falling_edge_status",
+              "falling_edge_reason",
+              "before_value_field",
+              "after_value_field",
+              "anchor_status_field",
+              "anchor_status_value",
+              "anchor_status",
+              "before_frame_field",
+              "after_frame_field",
+              "before_status_field",
+              "after_status_field",
+              "required_status_value",
+              "before_status",
+              "after_status",
+              "before_value",
+              "after_value",
+              "signed_delta",
+              "edge_threshold",
+              "hysteresis_margin",
+              "value_unit",
+              "missing_evidence_policy",
+              "source_anchor_id",
+              "source_anchor_frame_id",
+              "before_evaluation_frame_id",
+              "after_evaluation_frame_id",
+              "before_subject_field",
+              "after_subject_field",
+              "before_subject_id",
+              "after_subject_id",
+              "before_record_hash",
+              "after_record_hash",
+              "witness_anchor_node_id",
+              "witness_anchor_output_name",
+              "witness_before_node_id",
+              "witness_before_output_name",
+              "witness_after_node_id",
+              "witness_after_output_name"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "delta_records",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "delta_status",
+              "delta_reason",
+              "rising_edge_status",
+              "rising_edge_reason",
+              "falling_edge_status",
+              "falling_edge_reason",
+              "before_value_field",
+              "after_value_field",
+              "anchor_status_field",
+              "anchor_status_value",
+              "anchor_status",
+              "before_frame_field",
+              "after_frame_field",
+              "before_status_field",
+              "after_status_field",
+              "required_status_value",
+              "before_status",
+              "after_status",
+              "before_value",
+              "after_value",
+              "signed_delta",
+              "edge_threshold",
+              "hysteresis_margin",
+              "value_unit",
+              "missing_evidence_policy",
+              "source_anchor_id",
+              "source_anchor_frame_id",
+              "before_evaluation_frame_id",
+              "after_evaluation_frame_id",
+              "before_subject_field",
+              "after_subject_field",
+              "before_subject_id",
+              "after_subject_id",
+              "before_record_hash",
+              "after_record_hash",
+              "witness_anchor_node_id",
+              "witness_anchor_output_name",
+              "witness_before_node_id",
+              "witness_before_output_name",
+              "witness_after_node_id",
+              "witness_after_output_name"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "delta_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          },
+          {
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "delta_status",
+              "delta_reason",
+              "rising_edge_status",
+              "rising_edge_reason",
+              "falling_edge_status",
+              "falling_edge_reason",
+              "before_value_field",
+              "after_value_field",
+              "anchor_status_field",
+              "anchor_status_value",
+              "anchor_status",
+              "before_frame_field",
+              "after_frame_field",
+              "before_status_field",
+              "after_status_field",
+              "required_status_value",
+              "before_status",
+              "after_status",
+              "before_value",
+              "after_value",
+              "signed_delta",
+              "edge_threshold",
+              "hysteresis_margin",
+              "value_unit",
+              "missing_evidence_policy",
+              "source_anchor_id",
+              "source_anchor_frame_id",
+              "before_evaluation_frame_id",
+              "after_evaluation_frame_id",
+              "before_subject_field",
+              "after_subject_field",
+              "before_subject_id",
+              "after_subject_id",
+              "before_record_hash",
+              "after_record_hash",
+              "witness_anchor_node_id",
+              "witness_anchor_output_name",
+              "witness_before_node_id",
+              "witness_before_output_name",
+              "witness_after_node_id",
+              "witness_after_output_name"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "signed_delta",
+            "payload_type": "number",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          },
+          {
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "delta_status",
+              "delta_reason",
+              "rising_edge_status",
+              "rising_edge_reason",
+              "falling_edge_status",
+              "falling_edge_reason",
+              "before_value_field",
+              "after_value_field",
+              "anchor_status_field",
+              "anchor_status_value",
+              "anchor_status",
+              "before_frame_field",
+              "after_frame_field",
+              "before_status_field",
+              "after_status_field",
+              "required_status_value",
+              "before_status",
+              "after_status",
+              "before_value",
+              "after_value",
+              "signed_delta",
+              "edge_threshold",
+              "hysteresis_margin",
+              "value_unit",
+              "missing_evidence_policy",
+              "source_anchor_id",
+              "source_anchor_frame_id",
+              "before_evaluation_frame_id",
+              "after_evaluation_frame_id",
+              "before_subject_field",
+              "after_subject_field",
+              "before_subject_id",
+              "after_subject_id",
+              "before_record_hash",
+              "after_record_hash",
+              "witness_anchor_node_id",
+              "witness_anchor_output_name",
+              "witness_before_node_id",
+              "witness_before_output_name",
+              "witness_after_node_id",
+              "witness_after_output_name"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "rising_edge_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          },
+          {
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "delta_status",
+              "delta_reason",
+              "rising_edge_status",
+              "rising_edge_reason",
+              "falling_edge_status",
+              "falling_edge_reason",
+              "before_value_field",
+              "after_value_field",
+              "anchor_status_field",
+              "anchor_status_value",
+              "anchor_status",
+              "before_frame_field",
+              "after_frame_field",
+              "before_status_field",
+              "after_status_field",
+              "required_status_value",
+              "before_status",
+              "after_status",
+              "before_value",
+              "after_value",
+              "signed_delta",
+              "edge_threshold",
+              "hysteresis_margin",
+              "value_unit",
+              "missing_evidence_policy",
+              "source_anchor_id",
+              "source_anchor_frame_id",
+              "before_evaluation_frame_id",
+              "after_evaluation_frame_id",
+              "before_subject_field",
+              "after_subject_field",
+              "before_subject_id",
+              "after_subject_id",
+              "before_record_hash",
+              "after_record_hash",
+              "witness_anchor_node_id",
+              "witness_anchor_output_name",
+              "witness_before_node_id",
+              "witness_before_output_name",
+              "witness_after_node_id",
+              "witness_after_output_name"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "falling_edge_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "parameters": [
+          {
+            "description": "Before-record numeric evidence field to compare.",
+            "name": "before_value_field",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "description": "After-record numeric evidence field to compare.",
+            "name": "after_value_field",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "description": "Anchor-record status field required for anchor validity, or none.",
+            "name": "anchor_status_field",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "description": "Required anchor status value when anchor_status_field is not none.",
+            "name": "anchor_status_value",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Before-record subject/entity field used for audit, or none.",
+            "name": "before_subject_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "After-record subject/entity field used for audit, or none.",
+            "name": "after_subject_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "description": "Before-record frame evidence field used to audit the evaluated instant.",
+            "name": "before_frame_field",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "description": "After-record frame evidence field used to audit the evaluated instant.",
+            "name": "after_frame_field",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "description": "Before-record status field required for scalar validity, or none.",
+            "name": "before_status_field",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "description": "After-record status field required for scalar validity, or none.",
+            "name": "after_status_field",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "description": "Required before/after status value when status fields are not none.",
+            "name": "required_status_value",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "description": "Scalar threshold for rising/falling edge classification.",
+            "name": "edge_threshold",
+            "payload_type": "number",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "description": "Margin that the before value must clear to avoid threshold flicker.",
+            "name": "hysteresis_margin",
+            "payload_type": "number",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "none",
+              "metre",
+              "second",
+              "frame",
+              "fraction",
+              "hertz",
+              "count"
+            ],
+            "description": "Declared unit for before/after/delta scalar values.",
+            "name": "value_unit",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "unknown"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "unknown"
+            },
+            "description": "Policy for missing before/after records or scalar values.",
+            "name": "missing_evidence_policy",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          }
+        ],
+        "purpose": "Compare declared before/after scalar values for the same anchor, emitting witnessed signed delta and rising/falling edge statuses.",
+        "version": "0.1.0",
+        "witness_rule_id": "anchor_before_after_records"
+      },
+      {
+        "coverage_propagation_rule_id": "incomplete_set_coverage_could_change_answer_to_unknown",
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "candidates",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "limitations": [
+          "Selection is over declared candidate records only; it does not create candidate sets.",
+          "Incomplete candidate coverage is UNKNOWN unless a declared field bound proves the missing member could not change the answer.",
+          "Ties are resolved only by declared record fields and a final stable record hash."
+        ],
+        "name": "extremum_over_set",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "extremum_selection_status",
+              "extremum_selection_reason",
+              "selection_mode",
+              "top_k",
+              "selected_rank",
+              "value_field",
+              "value_unit",
+              "selected_value",
+              "record_id_field",
+              "selected_record_id",
+              "entity_id_field",
+              "selected_entity_id",
+              "frame_field",
+              "selected_frame_id",
+              "subject_id_field",
+              "subject_id",
+              "anchor_id_field",
+              "source_anchor_id",
+              "status_field",
+              "required_status_value",
+              "coverage_status_field",
+              "coverage_status",
+              "coverage_policy",
+              "value_bound_kind",
+              "value_bound",
+              "valid_candidate_count",
+              "unknown_candidate_count",
+              "excluded_candidate_count",
+              "candidate_count",
+              "tie_breaker_field",
+              "secondary_tie_breaker_field",
+              "selected_tie_breaker_value",
+              "selected_secondary_tie_breaker_value",
+              "selected_source_record_hash",
+              "selected_source_record_index",
+              "witness_source_node_id",
+              "witness_source_output_name",
+              "missing_evidence_policy"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "extremum_selection_records",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "extremum_selection_status",
+              "extremum_selection_reason",
+              "selection_mode",
+              "top_k",
+              "selected_rank",
+              "value_field",
+              "value_unit",
+              "selected_value",
+              "record_id_field",
+              "selected_record_id",
+              "entity_id_field",
+              "selected_entity_id",
+              "frame_field",
+              "selected_frame_id",
+              "subject_id_field",
+              "subject_id",
+              "anchor_id_field",
+              "source_anchor_id",
+              "status_field",
+              "required_status_value",
+              "coverage_status_field",
+              "coverage_status",
+              "coverage_policy",
+              "value_bound_kind",
+              "value_bound",
+              "valid_candidate_count",
+              "unknown_candidate_count",
+              "excluded_candidate_count",
+              "candidate_count",
+              "tie_breaker_field",
+              "secondary_tie_breaker_field",
+              "selected_tie_breaker_value",
+              "selected_secondary_tie_breaker_value",
+              "selected_source_record_hash",
+              "selected_source_record_index",
+              "witness_source_node_id",
+              "witness_source_output_name",
+              "missing_evidence_policy"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "extremum_selection_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          },
+          {
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "extremum_selection_status",
+              "extremum_selection_reason",
+              "selection_mode",
+              "top_k",
+              "selected_rank",
+              "value_field",
+              "value_unit",
+              "selected_value",
+              "record_id_field",
+              "selected_record_id",
+              "entity_id_field",
+              "selected_entity_id",
+              "frame_field",
+              "selected_frame_id",
+              "subject_id_field",
+              "subject_id",
+              "anchor_id_field",
+              "source_anchor_id",
+              "status_field",
+              "required_status_value",
+              "coverage_status_field",
+              "coverage_status",
+              "coverage_policy",
+              "value_bound_kind",
+              "value_bound",
+              "valid_candidate_count",
+              "unknown_candidate_count",
+              "excluded_candidate_count",
+              "candidate_count",
+              "tie_breaker_field",
+              "secondary_tie_breaker_field",
+              "selected_tie_breaker_value",
+              "selected_secondary_tie_breaker_value",
+              "selected_source_record_hash",
+              "selected_source_record_index",
+              "witness_source_node_id",
+              "witness_source_output_name",
+              "missing_evidence_policy"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "selected_value",
+            "payload_type": "number",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "parameters": [
+          {
+            "allowed_values": [
+              "argmin",
+              "argmax"
+            ],
+            "description": "Extremum criterion applied to value_field.",
+            "name": "selection_mode",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "count",
+              "value": 1
+            },
+            "description": "Number of ranked candidates to emit. k larger than the valid set is UNKNOWN.",
+            "name": "top_k",
+            "payload_type": "number",
+            "required": false,
+            "unit": "count"
+          },
+          {
+            "description": "Candidate-record scalar field used for selection.",
+            "name": "value_field",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "none",
+              "metre",
+              "second",
+              "frame",
+              "fraction",
+              "hertz",
+              "count"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Declared unit of value_field for evidence only.",
+            "name": "value_unit",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "description": "Candidate-record field containing the record-level witness id.",
+            "name": "record_id_field",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "description": "Candidate-record field containing the selected entity witness id.",
+            "name": "entity_id_field",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "description": "Candidate-record field containing the selected-frame witness.",
+            "name": "frame_field",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "anchor_id"
+            },
+            "description": "Candidate-record field grouping candidates by source anchor.",
+            "name": "anchor_id_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Optional candidate-record field naming the subject whose set is selected over.",
+            "name": "subject_id_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Optional candidate-record status field that must equal required_status_value.",
+            "name": "status_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "PASS"
+            },
+            "description": "Required candidate status value when status_field is not none.",
+            "name": "required_status_value",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Optional field indicating set-membership coverage for each candidate group.",
+            "name": "coverage_status_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "unknown_if_incomplete_could_change_answer"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "unknown_if_incomplete_could_change_answer"
+            },
+            "description": "Policy for incomplete candidate-set coverage.",
+            "name": "coverage_policy",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "none",
+              "lower",
+              "upper"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Declared bound kind used to decide whether missing candidates could change the answer.",
+            "name": "value_bound_kind",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "none",
+              "value": 0.0
+            },
+            "description": "Declared lower/upper bound for value_field when value_bound_kind is not none.",
+            "name": "value_bound",
+            "payload_type": "number",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "description": "Primary deterministic tie-breaker field.",
+            "name": "tie_breaker_field",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Optional secondary deterministic tie-breaker field.",
+            "name": "secondary_tie_breaker_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "unknown"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "unknown"
+            },
+            "description": "Policy for missing selected value/entity/frame evidence.",
+            "name": "missing_evidence_policy",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          }
+        ],
+        "purpose": "Select witnessed argmin/argmax/top-k elements from declared per-anchor candidate records under explicit coverage and tie-break rules.",
+        "version": "0.1.0",
+        "witness_rule_id": "selected_candidate_record_entity_frame"
+      },
+      {
+        "coverage_propagation_rule_id": "continuity_coverage_gap_could_change_window_to_unknown",
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "anchors",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "collection",
+            "entity_scope": "possession",
+            "name": "continuity_evidence",
+            "payload_type": "boolean",
+            "required": false,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "limitations": [
+          "Windows are derived from declared anchor frames and declared durations only.",
+          "Boundary truncation is recorded and either emitted or UNKNOWN according to truncation_policy.",
+          "same_possession uses supplied continuity intervals only; missing coverage is UNKNOWN.",
+          "Continuity-backed policies require declared team-role fields and equal team-role binding.",
+          "trace_back_from_outcome bounds the preceding window by continuity evidence and does not infer causation."
+        ],
+        "name": "window",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "window_status",
+              "window_reason",
+              "window_mode",
+              "source_anchor_id",
+              "source_anchor_frame_id",
+              "source_anchor_start_frame_id",
+              "source_anchor_end_frame_id",
+              "anchor_frame_field",
+              "anchor_status_field",
+              "anchor_status_value",
+              "anchor_status",
+              "requested_before_seconds",
+              "requested_after_seconds",
+              "requested_start_frame_id",
+              "requested_end_frame_id",
+              "window_start_frame_id",
+              "window_end_frame_id",
+              "window_duration_frames",
+              "window_duration_seconds",
+              "frame_rate_hz",
+              "period_start_frame_id",
+              "period_end_frame_id",
+              "truncated_start",
+              "truncated_end",
+              "truncation_policy",
+              "continuity_policy",
+              "continuity_status",
+              "continuity_reason",
+              "continuity_start_frame_field",
+              "continuity_end_frame_field",
+              "continuity_status_field",
+              "continuity_status_value",
+              "anchor_team_role_field",
+              "continuity_team_role_field",
+              "anchor_team_role",
+              "continuity_team_role",
+              "team_binding_policy",
+              "continuity_overlap_policy",
+              "continuity_evidence_id",
+              "continuity_start_frame_id",
+              "continuity_end_frame_id",
+              "continuity_evidence_record_hash",
+              "continuity_evidence_source_node_id",
+              "continuity_evidence_source_output_name",
+              "witness_anchor_node_id",
+              "witness_anchor_output_name",
+              "witness_anchor_record_hash",
+              "witness_anchor_record_index",
+              "overlap_policy"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "window_records",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "window_status",
+              "window_reason",
+              "window_mode",
+              "source_anchor_id",
+              "source_anchor_frame_id",
+              "source_anchor_start_frame_id",
+              "source_anchor_end_frame_id",
+              "anchor_frame_field",
+              "anchor_status_field",
+              "anchor_status_value",
+              "anchor_status",
+              "requested_before_seconds",
+              "requested_after_seconds",
+              "requested_start_frame_id",
+              "requested_end_frame_id",
+              "window_start_frame_id",
+              "window_end_frame_id",
+              "window_duration_frames",
+              "window_duration_seconds",
+              "frame_rate_hz",
+              "period_start_frame_id",
+              "period_end_frame_id",
+              "truncated_start",
+              "truncated_end",
+              "truncation_policy",
+              "continuity_policy",
+              "continuity_status",
+              "continuity_reason",
+              "continuity_start_frame_field",
+              "continuity_end_frame_field",
+              "continuity_status_field",
+              "continuity_status_value",
+              "anchor_team_role_field",
+              "continuity_team_role_field",
+              "anchor_team_role",
+              "continuity_team_role",
+              "team_binding_policy",
+              "continuity_overlap_policy",
+              "continuity_evidence_id",
+              "continuity_start_frame_id",
+              "continuity_end_frame_id",
+              "continuity_evidence_record_hash",
+              "continuity_evidence_source_node_id",
+              "continuity_evidence_source_output_name",
+              "witness_anchor_node_id",
+              "witness_anchor_output_name",
+              "witness_anchor_record_hash",
+              "witness_anchor_record_index",
+              "overlap_policy"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "window_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          },
+          {
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "window_status",
+              "window_reason",
+              "window_mode",
+              "source_anchor_id",
+              "source_anchor_frame_id",
+              "source_anchor_start_frame_id",
+              "source_anchor_end_frame_id",
+              "anchor_frame_field",
+              "anchor_status_field",
+              "anchor_status_value",
+              "anchor_status",
+              "requested_before_seconds",
+              "requested_after_seconds",
+              "requested_start_frame_id",
+              "requested_end_frame_id",
+              "window_start_frame_id",
+              "window_end_frame_id",
+              "window_duration_frames",
+              "window_duration_seconds",
+              "frame_rate_hz",
+              "period_start_frame_id",
+              "period_end_frame_id",
+              "truncated_start",
+              "truncated_end",
+              "truncation_policy",
+              "continuity_policy",
+              "continuity_status",
+              "continuity_reason",
+              "continuity_start_frame_field",
+              "continuity_end_frame_field",
+              "continuity_status_field",
+              "continuity_status_value",
+              "anchor_team_role_field",
+              "continuity_team_role_field",
+              "anchor_team_role",
+              "continuity_team_role",
+              "team_binding_policy",
+              "continuity_overlap_policy",
+              "continuity_evidence_id",
+              "continuity_start_frame_id",
+              "continuity_end_frame_id",
+              "continuity_evidence_record_hash",
+              "continuity_evidence_source_node_id",
+              "continuity_evidence_source_output_name",
+              "witness_anchor_node_id",
+              "witness_anchor_output_name",
+              "witness_anchor_record_hash",
+              "witness_anchor_record_index",
+              "overlap_policy"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "window_duration_seconds",
+            "payload_type": "number",
+            "temporal_type": "frame_signal",
+            "unit": "second"
+          }
+        ],
+        "parameters": [
+          {
+            "allowed_values": [
+              "before",
+              "after",
+              "around",
+              "trace_back_from_outcome"
+            ],
+            "description": "Window construction mode.",
+            "name": "window_mode",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "description": "Anchor-record frame field used as the window reference frame.",
+            "name": "anchor_frame_field",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "description": "Requested duration before the anchor frame.",
+            "minimum": 0.0,
+            "name": "before_duration_seconds",
+            "payload_type": "number",
+            "required": true,
+            "unit": "second"
+          },
+          {
+            "description": "Requested duration after the anchor frame.",
+            "minimum": 0.0,
+            "name": "after_duration_seconds",
+            "payload_type": "number",
+            "required": true,
+            "unit": "second"
+          },
+          {
+            "description": "Analysis frame rate used to convert declared seconds into frame counts.",
+            "minimum": 0.001,
+            "name": "frame_rate_hz",
+            "payload_type": "number",
+            "required": true,
+            "unit": "hertz"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Optional anchor status field required before a window is claimed.",
+            "name": "anchor_status_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "PASS"
+            },
+            "description": "Required anchor status value when anchor_status_field is not none.",
+            "name": "anchor_status_value",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "emit_with_flag",
+              "unknown"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "emit_with_flag"
+            },
+            "description": "Policy when requested windows cross observed period/data boundaries.",
+            "name": "truncation_policy",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "fixed_duration",
+              "same_possession"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "fixed_duration"
+            },
+            "description": "Continuity evidence required for trace-back or continuity-bounded windows.",
+            "name": "continuity_policy",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Continuity-record start frame field for same-possession/team-control policies.",
+            "name": "continuity_start_frame_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Continuity-record end frame field for same-possession/team-control policies.",
+            "name": "continuity_end_frame_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Optional continuity-record status field.",
+            "name": "continuity_status_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "PASS"
+            },
+            "description": "Required continuity status value when continuity_status_field is not none.",
+            "name": "continuity_status_value",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Anchor-record team-role field used to key continuity evidence.",
+            "name": "anchor_team_role_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Continuity-record team-role field used to key continuity evidence.",
+            "name": "continuity_team_role_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "none",
+              "equal_team_role"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Declared policy for matching anchor and continuity team evidence.",
+            "name": "team_binding_policy",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "latest_start_covering_anchor",
+              "unknown_on_ambiguous"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "latest_start_covering_anchor"
+            },
+            "description": "Declared policy when multiple continuity records cover the anchor.",
+            "name": "continuity_overlap_policy",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "preserve_all"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "preserve_all"
+            },
+            "description": "Deterministic policy for overlapping output windows.",
+            "name": "overlap_policy",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          }
+        ],
+        "purpose": "Emit witnessed bounded temporal windows around anchors, including trace-back windows bounded by declared continuity evidence.",
+        "version": "0.1.0",
+        "witness_rule_id": "window_anchor_and_continuity_evidence"
+      },
+      {
+        "coverage_propagation_rule_id": "missing_join_counterpart_or_unknown_side_to_unknown",
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "left",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "right",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "limitations": [
+          "typed_join composes existing evidence only; it does not fabricate missing counterpart records.",
+          "Unconstrained joins require an explicit rationale and are surfaced as diagnostic, not semantic proof.",
+          "Constraint fields are declared parameters and are recorded on each joined row."
+        ],
+        "name": "typed_join",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "match_id",
+              "period",
+              "perspective_team_role",
+              "typed_join_status",
+              "typed_join_reason",
+              "join_key",
+              "no_match_policy",
+              "unconstrained",
+              "unconstrained_rationale",
+              "same_team_perspective_required",
+              "entity_identity_preserved_required",
+              "frame_alignment_required",
+              "left_anchor_id_field",
+              "right_anchor_id_field",
+              "left_frame_field",
+              "right_frame_field",
+              "left_entity_id_field",
+              "right_entity_id_field",
+              "left_start_frame_field",
+              "left_end_frame_field",
+              "right_start_frame_field",
+              "right_end_frame_field",
+              "left_team_role_field",
+              "right_team_role_field",
+              "left_status_field",
+              "right_status_field",
+              "required_status_value",
+              "left_required_status_value",
+              "right_required_status_value",
+              "maximum_frame_delta",
+              "left_anchor_id",
+              "right_anchor_id",
+              "left_frame_id",
+              "right_frame_id",
+              "left_entity_id",
+              "right_entity_id",
+              "left_start_frame_id",
+              "left_end_frame_id",
+              "right_start_frame_id",
+              "right_end_frame_id",
+              "left_team_role",
+              "right_team_role",
+              "left_status",
+              "right_status",
+              "typed_join_match_count",
+              "typed_join_dropped_no_match_count",
+              "typed_join_constraint_failures",
+              "left_record_hash",
+              "right_record_hash",
+              "left_record_index",
+              "right_record_index",
+              "witness_left_node_id",
+              "witness_left_output_name",
+              "witness_right_node_id",
+              "witness_right_output_name"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "typed_join_records",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "match_id",
+              "period",
+              "perspective_team_role",
+              "typed_join_status",
+              "typed_join_reason",
+              "join_key",
+              "no_match_policy",
+              "unconstrained",
+              "unconstrained_rationale",
+              "same_team_perspective_required",
+              "entity_identity_preserved_required",
+              "frame_alignment_required",
+              "left_anchor_id_field",
+              "right_anchor_id_field",
+              "left_frame_field",
+              "right_frame_field",
+              "left_entity_id_field",
+              "right_entity_id_field",
+              "left_start_frame_field",
+              "left_end_frame_field",
+              "right_start_frame_field",
+              "right_end_frame_field",
+              "left_team_role_field",
+              "right_team_role_field",
+              "left_status_field",
+              "right_status_field",
+              "required_status_value",
+              "left_required_status_value",
+              "right_required_status_value",
+              "maximum_frame_delta",
+              "left_anchor_id",
+              "right_anchor_id",
+              "left_frame_id",
+              "right_frame_id",
+              "left_entity_id",
+              "right_entity_id",
+              "left_start_frame_id",
+              "left_end_frame_id",
+              "right_start_frame_id",
+              "right_end_frame_id",
+              "left_team_role",
+              "right_team_role",
+              "left_status",
+              "right_status",
+              "typed_join_match_count",
+              "typed_join_dropped_no_match_count",
+              "typed_join_constraint_failures",
+              "left_record_hash",
+              "right_record_hash",
+              "left_record_index",
+              "right_record_index",
+              "witness_left_node_id",
+              "witness_left_output_name",
+              "witness_right_node_id",
+              "witness_right_output_name"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "typed_join_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "parameters": [
+          {
+            "allowed_values": [
+              "same_anchor",
+              "same_frame_window",
+              "same_entity",
+              "episode_overlap"
+            ],
+            "description": "Declared identity key used to match left and right records.",
+            "name": "join_key",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "FAIL",
+              "UNKNOWN",
+              "drop_with_count"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "UNKNOWN"
+            },
+            "description": "Policy when a required counterpart is absent.",
+            "name": "no_match_policy",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "boolean",
+              "unit": "none",
+              "value": false
+            },
+            "description": "Require left and right records to carry the same team role.",
+            "name": "same_team_perspective_required",
+            "payload_type": "boolean",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "boolean",
+              "unit": "none",
+              "value": false
+            },
+            "description": "Require left and right entity ids to be identical.",
+            "name": "entity_identity_preserved_required",
+            "payload_type": "boolean",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "boolean",
+              "unit": "none",
+              "value": false
+            },
+            "description": "Require left and right frame ids to align within maximum_frame_delta.",
+            "name": "frame_alignment_required",
+            "payload_type": "boolean",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "boolean",
+              "unit": "none",
+              "value": false
+            },
+            "description": "Explicit escape hatch for unconstrained diagnostic joins.",
+            "name": "unconstrained",
+            "payload_type": "boolean",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Required textual rationale when unconstrained is true.",
+            "name": "unconstrained_rationale",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "anchor_id"
+            },
+            "description": "Left anchor id field for same_anchor joins.",
+            "name": "left_anchor_id_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "anchor_id"
+            },
+            "description": "Right anchor id field for same_anchor joins.",
+            "name": "right_anchor_id_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "anchor_frame_id"
+            },
+            "description": "Left frame field for frame-aligned joins.",
+            "name": "left_frame_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "anchor_frame_id"
+            },
+            "description": "Right frame field for frame-aligned joins.",
+            "name": "right_frame_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Left entity id field for same_entity or entity-preserved constraints.",
+            "name": "left_entity_id_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Right entity id field for same_entity or entity-preserved constraints.",
+            "name": "right_entity_id_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "start_frame_id"
+            },
+            "description": "Left episode start field for episode-overlap joins.",
+            "name": "left_start_frame_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "end_frame_id"
+            },
+            "description": "Left episode end field for episode-overlap joins.",
+            "name": "left_end_frame_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "start_frame_id"
+            },
+            "description": "Right episode start field for episode-overlap joins.",
+            "name": "right_start_frame_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "end_frame_id"
+            },
+            "description": "Right episode end field for episode-overlap joins.",
+            "name": "right_end_frame_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Left team-role field for same-team-perspective constraints.",
+            "name": "left_team_role_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Right team-role field for same-team-perspective constraints.",
+            "name": "right_team_role_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Optional left record status field.",
+            "name": "left_status_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Optional right record status field.",
+            "name": "right_status_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "PASS"
+            },
+            "description": "Legacy default status when a side-specific required status is not declared.",
+            "name": "required_status_value",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "PASS"
+            },
+            "description": "Required status for the left status field when declared.",
+            "name": "left_required_status_value",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "PASS"
+            },
+            "description": "Required status for the right status field when declared.",
+            "name": "right_required_status_value",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "frame",
+              "value": 0
+            },
+            "description": "Permitted absolute frame delta for frame alignment.",
+            "minimum": 0.0,
+            "name": "maximum_frame_delta",
+            "payload_type": "number",
+            "required": false,
+            "unit": "frame"
+          }
+        ],
+        "purpose": "Join two declared evidence channels on explicit identity keys under bind-time composition constraints.",
+        "version": "0.1.0",
+        "witness_rule_id": "typed_left_right_join_witnesses"
+      },
+      {
+        "coverage_propagation_rule_id": "aggregate_unknown_rows_to_interval_bounds",
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "population",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "limitations": [
+          "aggregate_over never emits point-only results; bounds remain present even when collapsed.",
+          "UNKNOWN rows are never silently dropped; they move the upper bound for count.",
+          "R2-1 intentionally excludes sum and mean: bounding numeric aggregates over UNKNOWN rows requires a declared field-domain mechanism before unobserved contributions can be bounded.",
+          "The construction guarantee is enforced at interval construction; persisted artifacts are attested by provenance hashes.",
+          "Denominator expressions are authored parameters and are echoed in each output record."
+        ],
+        "name": "aggregate_over",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "relation",
+            "evidence_fields": [
+              "aggregation_kind",
+              "population_expression",
+              "group_by_fields",
+              "group_key",
+              "status_field",
+              "constraint_opt_out_reason",
+              "observed",
+              "lower_bound",
+              "upper_bound",
+              "unknown_count",
+              "population_count",
+              "pass_count",
+              "fail_count",
+              "source_node_id",
+              "source_output_name"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "aggregate_records",
+            "payload_type": "relation_ref",
+            "temporal_type": "relation_episode_set",
+            "unit": "none"
+          }
+        ],
+        "parameters": [
+          {
+            "allowed_values": [
+              "count"
+            ],
+            "description": "Aggregation operation to perform over the declared population. R2-1 supports count only.",
+            "name": "aggregation_kind",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "description": "Human-authored denominator expression echoed in aggregate evidence.",
+            "name": "population_expression",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "description": "Declared record fields that define aggregate groups.",
+            "name": "group_by_fields",
+            "payload_type": "entity_set",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "description": "Tri-state PASS/FAIL/UNKNOWN field partitioning the population.",
+            "name": "status_field",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "boolean",
+              "unit": "none",
+              "value": true
+            },
+            "description": "Require upstream population lineage to have enforced same-team perspective.",
+            "name": "same_team_perspective_required",
+            "payload_type": "boolean",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "boolean",
+              "unit": "none",
+              "value": true
+            },
+            "description": "Require upstream population lineage to have enforced entity identity.",
+            "name": "entity_identity_preserved_required",
+            "payload_type": "boolean",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "boolean",
+              "unit": "none",
+              "value": true
+            },
+            "description": "Require upstream population lineage to have enforced frame alignment.",
+            "name": "frame_alignment_required",
+            "payload_type": "boolean",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Required declared reason when any aggregate lineage constraint is explicitly false.",
+            "name": "constraint_opt_out_reason",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Team-role field used when same-team perspective is required.",
+            "name": "team_role_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          }
+        ],
+        "purpose": "Aggregate a declared anchor-level evidence population into interval-typed group results with UNKNOWN rows carried into bounds.",
+        "version": "0.1.0",
+        "witness_rule_id": "aggregate_group_population_witnesses"
+      },
+      {
+        "coverage_propagation_rule_id": "rate_unknown_rows_to_joint_interval_bounds",
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "numerator",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "denominator",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "limitations": [
+          "rate never divides independent intervals; bounds come from the joint row partition.",
+          "R2-2 supports count rates only; numeric sum/mean rates require a future field-domain mechanism.",
+          "Share is future work: correct share semantics require key-partition counts over one common denominator, observed shares summing to 1 over known rows, and interval-typed bounds.",
+          "The numerator population must be declared as a same-source subset of the denominator population.",
+          "A num PASS row with denominator FAIL or UNKNOWN raises because the evidence violates the subset law.",
+          "Degenerate denominators emit a typed UNKNOWN rate instead of zero, NaN, or an omitted row."
+        ],
+        "name": "rate",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "relation",
+            "evidence_fields": [
+              "rate_kind",
+              "population_expression",
+              "group_by_fields",
+              "group_key",
+              "numerator_status_field",
+              "denominator_status_field",
+              "subset_declaration",
+              "constraint_opt_out_reason",
+              "rate_status",
+              "observed",
+              "lower_bound",
+              "upper_bound",
+              "observed_denominator_count",
+              "a_count",
+              "b_count",
+              "c_count",
+              "d1_count",
+              "d2_count",
+              "e_count",
+              "numerator_count_interval",
+              "denominator_count_interval",
+              "numerator_source_node_id",
+              "numerator_source_output_name",
+              "denominator_source_node_id",
+              "denominator_source_output_name"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "rate_records",
+            "payload_type": "relation_ref",
+            "temporal_type": "relation_episode_set",
+            "unit": "none"
+          }
+        ],
+        "parameters": [
+          {
+            "allowed_values": [
+              "rate"
+            ],
+            "description": "R2-2 supports count rate only.",
+            "name": "rate_kind",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "description": "Human-authored rate population expression echoed in evidence.",
+            "name": "population_expression",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "description": "Declared record fields that define rate groups.",
+            "name": "group_by_fields",
+            "payload_type": "entity_set",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "description": "Tri-state PASS/FAIL/UNKNOWN field for numerator membership.",
+            "name": "numerator_status_field",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "description": "Tri-state PASS/FAIL/UNKNOWN field for denominator membership.",
+            "name": "denominator_status_field",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "description": "Declared subset law; numerator must add predicates over the denominator source.",
+            "name": "subset_declaration",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "entity_set",
+              "unit": "none",
+              "value": []
+            },
+            "description": "Predicate fields added by the numerator over the shared source relation.",
+            "name": "subset_predicate_fields",
+            "payload_type": "entity_set",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "entity_set",
+              "unit": "none",
+              "value": []
+            },
+            "description": "Must remain empty; non-empty values mean the numerator removed denominator predicates.",
+            "name": "removed_denominator_predicate_fields",
+            "payload_type": "entity_set",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "boolean",
+              "unit": "none",
+              "value": true
+            },
+            "description": "Require upstream population lineage to have enforced same-team perspective.",
+            "name": "same_team_perspective_required",
+            "payload_type": "boolean",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "boolean",
+              "unit": "none",
+              "value": true
+            },
+            "description": "Require upstream population lineage to have enforced entity identity.",
+            "name": "entity_identity_preserved_required",
+            "payload_type": "boolean",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "boolean",
+              "unit": "none",
+              "value": true
+            },
+            "description": "Require upstream population lineage to have enforced frame alignment.",
+            "name": "frame_alignment_required",
+            "payload_type": "boolean",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Required declared reason when any rate lineage constraint is explicitly false.",
+            "name": "constraint_opt_out_reason",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Team-role field used when same-team perspective is required.",
+            "name": "team_role_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          }
+        ],
+        "purpose": "Compute interval-typed count rates from a joint numerator/denominator tri-state partition under a declared subset law.",
+        "version": "0.1.0",
+        "witness_rule_id": "rate_group_population_witnesses"
+      }
+    ]
+  },
   "evidence_fields": {
     "acceleration": [
       "acceleration_entity_id",
@@ -14878,7 +17537,7 @@
     ]
   },
   "generated_at": "reproducible_from_source_hashes",
-  "knowledge_pack_sha256": "536fbe4f0649eaa1557ae7638581e3fbb7eaa6d49710e3e31521df8d99c06d7a",
+  "knowledge_pack_sha256": "e81aedcf491285bf004e8dd42c760c839f2cecf3ec8d1b61d62516d537dc2bf2",
   "knowledge_pack_version": "m1.2-s2i-a.0",
   "model_visible_tool_schemas": {
     "compare_query_versions": {
@@ -34615,7 +37274,7 @@
   },
   "schema_version": "1.0",
   "source_hashes": {
-    "Makefile": "4c251caaf2a4fa73fc002a9ed949b388e00ee61da978adee8577bd07d405b3aa",
+    "Makefile": "7f5eaa0883aba521eab5d07afb8d4b8136b8ccf5e6e10c04afe79913977eb010",
     "config/query-plans/ball_side_block_shift.ir.v1.json": "877c185594e30442a745fe10e9b15fa3f5184ce28b1f8e5f2ca96d4a7439d945",
     "config/query-plans/first_time_relay_after_receiver_line_transition.experimental.v1.json": "af52f539c8ef40c08f7300bf4af895e1d087be4c0c138c229be36e1780e5620d",
     "config/query-plans/high_bypass_completed_pass.experimental.v1.json": "38cf4c31bd388df98284d80384cfba600ec6aa90312ff530427d03a19d8e6c83",
@@ -34629,10 +37288,18 @@
     "src/tqe/runtime/catalog.py": "0f58e55acdd789f1f101b969a0255b864bdc333d6c4a8f596160c57e8b00590f",
     "src/tqe/runtime/executor.py": "7a2cd8a4641f7d179111064dbafa17f83e1d8b44bcc330f1237a1a1e33b0814d",
     "src/tqe/runtime/ir.py": "33e4885a6ad75afa7b4e9df96b72eba43c49b92b24ac67c8d2979d0bde13eedd",
+    "src/tqe/runtime/operators/__init__.py": "a7b90947588a8e675ceb337a7398fa9d2309d34ace7f177c537696204972e860",
+    "src/tqe/runtime/operators/aggregate_over.py": "0696a1a47bbee973e0128137e978b16fb704541c1ba2be30688a756ebf473f0e",
+    "src/tqe/runtime/operators/delta_across_anchor.py": "acd81710c06856c71aac2ac41e68a7e07d17262a69f597a92696a0721f77b806",
+    "src/tqe/runtime/operators/extremum_over_set.py": "e9bf407db795f44600ffe65f6c0333a3cdaae3b8b234206e1157eed533eb15e3",
+    "src/tqe/runtime/operators/project_onto_axis.py": "65159a823e7573cc19fd3728f425680a8cc80349e1bc8e790db890b589ecd9d0",
+    "src/tqe/runtime/operators/rate.py": "6e87f7520107efe0a0219d929f8799b822eee17bdc42c9cf5795ea91c117ca88",
+    "src/tqe/runtime/operators/typed_join.py": "8b897658f357f9cda39c287816daacf95733c3d75c69843d449c35fe8bd10af1",
+    "src/tqe/runtime/operators/window.py": "c7247d0fb72c8c0c1705b75d71ced179d7c814c3c2aee93a2dbd9948c773188e",
     "src/tqe/runtime/relations.py": "eb305cd2ff4c9c5f886342eeb8c35253500e6dd777bdf7b4dc403469b771d8e0",
     "src/tqe/verification/m1_2_gate_s2i.py": "9397f1a8a6b11e28d1f0bb48105a44dfae9a2c49ca61ff44413108f1d85ce125",
     "src/tqe/workshop/hermes_s2.py": "ae2bb93b3444749d8fd131075e29404141e517820faf103fb58de2ebafcb1591",
-    "src/tqe/workshop/knowledge_pack.py": "2878869bc4ea757f3704740e3212c7556bffa84c95a72797c3e5a581956ef6aa",
+    "src/tqe/workshop/knowledge_pack.py": "5c2c072fe7241dc765216e504de9dc9ff03e9ae62604f71247842dd70497bef5",
     "src/tqe/workshop/m1_2.py": "481097c94dfe922a2e8e6322263e7124841c028601ae78d0608145acca65266c"
   },
   "tool_surfaces": {

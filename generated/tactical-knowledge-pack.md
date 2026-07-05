@@ -1,7 +1,7 @@
 # Tactical Knowledge Pack
 
 Version: `m1.2-s2i-a.0`
-SHA-256: `536fbe4f0649eaa1557ae7638581e3fbb7eaa6d49710e3e31521df8d99c06d7a`
+SHA-256: `e81aedcf491285bf004e8dd42c760c839f2cecf3ec8d1b61d62516d537dc2bf2`
 Generated: `reproducible_from_source_hashes`
 
 ## Architecture
@@ -184,9 +184,37 @@ Disallowed claims:
 - `COACH_INSTRUCTIONS`: Coach instruction evidence is unavailable.
 - `FACIAL_CUES`: Facial cues are unavailable without video/perception.
 
+## Composition Grammar
+
+Composition operators: `7`
+- `project_onto_axis@0.1.0`: Project a source point-pair vector onto a declared axis, producing witnessed signed scalar and angle channels.
+- `delta_across_anchor@0.1.0`: Compare declared before/after scalar values for the same anchor, emitting witnessed signed delta and rising/falling edge statuses.
+- `extremum_over_set@0.1.0`: Select witnessed argmin/argmax/top-k elements from declared per-anchor candidate records under explicit coverage and tie-break rules.
+- `window@0.1.0`: Emit witnessed bounded temporal windows around anchors, including trace-back windows bounded by declared continuity evidence.
+- `typed_join@0.1.0`: Join two declared evidence channels on explicit identity keys under bind-time composition constraints.
+- `aggregate_over@0.1.0`: Aggregate a declared anchor-level evidence population into interval-typed group results with UNKNOWN rows carried into bounds.
+- `rate@0.1.0`: Compute interval-typed count rates from a joint numerator/denominator tri-state partition under a declared subset law.
+
+Composition constraint kinds:
+
+- `aggregate_over`
+- `before_after_same_anchor`
+- `delta_across_anchor`
+- `distinct_entity_fields`
+- `extremum_over_set`
+- `frame_alignment`
+- `rate`
+- `relation_on_anchor`
+- `same_anchor_identity`
+- `same_player_return`
+- `temporal_order`
+- `typed_join`
+- `vector_projection`
+- `window`
+
 ## Source Hashes
 
-- `Makefile`: `4c251caaf2a4fa73fc002a9ed949b388e00ee61da978adee8577bd07d405b3aa`
+- `Makefile`: `7f5eaa0883aba521eab5d07afb8d4b8136b8ccf5e6e10c04afe79913977eb010`
 - `config/query-plans/ball_side_block_shift.ir.v1.json`: `877c185594e30442a745fe10e9b15fa3f5184ce28b1f8e5f2ca96d4a7439d945`
 - `config/query-plans/first_time_relay_after_receiver_line_transition.experimental.v1.json`: `af52f539c8ef40c08f7300bf4af895e1d087be4c0c138c229be36e1780e5620d`
 - `config/query-plans/high_bypass_completed_pass.experimental.v1.json`: `38cf4c31bd388df98284d80384cfba600ec6aa90312ff530427d03a19d8e6c83`
@@ -200,8 +228,16 @@ Disallowed claims:
 - `src/tqe/runtime/catalog.py`: `0f58e55acdd789f1f101b969a0255b864bdc333d6c4a8f596160c57e8b00590f`
 - `src/tqe/runtime/executor.py`: `7a2cd8a4641f7d179111064dbafa17f83e1d8b44bcc330f1237a1a1e33b0814d`
 - `src/tqe/runtime/ir.py`: `33e4885a6ad75afa7b4e9df96b72eba43c49b92b24ac67c8d2979d0bde13eedd`
+- `src/tqe/runtime/operators/__init__.py`: `a7b90947588a8e675ceb337a7398fa9d2309d34ace7f177c537696204972e860`
+- `src/tqe/runtime/operators/aggregate_over.py`: `0696a1a47bbee973e0128137e978b16fb704541c1ba2be30688a756ebf473f0e`
+- `src/tqe/runtime/operators/delta_across_anchor.py`: `acd81710c06856c71aac2ac41e68a7e07d17262a69f597a92696a0721f77b806`
+- `src/tqe/runtime/operators/extremum_over_set.py`: `e9bf407db795f44600ffe65f6c0333a3cdaae3b8b234206e1157eed533eb15e3`
+- `src/tqe/runtime/operators/project_onto_axis.py`: `65159a823e7573cc19fd3728f425680a8cc80349e1bc8e790db890b589ecd9d0`
+- `src/tqe/runtime/operators/rate.py`: `6e87f7520107efe0a0219d929f8799b822eee17bdc42c9cf5795ea91c117ca88`
+- `src/tqe/runtime/operators/typed_join.py`: `8b897658f357f9cda39c287816daacf95733c3d75c69843d449c35fe8bd10af1`
+- `src/tqe/runtime/operators/window.py`: `c7247d0fb72c8c0c1705b75d71ced179d7c814c3c2aee93a2dbd9948c773188e`
 - `src/tqe/runtime/relations.py`: `eb305cd2ff4c9c5f886342eeb8c35253500e6dd777bdf7b4dc403469b771d8e0`
 - `src/tqe/verification/m1_2_gate_s2i.py`: `9397f1a8a6b11e28d1f0bb48105a44dfae9a2c49ca61ff44413108f1d85ce125`
 - `src/tqe/workshop/hermes_s2.py`: `ae2bb93b3444749d8fd131075e29404141e517820faf103fb58de2ebafcb1591`
-- `src/tqe/workshop/knowledge_pack.py`: `2878869bc4ea757f3704740e3212c7556bffa84c95a72797c3e5a581956ef6aa`
+- `src/tqe/workshop/knowledge_pack.py`: `5c2c072fe7241dc765216e504de9dc9ff03e9ae62604f71247842dd70497bef5`
 - `src/tqe/workshop/m1_2.py`: `481097c94dfe922a2e8e6322263e7124841c028601ae78d0608145acca65266c`

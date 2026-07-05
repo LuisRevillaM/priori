@@ -42,11 +42,10 @@ from tqe.runtime.ir import (  # noqa: E402
     Unit,
     stable_hash,
 )
-from tqe.runtime.operators.delta_across_anchor import DELTA_ACROSS_ANCHOR_SIGNATURE  # noqa: E402
-from tqe.runtime.operators.extremum_over_set import EXTREMUM_OVER_SET_SIGNATURE  # noqa: E402
-from tqe.runtime.operators.project_onto_axis import PROJECT_ONTO_AXIS_SIGNATURE  # noqa: E402
-from tqe.runtime.operators.typed_join import TYPED_JOIN_SIGNATURE  # noqa: E402
-from tqe.runtime.operators.window import WINDOW_SIGNATURE  # noqa: E402
+from tqe.runtime.operators import (  # noqa: E402
+    OPERATOR_SIGNATURES_BY_CONSTRAINT_KIND,
+    SUPPORTED_COMPOSITION_CONSTRAINT_KINDS,
+)
 
 
 def repo_path(value: str | Path) -> Path:
@@ -61,7 +60,7 @@ PLAN_DIR = OUT_DIR / "plans"
 ROW_LEDGER = OUT_DIR / "row-ledger.json"
 ROW_CSV = OUT_DIR / "row-ledger.csv"
 REPORT = repo_path(os.environ.get("TQE_SEARCH_REPORT", ROOT / "artifacts" / "autonomous" / "compiler-search-v0-report.json"))
-UPDATE_LEDGER = os.environ.get("TQE_SEARCH_UPDATE_LEDGER", "1") != "0"
+UPDATE_LEDGER = os.environ.get("TQE_SEARCH_UPDATE_LEDGER", "0") == "1"
 SHARED_NODE_CACHE_ENABLED = os.environ.get("TQE_SEARCH_SHARED_NODE_CACHE", "1") != "0"
 PERSISTENT_NODE_CACHE_ENABLED = os.environ.get("TQE_SEARCH_PERSISTENT_NODE_CACHE", "0") == "1"
 NODE_CACHE_ROOT = repo_path(
@@ -91,20 +90,6 @@ if not PERSPECTIVE_TEAM_ROLES:
     raise ValueError("TQE_SEARCH_PERSPECTIVE_TEAM_ROLES cannot be empty")
 
 SUPPORTED_MODALITIES = {"tracking", "events", "tracking_event_synchronized"}
-SUPPORTED_COMPOSITION_CONSTRAINT_KINDS = {
-    "before_after_same_anchor",
-    "distinct_entity_fields",
-    "frame_alignment",
-    "relation_on_anchor",
-    "same_anchor_identity",
-    "same_player_return",
-    "temporal_order",
-    "delta_across_anchor",
-    "extremum_over_set",
-    "typed_join",
-    "window",
-    "vector_projection",
-}
 EXCLUDED_CATALOG_REFS = {
     "controlled_line_break_episode",
     "relation_destination_entry_classification",
@@ -466,6 +451,15 @@ VALUE_FAMILY_FIELDS = {
     "pressure_distance": ["nearest_defender_distance_m"],
     "team_shape_width_or_depth": ["team_width_m", "team_depth_m", "team_area_m2"],
 }
+
+PROJECT_ONTO_AXIS_SIGNATURE = OPERATOR_SIGNATURES_BY_CONSTRAINT_KIND["vector_projection"]
+DELTA_ACROSS_ANCHOR_SIGNATURE = OPERATOR_SIGNATURES_BY_CONSTRAINT_KIND["delta_across_anchor"]
+EXTREMUM_OVER_SET_SIGNATURE = OPERATOR_SIGNATURES_BY_CONSTRAINT_KIND["extremum_over_set"]
+WINDOW_SIGNATURE = OPERATOR_SIGNATURES_BY_CONSTRAINT_KIND["window"]
+TYPED_JOIN_SIGNATURE = OPERATOR_SIGNATURES_BY_CONSTRAINT_KIND["typed_join"]
+AGGREGATE_OVER_SIGNATURE = OPERATOR_SIGNATURES_BY_CONSTRAINT_KIND["aggregate_over"]
+
+
 def declared_operator_fields(signature: Any) -> set[str]:
     fields: set[str] = set()
     for output in signature.outputs:
@@ -479,6 +473,7 @@ DELTA_ACROSS_ANCHOR_FIELDS = declared_operator_fields(DELTA_ACROSS_ANCHOR_SIGNAT
 EXTREMUM_OVER_SET_FIELDS = declared_operator_fields(EXTREMUM_OVER_SET_SIGNATURE)
 WINDOW_FIELDS = declared_operator_fields(WINDOW_SIGNATURE)
 TYPED_JOIN_FIELDS = declared_operator_fields(TYPED_JOIN_SIGNATURE)
+AGGREGATE_OVER_FIELDS = declared_operator_fields(AGGREGATE_OVER_SIGNATURE)
 TYPED_JOIN_CORE_FIELDS = {
     "typed_join_records",
     "typed_join_status",
@@ -534,13 +529,6 @@ TYPED_JOIN_CORE_FIELDS = {
     "witness_right_node_id",
     "witness_right_output_name",
 }
-OPERATOR_SIGNATURES_BY_CONSTRAINT_KIND = {
-    "delta_across_anchor": DELTA_ACROSS_ANCHOR_SIGNATURE,
-    "extremum_over_set": EXTREMUM_OVER_SET_SIGNATURE,
-    "typed_join": TYPED_JOIN_SIGNATURE,
-    "window": WINDOW_SIGNATURE,
-    "vector_projection": PROJECT_ONTO_AXIS_SIGNATURE,
-}
 OPERATOR_FIELDS_BY_CONSTRAINT_KIND = {
     kind: declared_operator_fields(signature)
     for kind, signature in OPERATOR_SIGNATURES_BY_CONSTRAINT_KIND.items()
@@ -585,39 +573,9 @@ def evaluate_target(
 ) -> dict[str, Any]:
     contract = target["target_contract"]
     target_hash = stable_hash(contract)
-    if concept_name_used_as_hint(target):
-        return row_result(
-            target=target,
-            row=row,
-            result="not_compiler_reachable",
-            failure_taxonomy="answer_key_error",
-            message="Target contract contains the reporting concept name; refusing hinted target.",
-            target_contract_hash=target_hash,
-        )
-    unsupported_modalities = [
-        modality for modality in contract.get("required_modalities", []) if modality not in SUPPORTED_MODALITIES
-    ]
-    if unsupported_modalities:
-        return row_result(
-            target=target,
-            row=row,
-            result="not_compiler_reachable",
-            failure_taxonomy="unsupported_modality",
-            message="Target requires unavailable data/model modalities.",
-            target_contract_hash=target_hash,
-            failure_details={"unsupported_modalities": unsupported_modalities},
-        )
-    unsupported_constraints = unsupported_composition_constraints(contract)
-    if unsupported_constraints:
-        return row_result(
-            target=target,
-            row=row,
-            result="not_compiler_reachable",
-            failure_taxonomy="missing_constraint",
-            message="Target requires composition constraints the search cannot yet enforce.",
-            target_contract_hash=target_hash,
-            failure_details={"unsupported_composition_constraints": unsupported_constraints},
-        )
+    failed_gate = target_certification_gate_result(target=target, row=row, target_hash=target_hash)
+    if failed_gate is not None:
+        return failed_gate
 
     context = SearchContext(catalog=catalog, target_contract=contract)
     try:
@@ -689,6 +647,50 @@ def evaluate_target(
         execution=execution,
         rows=rows,
     )
+
+
+def target_certification_gate_result(
+    *,
+    target: dict[str, Any],
+    row: dict[str, Any],
+    target_hash: str | None = None,
+) -> dict[str, Any] | None:
+    contract = target["target_contract"]
+    resolved_hash = stable_hash(contract) if target_hash is None else target_hash
+    if concept_name_used_as_hint(target):
+        return row_result(
+            target=target,
+            row=row,
+            result="not_compiler_reachable",
+            failure_taxonomy="answer_key_error",
+            message="Target contract contains the reporting concept name; refusing hinted target.",
+            target_contract_hash=resolved_hash,
+        )
+    unsupported_modalities = [
+        modality for modality in contract.get("required_modalities", []) if modality not in SUPPORTED_MODALITIES
+    ]
+    if unsupported_modalities:
+        return row_result(
+            target=target,
+            row=row,
+            result="not_compiler_reachable",
+            failure_taxonomy="unsupported_modality",
+            message="Target requires unavailable data/model modalities.",
+            target_contract_hash=resolved_hash,
+            failure_details={"unsupported_modalities": unsupported_modalities},
+        )
+    unsupported_constraints = unsupported_composition_constraints(contract)
+    if unsupported_constraints:
+        return row_result(
+            target=target,
+            row=row,
+            result="not_compiler_reachable",
+            failure_taxonomy="missing_constraint",
+            message="Target requires composition constraints the search cannot yet enforce.",
+            target_contract_hash=resolved_hash,
+            failure_details={"unsupported_composition_constraints": unsupported_constraints},
+        )
+    return None
 
 
 @dataclass
@@ -896,6 +898,11 @@ def operator_composition_fields(contract: dict[str, Any], required_fields: set[s
 def operator_constraint_fields(constraint: dict[str, Any], required_fields: set[str]) -> set[str]:
     kind = str(constraint.get("kind", ""))
     fields = set(required_fields & OPERATOR_FIELDS_BY_CONSTRAINT_KIND.get(kind, set()))
+    if kind == "aggregate_over":
+        fields.update(required_fields & {str(item) for item in constraint.get("population_required_fields", [])})
+        for nested in constraint.get("population_composition_constraints", []):
+            if isinstance(nested, dict):
+                fields.update(operator_constraint_fields(nested, required_fields))
     if kind == "typed_join":
         for side in ("left", "right"):
             fields.update(required_fields & {str(item) for item in constraint.get(f"{side}_required_fields", [])})
@@ -2370,7 +2377,97 @@ def delta_across_anchor_candidates(
     return [candidate for *_prefix, candidate in sorted(scored)]
 
 
+def build_aggregate_over_operator(
+    context: SearchContext,
+    required_fields: set[str],
+    *,
+    depth: int,
+) -> BuildResult:
+    constraint = first_target_constraint(context, "aggregate_over")
+    population_required_fields = {
+        str(field)
+        for field in constraint.get("population_required_fields", [])
+        if str(field) != "none"
+    }
+    if not population_required_fields:
+        raise SynthesisError(
+            "missing_constraint",
+            "aggregate_over requires declared population_required_fields.",
+            {"constraint_kind": "aggregate_over"},
+        )
+    population_constraints = list(constraint.get("population_composition_constraints", []))
+    if not population_constraints:
+        raise SynthesisError(
+            "missing_constraint",
+            "aggregate_over requires declared population_composition_constraints.",
+            {"constraint_kind": "aggregate_over"},
+        )
+    population_context = SearchContext(
+        catalog=context.catalog,
+        target_contract={
+            "desired_output": "classification",
+            "required_evidence": sorted(population_required_fields),
+            "status_semantics": [],
+            "composition_constraints": population_constraints,
+            "claim_boundary": context.target_contract.get("claim_boundary", ""),
+        },
+        counter=context.counter,
+        max_depth=context.max_depth,
+        max_branching=context.max_branching,
+    )
+    population_build = build_operator_composition(
+        population_context,
+        population_required_fields,
+        depth=depth,
+    )
+    node_id = context.node_id("aggregate_over")
+    node = operator_node(
+        node_id=node_id,
+        operator_name="aggregate_over",
+        version="0.1.0",
+        inputs={
+            "population": ref(population_build.terminal_node_id, population_build.terminal_output),
+        },
+        parameters={
+            "aggregation_kind": enum(str(constraint["aggregation_kind"])),
+            "population_expression": enum(str(constraint["population_expression"])),
+            "group_by_fields": entity_set([str(item) for item in constraint["group_by_fields"]]),
+            "status_field": enum(str(constraint["status_field"])),
+            "same_team_perspective_required": boolean(
+                bool(constraint.get("same_team_perspective_required", True))
+            ),
+            "entity_identity_preserved_required": boolean(
+                bool(constraint.get("entity_identity_preserved_required", True))
+            ),
+            "frame_alignment_required": boolean(
+                bool(constraint.get("frame_alignment_required", True))
+            ),
+            "constraint_opt_out_reason": enum(str(constraint.get("constraint_opt_out_reason", "none"))),
+            "team_role_field": enum(str(constraint.get("team_role_field", "none"))),
+        },
+    )
+    field_sources = dict(population_build.field_sources)
+    for field in AGGREGATE_OVER_FIELDS:
+        field_sources[field] = (node_id, "aggregate_records")
+    return BuildResult(
+        nodes=[*population_build.nodes, node],
+        terminal_node_id=node_id,
+        terminal_entry="operator:aggregate_over",
+        terminal_output="aggregate_records",
+        field_sources=field_sources,
+        rules_used=sorted({*population_build.rules_used, "aggregate_over_operator_composition"}),
+        providers_used=[*population_build.providers_used, "operator:aggregate_over"],
+        metadata={
+            "population_required_fields": sorted(population_required_fields),
+            "population_terminal": population_build.terminal_entry,
+            "anchor_source_node_id": population_build.terminal_node_id,
+            "anchor_source_output_name": population_build.terminal_output,
+        },
+    )
+
+
 OPERATOR_COMPOSITION_BUILDERS = {
+    "aggregate_over": build_aggregate_over_operator,
     "delta_across_anchor": build_delta_across_anchor_operator,
     "extremum_over_set": build_extremum_over_set_operator,
     "typed_join": build_typed_join_operator,
@@ -3723,11 +3820,20 @@ def assemble_document(
         description="Generated by bounded backward search from typed evidence and predicate requirements.",
         nodes=[*build.nodes, *predicates],
         predicate_ids=[predicate["node_id"] for predicate in predicates],
-        anchor_source=ref(build.terminal_node_id, build.terminal_output),
+        anchor_source=anchor_source_for_build(build),
         requested_evidence=requested_evidence,
         claim_boundary=contract["claim_boundary"],
         perspective_team_role=perspective_team_role or PERSPECTIVE_TEAM_ROLES[0],
     )
+
+
+def anchor_source_for_build(build: BuildResult) -> dict[str, str]:
+    if build.terminal_entry == "operator:aggregate_over":
+        source_node_id = build.metadata.get("anchor_source_node_id")
+        output_name = build.metadata.get("anchor_source_output_name")
+        if source_node_id and output_name:
+            return ref(str(source_node_id), str(output_name))
+    return ref(build.terminal_node_id, build.terminal_output)
 
 
 def terminal_output_fields(build: BuildResult) -> set[str]:
@@ -3743,6 +3849,8 @@ def terminal_output_fields(build: BuildResult) -> set[str]:
         return set(DELTA_ACROSS_ANCHOR_FIELDS)
     if build.terminal_entry == "operator:project_onto_axis":
         return set(PROJECT_ONTO_AXIS_FIELDS)
+    if build.terminal_entry == "operator:aggregate_over":
+        return set(AGGREGATE_OVER_FIELDS)
     return set()
 
 
@@ -3864,6 +3972,11 @@ def classify_failure(taxonomy: str, row: dict[str, Any]) -> str:
 
 
 def update_coverage_rows(rows: list[dict[str, Any]], results: list[dict[str, Any]]) -> None:
+    if os.environ.get("TQE_WRITE") != "1" or os.environ.get("TQE_SEARCH_UPDATE_LEDGER") != "1":
+        raise PermissionError(
+            "compiler-search ledger updates require TQE_WRITE=1 and "
+            "TQE_SEARCH_UPDATE_LEDGER=1"
+        )
     by_concept = {result["concept"]: result for result in results}
     for row in rows:
         result = by_concept.get(row.get("concept"))
@@ -4274,6 +4387,10 @@ def enum(value: str) -> dict[str, str]:
 
 def boolean(value: bool) -> dict[str, Any]:
     return {"payload_type": "boolean", "unit": "none", "value": bool(value)}
+
+
+def entity_set(value: list[str]) -> dict[str, Any]:
+    return {"payload_type": "entity_set", "unit": "none", "value": list(value)}
 
 
 def number(value: float, unit: str) -> dict[str, Any]:

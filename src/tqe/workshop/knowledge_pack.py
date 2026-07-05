@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from tqe.runtime.operators import declared_composition_grammar
 from tqe.runtime.ir import stable_hash
 from tqe.workshop.hermes_s2 import (
     CLARIFICATION_DISTANCE_THRESHOLD,
@@ -65,6 +66,14 @@ SOURCE_PATHS = [
     Path("src/tqe/runtime/binder.py"),
     Path("src/tqe/runtime/executor.py"),
     Path("src/tqe/runtime/relations.py"),
+    Path("src/tqe/runtime/operators/__init__.py"),
+    Path("src/tqe/runtime/operators/aggregate_over.py"),
+    Path("src/tqe/runtime/operators/delta_across_anchor.py"),
+    Path("src/tqe/runtime/operators/extremum_over_set.py"),
+    Path("src/tqe/runtime/operators/project_onto_axis.py"),
+    Path("src/tqe/runtime/operators/rate.py"),
+    Path("src/tqe/runtime/operators/typed_join.py"),
+    Path("src/tqe/runtime/operators/window.py"),
     Path("src/tqe/workshop/m1_2.py"),
     Path("src/tqe/workshop/hermes_s2.py"),
     Path("src/tqe/workshop/knowledge_pack.py"),
@@ -129,6 +138,7 @@ def build_tactical_knowledge_pack() -> dict[str, Any]:
         "primitives": capability_context["primitives"],
         "relations": capability_context["relations"],
         "operators": capability_context["operators"],
+        "composition_grammar": declared_composition_grammar(),
         "authoring_contracts": capability_context["authoring_contracts"],
         "safe_composition_rules": capability_context["safe_operator_source_rules"],
         "complexity_limits": {
@@ -394,6 +404,15 @@ def render_markdown(pack: dict[str, Any]) -> str:
     lines.extend(f"- `{item['code']}`: {item['description']}" for item in pack["ambiguity_dimensions"])
     lines.extend(["", "## Capability Gap Codes", ""])
     lines.extend(f"- `{item['code']}`: {item['description']}" for item in pack["capability_gap_codes"])
+    grammar = pack.get("composition_grammar", {})
+    lines.extend(["", "## Composition Grammar", ""])
+    lines.append(f"Composition operators: `{grammar.get('operator_count', 0)}`")
+    lines.extend(
+        f"- `{item['name']}@{item['version']}`: {item['purpose']}"
+        for item in grammar.get("operators", [])
+    )
+    lines.extend(["", "Composition constraint kinds:", ""])
+    lines.extend(f"- `{item['kind']}`" for item in grammar.get("constraint_kinds", []))
     lines.extend(["", "## Source Hashes", ""])
     lines.extend(f"- `{path}`: `{sha}`" for path, sha in sorted(pack["source_hashes"].items()))
     lines.append("")
@@ -477,6 +496,38 @@ def verify_tactical_knowledge_pack(
     checks.append(check("pack.tools.host_owns_execution", {"host_confirm_bound_plan", "execute_query_plan"}.issubset(host_tools), {"host_tools": sorted(host_tools)}))
     gap_codes = {item["code"] for item in pack.get("capability_gap_codes", [])}
     checks.append(check("pack.gaps.include_safety_codes", {GAP_PRIMITIVE_MUTATION, GAP_CONFIRMATION_BYPASS, GAP_DIRECT_EXECUTION}.issubset(gap_codes), {"gap_codes": sorted(gap_codes)}))
+    grammar = pack.get("composition_grammar", {})
+    grammar_operator_names = {item.get("name") for item in grammar.get("operators", [])}
+    checks.append(
+        check(
+            "pack.composition_grammar.includes_seven_operator_signatures",
+            grammar.get("operator_count") == 7
+            and {
+                "aggregate_over",
+                "delta_across_anchor",
+                "extremum_over_set",
+                "project_onto_axis",
+                "rate",
+                "typed_join",
+                "window",
+            }.issubset(grammar_operator_names),
+            {"operator_names": sorted(str(name) for name in grammar_operator_names)},
+        )
+    )
+    grammar_constraint_kinds = {item.get("kind") for item in grammar.get("constraint_kinds", [])}
+    checks.append(
+        check(
+            "pack.composition_grammar.includes_constraint_kinds",
+            {
+                "aggregate_over",
+                "before_after_same_anchor",
+                "typed_join",
+                "vector_projection",
+                "window",
+            }.issubset(grammar_constraint_kinds),
+            {"constraint_kinds": sorted(str(kind) for kind in grammar_constraint_kinds)},
+        )
+    )
     dimensions = {item["code"] for item in pack.get("ambiguity_dimensions", [])}
     checks.append(check("pack.ambiguity.include_required_dimensions", {CLARIFICATION_SUPPORT_DEFINITION, CLARIFICATION_TIME_WINDOW, CLARIFICATION_DISTANCE_THRESHOLD}.issubset(dimensions), {"dimensions": sorted(dimensions)}))
     checks.append(check("pack.schema.embedded", bool(pack.get("query_plan_schema", {}).get("schema")), {}))

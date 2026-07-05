@@ -1,0 +1,537 @@
+{
+  "concept_identity": "fragile_possession_state",
+  "concept_refs": [
+    "controlled_pass_episode",
+    "controlled_pass_team_keyed_anchors",
+    "possession_segment",
+    "possession_segment_team_keyed_episodes",
+    "pressure_on_carrier",
+    "support_arrival_relation"
+  ],
+  "correspondence_clauses": [
+    {
+      "name": "claim_boundary",
+      "value": "Observed composition only; no risk, value, intent, causation, trap, quality, or decision correctness."
+    },
+    {
+      "name": "composition",
+      "value": "window(after, same_possession) joined by declared anchor/team constraints to a pressure/support evidence join"
+    }
+  ],
+  "display_name": "Fragile Possession State Known Ledger Reproduction",
+  "expression_id": "scp2_1_fragile_possession_state_known",
+  "expression_version": "0.2.0",
+  "fixture_notes": [
+    "Known-good acceptance compares the synthesized home/away bundle document hash to generated/coverage-map.json for fragile_possession_state."
+  ],
+  "group_by": [],
+  "meaning_clauses": [
+    {
+      "action": "is joined to",
+      "field": "typed_join_status",
+      "operator": "eq",
+      "subject": "same-team possession continuation window",
+      "value": "PASS"
+    },
+    {
+      "action": "requires",
+      "field": "pressure_status",
+      "operator": "eq",
+      "subject": "pressure/support evidence",
+      "value": "PASS"
+    },
+    {
+      "action": "requires",
+      "field": "support_arrival_status",
+      "frame_scope": "inside the declared support window",
+      "operator": "eq",
+      "subject": "support evidence",
+      "value": "FAIL"
+    }
+  ],
+  "operator_applications": [
+    {
+      "operator": "window",
+      "parameters": [
+        {
+          "name": "window_mode",
+          "value": "after"
+        },
+        {
+          "name": "after_duration_seconds",
+          "value": 4.0
+        },
+        {
+          "name": "team_binding_policy",
+          "value": "equal_team_role"
+        }
+      ]
+    },
+    {
+      "operator": "typed_join",
+      "parameters": [
+        {
+          "name": "join_key",
+          "value": "same_anchor"
+        },
+        {
+          "name": "same_team_perspective_required",
+          "value": true
+        },
+        {
+          "name": "frame_alignment_required",
+          "value": true
+        }
+      ]
+    }
+  ],
+  "population": {
+    "match_ids": [
+      "J03WOH",
+      "J03WOY",
+      "J03WPY",
+      "J03WQQ",
+      "J03WR9",
+      "J03WMX",
+      "J03WN1"
+    ],
+    "periods": [
+      "firstHalf",
+      "secondHalf"
+    ],
+    "perspective_team_roles": [
+      "home",
+      "away"
+    ]
+  },
+  "schema_version": "meaning_expression.v0",
+  "target": {
+    "held_out": true,
+    "multi_step": true,
+    "target_id": "r1_5_fragile_possession_state_v0"
+  },
+  "target_contract": {
+    "claim_boundary": "Observed same-team possession-window evidence joined to observed carrier-pressure evidence and observed support-arrival failure only; does not infer fragility value, pass quality, risk, tactical intent, causation, or decision correctness.",
+    "composition_constraints": [
+      {
+        "kind": "typed_join",
+        "left_composition_constraints": [
+          {
+            "kind": "window",
+            "parameters": [
+              {
+                "name": "after_duration_seconds",
+                "value": 4.0
+              },
+              {
+                "name": "anchor_frame_field",
+                "value": "controlled_reception_frame_id"
+              },
+              {
+                "name": "anchor_status_field",
+                "value": "controlled_pass_status"
+              },
+              {
+                "name": "anchor_status_value",
+                "value": "PASS"
+              },
+              {
+                "name": "anchor_team_role_field",
+                "value": "team_role"
+              },
+              {
+                "name": "before_duration_seconds",
+                "value": 0.0
+              },
+              {
+                "name": "continuity_end_frame_field",
+                "value": "possession_end_frame_id"
+              },
+              {
+                "name": "continuity_overlap_policy",
+                "value": "latest_start_covering_anchor"
+              },
+              {
+                "name": "continuity_policy",
+                "value": "same_possession"
+              },
+              {
+                "name": "continuity_start_frame_field",
+                "value": "possession_start_frame_id"
+              },
+              {
+                "name": "continuity_status_field",
+                "value": "none"
+              },
+              {
+                "name": "continuity_status_value",
+                "value": "PASS"
+              },
+              {
+                "name": "continuity_team_role_field",
+                "value": "team_role"
+              },
+              {
+                "name": "frame_rate_hz",
+                "value": 25.0
+              },
+              {
+                "name": "overlap_policy",
+                "value": "preserve_all"
+              },
+              {
+                "name": "team_binding_policy",
+                "value": "equal_team_role"
+              },
+              {
+                "name": "truncation_policy",
+                "value": "emit_with_flag"
+              },
+              {
+                "name": "window_mode",
+                "value": "after"
+              }
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "entity_identity_preserved_required",
+            "value": false
+          },
+          {
+            "name": "frame_alignment_required",
+            "value": true
+          },
+          {
+            "name": "join_key",
+            "value": "same_anchor"
+          },
+          {
+            "name": "left_anchor_id_field",
+            "value": "source_anchor_id"
+          },
+          {
+            "name": "left_end_frame_field",
+            "value": "none"
+          },
+          {
+            "name": "left_frame_field",
+            "value": "source_anchor_frame_id"
+          },
+          {
+            "name": "left_required_fields",
+            "value": [
+              "window_status",
+              "window_reason",
+              "continuity_status",
+              "continuity_reason",
+              "source_anchor_id",
+              "source_anchor_frame_id",
+              "anchor_team_role",
+              "continuity_team_role"
+            ]
+          },
+          {
+            "name": "left_start_frame_field",
+            "value": "none"
+          },
+          {
+            "name": "left_status_field",
+            "value": "window_status"
+          },
+          {
+            "name": "left_team_role_field",
+            "value": "anchor_team_role"
+          },
+          {
+            "name": "maximum_frame_delta",
+            "value": 0
+          },
+          {
+            "name": "no_match_policy",
+            "value": "UNKNOWN"
+          },
+          {
+            "name": "required_status_value",
+            "value": "PASS"
+          },
+          {
+            "name": "right_anchor_id_field",
+            "value": "left_anchor_id"
+          },
+          {
+            "name": "right_end_frame_field",
+            "value": "none"
+          },
+          {
+            "name": "right_frame_field",
+            "value": "left_frame_id"
+          },
+          {
+            "name": "right_required_fields",
+            "value": [
+              "typed_join_status",
+              "left_anchor_id",
+              "left_frame_id",
+              "left_team_role",
+              "pressure_status",
+              "pressure_reason",
+              "pressure_frame_id",
+              "carrier_id",
+              "nearest_defender_distance_m",
+              "support_arrival_status",
+              "support_arrival_reason",
+              "support_anchor_frame_id",
+              "supporting_player_ids"
+            ]
+          },
+          {
+            "name": "right_start_frame_field",
+            "value": "none"
+          },
+          {
+            "name": "right_status_field",
+            "value": "typed_join_status"
+          },
+          {
+            "name": "right_team_role_field",
+            "value": "left_team_role"
+          },
+          {
+            "name": "same_team_perspective_required",
+            "value": true
+          }
+        ],
+        "right_composition_constraints": [
+          {
+            "kind": "typed_join",
+            "left_input_context": [
+              {
+                "name": "candidate_scope",
+                "value": "defending_outfield"
+              },
+              {
+                "name": "carrier_id_field",
+                "value": "receiver_id"
+              },
+              {
+                "name": "frame_field",
+                "value": "controlled_reception_frame_id"
+              },
+              {
+                "name": "lookback_seconds",
+                "value": 0.4
+              },
+              {
+                "name": "maximum_approach_angle_degrees",
+                "value": 100.0
+              },
+              {
+                "name": "maximum_pressure_distance_m",
+                "value": 4.0
+              },
+              {
+                "name": "minimum_closing_speed_mps",
+                "value": 0.2
+              },
+              {
+                "name": "minimum_pressure_duration_seconds",
+                "value": 0.0
+              }
+            ],
+            "parameters": [
+              {
+                "name": "entity_identity_preserved_required",
+                "value": false
+              },
+              {
+                "name": "frame_alignment_required",
+                "value": true
+              },
+              {
+                "name": "join_key",
+                "value": "same_anchor"
+              },
+              {
+                "name": "left_anchor_id_field",
+                "value": "anchor_id"
+              },
+              {
+                "name": "left_end_frame_field",
+                "value": "none"
+              },
+              {
+                "name": "left_frame_field",
+                "value": "pressure_frame_id"
+              },
+              {
+                "name": "left_required_fields",
+                "value": [
+                  "anchor_id",
+                  "anchor_frame_id",
+                  "team_role",
+                  "pressure_status",
+                  "pressure_reason",
+                  "pressure_frame_id",
+                  "carrier_id",
+                  "nearest_defender_distance_m"
+                ]
+              },
+              {
+                "name": "left_required_status_value",
+                "value": "PASS"
+              },
+              {
+                "name": "left_start_frame_field",
+                "value": "none"
+              },
+              {
+                "name": "left_status_field",
+                "value": "pressure_status"
+              },
+              {
+                "name": "left_team_role_field",
+                "value": "team_role"
+              },
+              {
+                "name": "maximum_frame_delta",
+                "value": 0
+              },
+              {
+                "name": "no_match_policy",
+                "value": "UNKNOWN"
+              },
+              {
+                "name": "required_status_value",
+                "value": "PASS"
+              },
+              {
+                "name": "right_anchor_id_field",
+                "value": "anchor_id"
+              },
+              {
+                "name": "right_end_frame_field",
+                "value": "none"
+              },
+              {
+                "name": "right_frame_field",
+                "value": "support_anchor_frame_id"
+              },
+              {
+                "name": "right_required_fields",
+                "value": [
+                  "anchor_id",
+                  "anchor_frame_id",
+                  "support_arrival_status",
+                  "support_arrival_reason",
+                  "support_anchor_frame_id",
+                  "supporting_player_ids"
+                ]
+              },
+              {
+                "name": "right_required_status_value",
+                "value": "FAIL"
+              },
+              {
+                "name": "right_start_frame_field",
+                "value": "none"
+              },
+              {
+                "name": "right_status_field",
+                "value": "support_arrival_status"
+              },
+              {
+                "name": "right_team_role_field",
+                "value": "none"
+              },
+              {
+                "name": "same_team_perspective_required",
+                "value": false
+              }
+            ],
+            "right_input_context": [
+              {
+                "name": "anchor_frame_field",
+                "value": "controlled_reception_frame_id"
+              },
+              {
+                "name": "candidate_scope",
+                "value": "perspective_outfield"
+              },
+              {
+                "name": "maximum_arrival_seconds",
+                "value": 2.0
+              },
+              {
+                "name": "maximum_support_distance_m",
+                "value": 8.0
+              },
+              {
+                "name": "minimum_duration_seconds",
+                "value": 0.4
+              },
+              {
+                "name": "minimum_supporting_players",
+                "value": 1
+              },
+              {
+                "name": "required_anchor_status_field",
+                "value": "none"
+              },
+              {
+                "name": "required_anchor_status_value",
+                "value": "PASS"
+              },
+              {
+                "name": "support_region_mode",
+                "value": "BEHIND_BALL_OUTLET"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "desired_output": "classification",
+    "required_evidence": [
+      "typed_join_status",
+      "typed_join_reason",
+      "join_key",
+      "same_team_perspective_required",
+      "left_team_role",
+      "right_team_role",
+      "left_anchor_id",
+      "right_anchor_id",
+      "left_frame_id",
+      "right_frame_id",
+      "window_status",
+      "window_reason",
+      "continuity_status",
+      "continuity_reason",
+      "anchor_team_role",
+      "continuity_team_role",
+      "pressure_status",
+      "pressure_reason",
+      "pressure_frame_id",
+      "carrier_id",
+      "nearest_defender_distance_m",
+      "support_arrival_status",
+      "support_arrival_reason",
+      "support_anchor_frame_id",
+      "supporting_player_ids"
+    ],
+    "required_modalities": [],
+    "status_semantics": [
+      {
+        "field": "typed_join_status",
+        "required_value": "PASS"
+      }
+    ]
+  },
+  "team_perspective": {
+    "required": true,
+    "same_team_enforced": true,
+    "statement": "The nested window and join enforce same-team perspective before any measurement is certified.",
+    "team_role_field": "left_team_role"
+  }
+}

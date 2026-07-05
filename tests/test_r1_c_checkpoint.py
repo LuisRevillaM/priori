@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import copy
 import json
+import os
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from scripts.audits import r1_5_population_audit
 from scripts.coverage_map import compiler_search_reachability as search
@@ -47,6 +49,11 @@ def reachable_result() -> dict[str, object]:
     }
 
 
+def authorized_update_coverage_rows(rows: list[dict[str, object]], results: list[dict[str, object]]) -> None:
+    with patch.dict(os.environ, {"TQE_WRITE": "1", "TQE_SEARCH_UPDATE_LEDGER": "1"}):
+        search.update_coverage_rows(rows, results)
+
+
 def declaration_target_files() -> list[Path]:
     config_targets = sorted(Path("config/compiler-reachability").glob("*.json"))
     return [*config_targets, SWEEP_SNAPSHOT_TARGET_FILE]
@@ -79,10 +86,15 @@ def declared_targets_from_files(target_files: list[Path]) -> set[str]:
 
 
 class R1CCheckpointTests(unittest.TestCase):
+    def test_update_coverage_rows_requires_explicit_write_acknowledgement(self) -> None:
+        with patch.dict(os.environ, {"TQE_WRITE": "0", "TQE_SEARCH_UPDATE_LEDGER": "0"}):
+            with self.assertRaisesRegex(PermissionError, "TQE_WRITE=1"):
+                search.update_coverage_rows([coverage_row()], [reachable_result()])
+
     def test_update_coverage_rows_records_certified_plan_reference(self) -> None:
         rows = [coverage_row()]
 
-        search.update_coverage_rows(rows, [reachable_result()])
+        authorized_update_coverage_rows(rows, [reachable_result()])
 
         self.assertEqual("compiler_reachable", rows[0]["composition_maturity"])
         evidence = rows[0]["compiler_reachability_evidence"]
@@ -95,28 +107,28 @@ class R1CCheckpointTests(unittest.TestCase):
         result.pop("semantic_correspondence")
 
         with self.assertRaisesRegex(ValueError, "semantic_correspondence"):
-            search.update_coverage_rows([coverage_row()], [result])
+            authorized_update_coverage_rows([coverage_row()], [result])
 
     def test_update_coverage_rows_rejects_fail_string_semantic_correspondence(self) -> None:
         result = reachable_result()
         result["semantic_correspondence"] = "FAIL"
 
         with self.assertRaisesRegex(ValueError, "non-conforming semantic_correspondence"):
-            search.update_coverage_rows([coverage_row()], [result])
+            authorized_update_coverage_rows([coverage_row()], [result])
 
     def test_update_coverage_rows_rejects_pass_string_semantic_correspondence(self) -> None:
         result = reachable_result()
         result["semantic_correspondence"] = "PASS"
 
         with self.assertRaisesRegex(ValueError, "non-conforming semantic_correspondence"):
-            search.update_coverage_rows([coverage_row()], [result])
+            authorized_update_coverage_rows([coverage_row()], [result])
 
     def test_update_coverage_rows_rejects_semantic_correspondence_missing_required_keys(self) -> None:
         result = reachable_result()
         result["semantic_correspondence"] = {"coverage_row": "support_depth"}
 
         with self.assertRaisesRegex(ValueError, "missing required keys"):
-            search.update_coverage_rows([coverage_row()], [result])
+            authorized_update_coverage_rows([coverage_row()], [result])
 
     def test_update_coverage_rows_rejects_wrong_semantic_correspondence_row(self) -> None:
         result = reachable_result()
@@ -126,21 +138,21 @@ class R1CCheckpointTests(unittest.TestCase):
         }
 
         with self.assertRaisesRegex(ValueError, "coverage_row does not match"):
-            search.update_coverage_rows([coverage_row()], [result])
+            authorized_update_coverage_rows([coverage_row()], [result])
 
     def test_update_coverage_rows_rejects_missing_certified_plan_reference(self) -> None:
         result = reachable_result()
         result.pop("plan_path")
 
         with self.assertRaisesRegex(ValueError, "certified plan reference"):
-            search.update_coverage_rows([coverage_row()], [result])
+            authorized_update_coverage_rows([coverage_row()], [result])
 
     def test_update_coverage_rows_rejects_missing_document_hash(self) -> None:
         result = reachable_result()
         result.pop("document_hash")
 
         with self.assertRaisesRegex(ValueError, "certified plan reference"):
-            search.update_coverage_rows([coverage_row()], [result])
+            authorized_update_coverage_rows([coverage_row()], [result])
 
     def test_update_coverage_rows_ignores_non_reachable_result(self) -> None:
         result = copy.deepcopy(reachable_result())
@@ -148,7 +160,7 @@ class R1CCheckpointTests(unittest.TestCase):
         result.pop("semantic_correspondence")
         rows = [coverage_row()]
 
-        search.update_coverage_rows(rows, [result])
+        authorized_update_coverage_rows(rows, [result])
 
         self.assertEqual("handwired", rows[0]["composition_maturity"])
 

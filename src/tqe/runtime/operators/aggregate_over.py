@@ -327,6 +327,7 @@ def _result_record(
         "source_node_id": source_node_id,
         "source_output_name": source_output_name,
         "source_record_count": len(source_records),
+        "source_records": source_records,
     }
 
 

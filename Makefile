@@ -344,7 +344,7 @@ compiler-reachability:
 
 .PHONY: compiler-search-reachability
 compiler-search-reachability:
-	$(PYTHON) scripts/coverage_map/compiler_search_reachability.py
+	TQE_WRITE=1 TQE_SEARCH_UPDATE_LEDGER=1 $(PYTHON) scripts/coverage_map/compiler_search_reachability.py
 	TQE_WRITE=1 $(PYTHON) scripts/coverage_map/aggregate.py
 
 .PHONY: compiler-search-contract-projection

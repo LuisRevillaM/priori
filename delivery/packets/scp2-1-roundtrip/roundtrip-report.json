@@ -1,0 +1,2250 @@
+{
+  "fixtures": [
+    {
+      "fixture": "delivery/packets/scp2-1-roundtrip/meaning-expressions/body_orientation_oov.v0.json",
+      "load_outcome": "refused",
+      "refusal": {
+        "gap_code": "BODY_ORIENTATION",
+        "message": "Meaning expression references out-of-pack concept:body_orientation; smallest missing capability is concept:body_orientation.",
+        "missing_capability": "concept:body_orientation",
+        "outcome": "understood_but_not_expressible",
+        "pack_sha256": "e81aedcf491285bf004e8dd42c760c839f2cecf3ec8d1b61d62516d537dc2bf2",
+        "reference": "body_orientation",
+        "vocabulary_section": "concept_refs"
+      },
+      "refusal_path": "delivery/packets/scp2-1-roundtrip/refusals/body_orientation_oov.v0.refusal.json"
+    },
+    {
+      "bind": {
+        "bundle_hash": "bc77278b3358106178749a72edfdc730b56b23bd6b6b650c60895598ac2edfbe",
+        "roles": {
+          "away": {
+            "bound_plan_hash": "00cff655a21d8c769ff1ed86860f32cce24006e68f3d3f3cde2fd20349f696fa",
+            "plan_hash": "3683ea2246c10717e1721e6488f1008a2f0fd4a394689fa982d3f6186c2a5d71"
+          },
+          "home": {
+            "bound_plan_hash": "ca21caf4f0944251a6afc3dfa985e22d4fc59f962a3f9d34ba9777368704b023",
+            "plan_hash": "3683ea2246c10717e1721e6488f1008a2f0fd4a394689fa982d3f6186c2a5d71"
+          }
+        },
+        "status": "PASS"
+      },
+      "build": {
+        "build_metadata": {
+          "left_build_metadata": {
+            "anchor_build_metadata": {},
+            "continuity_build_metadata": {},
+            "window_candidate_outputs": [
+              {
+                "anchor_output": "anchors",
+                "anchor_provider": "controlled_pass_team_keyed_anchors",
+                "anchor_required_fields": [
+                  "controlled_pass_status",
+                  "controlled_reception_frame_id",
+                  "team_role"
+                ],
+                "continuity_output": "episodes",
+                "continuity_provider": "possession_segment_team_keyed_episodes",
+                "continuity_required_fields": [
+                  "possession_end_frame_id",
+                  "possession_start_frame_id",
+                  "team_role"
+                ]
+              }
+            ],
+            "window_constraint": {
+              "after_duration_seconds": 4.0,
+              "anchor_frame_field": "controlled_reception_frame_id",
+              "anchor_status_field": "controlled_pass_status",
+              "anchor_status_value": "PASS",
+              "anchor_team_role_field": "team_role",
+              "before_duration_seconds": 0.0,
+              "continuity_end_frame_field": "possession_end_frame_id",
+              "continuity_overlap_policy": "latest_start_covering_anchor",
+              "continuity_policy": "same_possession",
+              "continuity_start_frame_field": "possession_start_frame_id",
+              "continuity_status_field": "none",
+              "continuity_status_value": "PASS",
+              "continuity_team_role_field": "team_role",
+              "frame_rate_hz": 25.0,
+              "overlap_policy": "preserve_all",
+              "team_binding_policy": "equal_team_role",
+              "truncation_policy": "emit_with_flag",
+              "window_mode": "after"
+            },
+            "window_discovery_space_count": 1,
+            "window_selected_output": {
+              "anchor_output": "anchors",
+              "anchor_provider": "controlled_pass_team_keyed_anchors",
+              "continuity_output": "episodes",
+              "continuity_provider": "possession_segment_team_keyed_episodes"
+            }
+          },
+          "right_build_metadata": {
+            "left_build_metadata": {},
+            "right_build_metadata": {},
+            "typed_join_candidate_outputs": {
+              "left": [
+                {
+                  "output": "anchor_evaluations",
+                  "required_fields": [
+                    "anchor_frame_id",
+                    "anchor_id",
+                    "carrier_id",
+                    "nearest_defender_distance_m",
+                    "pressure_frame_id",
+                    "pressure_reason",
+                    "pressure_status",
+                    "team_role"
+                  ],
+                  "source": "pressure_on_carrier",
+                  "source_kind": "catalog_entry"
+                }
+              ],
+              "right": [
+                {
+                  "output": "anchor_evaluations",
+                  "required_fields": [
+                    "anchor_frame_id",
+                    "anchor_id",
+                    "support_anchor_frame_id",
+                    "support_arrival_reason",
+                    "support_arrival_status",
+                    "supporting_player_ids"
+                  ],
+                  "source": "support_arrival_point_pair",
+                  "source_kind": "catalog_entry"
+                },
+                {
+                  "output": "anchor_evaluations",
+                  "required_fields": [
+                    "anchor_frame_id",
+                    "anchor_id",
+                    "support_anchor_frame_id",
+                    "support_arrival_reason",
+                    "support_arrival_status",
+                    "supporting_player_ids"
+                  ],
+                  "source": "support_arrival_relation",
+                  "source_kind": "catalog_entry"
+                }
+              ]
+            },
+            "typed_join_constraint": {
+              "entity_identity_preserved_required": false,
+              "frame_alignment_required": true,
+              "join_key": "same_anchor",
+              "left_anchor_id_field": "anchor_id",
+              "left_composition_constraints": [],
+              "left_end_frame_field": "none",
+              "left_entity_id_field": "none",
+              "left_frame_field": "pressure_frame_id",
+              "left_input_context": {
+                "candidate_scope": "defending_outfield",
+                "carrier_id_field": "receiver_id",
+                "frame_field": "controlled_reception_frame_id",
+                "lookback_seconds": 0.4,
+                "maximum_approach_angle_degrees": 100.0,
+                "maximum_pressure_distance_m": 4.0,
+                "minimum_closing_speed_mps": 0.2,
+                "minimum_pressure_duration_seconds": 0.0
+              },
+              "left_required_fields": [
+                "anchor_id",
+                "anchor_frame_id",
+                "team_role",
+                "pressure_status",
+                "pressure_reason",
+                "pressure_frame_id",
+                "carrier_id",
+                "nearest_defender_distance_m"
+              ],
+              "left_required_status_value": "PASS",
+              "left_start_frame_field": "none",
+              "left_status_field": "pressure_status",
+              "left_team_role_field": "team_role",
+              "maximum_frame_delta": 0.0,
+              "no_match_policy": "UNKNOWN",
+              "required_status_value": "PASS",
+              "right_anchor_id_field": "anchor_id",
+              "right_composition_constraints": [],
+              "right_end_frame_field": "none",
+              "right_entity_id_field": "none",
+              "right_frame_field": "support_anchor_frame_id",
+              "right_input_context": {
+                "anchor_frame_field": "controlled_reception_frame_id",
+                "candidate_scope": "perspective_outfield",
+                "maximum_arrival_seconds": 2.0,
+                "maximum_support_distance_m": 8.0,
+                "minimum_duration_seconds": 0.4,
+                "minimum_supporting_players": 1,
+                "required_anchor_status_field": "none",
+                "required_anchor_status_value": "PASS",
+                "support_region_mode": "BEHIND_BALL_OUTLET"
+              },
+              "right_required_fields": [
+                "anchor_id",
+                "anchor_frame_id",
+                "support_arrival_status",
+                "support_arrival_reason",
+                "support_anchor_frame_id",
+                "supporting_player_ids"
+              ],
+              "right_required_status_value": "FAIL",
+              "right_start_frame_field": "none",
+              "right_status_field": "support_arrival_status",
+              "right_team_role_field": "none",
+              "same_team_perspective_required": false,
+              "unconstrained": false,
+              "unconstrained_rationale": "none"
+            },
+            "typed_join_output_fields": [
+              "anchor_evaluations",
+              "anchor_frame_id",
+              "anchor_id",
+              "anchors",
+              "approach_angle_degrees",
+              "candidate_player_ids",
+              "candidate_scope",
+              "candidate_team_role",
+              "carrier_id",
+              "carrier_id_field",
+              "closing_speed_mps",
+              "controlled_pass_status",
+              "controlled_reception_frame_id",
+              "controlled_reception_status",
+              "coverage_status",
+              "end_frame_id",
+              "entity_identity_preserved_required",
+              "episodes",
+              "evaluated_candidate_player_ids",
+              "event_anchor_frame_id",
+              "event_type",
+              "first_arrival_frame_id",
+              "first_arrival_seconds_after_anchor",
+              "first_support_reference_point",
+              "first_supporter_id",
+              "first_supporter_point",
+              "forward_progression_m",
+              "frame_alignment_required",
+              "join_key",
+              "left_anchor_id",
+              "left_anchor_id_field",
+              "left_end_frame_field",
+              "left_end_frame_id",
+              "left_entity_id",
+              "left_entity_id_field",
+              "left_frame_field",
+              "left_frame_id",
+              "left_record_hash",
+              "left_record_index",
+              "left_required_status_value",
+              "left_start_frame_field",
+              "left_start_frame_id",
+              "left_status",
+              "left_status_field",
+              "left_team_role",
+              "left_team_role_field",
+              "lookback_seconds",
+              "maximum_approach_angle_degrees",
+              "maximum_frame_delta",
+              "maximum_pressure_distance_m",
+              "minimum_closing_speed_mps",
+              "minimum_pressure_duration_seconds",
+              "nearest_defender_distance_m",
+              "nearest_defender_id",
+              "no_match_policy",
+              "pass_episode_id",
+              "passer_id",
+              "physical_release_frame_id",
+              "possession_continuity_status",
+              "pressure_defending_team_role",
+              "pressure_duration_seconds",
+              "pressure_frame_field",
+              "pressure_frame_id",
+              "pressure_reason",
+              "pressure_status",
+              "receiver_id",
+              "reception_ball_point",
+              "reception_match_time_ms",
+              "reception_receiver_point",
+              "reference_point",
+              "release_ball_point",
+              "release_control_status",
+              "release_detection_status",
+              "release_match_time_ms",
+              "release_passer_point",
+              "required_anchor_status_field",
+              "required_anchor_status_value",
+              "required_status_value",
+              "right_anchor_id",
+              "right_anchor_id_field",
+              "right_end_frame_field",
+              "right_end_frame_id",
+              "right_entity_id",
+              "right_entity_id_field",
+              "right_frame_field",
+              "right_frame_id",
+              "right_record_hash",
+              "right_record_index",
+              "right_required_status_value",
+              "right_start_frame_field",
+              "right_start_frame_id",
+              "right_status",
+              "right_status_field",
+              "right_team_role",
+              "right_team_role_field",
+              "same_team_perspective_required",
+              "start_frame_id",
+              "support_anchor_frame_id",
+              "support_arrival_reason",
+              "support_arrival_status",
+              "support_duration_seconds",
+              "support_point_pair_reason",
+              "support_point_pair_status",
+              "supporting_player_ids",
+              "team_role",
+              "typed_join_constraint_failures",
+              "typed_join_dropped_no_match_count",
+              "typed_join_match_count",
+              "typed_join_reason",
+              "typed_join_records",
+              "typed_join_status",
+              "unconstrained",
+              "unconstrained_rationale",
+              "witness_left_node_id",
+              "witness_left_output_name",
+              "witness_right_node_id",
+              "witness_right_output_name"
+            ],
+            "typed_join_selected_output": {
+              "left": {
+                "output": "anchor_evaluations",
+                "source": "pressure_on_carrier",
+                "source_kind": "catalog_entry"
+              },
+              "right": {
+                "output": "anchor_evaluations",
+                "source": "support_arrival_point_pair",
+                "source_kind": "catalog_entry"
+              }
+            }
+          },
+          "typed_join_candidate_outputs": {
+            "left": [
+              {
+                "output": "<terminal>",
+                "required_fields": [
+                  "anchor_team_role",
+                  "continuity_reason",
+                  "continuity_status",
+                  "continuity_team_role",
+                  "source_anchor_frame_id",
+                  "source_anchor_id",
+                  "window_reason",
+                  "window_status"
+                ],
+                "source": "nested_operator_composition",
+                "source_kind": "operator_composition"
+              }
+            ],
+            "right": [
+              {
+                "output": "<terminal>",
+                "required_fields": [
+                  "carrier_id",
+                  "left_anchor_id",
+                  "left_frame_id",
+                  "left_team_role",
+                  "nearest_defender_distance_m",
+                  "pressure_frame_id",
+                  "pressure_reason",
+                  "pressure_status",
+                  "support_anchor_frame_id",
+                  "support_arrival_reason",
+                  "support_arrival_status",
+                  "supporting_player_ids",
+                  "typed_join_status"
+                ],
+                "source": "nested_operator_composition",
+                "source_kind": "operator_composition"
+              }
+            ]
+          },
+          "typed_join_constraint": {
+            "entity_identity_preserved_required": false,
+            "frame_alignment_required": true,
+            "join_key": "same_anchor",
+            "left_anchor_id_field": "source_anchor_id",
+            "left_composition_constraints": [
+              {
+                "after_duration_seconds": 4.0,
+                "anchor_frame_field": "controlled_reception_frame_id",
+                "anchor_status_field": "controlled_pass_status",
+                "anchor_status_value": "PASS",
+                "anchor_team_role_field": "team_role",
+                "before_duration_seconds": 0.0,
+                "continuity_end_frame_field": "possession_end_frame_id",
+                "continuity_overlap_policy": "latest_start_covering_anchor",
+                "continuity_policy": "same_possession",
+                "continuity_start_frame_field": "possession_start_frame_id",
+                "continuity_status_field": "none",
+                "continuity_status_value": "PASS",
+                "continuity_team_role_field": "team_role",
+                "frame_rate_hz": 25.0,
+                "kind": "window",
+                "overlap_policy": "preserve_all",
+                "team_binding_policy": "equal_team_role",
+                "truncation_policy": "emit_with_flag",
+                "window_mode": "after"
+              }
+            ],
+            "left_end_frame_field": "none",
+            "left_entity_id_field": "none",
+            "left_frame_field": "source_anchor_frame_id",
+            "left_input_context": {},
+            "left_required_fields": [
+              "window_status",
+              "window_reason",
+              "continuity_status",
+              "continuity_reason",
+              "source_anchor_id",
+              "source_anchor_frame_id",
+              "anchor_team_role",
+              "continuity_team_role"
+            ],
+            "left_required_status_value": "PASS",
+            "left_start_frame_field": "none",
+            "left_status_field": "window_status",
+            "left_team_role_field": "anchor_team_role",
+            "maximum_frame_delta": 0.0,
+            "no_match_policy": "UNKNOWN",
+            "required_status_value": "PASS",
+            "right_anchor_id_field": "left_anchor_id",
+            "right_composition_constraints": [
+              {
+                "entity_identity_preserved_required": false,
+                "frame_alignment_required": true,
+                "join_key": "same_anchor",
+                "kind": "typed_join",
+                "left_anchor_id_field": "anchor_id",
+                "left_end_frame_field": "none",
+                "left_frame_field": "pressure_frame_id",
+                "left_input_context": {
+                  "candidate_scope": "defending_outfield",
+                  "carrier_id_field": "receiver_id",
+                  "frame_field": "controlled_reception_frame_id",
+                  "lookback_seconds": 0.4,
+                  "maximum_approach_angle_degrees": 100.0,
+                  "maximum_pressure_distance_m": 4.0,
+                  "minimum_closing_speed_mps": 0.2,
+                  "minimum_pressure_duration_seconds": 0.0
+                },
+                "left_required_fields": [
+                  "anchor_id",
+                  "anchor_frame_id",
+                  "team_role",
+                  "pressure_status",
+                  "pressure_reason",
+                  "pressure_frame_id",
+                  "carrier_id",
+                  "nearest_defender_distance_m"
+                ],
+                "left_required_status_value": "PASS",
+                "left_start_frame_field": "none",
+                "left_status_field": "pressure_status",
+                "left_team_role_field": "team_role",
+                "maximum_frame_delta": 0,
+                "no_match_policy": "UNKNOWN",
+                "required_status_value": "PASS",
+                "right_anchor_id_field": "anchor_id",
+                "right_end_frame_field": "none",
+                "right_frame_field": "support_anchor_frame_id",
+                "right_input_context": {
+                  "anchor_frame_field": "controlled_reception_frame_id",
+                  "candidate_scope": "perspective_outfield",
+                  "maximum_arrival_seconds": 2.0,
+                  "maximum_support_distance_m": 8.0,
+                  "minimum_duration_seconds": 0.4,
+                  "minimum_supporting_players": 1,
+                  "required_anchor_status_field": "none",
+                  "required_anchor_status_value": "PASS",
+                  "support_region_mode": "BEHIND_BALL_OUTLET"
+                },
+                "right_required_fields": [
+                  "anchor_id",
+                  "anchor_frame_id",
+                  "support_arrival_status",
+                  "support_arrival_reason",
+                  "support_anchor_frame_id",
+                  "supporting_player_ids"
+                ],
+                "right_required_status_value": "FAIL",
+                "right_start_frame_field": "none",
+                "right_status_field": "support_arrival_status",
+                "right_team_role_field": "none",
+                "same_team_perspective_required": false
+              }
+            ],
+            "right_end_frame_field": "none",
+            "right_entity_id_field": "none",
+            "right_frame_field": "left_frame_id",
+            "right_input_context": {},
+            "right_required_fields": [
+              "typed_join_status",
+              "left_anchor_id",
+              "left_frame_id",
+              "left_team_role",
+              "pressure_status",
+              "pressure_reason",
+              "pressure_frame_id",
+              "carrier_id",
+              "nearest_defender_distance_m",
+              "support_arrival_status",
+              "support_arrival_reason",
+              "support_anchor_frame_id",
+              "supporting_player_ids"
+            ],
+            "right_required_status_value": "PASS",
+            "right_start_frame_field": "none",
+            "right_status_field": "typed_join_status",
+            "right_team_role_field": "left_team_role",
+            "same_team_perspective_required": true,
+            "unconstrained": false,
+            "unconstrained_rationale": "none"
+          },
+          "typed_join_output_fields": [
+            "anchor_evaluations",
+            "anchor_frame_field",
+            "anchor_frame_id",
+            "anchor_id",
+            "anchor_status",
+            "anchor_status_field",
+            "anchor_status_value",
+            "anchor_team_role",
+            "anchor_team_role_field",
+            "anchors",
+            "approach_angle_degrees",
+            "candidate_player_ids",
+            "candidate_scope",
+            "candidate_team_role",
+            "carrier_id",
+            "carrier_id_field",
+            "closing_speed_mps",
+            "continuity_end_frame_field",
+            "continuity_end_frame_id",
+            "continuity_evidence_id",
+            "continuity_evidence_record_hash",
+            "continuity_evidence_source_node_id",
+            "continuity_evidence_source_output_name",
+            "continuity_overlap_policy",
+            "continuity_policy",
+            "continuity_reason",
+            "continuity_start_frame_field",
+            "continuity_start_frame_id",
+            "continuity_status",
+            "continuity_status_field",
+            "continuity_status_value",
+            "continuity_team_role",
+            "continuity_team_role_field",
+            "controlled_pass_status",
+            "controlled_reception_frame_id",
+            "controlled_reception_status",
+            "coverage_status",
+            "end_frame_id",
+            "entity_identity_preserved_required",
+            "episodes",
+            "evaluated_candidate_player_ids",
+            "event_anchor_frame_id",
+            "event_type",
+            "first_arrival_frame_id",
+            "first_arrival_seconds_after_anchor",
+            "first_support_reference_point",
+            "first_supporter_id",
+            "first_supporter_point",
+            "forward_progression_m",
+            "frame_alignment_required",
+            "frame_rate_hz",
+            "join_key",
+            "left_anchor_id",
+            "left_anchor_id_field",
+            "left_end_frame_field",
+            "left_end_frame_id",
+            "left_entity_id",
+            "left_entity_id_field",
+            "left_frame_field",
+            "left_frame_id",
+            "left_record_hash",
+            "left_record_index",
+            "left_required_status_value",
+            "left_start_frame_field",
+            "left_start_frame_id",
+            "left_status",
+            "left_status_field",
+            "left_team_role",
+            "left_team_role_field",
+            "lookback_seconds",
+            "maximum_approach_angle_degrees",
+            "maximum_frame_delta",
+            "maximum_pressure_distance_m",
+            "minimum_closing_speed_mps",
+            "minimum_pressure_duration_seconds",
+            "nearest_defender_distance_m",
+            "nearest_defender_id",
+            "no_match_policy",
+            "overlap_policy",
+            "pass_episode_id",
+            "passer_id",
+            "period_end_frame_id",
+            "period_start_frame_id",
+            "physical_release_frame_id",
+            "possession_continuity_status",
+            "possession_duration_seconds",
+            "possession_end_frame_id",
+            "possession_start_frame_id",
+            "pressure_defending_team_role",
+            "pressure_duration_seconds",
+            "pressure_frame_field",
+            "pressure_frame_id",
+            "pressure_reason",
+            "pressure_status",
+            "receiver_id",
+            "reception_ball_point",
+            "reception_match_time_ms",
+            "reception_receiver_point",
+            "reference_point",
+            "release_ball_point",
+            "release_control_status",
+            "release_detection_status",
+            "release_match_time_ms",
+            "release_passer_point",
+            "requested_after_seconds",
+            "requested_before_seconds",
+            "requested_end_frame_id",
+            "requested_start_frame_id",
+            "required_anchor_status_field",
+            "required_anchor_status_value",
+            "required_status_value",
+            "right_anchor_id",
+            "right_anchor_id_field",
+            "right_end_frame_field",
+            "right_end_frame_id",
+            "right_entity_id",
+            "right_entity_id_field",
+            "right_frame_field",
+            "right_frame_id",
+            "right_record_hash",
+            "right_record_index",
+            "right_required_status_value",
+            "right_start_frame_field",
+            "right_start_frame_id",
+            "right_status",
+            "right_status_field",
+            "right_team_role",
+            "right_team_role_field",
+            "same_team_perspective_required",
+            "source_anchor_end_frame_id",
+            "source_anchor_frame_id",
+            "source_anchor_id",
+            "source_anchor_start_frame_id",
+            "start_frame_id",
+            "support_anchor_frame_id",
+            "support_arrival_reason",
+            "support_arrival_status",
+            "support_duration_seconds",
+            "support_point_pair_reason",
+            "support_point_pair_status",
+            "supporting_player_ids",
+            "team_binding_policy",
+            "team_role",
+            "truncated_end",
+            "truncated_start",
+            "truncation_policy",
+            "typed_join_constraint_failures",
+            "typed_join_dropped_no_match_count",
+            "typed_join_match_count",
+            "typed_join_reason",
+            "typed_join_records",
+            "typed_join_status",
+            "unconstrained",
+            "unconstrained_rationale",
+            "window_duration_frames",
+            "window_duration_seconds",
+            "window_end_frame_id",
+            "window_mode",
+            "window_reason",
+            "window_records",
+            "window_start_frame_id",
+            "window_status",
+            "witness_anchor_node_id",
+            "witness_anchor_output_name",
+            "witness_anchor_record_hash",
+            "witness_anchor_record_index",
+            "witness_left_node_id",
+            "witness_left_output_name",
+            "witness_right_node_id",
+            "witness_right_output_name"
+          ],
+          "typed_join_selected_output": {
+            "left": {
+              "output": "<terminal>",
+              "source": "nested_operator_composition",
+              "source_kind": "operator_composition"
+            },
+            "right": {
+              "output": "<terminal>",
+              "source": "nested_operator_composition",
+              "source_kind": "operator_composition"
+            }
+          }
+        },
+        "field_sources": {
+          "anchor_evaluations": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "anchor_frame_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "anchor_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "anchor_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "anchor_status": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "anchor_status_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "anchor_status_value": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "anchor_team_role": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "anchor_team_role_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "anchors": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "approach_angle_degrees": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "candidate_player_ids": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "candidate_scope": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "candidate_team_role": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "carrier_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "carrier_id_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "closing_speed_mps": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "continuity_end_frame_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "continuity_end_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "continuity_evidence_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "continuity_evidence_record_hash": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "continuity_evidence_source_node_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "continuity_evidence_source_output_name": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "continuity_overlap_policy": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "continuity_policy": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "continuity_reason": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "continuity_start_frame_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "continuity_start_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "continuity_status": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "continuity_status_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "continuity_status_value": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "continuity_team_role": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "continuity_team_role_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "controlled_pass_status": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "controlled_reception_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "controlled_reception_status": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "coverage_status": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "end_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "entity_identity_preserved_required": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "episodes": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "evaluated_candidate_player_ids": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "event_anchor_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "event_type": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "first_arrival_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "first_arrival_seconds_after_anchor": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "first_support_reference_point": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "first_supporter_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "first_supporter_point": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "forward_progression_m": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "frame_alignment_required": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "frame_rate_hz": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "join_key": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "left_anchor_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "left_anchor_id_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "left_end_frame_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "left_end_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "left_entity_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "left_entity_id_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "left_frame_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "left_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "left_record_hash": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "left_record_index": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "left_required_status_value": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "left_start_frame_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "left_start_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "left_status": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "left_status_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "left_team_role": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "left_team_role_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "lookback_seconds": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "maximum_approach_angle_degrees": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "maximum_frame_delta": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "maximum_pressure_distance_m": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "minimum_closing_speed_mps": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "minimum_pressure_duration_seconds": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "nearest_defender_distance_m": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "nearest_defender_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "no_match_policy": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "overlap_policy": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "pass_episode_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "passer_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "period_end_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "period_start_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "physical_release_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "possession_continuity_status": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "possession_duration_seconds": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "possession_end_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "possession_start_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "pressure_defending_team_role": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "pressure_duration_seconds": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "pressure_frame_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "pressure_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "pressure_reason": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "pressure_status": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "receiver_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "reception_ball_point": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "reception_match_time_ms": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "reception_receiver_point": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "reference_point": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "release_ball_point": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "release_control_status": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "release_detection_status": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "release_match_time_ms": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "release_passer_point": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "requested_after_seconds": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "requested_before_seconds": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "requested_end_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "requested_start_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "required_anchor_status_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "required_anchor_status_value": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "required_status_value": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "right_anchor_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "right_anchor_id_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "right_end_frame_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "right_end_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "right_entity_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "right_entity_id_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "right_frame_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "right_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "right_record_hash": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "right_record_index": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "right_required_status_value": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "right_start_frame_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "right_start_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "right_status": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "right_status_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "right_team_role": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "right_team_role_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "same_team_perspective_required": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "source_anchor_end_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "source_anchor_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "source_anchor_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "source_anchor_start_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "start_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "support_anchor_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "support_arrival_reason": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "support_arrival_status": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "support_duration_seconds": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "support_point_pair_reason": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "support_point_pair_status": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "supporting_player_ids": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "team_binding_policy": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "team_role": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "truncated_end": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "truncated_start": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "truncation_policy": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "typed_join_constraint_failures": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "typed_join_dropped_no_match_count": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "typed_join_match_count": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "typed_join_reason": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "typed_join_records": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "typed_join_status": {
+            "output_name": "typed_join_status",
+            "source_node_id": "typed_join_2"
+          },
+          "unconstrained": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "unconstrained_rationale": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "window_duration_frames": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "window_duration_seconds": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "window_end_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "window_mode": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "window_reason": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "window_records": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "window_start_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "window_status": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "witness_anchor_node_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "witness_anchor_output_name": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "witness_anchor_record_hash": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "witness_anchor_record_index": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "witness_left_node_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "witness_left_output_name": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "witness_right_node_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "witness_right_output_name": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          }
+        },
+        "providers_used": [
+          "controlled_pass_episode",
+          "controlled_pass_team_keyed_anchors",
+          "possession_segment",
+          "possession_segment_team_keyed_episodes",
+          "operator:window",
+          "controlled_pass_episode",
+          "pressure_on_carrier",
+          "controlled_pass_episode",
+          "controlled_pass_team_keyed_anchors",
+          "support_arrival_point_pair",
+          "operator:typed_join",
+          "operator:typed_join"
+        ],
+        "rules_used": [
+          "generic_typed_join_operator",
+          "generic_window_operator",
+          "provider_field_backward_search"
+        ],
+        "terminal_provider": "operator:typed_join"
+      },
+      "concept": "fragile_possession_state",
+      "document_hash": "bc77278b3358106178749a72edfdc730b56b23bd6b6b650c60895598ac2edfbe",
+      "expression_id": "scp2_1_fragile_possession_state_known",
+      "fixture": "delivery/packets/scp2-1-roundtrip/meaning-expressions/fragile_possession_state_known.v0.json",
+      "known_good_document_hash": "bc77278b3358106178749a72edfdc730b56b23bd6b6b650c60895598ac2edfbe",
+      "known_good_document_hash_match": true,
+      "load_outcome": "accepted",
+      "plan_path": "delivery/packets/scp2-1-roundtrip/plans/r1_5_fragile_possession_state_v0.json",
+      "target_id": "r1_5_fragile_possession_state_v0",
+      "target_path": "delivery/packets/scp2-1-roundtrip/targets.v0.json"
+    },
+    {
+      "bind": {
+        "bound_plan_hash": "c802588f053160c63d963ed3c9576c1c5dfce15add0ca0b508c9a7c6091e0d5a",
+        "plan_hash": "65cbc666a9536af4d558ceb66ae63d07f8dbbe8c58692bc62f7b3ae1fc170726",
+        "status": "PASS"
+      },
+      "build": {
+        "build_metadata": {
+          "anchor_source_node_id": "typed_join_2",
+          "anchor_source_output_name": "typed_join_records",
+          "population_required_fields": [
+            "anchor_team_role",
+            "carrier_id",
+            "continuity_reason",
+            "continuity_status",
+            "continuity_team_role",
+            "join_key",
+            "left_anchor_id",
+            "left_frame_id",
+            "left_team_role",
+            "nearest_defender_distance_m",
+            "pressure_frame_id",
+            "pressure_reason",
+            "pressure_status",
+            "right_anchor_id",
+            "right_frame_id",
+            "right_team_role",
+            "same_team_perspective_required",
+            "support_anchor_frame_id",
+            "support_arrival_reason",
+            "support_arrival_status",
+            "supporting_player_ids",
+            "typed_join_reason",
+            "typed_join_status",
+            "window_reason",
+            "window_status"
+          ],
+          "population_terminal": "operator:typed_join"
+        },
+        "field_sources": {
+          "aggregate_records": {
+            "output_name": "aggregate_records",
+            "source_node_id": "aggregate_over"
+          },
+          "aggregation_kind": {
+            "output_name": "aggregate_records",
+            "source_node_id": "aggregate_over"
+          },
+          "anchor_evaluations": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "anchor_frame_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "anchor_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "anchor_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "anchor_status": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "anchor_status_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "anchor_status_value": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "anchor_team_role": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "anchor_team_role_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "anchors": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "approach_angle_degrees": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "candidate_player_ids": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "candidate_scope": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "candidate_team_role": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "carrier_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "carrier_id_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "closing_speed_mps": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "constraint_opt_out_reason": {
+            "output_name": "aggregate_records",
+            "source_node_id": "aggregate_over"
+          },
+          "continuity_end_frame_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "continuity_end_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "continuity_evidence_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "continuity_evidence_record_hash": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "continuity_evidence_source_node_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "continuity_evidence_source_output_name": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "continuity_overlap_policy": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "continuity_policy": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "continuity_reason": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "continuity_start_frame_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "continuity_start_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "continuity_status": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "continuity_status_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "continuity_status_value": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "continuity_team_role": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "continuity_team_role_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "controlled_pass_status": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "controlled_reception_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "controlled_reception_status": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "coverage_status": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "end_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "entity_identity_preserved_required": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "episodes": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "evaluated_candidate_player_ids": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "event_anchor_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "event_type": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "fail_count": {
+            "output_name": "aggregate_records",
+            "source_node_id": "aggregate_over"
+          },
+          "first_arrival_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "first_arrival_seconds_after_anchor": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "first_support_reference_point": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "first_supporter_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "first_supporter_point": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "forward_progression_m": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "frame_alignment_required": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "frame_rate_hz": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "group_by_fields": {
+            "output_name": "aggregate_records",
+            "source_node_id": "aggregate_over"
+          },
+          "group_key": {
+            "output_name": "aggregate_records",
+            "source_node_id": "aggregate_over"
+          },
+          "join_key": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "left_anchor_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "left_anchor_id_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "left_end_frame_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "left_end_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "left_entity_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "left_entity_id_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "left_frame_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "left_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "left_record_hash": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "left_record_index": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "left_required_status_value": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "left_start_frame_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "left_start_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "left_status": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "left_status_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "left_team_role": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "left_team_role_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "lookback_seconds": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "lower_bound": {
+            "output_name": "aggregate_records",
+            "source_node_id": "aggregate_over"
+          },
+          "maximum_approach_angle_degrees": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "maximum_frame_delta": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "maximum_pressure_distance_m": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "minimum_closing_speed_mps": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "minimum_pressure_duration_seconds": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "nearest_defender_distance_m": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "nearest_defender_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "no_match_policy": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "observed": {
+            "output_name": "aggregate_records",
+            "source_node_id": "aggregate_over"
+          },
+          "overlap_policy": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "pass_count": {
+            "output_name": "aggregate_records",
+            "source_node_id": "aggregate_over"
+          },
+          "pass_episode_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "passer_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "period_end_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "period_start_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "physical_release_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "population_count": {
+            "output_name": "aggregate_records",
+            "source_node_id": "aggregate_over"
+          },
+          "population_expression": {
+            "output_name": "aggregate_records",
+            "source_node_id": "aggregate_over"
+          },
+          "possession_continuity_status": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "possession_duration_seconds": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "possession_end_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "possession_start_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "pressure_defending_team_role": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "pressure_duration_seconds": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "pressure_frame_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "pressure_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "pressure_reason": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "pressure_status": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "receiver_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "reception_ball_point": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "reception_match_time_ms": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "reception_receiver_point": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "reference_point": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "release_ball_point": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "release_control_status": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "release_detection_status": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "release_match_time_ms": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "release_passer_point": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "requested_after_seconds": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "requested_before_seconds": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "requested_end_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "requested_start_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "required_anchor_status_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "required_anchor_status_value": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "required_status_value": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "right_anchor_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "right_anchor_id_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "right_end_frame_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "right_end_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "right_entity_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "right_entity_id_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "right_frame_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "right_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "right_record_hash": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "right_record_index": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "right_required_status_value": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "right_start_frame_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "right_start_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "right_status": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "right_status_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "right_team_role": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "right_team_role_field": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "same_team_perspective_required": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "source_anchor_end_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "source_anchor_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "source_anchor_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "source_anchor_start_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "source_node_id": {
+            "output_name": "aggregate_records",
+            "source_node_id": "aggregate_over"
+          },
+          "source_output_name": {
+            "output_name": "aggregate_records",
+            "source_node_id": "aggregate_over"
+          },
+          "start_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "status_field": {
+            "output_name": "aggregate_records",
+            "source_node_id": "aggregate_over"
+          },
+          "support_anchor_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "support_arrival_reason": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "support_arrival_status": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "support_duration_seconds": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "support_point_pair_reason": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "support_point_pair_status": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "supporting_player_ids": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "team_binding_policy": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "team_role": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "truncated_end": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "truncated_start": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "truncation_policy": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "typed_join_constraint_failures": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "typed_join_dropped_no_match_count": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "typed_join_match_count": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "typed_join_reason": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "typed_join_records": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "typed_join_status": {
+            "output_name": "typed_join_status",
+            "source_node_id": "typed_join_2"
+          },
+          "unconstrained": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "unconstrained_rationale": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "unknown_count": {
+            "output_name": "aggregate_records",
+            "source_node_id": "aggregate_over"
+          },
+          "upper_bound": {
+            "output_name": "aggregate_records",
+            "source_node_id": "aggregate_over"
+          },
+          "window_duration_frames": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "window_duration_seconds": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "window_end_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "window_mode": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "window_reason": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "window_records": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "window_start_frame_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "window_status": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "witness_anchor_node_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "witness_anchor_output_name": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "witness_anchor_record_hash": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "witness_anchor_record_index": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "witness_left_node_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "witness_left_output_name": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "witness_right_node_id": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          },
+          "witness_right_output_name": {
+            "output_name": "typed_join_records",
+            "source_node_id": "typed_join_2"
+          }
+        },
+        "providers_used": [
+          "controlled_pass_episode",
+          "controlled_pass_team_keyed_anchors",
+          "possession_segment",
+          "possession_segment_team_keyed_episodes",
+          "operator:window",
+          "controlled_pass_episode",
+          "pressure_on_carrier",
+          "controlled_pass_episode",
+          "controlled_pass_team_keyed_anchors",
+          "support_arrival_point_pair",
+          "operator:typed_join",
+          "operator:typed_join",
+          "operator:aggregate_over"
+        ],
+        "rules_used": [
+          "aggregate_over_operator_composition",
+          "generic_typed_join_operator",
+          "generic_window_operator",
+          "provider_field_backward_search"
+        ],
+        "terminal_provider": "operator:aggregate_over"
+      },
+      "concept": "scp2_1_fragile_window_join_count",
+      "document_hash": "d1783f841729cf541687e6411aae74c5c2ba2cbdd6e9e3b212f42349a637af2e",
+      "execution": {
+        "requested_evidence_failure_count": 0,
+        "result_count": 13,
+        "status": "pass"
+      },
+      "execution_path": "delivery/packets/scp2-1-roundtrip/execution/scp2_1_fragile_window_join_count_v0.execution.json",
+      "expression_id": "scp2_1_fragile_window_join_count",
+      "fixture": "delivery/packets/scp2-1-roundtrip/meaning-expressions/fragile_window_join_count_novel.v0.json",
+      "load_outcome": "accepted",
+      "plan_path": "delivery/packets/scp2-1-roundtrip/plans/scp2_1_fragile_window_join_count_v0.json",
+      "target_id": "scp2_1_fragile_window_join_count_v0",
+      "target_path": "delivery/packets/scp2-1-roundtrip/targets.v0.json"
+    }
+  ],
+  "knowledge_pack": {
+    "composition_constraint_kind_count": 14,
+    "composition_operator_count": 7,
+    "gap_code_count": 14,
+    "path": "generated/tactical-knowledge-pack.json",
+    "predicate_operator_count": 8,
+    "primitive_count": 37,
+    "sha256": "e81aedcf491285bf004e8dd42c760c839f2cecf3ec8d1b61d62516d537dc2bf2"
+  },
+  "long_execution_threshold_seconds": 300.0,
+  "schema_version": "scp2_1_roundtrip_report.v0"
+}

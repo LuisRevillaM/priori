@@ -1,0 +1,1483 @@
+{
+  "requested_evidence_failure_count": 0,
+  "result_count": 13,
+  "roles": {
+    "single": {
+      "provenance": {
+        "canonical_root": "data/canonical/v1",
+        "compatibility_profile": "generic",
+        "execution_mode": "execute",
+        "max_results": 20,
+        "node_cache": {
+          "bypassed": 0,
+          "disabled": 0,
+          "enabled": true,
+          "hits": 4,
+          "local_hits": 4,
+          "misses": 14,
+          "shared_hits": 0
+        },
+        "plan_id": "search_scp2_1_fragile_window_join_count_v0",
+        "plan_status": "experimental",
+        "progress_event_count": 60,
+        "progress_events": [
+          {
+            "event": "period_start",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "period": "firstHalf"
+          },
+          {
+            "catalog_ref": "controlled_pass_episode",
+            "event": "node_start",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "controlled_pass_episode",
+            "node_index": 1,
+            "node_kind": "primitive",
+            "period": "firstHalf",
+            "version": "0.1.0"
+          },
+          {
+            "cache_status": "miss",
+            "catalog_ref": "controlled_pass_episode",
+            "event": "node_complete",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "controlled_pass_episode",
+            "node_index": 1,
+            "node_kind": "primitive",
+            "output_names": [
+              "anchors",
+              "controlled_pass_status",
+              "episodes",
+              "forward_progression_m"
+            ],
+            "period": "firstHalf",
+            "version": "0.1.0"
+          },
+          {
+            "catalog_ref": "controlled_pass_team_keyed_anchors",
+            "event": "node_start",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "controlled_pass_team_keyed_anchors",
+            "node_index": 2,
+            "node_kind": "relation",
+            "period": "firstHalf",
+            "version": "0.1.0"
+          },
+          {
+            "cache_status": "miss",
+            "catalog_ref": "controlled_pass_team_keyed_anchors",
+            "event": "node_complete",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "controlled_pass_team_keyed_anchors",
+            "node_index": 2,
+            "node_kind": "relation",
+            "output_names": [
+              "anchors"
+            ],
+            "period": "firstHalf",
+            "version": "0.1.0"
+          },
+          {
+            "catalog_ref": "possession_segment",
+            "event": "node_start",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "possession_segment",
+            "node_index": 3,
+            "node_kind": "primitive",
+            "period": "firstHalf",
+            "version": "0.1.0"
+          },
+          {
+            "cache_status": "miss",
+            "catalog_ref": "possession_segment",
+            "event": "node_complete",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "possession_segment",
+            "node_index": 3,
+            "node_kind": "primitive",
+            "output_names": [
+              "anchors",
+              "episodes"
+            ],
+            "period": "firstHalf",
+            "version": "0.1.0"
+          },
+          {
+            "catalog_ref": "possession_segment_team_keyed_episodes",
+            "event": "node_start",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "possession_segment_team_keyed_episodes",
+            "node_index": 4,
+            "node_kind": "relation",
+            "period": "firstHalf",
+            "version": "0.1.0"
+          },
+          {
+            "cache_status": "miss",
+            "catalog_ref": "possession_segment_team_keyed_episodes",
+            "event": "node_complete",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "possession_segment_team_keyed_episodes",
+            "node_index": 4,
+            "node_kind": "relation",
+            "output_names": [
+              "episodes"
+            ],
+            "period": "firstHalf",
+            "version": "0.1.0"
+          },
+          {
+            "event": "node_start",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "window",
+            "node_index": 5,
+            "node_kind": "operator",
+            "operator": "window",
+            "period": "firstHalf"
+          },
+          {
+            "cache_status": "bypassed",
+            "event": "node_complete",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "window",
+            "node_index": 5,
+            "node_kind": "operator",
+            "operator": "window",
+            "output_names": [
+              "window_duration_seconds",
+              "window_records",
+              "window_status"
+            ],
+            "period": "firstHalf"
+          },
+          {
+            "catalog_ref": "controlled_pass_episode",
+            "event": "node_start",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "controlled_pass_episode_2",
+            "node_index": 6,
+            "node_kind": "primitive",
+            "period": "firstHalf",
+            "version": "0.1.0"
+          },
+          {
+            "cache_status": "hit",
+            "catalog_ref": "controlled_pass_episode",
+            "event": "node_complete",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "controlled_pass_episode_2",
+            "node_index": 6,
+            "node_kind": "primitive",
+            "output_names": [
+              "anchors",
+              "controlled_pass_status",
+              "episodes",
+              "forward_progression_m"
+            ],
+            "period": "firstHalf",
+            "version": "0.1.0"
+          },
+          {
+            "catalog_ref": "pressure_on_carrier",
+            "event": "node_start",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "pressure_on_carrier",
+            "node_index": 7,
+            "node_kind": "relation",
+            "period": "firstHalf",
+            "version": "0.1.0"
+          },
+          {
+            "cache_status": "miss",
+            "catalog_ref": "pressure_on_carrier",
+            "event": "node_complete",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "pressure_on_carrier",
+            "node_index": 7,
+            "node_kind": "relation",
+            "output_names": [
+              "anchor_evaluations",
+              "pressure_status"
+            ],
+            "period": "firstHalf",
+            "version": "0.1.0"
+          },
+          {
+            "catalog_ref": "controlled_pass_episode",
+            "event": "node_start",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "controlled_pass_episode_3",
+            "node_index": 8,
+            "node_kind": "primitive",
+            "period": "firstHalf",
+            "version": "0.1.0"
+          },
+          {
+            "cache_status": "hit",
+            "catalog_ref": "controlled_pass_episode",
+            "event": "node_complete",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "controlled_pass_episode_3",
+            "node_index": 8,
+            "node_kind": "primitive",
+            "output_names": [
+              "anchors",
+              "controlled_pass_status",
+              "episodes",
+              "forward_progression_m"
+            ],
+            "period": "firstHalf",
+            "version": "0.1.0"
+          },
+          {
+            "catalog_ref": "controlled_pass_team_keyed_anchors",
+            "event": "node_start",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "controlled_pass_team_keyed_anchors_2",
+            "node_index": 9,
+            "node_kind": "relation",
+            "period": "firstHalf",
+            "version": "0.1.0"
+          },
+          {
+            "cache_status": "miss",
+            "catalog_ref": "controlled_pass_team_keyed_anchors",
+            "event": "node_complete",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "controlled_pass_team_keyed_anchors_2",
+            "node_index": 9,
+            "node_kind": "relation",
+            "output_names": [
+              "anchors"
+            ],
+            "period": "firstHalf",
+            "version": "0.1.0"
+          },
+          {
+            "catalog_ref": "support_arrival_point_pair",
+            "event": "node_start",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "support_arrival_point_pair",
+            "node_index": 10,
+            "node_kind": "relation",
+            "period": "firstHalf",
+            "version": "0.1.0"
+          },
+          {
+            "cache_status": "miss",
+            "catalog_ref": "support_arrival_point_pair",
+            "event": "node_complete",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "support_arrival_point_pair",
+            "node_index": 10,
+            "node_kind": "relation",
+            "output_names": [
+              "anchor_evaluations",
+              "support_point_pair_status"
+            ],
+            "period": "firstHalf",
+            "version": "0.1.0"
+          },
+          {
+            "event": "node_start",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "typed_join",
+            "node_index": 11,
+            "node_kind": "operator",
+            "operator": "typed_join",
+            "period": "firstHalf"
+          },
+          {
+            "cache_status": "bypassed",
+            "event": "node_complete",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "typed_join",
+            "node_index": 11,
+            "node_kind": "operator",
+            "operator": "typed_join",
+            "output_names": [
+              "typed_join_records",
+              "typed_join_status"
+            ],
+            "period": "firstHalf"
+          },
+          {
+            "event": "node_start",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "typed_join_2",
+            "node_index": 12,
+            "node_kind": "operator",
+            "operator": "typed_join",
+            "period": "firstHalf"
+          },
+          {
+            "cache_status": "bypassed",
+            "event": "node_complete",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "typed_join_2",
+            "node_index": 12,
+            "node_kind": "operator",
+            "operator": "typed_join",
+            "output_names": [
+              "typed_join_records",
+              "typed_join_status"
+            ],
+            "period": "firstHalf"
+          },
+          {
+            "event": "node_start",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "aggregate_over",
+            "node_index": 13,
+            "node_kind": "operator",
+            "operator": "aggregate_over",
+            "period": "firstHalf"
+          },
+          {
+            "cache_status": "bypassed",
+            "event": "node_complete",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "aggregate_over",
+            "node_index": 13,
+            "node_kind": "operator",
+            "operator": "aggregate_over",
+            "output_names": [
+              "aggregate_records"
+            ],
+            "period": "firstHalf"
+          },
+          {
+            "event": "node_start",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "predicate_1",
+            "node_index": 14,
+            "node_kind": "predicate",
+            "operator": "eq",
+            "period": "firstHalf"
+          },
+          {
+            "cache_status": "bypassed",
+            "event": "node_complete",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "predicate_1",
+            "node_index": 14,
+            "node_kind": "predicate",
+            "operator": "eq",
+            "output_names": [
+              "predicate"
+            ],
+            "period": "firstHalf"
+          },
+          {
+            "event": "period_complete",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "period": "firstHalf",
+            "runtime_node_count": 14
+          },
+          {
+            "event": "period_start",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "period": "secondHalf"
+          },
+          {
+            "catalog_ref": "controlled_pass_episode",
+            "event": "node_start",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "controlled_pass_episode",
+            "node_index": 1,
+            "node_kind": "primitive",
+            "period": "secondHalf",
+            "version": "0.1.0"
+          },
+          {
+            "cache_status": "miss",
+            "catalog_ref": "controlled_pass_episode",
+            "event": "node_complete",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "controlled_pass_episode",
+            "node_index": 1,
+            "node_kind": "primitive",
+            "output_names": [
+              "anchors",
+              "controlled_pass_status",
+              "episodes",
+              "forward_progression_m"
+            ],
+            "period": "secondHalf",
+            "version": "0.1.0"
+          },
+          {
+            "catalog_ref": "controlled_pass_team_keyed_anchors",
+            "event": "node_start",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "controlled_pass_team_keyed_anchors",
+            "node_index": 2,
+            "node_kind": "relation",
+            "period": "secondHalf",
+            "version": "0.1.0"
+          },
+          {
+            "cache_status": "miss",
+            "catalog_ref": "controlled_pass_team_keyed_anchors",
+            "event": "node_complete",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "controlled_pass_team_keyed_anchors",
+            "node_index": 2,
+            "node_kind": "relation",
+            "output_names": [
+              "anchors"
+            ],
+            "period": "secondHalf",
+            "version": "0.1.0"
+          },
+          {
+            "catalog_ref": "possession_segment",
+            "event": "node_start",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "possession_segment",
+            "node_index": 3,
+            "node_kind": "primitive",
+            "period": "secondHalf",
+            "version": "0.1.0"
+          },
+          {
+            "cache_status": "miss",
+            "catalog_ref": "possession_segment",
+            "event": "node_complete",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "possession_segment",
+            "node_index": 3,
+            "node_kind": "primitive",
+            "output_names": [
+              "anchors",
+              "episodes"
+            ],
+            "period": "secondHalf",
+            "version": "0.1.0"
+          },
+          {
+            "catalog_ref": "possession_segment_team_keyed_episodes",
+            "event": "node_start",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "possession_segment_team_keyed_episodes",
+            "node_index": 4,
+            "node_kind": "relation",
+            "period": "secondHalf",
+            "version": "0.1.0"
+          },
+          {
+            "cache_status": "miss",
+            "catalog_ref": "possession_segment_team_keyed_episodes",
+            "event": "node_complete",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "possession_segment_team_keyed_episodes",
+            "node_index": 4,
+            "node_kind": "relation",
+            "output_names": [
+              "episodes"
+            ],
+            "period": "secondHalf",
+            "version": "0.1.0"
+          },
+          {
+            "event": "node_start",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "window",
+            "node_index": 5,
+            "node_kind": "operator",
+            "operator": "window",
+            "period": "secondHalf"
+          },
+          {
+            "cache_status": "bypassed",
+            "event": "node_complete",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "window",
+            "node_index": 5,
+            "node_kind": "operator",
+            "operator": "window",
+            "output_names": [
+              "window_duration_seconds",
+              "window_records",
+              "window_status"
+            ],
+            "period": "secondHalf"
+          },
+          {
+            "catalog_ref": "controlled_pass_episode",
+            "event": "node_start",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "controlled_pass_episode_2",
+            "node_index": 6,
+            "node_kind": "primitive",
+            "period": "secondHalf",
+            "version": "0.1.0"
+          },
+          {
+            "cache_status": "hit",
+            "catalog_ref": "controlled_pass_episode",
+            "event": "node_complete",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "controlled_pass_episode_2",
+            "node_index": 6,
+            "node_kind": "primitive",
+            "output_names": [
+              "anchors",
+              "controlled_pass_status",
+              "episodes",
+              "forward_progression_m"
+            ],
+            "period": "secondHalf",
+            "version": "0.1.0"
+          },
+          {
+            "catalog_ref": "pressure_on_carrier",
+            "event": "node_start",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "pressure_on_carrier",
+            "node_index": 7,
+            "node_kind": "relation",
+            "period": "secondHalf",
+            "version": "0.1.0"
+          },
+          {
+            "cache_status": "miss",
+            "catalog_ref": "pressure_on_carrier",
+            "event": "node_complete",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "pressure_on_carrier",
+            "node_index": 7,
+            "node_kind": "relation",
+            "output_names": [
+              "anchor_evaluations",
+              "pressure_status"
+            ],
+            "period": "secondHalf",
+            "version": "0.1.0"
+          },
+          {
+            "catalog_ref": "controlled_pass_episode",
+            "event": "node_start",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "controlled_pass_episode_3",
+            "node_index": 8,
+            "node_kind": "primitive",
+            "period": "secondHalf",
+            "version": "0.1.0"
+          },
+          {
+            "cache_status": "hit",
+            "catalog_ref": "controlled_pass_episode",
+            "event": "node_complete",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "controlled_pass_episode_3",
+            "node_index": 8,
+            "node_kind": "primitive",
+            "output_names": [
+              "anchors",
+              "controlled_pass_status",
+              "episodes",
+              "forward_progression_m"
+            ],
+            "period": "secondHalf",
+            "version": "0.1.0"
+          },
+          {
+            "catalog_ref": "controlled_pass_team_keyed_anchors",
+            "event": "node_start",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "controlled_pass_team_keyed_anchors_2",
+            "node_index": 9,
+            "node_kind": "relation",
+            "period": "secondHalf",
+            "version": "0.1.0"
+          },
+          {
+            "cache_status": "miss",
+            "catalog_ref": "controlled_pass_team_keyed_anchors",
+            "event": "node_complete",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "controlled_pass_team_keyed_anchors_2",
+            "node_index": 9,
+            "node_kind": "relation",
+            "output_names": [
+              "anchors"
+            ],
+            "period": "secondHalf",
+            "version": "0.1.0"
+          },
+          {
+            "catalog_ref": "support_arrival_point_pair",
+            "event": "node_start",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "support_arrival_point_pair",
+            "node_index": 10,
+            "node_kind": "relation",
+            "period": "secondHalf",
+            "version": "0.1.0"
+          },
+          {
+            "cache_status": "miss",
+            "catalog_ref": "support_arrival_point_pair",
+            "event": "node_complete",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "support_arrival_point_pair",
+            "node_index": 10,
+            "node_kind": "relation",
+            "output_names": [
+              "anchor_evaluations",
+              "support_point_pair_status"
+            ],
+            "period": "secondHalf",
+            "version": "0.1.0"
+          },
+          {
+            "event": "node_start",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "typed_join",
+            "node_index": 11,
+            "node_kind": "operator",
+            "operator": "typed_join",
+            "period": "secondHalf"
+          },
+          {
+            "cache_status": "bypassed",
+            "event": "node_complete",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "typed_join",
+            "node_index": 11,
+            "node_kind": "operator",
+            "operator": "typed_join",
+            "output_names": [
+              "typed_join_records",
+              "typed_join_status"
+            ],
+            "period": "secondHalf"
+          },
+          {
+            "event": "node_start",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "typed_join_2",
+            "node_index": 12,
+            "node_kind": "operator",
+            "operator": "typed_join",
+            "period": "secondHalf"
+          },
+          {
+            "cache_status": "bypassed",
+            "event": "node_complete",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "typed_join_2",
+            "node_index": 12,
+            "node_kind": "operator",
+            "operator": "typed_join",
+            "output_names": [
+              "typed_join_records",
+              "typed_join_status"
+            ],
+            "period": "secondHalf"
+          },
+          {
+            "event": "node_start",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "aggregate_over",
+            "node_index": 13,
+            "node_kind": "operator",
+            "operator": "aggregate_over",
+            "period": "secondHalf"
+          },
+          {
+            "cache_status": "bypassed",
+            "event": "node_complete",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "aggregate_over",
+            "node_index": 13,
+            "node_kind": "operator",
+            "operator": "aggregate_over",
+            "output_names": [
+              "aggregate_records"
+            ],
+            "period": "secondHalf"
+          },
+          {
+            "event": "node_start",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "predicate_1",
+            "node_index": 14,
+            "node_kind": "predicate",
+            "operator": "eq",
+            "period": "secondHalf"
+          },
+          {
+            "cache_status": "bypassed",
+            "event": "node_complete",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "node_id": "predicate_1",
+            "node_index": 14,
+            "node_kind": "predicate",
+            "operator": "eq",
+            "output_names": [
+              "predicate"
+            ],
+            "period": "secondHalf"
+          },
+          {
+            "event": "period_complete",
+            "match_id": "J03WOH",
+            "node_count": 14,
+            "period": "secondHalf",
+            "runtime_node_count": 14
+          }
+        ],
+        "raw_root": "data/raw/idsse/figshare-28196177-v1",
+        "requested_evidence_failure_count": 0,
+        "requested_evidence_failures": [],
+        "runtime_result_count": 13,
+        "runtime_trace_hash": "d925b62d5ce595247a63ec20c0f3935eeb0037559744f9a8705e6eb8d9bccd0e",
+        "runtime_value_count": 60,
+        "unknown_policy": "exclude_candidate",
+        "unknown_trace_count": 309
+      },
+      "result_count": 13,
+      "rows": [
+        {
+          "accepted": true,
+          "anchor_frame_id": 15146,
+          "anchor_id": "c33e9675853f9ce7",
+          "classification": "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0",
+          "classification_rule_decisions": [
+            {
+              "label": "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0",
+              "predicate_ids": [
+                "predicate_1"
+              ],
+              "rule_match_status": "PASS",
+              "unknown_required_predicates": []
+            }
+          ],
+          "defending_team_role": "away",
+          "match_id": "J03WOH",
+          "matched_classification_rules": [
+            "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0"
+          ],
+          "period": "firstHalf",
+          "perspective_team_role": "home",
+          "plan_status": "experimental",
+          "provenance": {
+            "anchor_source": "typed_join_2.typed_join_records",
+            "compatibility_profile": "generic",
+            "emitter": "generic_rule_emitter"
+          },
+          "requested_evidence": {
+            "aggregation_kind": "count",
+            "fail_count": 92,
+            "group_by_fields": [
+              "left_team_role"
+            ],
+            "group_key": {
+              "left_team_role": "home"
+            },
+            "lower_bound": 8,
+            "observed": 8,
+            "pass_count": 8,
+            "population_count": 155,
+            "population_expression": "fragile possession state windowed join rows by team role",
+            "source_node_id": "typed_join_2",
+            "source_output_name": "typed_join_records",
+            "status_field": "typed_join_status",
+            "unknown_count": 55,
+            "upper_bound": 63
+          },
+          "result_id": "4a157e6e5034b3d6",
+          "rule_match_status": "PASS",
+          "unknown_required_predicates": []
+        },
+        {
+          "accepted": true,
+          "anchor_frame_id": 35484,
+          "anchor_id": "af5b2a8319b6779a",
+          "classification": "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0",
+          "classification_rule_decisions": [
+            {
+              "label": "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0",
+              "predicate_ids": [
+                "predicate_1"
+              ],
+              "rule_match_status": "PASS",
+              "unknown_required_predicates": []
+            }
+          ],
+          "defending_team_role": "away",
+          "match_id": "J03WOH",
+          "matched_classification_rules": [
+            "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0"
+          ],
+          "period": "firstHalf",
+          "perspective_team_role": "home",
+          "plan_status": "experimental",
+          "provenance": {
+            "anchor_source": "typed_join_2.typed_join_records",
+            "compatibility_profile": "generic",
+            "emitter": "generic_rule_emitter"
+          },
+          "requested_evidence": {
+            "aggregation_kind": "count",
+            "fail_count": 92,
+            "group_by_fields": [
+              "left_team_role"
+            ],
+            "group_key": {
+              "left_team_role": "home"
+            },
+            "lower_bound": 8,
+            "observed": 8,
+            "pass_count": 8,
+            "population_count": 155,
+            "population_expression": "fragile possession state windowed join rows by team role",
+            "source_node_id": "typed_join_2",
+            "source_output_name": "typed_join_records",
+            "status_field": "typed_join_status",
+            "unknown_count": 55,
+            "upper_bound": 63
+          },
+          "result_id": "7b301a9294121708",
+          "rule_match_status": "PASS",
+          "unknown_required_predicates": []
+        },
+        {
+          "accepted": true,
+          "anchor_frame_id": 35922,
+          "anchor_id": "6cf2630d6253a4ed",
+          "classification": "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0",
+          "classification_rule_decisions": [
+            {
+              "label": "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0",
+              "predicate_ids": [
+                "predicate_1"
+              ],
+              "rule_match_status": "PASS",
+              "unknown_required_predicates": []
+            }
+          ],
+          "defending_team_role": "away",
+          "match_id": "J03WOH",
+          "matched_classification_rules": [
+            "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0"
+          ],
+          "period": "firstHalf",
+          "perspective_team_role": "home",
+          "plan_status": "experimental",
+          "provenance": {
+            "anchor_source": "typed_join_2.typed_join_records",
+            "compatibility_profile": "generic",
+            "emitter": "generic_rule_emitter"
+          },
+          "requested_evidence": {
+            "aggregation_kind": "count",
+            "fail_count": 92,
+            "group_by_fields": [
+              "left_team_role"
+            ],
+            "group_key": {
+              "left_team_role": "home"
+            },
+            "lower_bound": 8,
+            "observed": 8,
+            "pass_count": 8,
+            "population_count": 155,
+            "population_expression": "fragile possession state windowed join rows by team role",
+            "source_node_id": "typed_join_2",
+            "source_output_name": "typed_join_records",
+            "status_field": "typed_join_status",
+            "unknown_count": 55,
+            "upper_bound": 63
+          },
+          "result_id": "3572d1e3a81f4ee8",
+          "rule_match_status": "PASS",
+          "unknown_required_predicates": []
+        },
+        {
+          "accepted": true,
+          "anchor_frame_id": 37526,
+          "anchor_id": "6c26c7e6eddd434e",
+          "classification": "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0",
+          "classification_rule_decisions": [
+            {
+              "label": "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0",
+              "predicate_ids": [
+                "predicate_1"
+              ],
+              "rule_match_status": "PASS",
+              "unknown_required_predicates": []
+            }
+          ],
+          "defending_team_role": "away",
+          "match_id": "J03WOH",
+          "matched_classification_rules": [
+            "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0"
+          ],
+          "period": "firstHalf",
+          "perspective_team_role": "home",
+          "plan_status": "experimental",
+          "provenance": {
+            "anchor_source": "typed_join_2.typed_join_records",
+            "compatibility_profile": "generic",
+            "emitter": "generic_rule_emitter"
+          },
+          "requested_evidence": {
+            "aggregation_kind": "count",
+            "fail_count": 92,
+            "group_by_fields": [
+              "left_team_role"
+            ],
+            "group_key": {
+              "left_team_role": "home"
+            },
+            "lower_bound": 8,
+            "observed": 8,
+            "pass_count": 8,
+            "population_count": 155,
+            "population_expression": "fragile possession state windowed join rows by team role",
+            "source_node_id": "typed_join_2",
+            "source_output_name": "typed_join_records",
+            "status_field": "typed_join_status",
+            "unknown_count": 55,
+            "upper_bound": 63
+          },
+          "result_id": "66c50543e7688fbc",
+          "rule_match_status": "PASS",
+          "unknown_required_predicates": []
+        },
+        {
+          "accepted": true,
+          "anchor_frame_id": 49046,
+          "anchor_id": "9a168a205dfa50ca",
+          "classification": "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0",
+          "classification_rule_decisions": [
+            {
+              "label": "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0",
+              "predicate_ids": [
+                "predicate_1"
+              ],
+              "rule_match_status": "PASS",
+              "unknown_required_predicates": []
+            }
+          ],
+          "defending_team_role": "away",
+          "match_id": "J03WOH",
+          "matched_classification_rules": [
+            "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0"
+          ],
+          "period": "firstHalf",
+          "perspective_team_role": "home",
+          "plan_status": "experimental",
+          "provenance": {
+            "anchor_source": "typed_join_2.typed_join_records",
+            "compatibility_profile": "generic",
+            "emitter": "generic_rule_emitter"
+          },
+          "requested_evidence": {
+            "aggregation_kind": "count",
+            "fail_count": 92,
+            "group_by_fields": [
+              "left_team_role"
+            ],
+            "group_key": {
+              "left_team_role": "home"
+            },
+            "lower_bound": 8,
+            "observed": 8,
+            "pass_count": 8,
+            "population_count": 155,
+            "population_expression": "fragile possession state windowed join rows by team role",
+            "source_node_id": "typed_join_2",
+            "source_output_name": "typed_join_records",
+            "status_field": "typed_join_status",
+            "unknown_count": 55,
+            "upper_bound": 63
+          },
+          "result_id": "121be9b458fff5a2",
+          "rule_match_status": "PASS",
+          "unknown_required_predicates": []
+        },
+        {
+          "accepted": true,
+          "anchor_frame_id": 68981,
+          "anchor_id": "c8d18cd2a41e41a7",
+          "classification": "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0",
+          "classification_rule_decisions": [
+            {
+              "label": "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0",
+              "predicate_ids": [
+                "predicate_1"
+              ],
+              "rule_match_status": "PASS",
+              "unknown_required_predicates": []
+            }
+          ],
+          "defending_team_role": "away",
+          "match_id": "J03WOH",
+          "matched_classification_rules": [
+            "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0"
+          ],
+          "period": "firstHalf",
+          "perspective_team_role": "home",
+          "plan_status": "experimental",
+          "provenance": {
+            "anchor_source": "typed_join_2.typed_join_records",
+            "compatibility_profile": "generic",
+            "emitter": "generic_rule_emitter"
+          },
+          "requested_evidence": {
+            "aggregation_kind": "count",
+            "fail_count": 92,
+            "group_by_fields": [
+              "left_team_role"
+            ],
+            "group_key": {
+              "left_team_role": "home"
+            },
+            "lower_bound": 8,
+            "observed": 8,
+            "pass_count": 8,
+            "population_count": 155,
+            "population_expression": "fragile possession state windowed join rows by team role",
+            "source_node_id": "typed_join_2",
+            "source_output_name": "typed_join_records",
+            "status_field": "typed_join_status",
+            "unknown_count": 55,
+            "upper_bound": 63
+          },
+          "result_id": "d147e9b29d42672c",
+          "rule_match_status": "PASS",
+          "unknown_required_predicates": []
+        },
+        {
+          "accepted": true,
+          "anchor_frame_id": 71280,
+          "anchor_id": "ae6903ef5b6a34a1",
+          "classification": "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0",
+          "classification_rule_decisions": [
+            {
+              "label": "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0",
+              "predicate_ids": [
+                "predicate_1"
+              ],
+              "rule_match_status": "PASS",
+              "unknown_required_predicates": []
+            }
+          ],
+          "defending_team_role": "away",
+          "match_id": "J03WOH",
+          "matched_classification_rules": [
+            "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0"
+          ],
+          "period": "firstHalf",
+          "perspective_team_role": "home",
+          "plan_status": "experimental",
+          "provenance": {
+            "anchor_source": "typed_join_2.typed_join_records",
+            "compatibility_profile": "generic",
+            "emitter": "generic_rule_emitter"
+          },
+          "requested_evidence": {
+            "aggregation_kind": "count",
+            "fail_count": 92,
+            "group_by_fields": [
+              "left_team_role"
+            ],
+            "group_key": {
+              "left_team_role": "home"
+            },
+            "lower_bound": 8,
+            "observed": 8,
+            "pass_count": 8,
+            "population_count": 155,
+            "population_expression": "fragile possession state windowed join rows by team role",
+            "source_node_id": "typed_join_2",
+            "source_output_name": "typed_join_records",
+            "status_field": "typed_join_status",
+            "unknown_count": 55,
+            "upper_bound": 63
+          },
+          "result_id": "cf2f6a193cb503ae",
+          "rule_match_status": "PASS",
+          "unknown_required_predicates": []
+        },
+        {
+          "accepted": true,
+          "anchor_frame_id": 73608,
+          "anchor_id": "a6b4ae33ac05d802",
+          "classification": "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0",
+          "classification_rule_decisions": [
+            {
+              "label": "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0",
+              "predicate_ids": [
+                "predicate_1"
+              ],
+              "rule_match_status": "PASS",
+              "unknown_required_predicates": []
+            }
+          ],
+          "defending_team_role": "away",
+          "match_id": "J03WOH",
+          "matched_classification_rules": [
+            "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0"
+          ],
+          "period": "firstHalf",
+          "perspective_team_role": "home",
+          "plan_status": "experimental",
+          "provenance": {
+            "anchor_source": "typed_join_2.typed_join_records",
+            "compatibility_profile": "generic",
+            "emitter": "generic_rule_emitter"
+          },
+          "requested_evidence": {
+            "aggregation_kind": "count",
+            "fail_count": 92,
+            "group_by_fields": [
+              "left_team_role"
+            ],
+            "group_key": {
+              "left_team_role": "home"
+            },
+            "lower_bound": 8,
+            "observed": 8,
+            "pass_count": 8,
+            "population_count": 155,
+            "population_expression": "fragile possession state windowed join rows by team role",
+            "source_node_id": "typed_join_2",
+            "source_output_name": "typed_join_records",
+            "status_field": "typed_join_status",
+            "unknown_count": 55,
+            "upper_bound": 63
+          },
+          "result_id": "354887308051a966",
+          "rule_match_status": "PASS",
+          "unknown_required_predicates": []
+        },
+        {
+          "accepted": true,
+          "anchor_frame_id": 115915,
+          "anchor_id": "8cd7ac3201baeb09",
+          "classification": "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0",
+          "classification_rule_decisions": [
+            {
+              "label": "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0",
+              "predicate_ids": [
+                "predicate_1"
+              ],
+              "rule_match_status": "PASS",
+              "unknown_required_predicates": []
+            }
+          ],
+          "defending_team_role": "away",
+          "match_id": "J03WOH",
+          "matched_classification_rules": [
+            "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0"
+          ],
+          "period": "secondHalf",
+          "perspective_team_role": "home",
+          "plan_status": "experimental",
+          "provenance": {
+            "anchor_source": "typed_join_2.typed_join_records",
+            "compatibility_profile": "generic",
+            "emitter": "generic_rule_emitter"
+          },
+          "requested_evidence": {
+            "aggregation_kind": "count",
+            "fail_count": 89,
+            "group_by_fields": [
+              "left_team_role"
+            ],
+            "group_key": {
+              "left_team_role": "home"
+            },
+            "lower_bound": 5,
+            "observed": 5,
+            "pass_count": 5,
+            "population_count": 134,
+            "population_expression": "fragile possession state windowed join rows by team role",
+            "source_node_id": "typed_join_2",
+            "source_output_name": "typed_join_records",
+            "status_field": "typed_join_status",
+            "unknown_count": 40,
+            "upper_bound": 45
+          },
+          "result_id": "33317ea0020955b6",
+          "rule_match_status": "PASS",
+          "unknown_required_predicates": []
+        },
+        {
+          "accepted": true,
+          "anchor_frame_id": 117800,
+          "anchor_id": "39c809f8f1d92d7e",
+          "classification": "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0",
+          "classification_rule_decisions": [
+            {
+              "label": "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0",
+              "predicate_ids": [
+                "predicate_1"
+              ],
+              "rule_match_status": "PASS",
+              "unknown_required_predicates": []
+            }
+          ],
+          "defending_team_role": "away",
+          "match_id": "J03WOH",
+          "matched_classification_rules": [
+            "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0"
+          ],
+          "period": "secondHalf",
+          "perspective_team_role": "home",
+          "plan_status": "experimental",
+          "provenance": {
+            "anchor_source": "typed_join_2.typed_join_records",
+            "compatibility_profile": "generic",
+            "emitter": "generic_rule_emitter"
+          },
+          "requested_evidence": {
+            "aggregation_kind": "count",
+            "fail_count": 89,
+            "group_by_fields": [
+              "left_team_role"
+            ],
+            "group_key": {
+              "left_team_role": "home"
+            },
+            "lower_bound": 5,
+            "observed": 5,
+            "pass_count": 5,
+            "population_count": 134,
+            "population_expression": "fragile possession state windowed join rows by team role",
+            "source_node_id": "typed_join_2",
+            "source_output_name": "typed_join_records",
+            "status_field": "typed_join_status",
+            "unknown_count": 40,
+            "upper_bound": 45
+          },
+          "result_id": "f9965835f25126fb",
+          "rule_match_status": "PASS",
+          "unknown_required_predicates": []
+        },
+        {
+          "accepted": true,
+          "anchor_frame_id": 119413,
+          "anchor_id": "79b0dff5417acb6a",
+          "classification": "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0",
+          "classification_rule_decisions": [
+            {
+              "label": "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0",
+              "predicate_ids": [
+                "predicate_1"
+              ],
+              "rule_match_status": "PASS",
+              "unknown_required_predicates": []
+            }
+          ],
+          "defending_team_role": "away",
+          "match_id": "J03WOH",
+          "matched_classification_rules": [
+            "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0"
+          ],
+          "period": "secondHalf",
+          "perspective_team_role": "home",
+          "plan_status": "experimental",
+          "provenance": {
+            "anchor_source": "typed_join_2.typed_join_records",
+            "compatibility_profile": "generic",
+            "emitter": "generic_rule_emitter"
+          },
+          "requested_evidence": {
+            "aggregation_kind": "count",
+            "fail_count": 89,
+            "group_by_fields": [
+              "left_team_role"
+            ],
+            "group_key": {
+              "left_team_role": "home"
+            },
+            "lower_bound": 5,
+            "observed": 5,
+            "pass_count": 5,
+            "population_count": 134,
+            "population_expression": "fragile possession state windowed join rows by team role",
+            "source_node_id": "typed_join_2",
+            "source_output_name": "typed_join_records",
+            "status_field": "typed_join_status",
+            "unknown_count": 40,
+            "upper_bound": 45
+          },
+          "result_id": "75d741f9a1c4f8ff",
+          "rule_match_status": "PASS",
+          "unknown_required_predicates": []
+        },
+        {
+          "accepted": true,
+          "anchor_frame_id": 141231,
+          "anchor_id": "7f925e9111e3a656",
+          "classification": "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0",
+          "classification_rule_decisions": [
+            {
+              "label": "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0",
+              "predicate_ids": [
+                "predicate_1"
+              ],
+              "rule_match_status": "PASS",
+              "unknown_required_predicates": []
+            }
+          ],
+          "defending_team_role": "away",
+          "match_id": "J03WOH",
+          "matched_classification_rules": [
+            "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0"
+          ],
+          "period": "secondHalf",
+          "perspective_team_role": "home",
+          "plan_status": "experimental",
+          "provenance": {
+            "anchor_source": "typed_join_2.typed_join_records",
+            "compatibility_profile": "generic",
+            "emitter": "generic_rule_emitter"
+          },
+          "requested_evidence": {
+            "aggregation_kind": "count",
+            "fail_count": 89,
+            "group_by_fields": [
+              "left_team_role"
+            ],
+            "group_key": {
+              "left_team_role": "home"
+            },
+            "lower_bound": 5,
+            "observed": 5,
+            "pass_count": 5,
+            "population_count": 134,
+            "population_expression": "fragile possession state windowed join rows by team role",
+            "source_node_id": "typed_join_2",
+            "source_output_name": "typed_join_records",
+            "status_field": "typed_join_status",
+            "unknown_count": 40,
+            "upper_bound": 45
+          },
+          "result_id": "e465793250fc30f4",
+          "rule_match_status": "PASS",
+          "unknown_required_predicates": []
+        },
+        {
+          "accepted": true,
+          "anchor_frame_id": 165401,
+          "anchor_id": "0037fcae6a65b966",
+          "classification": "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0",
+          "classification_rule_decisions": [
+            {
+              "label": "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0",
+              "predicate_ids": [
+                "predicate_1"
+              ],
+              "rule_match_status": "PASS",
+              "unknown_required_predicates": []
+            }
+          ],
+          "defending_team_role": "away",
+          "match_id": "J03WOH",
+          "matched_classification_rules": [
+            "SCP2_1_FRAGILE_WINDOW_JOIN_COUNT_V0"
+          ],
+          "period": "secondHalf",
+          "perspective_team_role": "home",
+          "plan_status": "experimental",
+          "provenance": {
+            "anchor_source": "typed_join_2.typed_join_records",
+            "compatibility_profile": "generic",
+            "emitter": "generic_rule_emitter"
+          },
+          "requested_evidence": {
+            "aggregation_kind": "count",
+            "fail_count": 89,
+            "group_by_fields": [
+              "left_team_role"
+            ],
+            "group_key": {
+              "left_team_role": "home"
+            },
+            "lower_bound": 5,
+            "observed": 5,
+            "pass_count": 5,
+            "population_count": 134,
+            "population_expression": "fragile possession state windowed join rows by team role",
+            "source_node_id": "typed_join_2",
+            "source_output_name": "typed_join_records",
+            "status_field": "typed_join_status",
+            "unknown_count": 40,
+            "upper_bound": 45
+          },
+          "result_id": "8601d084ab47799c",
+          "rule_match_status": "PASS",
+          "unknown_required_predicates": []
+        }
+      ],
+      "status": "pass"
+    }
+  },
+  "status": "pass"
+}
