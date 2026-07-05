@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import copy
 import json
-import os
 import unittest
 from pathlib import Path
 
@@ -19,15 +18,7 @@ R2_0_PREERA_TARGET_IDS = {
     "search_carry_out_of_pressure_v0",
 }
 
-DECLARATION_TARGET_FILES = [
-    Path("config/compiler-reachability/search-targets.v0.json"),
-    Path("config/compiler-reachability/r1-1-project-onto-axis-targets.v0.json"),
-    Path("config/compiler-reachability/r1-2-delta-across-anchor-targets.v0.json"),
-    Path("config/compiler-reachability/r1-3-extremum-over-set-targets.v0.json"),
-    Path("config/compiler-reachability/r1-4-window-targets.v0.json"),
-    Path("config/compiler-reachability/r1-5-typed-join-targets.v0.json"),
-    Path("delivery/packets/r1-c-sweep/targets.v0.json"),
-]
+SWEEP_SNAPSHOT_TARGET_FILE = Path("delivery/packets/r1-c-sweep/targets.v0.json")
 
 
 def coverage_row() -> dict[str, object]:
@@ -57,17 +48,18 @@ def reachable_result() -> dict[str, object]:
 
 
 def declaration_target_files() -> list[Path]:
-    override = os.environ.get("R2_0_DECLARATION_TARGET_FILE")
-    if override:
-        return [Path(override)]
-    return DECLARATION_TARGET_FILES
+    config_targets = sorted(Path("config/compiler-reachability").glob("*.json"))
+    return [*config_targets, SWEEP_SNAPSHOT_TARGET_FILE]
 
 
 def declared_targets_from_files(target_files: list[Path]) -> set[str]:
     declared_target_ids: set[str] = set()
     for target_file in target_files:
         payload = json.loads(target_file.read_text(encoding="utf-8"))
-        for target in payload.get("targets", []):
+        targets = payload.get("targets")
+        if targets is None:
+            continue
+        for target in targets:
             declaration = target.get("semantic_correspondence")
             if declaration is None:
                 continue

@@ -12,7 +12,8 @@
         "coverage_row": "carry_displacement",
         "meaning": "A carry episode with observed control whose displacement_m is at least 3.0 metres between its carry start and end frames.",
         "source_relation": "carry_episode anchored from controlled_pass_team_keyed_anchors",
-        "anchor_source": "carry_episode.anchor_evaluations",
+        "anchor_source": "controlled_pass_team_keyed_anchors.anchors",
+        "result_anchor": "carry_episode.anchor_evaluations",
         "frame_fields": [
           "carry_start_frame_id",
           "carry_end_frame_id"
@@ -55,6 +56,7 @@
         "coverage_row": "support_arrival_relation",
         "meaning": "A controlled-pass team-keyed anchor with observed support_arrival_status PASS when at least one perspective outfield supporting player arrives within the declared distance and timing window.",
         "source_relation": "support_arrival_relation.anchor_evaluations + support_arrival_relation.support_arrival_status",
+        "anchor_source": "controlled_pass_team_keyed_anchors.anchors",
         "anchor_frame_field": "controlled_reception_frame_id",
         "candidate_scope": "perspective_outfield",
         "support_region_mode": "WITHIN_DISTANCE_OF_REFERENCE_POINT",
@@ -97,7 +99,8 @@
         "coverage_row": "carry_progression",
         "meaning": "A carry episode with observed control whose forward_progression_m is at least 3.0 metres between its carry start and end frames.",
         "source_relation": "carry_episode anchored from controlled_pass_team_keyed_anchors",
-        "anchor_source": "carry_episode.anchor_evaluations",
+        "anchor_source": "controlled_pass_team_keyed_anchors.anchors",
+        "result_anchor": "carry_episode.anchor_evaluations",
         "frame_fields": [
           "carry_start_frame_id",
           "carry_end_frame_id"
@@ -187,12 +190,15 @@
       "semantic_correspondence": {
         "coverage_row": "post_regain_retention",
         "meaning": "A regain transition anchor with transition_status PASS whose outcome_window_status is PASS for retaining a settled possession for at least 4.0 seconds within an 8.0-second outcome window.",
+        "anchor_source": "transition_anchor_2.anchor_evaluations",
         "source_relation": "transition_anchor_2.anchor_evaluations + outcome_window.anchor_evaluations/status",
         "transition_type": "regain",
         "transition_frame_field": "transition_frame_id",
+        "minimum_prior_possession_seconds": 0.4,
         "outcome_window": {
           "maximum_window_seconds": 8.0,
           "minimum_settled_possession_seconds": 4.0,
+          "settled_segment_policy": "The 4.0-second settled segment may begin anywhere within the 8.0-second window; an intervening loss before that settled segment does not fail the row.",
           "required_anchor_status_field": "transition_status",
           "required_anchor_status_value": "PASS"
         },
@@ -231,6 +237,7 @@
         "coverage_row": "shape_expansion_episode",
         "meaning": "A controlled-pass anchor where observed defending-outfield team_width_m increases by at least 4.0 metres from physical release to controlled reception.",
         "source_relation": "team_compactness before/after evaluations joined by change_across_anchor",
+        "anchor_source": "controlled_pass_episode.anchors",
         "before_relation": "team_compactness.anchor_evaluations at physical_release_frame_id",
         "after_relation": "team_compactness_2.anchor_evaluations at controlled_reception_frame_id",
         "value_field": "team_width_m",
@@ -292,6 +299,8 @@
         "coverage_row": "carry_out_of_pressure",
         "meaning": "A carry episode joined on the same anchor to a pressure-distance change where nearest_defender_distance_m increases by at least 2.0 metres from carry start to carry end after a PASS pressure evaluation at carry start.",
         "composition": "join_episode_sets on anchor_id between carry_episode and change_across_anchor",
+        "anchor_source": "controlled_pass_team_keyed_anchors.anchors",
+        "result_anchor": "join_episode_sets.anchor_evaluations",
         "before_relation": "pressure_on_carrier.anchor_evaluations at carry_start_frame_id",
         "after_relation": "pressure_on_carrier_2.anchor_evaluations at carry_end_frame_id",
         "carrier_id_field": "carrier_id",
