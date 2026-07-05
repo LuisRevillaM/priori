@@ -898,7 +898,7 @@ class Binder:
             ),
             None,
         )
-        if upstream is None or upstream.operator.name != "typed_join":
+        if upstream is None:
             return
         required = {
             "same_team_perspective_required": same_team_required,
@@ -908,11 +908,18 @@ class Binder:
         for parameter_name, is_required in required.items():
             if not is_required:
                 continue
+            if parameter_name not in upstream.resolved_parameters:
+                self._issue(
+                    "operator_aggregate_constraint_not_inherited",
+                    "aggregate_over requires upstream composition to expose declared constraint parameters",
+                    f"{path}.parameters.{parameter_name}",
+                )
+                continue
             if not _resolved_bool(upstream.resolved_parameters, parameter_name):
                 self._issue(
                     "operator_aggregate_constraint_not_inherited",
                     (
-                        f"aggregate_over requires upstream typed_join to enforce "
+                        f"aggregate_over requires upstream composition to enforce "
                         f"{parameter_name}"
                     ),
                     f"{path}.parameters.{parameter_name}",
