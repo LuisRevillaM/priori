@@ -170,7 +170,7 @@ Round 2 mutation checks performed:
 
 ## Round 2 Item 2: Flagship Generator
 
-Status: implemented; byte-reproduction check pending committed tree.
+Status: implemented; byte-reproduction check passing on committed tree.
 
 Files:
 
@@ -192,6 +192,7 @@ Generator verification:
 | Command | Result |
 | --- | --- |
 | `PYTHONPATH=src UV_CACHE_DIR=/private/tmp/uv-cache uv run --no-sync python scripts/packets/r2_1_flagship_generator.py` | PASS, 14 rows, reconciled `true`, totals observed/lower 145, upper 5799, UNKNOWN 5654, population 8414 |
+| `git diff --exit-code -- delivery/packets/r2-1-flagship/aggregate_over_fragile_possession_state_v0.json delivery/packets/r2-1-flagship/provenance.json delivery/packets/r2-1-flagship/fragile_possession_state_denominator_table.json delivery/packets/r2-1-flagship/fragile_possession_state_denominator_table.md` | PASS, byte-identical generated artifacts |
 
 ## Full-suite table on committed tree
 
