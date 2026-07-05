@@ -1,9 +1,9 @@
 {
   "ai_projection_policy": "projection.ai.v1",
-  "baseline_artifact_revision": "948fc90eb0896c2a7a09c72de918bf51b6d870af62287858857487d6d0031d32",
+  "baseline_artifact_revision": "d7e5335358b55b72db61b06ce34258eb83b84e91a9580c5b49e98899dcbb842d",
   "evidence_schema_version": "1.0",
   "generator_version": "scp0.generator.v1",
-  "lock_hash": "609baad93cb9c3198ebc9c17db4197cdb8a670dcac845b1ed596c234370c541d",
+  "lock_hash": "b2822f744474db8c32a4316e184e1e395e70129c5152ea5a51d1e071a81cacbb",
   "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
   "product_projection_policy": "projection.product.v1",
   "recipe_projection_policy": "projection.recipe_library.v1",

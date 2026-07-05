@@ -17537,7 +17537,7 @@
     ]
   },
   "generated_at": "reproducible_from_source_hashes",
-  "knowledge_pack_sha256": "e81aedcf491285bf004e8dd42c760c839f2cecf3ec8d1b61d62516d537dc2bf2",
+  "knowledge_pack_sha256": "d5d204b79244a1bbdd73b4eb6dff5abb8af4aa188f6937815f4a746190578ad0",
   "knowledge_pack_version": "m1.2-s2i-a.0",
   "model_visible_tool_schemas": {
     "compare_query_versions": {
@@ -37289,7 +37289,7 @@
     "src/tqe/runtime/executor.py": "7a2cd8a4641f7d179111064dbafa17f83e1d8b44bcc330f1237a1a1e33b0814d",
     "src/tqe/runtime/ir.py": "33e4885a6ad75afa7b4e9df96b72eba43c49b92b24ac67c8d2979d0bde13eedd",
     "src/tqe/runtime/operators/__init__.py": "a7b90947588a8e675ceb337a7398fa9d2309d34ace7f177c537696204972e860",
-    "src/tqe/runtime/operators/aggregate_over.py": "0696a1a47bbee973e0128137e978b16fb704541c1ba2be30688a756ebf473f0e",
+    "src/tqe/runtime/operators/aggregate_over.py": "1f883d7035795e97ad4ff12a78ce13deda417c857fc18244758e095608aa1b64",
     "src/tqe/runtime/operators/delta_across_anchor.py": "acd81710c06856c71aac2ac41e68a7e07d17262a69f597a92696a0721f77b806",
     "src/tqe/runtime/operators/extremum_over_set.py": "e9bf407db795f44600ffe65f6c0333a3cdaae3b8b234206e1157eed533eb15e3",
     "src/tqe/runtime/operators/project_onto_axis.py": "65159a823e7573cc19fd3728f425680a8cc80349e1bc8e790db890b589ecd9d0",
