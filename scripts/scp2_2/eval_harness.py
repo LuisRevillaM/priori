@@ -44,7 +44,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--pack-path", default=DEFAULT_KNOWLEDGE_PACK_PATH, type=Path)
     parser.add_argument("--coverage-map", default=DEFAULT_COVERAGE_MAP_PATH, type=Path)
     parser.add_argument("--provider", default=os.environ.get("HERMES_SCP2_2_PROVIDER", "anthropic"))
-    parser.add_argument("--model", default=os.environ.get("HERMES_SCP2_2_MODEL", "claude-sonnet-4-5"))
+    parser.add_argument("--model", default=os.environ.get("HERMES_SCP2_2_MODEL", "claude-opus-4-8"))
     parser.add_argument("--long-threshold-seconds", default=300.0, type=float)
     args = parser.parse_args(argv)
 
@@ -60,6 +60,7 @@ def main(argv: list[str] | None = None) -> int:
         pack_path=args.pack_path,
         coverage_map_path=args.coverage_map,
         long_threshold_seconds=args.long_threshold_seconds,
+        model_tier={"provider": args.provider, "model": args.model},
     )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -74,6 +75,7 @@ def evaluate_case_set(
     pack_path: Path = DEFAULT_KNOWLEDGE_PACK_PATH,
     coverage_map_path: Path = DEFAULT_COVERAGE_MAP_PATH,
     long_threshold_seconds: float = 300.0,
+    model_tier: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     payload_bytes = case_set_path.read_bytes()
     payload = json.loads(payload_bytes)
@@ -85,6 +87,7 @@ def evaluate_case_set(
         pack_path=pack_path,
         coverage_rows=load_coverage_rows(coverage_map_path),
         long_threshold_seconds=long_threshold_seconds,
+        model_tier=model_tier,
     )
 
 
@@ -97,6 +100,7 @@ def evaluate_case_set_payload(
     pack_path: Path = DEFAULT_KNOWLEDGE_PACK_PATH,
     coverage_rows: list[dict[str, Any]] | None = None,
     long_threshold_seconds: float = 300.0,
+    model_tier: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     started_at = datetime.now(UTC)
     started_monotonic = time.monotonic()
@@ -116,6 +120,7 @@ def evaluate_case_set_payload(
         "case_set_sha256": case_set_sha256 or stable_hash(payload),
         "pack_path": str(pack_path),
         "pack_sha256": str(pack_payload["knowledge_pack_sha256"]),
+        "model_tier": model_tier or {},
         "started_at_utc": started_at.isoformat().replace("+00:00", "Z"),
         "finished_at_utc": finished_at.isoformat().replace("+00:00", "Z"),
         "elapsed_seconds": round(elapsed_seconds, 3),
@@ -137,15 +142,19 @@ def evaluate_case(
     coverage_rows: list[dict[str, Any]] | None,
 ) -> dict[str, Any]:
     kind = str(case.get("kind") or "single")
+    started = time.monotonic()
     if kind == "single":
-        return evaluate_single_case(case, compiler=compiler, coverage_rows=coverage_rows)
-    if kind == "same_meaning_pair":
-        return evaluate_pair_case(case, compiler=compiler, coverage_rows=coverage_rows, expect_equal=True)
-    if kind == "changed_meaning_pair":
-        return evaluate_pair_case(case, compiler=compiler, coverage_rows=coverage_rows, expect_equal=False)
-    if kind == "clarification_turn":
-        return evaluate_clarification_case(case, compiler=compiler, coverage_rows=coverage_rows)
-    return fail_verdict(case, [f"unknown case kind: {kind}"], observations=[])
+        result = evaluate_single_case(case, compiler=compiler, coverage_rows=coverage_rows)
+    elif kind == "same_meaning_pair":
+        result = evaluate_pair_case(case, compiler=compiler, coverage_rows=coverage_rows, expect_equal=True)
+    elif kind == "changed_meaning_pair":
+        result = evaluate_pair_case(case, compiler=compiler, coverage_rows=coverage_rows, expect_equal=False)
+    elif kind == "clarification_turn":
+        result = evaluate_clarification_case(case, compiler=compiler, coverage_rows=coverage_rows)
+    else:
+        result = fail_verdict(case, [f"unknown case kind: {kind}"], observations=[])
+    result["elapsed_seconds"] = round(time.monotonic() - started, 3)
+    return result
 
 
 def evaluate_single_case(

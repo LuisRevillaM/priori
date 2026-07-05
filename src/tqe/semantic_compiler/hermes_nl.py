@@ -27,7 +27,7 @@ from tqe.semantic_compiler.meaning_expression import (
 
 
 DEFAULT_PROVIDER = "anthropic"
-DEFAULT_MODEL = "claude-sonnet-4-5"
+DEFAULT_MODEL = "claude-opus-4-8"
 DEFAULT_TOOLSET = "mcp-priori_tactical"
 CERTIFIED_FEW_SHOT_PATHS = (
     Path("delivery/packets/scp2-1-roundtrip/meaning-expressions/fragile_possession_state_known.v0.json"),
