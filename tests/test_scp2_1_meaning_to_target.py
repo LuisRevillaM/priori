@@ -42,14 +42,16 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
     def test_vocabulary_and_composition_grammar_are_derived_from_generated_pack(self) -> None:
         self.assertEqual(37, len(self.vocabulary.primitive_names))
         self.assertEqual(8, len(self.vocabulary.predicate_operator_names))
-        self.assertEqual(7, len(self.vocabulary.composition_operator_names))
-        self.assertEqual(14, len(self.vocabulary.constraint_kinds))
+        self.assertEqual(8, len(self.vocabulary.composition_operator_names))
+        self.assertEqual(15, len(self.vocabulary.constraint_kinds))
         self.assertEqual(14, len(self.vocabulary.gap_codes))
         self.assertIn("carry_episode", self.vocabulary.primitive_names)
         self.assertIn("gte", self.vocabulary.predicate_operator_names)
         self.assertIn("aggregate_over", self.vocabulary.composition_operator_names)
+        self.assertIn("sequence_pattern", self.vocabulary.composition_operator_names)
         self.assertIn("typed_join", self.vocabulary.constraint_kinds)
         self.assertIn("window", self.vocabulary.constraint_kinds)
+        self.assertIn("sequence_pattern", self.vocabulary.constraint_kinds)
         self.assertIn("BODY_ORIENTATION", self.vocabulary.gap_codes)
 
     def test_out_of_pack_reference_returns_exact_typed_gap_payload(self) -> None:

@@ -1,7 +1,7 @@
 # Tactical Knowledge Pack
 
 Version: `m1.2-s2i-a.0`
-SHA-256: `d5d204b79244a1bbdd73b4eb6dff5abb8af4aa188f6937815f4a746190578ad0`
+SHA-256: `fdc5bbf7f05c95e1002fbc439a8b51bbf9e787711079e6358d8820a59d566753`
 Generated: `reproducible_from_source_hashes`
 
 ## Architecture
@@ -186,7 +186,7 @@ Disallowed claims:
 
 ## Composition Grammar
 
-Composition operators: `7`
+Composition operators: `8`
 - `project_onto_axis@0.1.0`: Project a source point-pair vector onto a declared axis, producing witnessed signed scalar and angle channels.
 - `delta_across_anchor@0.1.0`: Compare declared before/after scalar values for the same anchor, emitting witnessed signed delta and rising/falling edge statuses.
 - `extremum_over_set@0.1.0`: Select witnessed argmin/argmax/top-k elements from declared per-anchor candidate records under explicit coverage and tie-break rules.
@@ -194,6 +194,7 @@ Composition operators: `7`
 - `typed_join@0.1.0`: Join two declared evidence channels on explicit identity keys under bind-time composition constraints.
 - `aggregate_over@0.1.0`: Aggregate a declared anchor-level evidence population into interval-typed group results with UNKNOWN rows carried into bounds.
 - `rate@0.1.0`: Compute interval-typed count rates from a joint numerator/denominator tri-state partition under a declared subset law.
+- `sequence_pattern@0.1.0`: Build tri-state ordered anchor chains across declared stage outputs, preserving UNKNOWN when successor windows are unobserved or only UNKNOWN candidates match.
 
 Composition constraint kinds:
 
@@ -207,6 +208,7 @@ Composition constraint kinds:
 - `relation_on_anchor`
 - `same_anchor_identity`
 - `same_player_return`
+- `sequence_pattern`
 - `temporal_order`
 - `typed_join`
 - `vector_projection`
@@ -224,20 +226,21 @@ Composition constraint kinds:
 - `generated/capability-context.json`: `b17ea9761a5a5d93655787a28a5a0351358778268417d1c5ffc5738078c28f08`
 - `generated/tactical-query-plan.schema.json`: `7904105efeba7b8297ee3d3dbd183b92c6b8d67f5f034e34da8c52f42b0b54ae`
 - `generated/tactical-query-plan.types.ts`: `5c027189c9b5f314bc62fd765656e30aeaebe163add038320f74cca932627ceb`
-- `src/tqe/runtime/binder.py`: `19e85bbae959644dcb4295a420361d06f92355987ba7af62a2cc14ea51b5c8f6`
+- `src/tqe/runtime/binder.py`: `f5cdd903b5df1d50f2bc4bf3f192878ad7c33ae7e34c3f660b57d5555ad062cb`
 - `src/tqe/runtime/catalog.py`: `0f58e55acdd789f1f101b969a0255b864bdc333d6c4a8f596160c57e8b00590f`
 - `src/tqe/runtime/executor.py`: `7a2cd8a4641f7d179111064dbafa17f83e1d8b44bcc330f1237a1a1e33b0814d`
 - `src/tqe/runtime/ir.py`: `33e4885a6ad75afa7b4e9df96b72eba43c49b92b24ac67c8d2979d0bde13eedd`
-- `src/tqe/runtime/operators/__init__.py`: `a7b90947588a8e675ceb337a7398fa9d2309d34ace7f177c537696204972e860`
+- `src/tqe/runtime/operators/__init__.py`: `fe46bf8c0d54281906a9f8dbd8d7b253f44186d0ad41176876aa33dc95130ec2`
 - `src/tqe/runtime/operators/aggregate_over.py`: `1f883d7035795e97ad4ff12a78ce13deda417c857fc18244758e095608aa1b64`
 - `src/tqe/runtime/operators/delta_across_anchor.py`: `acd81710c06856c71aac2ac41e68a7e07d17262a69f597a92696a0721f77b806`
 - `src/tqe/runtime/operators/extremum_over_set.py`: `e9bf407db795f44600ffe65f6c0333a3cdaae3b8b234206e1157eed533eb15e3`
 - `src/tqe/runtime/operators/project_onto_axis.py`: `65159a823e7573cc19fd3728f425680a8cc80349e1bc8e790db890b589ecd9d0`
 - `src/tqe/runtime/operators/rate.py`: `6e87f7520107efe0a0219d929f8799b822eee17bdc42c9cf5795ea91c117ca88`
+- `src/tqe/runtime/operators/sequence_pattern.py`: `209587d87c5c17e5a7aad6faf88a4897526ad3f04cc7cbdbe328faa51ae8d0be`
 - `src/tqe/runtime/operators/typed_join.py`: `8b897658f357f9cda39c287816daacf95733c3d75c69843d449c35fe8bd10af1`
 - `src/tqe/runtime/operators/window.py`: `c7247d0fb72c8c0c1705b75d71ced179d7c814c3c2aee93a2dbd9948c773188e`
 - `src/tqe/runtime/relations.py`: `eb305cd2ff4c9c5f886342eeb8c35253500e6dd777bdf7b4dc403469b771d8e0`
 - `src/tqe/verification/m1_2_gate_s2i.py`: `9397f1a8a6b11e28d1f0bb48105a44dfae9a2c49ca61ff44413108f1d85ce125`
 - `src/tqe/workshop/hermes_s2.py`: `ae2bb93b3444749d8fd131075e29404141e517820faf103fb58de2ebafcb1591`
-- `src/tqe/workshop/knowledge_pack.py`: `5c2c072fe7241dc765216e504de9dc9ff03e9ae62604f71247842dd70497bef5`
+- `src/tqe/workshop/knowledge_pack.py`: `ff3ee2e2780e4535e40bad327fce72d98a6c0b25194de8287337e52b3d8d919a`
 - `src/tqe/workshop/m1_2.py`: `481097c94dfe922a2e8e6322263e7124841c028601ae78d0608145acca65266c`

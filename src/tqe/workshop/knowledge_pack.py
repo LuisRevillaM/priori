@@ -74,6 +74,7 @@ SOURCE_PATHS = [
     Path("src/tqe/runtime/operators/rate.py"),
     Path("src/tqe/runtime/operators/typed_join.py"),
     Path("src/tqe/runtime/operators/window.py"),
+    Path("src/tqe/runtime/operators/sequence_pattern.py"),
     Path("src/tqe/workshop/m1_2.py"),
     Path("src/tqe/workshop/hermes_s2.py"),
     Path("src/tqe/workshop/knowledge_pack.py"),
@@ -500,14 +501,15 @@ def verify_tactical_knowledge_pack(
     grammar_operator_names = {item.get("name") for item in grammar.get("operators", [])}
     checks.append(
         check(
-            "pack.composition_grammar.includes_seven_operator_signatures",
-            grammar.get("operator_count") == 7
+            "pack.composition_grammar.includes_eight_operator_signatures",
+            grammar.get("operator_count") == 8
             and {
                 "aggregate_over",
                 "delta_across_anchor",
                 "extremum_over_set",
                 "project_onto_axis",
                 "rate",
+                "sequence_pattern",
                 "typed_join",
                 "window",
             }.issubset(grammar_operator_names),
@@ -521,6 +523,7 @@ def verify_tactical_knowledge_pack(
             {
                 "aggregate_over",
                 "before_after_same_anchor",
+                "sequence_pattern",
                 "typed_join",
                 "vector_projection",
                 "window",

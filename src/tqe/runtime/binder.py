@@ -582,6 +582,13 @@ class Binder:
             resolved_parameters=resolved_node_parameters,
             path=path,
         )
+        self._validate_sequence_pattern_constraints(
+            node=node,
+            signature=signature,
+            bound_inputs=bound_inputs,
+            resolved_parameters=resolved_node_parameters,
+            path=path,
+        )
         outputs = self._bind_operator_outputs(node=node, signature=signature, path=path)
         if (signature.name, signature.version) not in self.composition_operator_registry:
             self._issue(
@@ -1096,6 +1103,126 @@ class Binder:
             and _resolved_bool(bound.resolved_parameters, parameter_name)
             for bound in chain
         )
+
+    def _validate_sequence_pattern_constraints(
+        self,
+        *,
+        node: DraftOperatorNode,
+        signature: CompositionOperatorSignature,
+        bound_inputs: dict[str, tuple[SignalRef, CatalogOutput]],
+        resolved_parameters: dict[str, TypedValue],
+        path: str,
+    ) -> None:
+        sequence_parameter_names = {
+            "stage_count",
+            "match_policy",
+            "overlap_policy",
+            "window_boundary_policy",
+            "frame_rate_hz",
+            "stage_2_window_seconds",
+            "stage_3_window_seconds",
+            "stage_1_status_field",
+            "stage_2_status_field",
+            "stage_3_status_field",
+            "stage_1_frame_field",
+            "stage_2_frame_field",
+            "stage_3_frame_field",
+            "stage_1_team_role_field",
+            "stage_2_team_role_field",
+            "stage_3_team_role_field",
+            "same_team_perspective_required",
+            "same_possession_required",
+            "same_player_required",
+            "constraint_opt_out_reason",
+        }
+        parameter_names = {parameter.name for parameter in signature.parameters}
+        if not sequence_parameter_names.issubset(parameter_names):
+            return
+        raw_stage_count = resolved_parameters.get("stage_count")
+        stage_count = int(round(float(raw_stage_count.value))) if raw_stage_count is not None else 3
+        if stage_count != 3:
+            self._issue(
+                "operator_sequence_stage_count_unsupported",
+                "sequence_pattern R2-4 supports exactly three stages",
+                f"{path}.parameters.stage_count",
+            )
+        same_team_required = _resolved_bool(resolved_parameters, "same_team_perspective_required")
+        same_possession_required = _resolved_bool(resolved_parameters, "same_possession_required")
+        same_player_required = _resolved_bool(resolved_parameters, "same_player_required")
+        opt_out_reason = _resolved_text(resolved_parameters, "constraint_opt_out_reason", "none")
+        if not same_team_required and opt_out_reason == "none":
+            self._issue(
+                "operator_sequence_constraint_opt_out_reason_missing",
+                "sequence same-team-perspective opt-out requires declared constraint_opt_out_reason",
+                f"{path}.parameters.constraint_opt_out_reason",
+            )
+        for index in (1, 2, 3):
+            input_name = f"stage_{index}"
+            if input_name not in node.inputs:
+                continue
+            declared_fields = set()
+            if input_name in bound_inputs:
+                _, output = bound_inputs[input_name]
+                declared_fields.add(output.name)
+                declared_fields.update(output.evidence_fields)
+            for parameter_name in (
+                f"stage_{index}_status_field",
+                f"stage_{index}_frame_field",
+            ):
+                self._validate_sequence_stage_field(
+                    declared_fields=declared_fields,
+                    resolved_parameters=resolved_parameters,
+                    parameter_name=parameter_name,
+                    path=path,
+                )
+            if same_team_required:
+                self._validate_sequence_stage_field(
+                    declared_fields=declared_fields,
+                    resolved_parameters=resolved_parameters,
+                    parameter_name=f"stage_{index}_team_role_field",
+                    path=path,
+                )
+            if same_possession_required:
+                self._validate_sequence_stage_field(
+                    declared_fields=declared_fields,
+                    resolved_parameters=resolved_parameters,
+                    parameter_name=f"stage_{index}_possession_id_field",
+                    path=path,
+                    disallow_none=True,
+                )
+            if same_player_required:
+                self._validate_sequence_stage_field(
+                    declared_fields=declared_fields,
+                    resolved_parameters=resolved_parameters,
+                    parameter_name=f"stage_{index}_player_id_field",
+                    path=path,
+                    disallow_none=True,
+                )
+
+    def _validate_sequence_stage_field(
+        self,
+        *,
+        declared_fields: set[str],
+        resolved_parameters: dict[str, TypedValue],
+        parameter_name: str,
+        path: str,
+        disallow_none: bool = False,
+    ) -> None:
+        field_name = _resolved_text(resolved_parameters, parameter_name, "none")
+        if field_name == "none":
+            if disallow_none:
+                self._issue(
+                    "operator_sequence_continuity_field_missing",
+                    f"sequence continuity requires declared {parameter_name}",
+                    f"{path}.parameters.{parameter_name}",
+                )
+            return
+        if field_name not in declared_fields:
+            self._issue(
+                "operator_sequence_stage_field_not_in_input",
+                f"sequence_pattern parameter {parameter_name} references field {field_name}, but its stage input does not declare it",
+                f"{path}.parameters.{parameter_name}",
+            )
 
     def _bind_operator_outputs(
         self,
