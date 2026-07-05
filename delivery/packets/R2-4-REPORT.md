@@ -18,7 +18,7 @@ use this clone's commit SHAs via `format-patch`.
 | ADR 0014 read | DONE | Aggregation principles 20-22 govern downstream counts/rates. |
 | ADR 0015 read | DONE | Bridge principles 23-25 govern the meaning-expression fixture. |
 | Branch | DONE_CLONE | `packet/r2-4` from `104e373` in `/private/tmp/priori-r2-4-single-20260705095024`. |
-| Fences | ACTIVE | No ledger touch; no atlas; no sealed evidence; no autonomous artifacts except allowed canonical search report; no freezes/re-pins. |
+| Fences | ACTIVE | No ledger touch; no atlas; no sealed evidence; no autonomous artifacts. SCP-0 generated projections/lock refreshed after the sequence runtime contract delta; coverage ledgers untouched. |
 | Push | NOT_DONE | Local commits only. |
 
 ## Implementation Log
@@ -29,7 +29,8 @@ use this clone's commit SHAs via `format-patch`.
 | `93bf39a` | sequence_pattern operator, registry, pack delta, focused tests. |
 | `c40a008` | Possession-continuity evidence, compiler-search sequence builder, R2-4 meaning-expression fixture, bridge regression test. |
 | `4d74bd0` | Byte-reproducing flagship generator, synthesized sequence+rate plan, counterattack initiation table, provenance. |
-| `PENDING` | Mutation evidence and final verification table. |
+| `2d2a3e1` | Mutation evidence and restore check. |
+| `PENDING` | Generated contract refresh and final verification table. |
 
 ## Pack Delta
 
@@ -77,6 +78,18 @@ The bridge schema was not extended. The meaning-expression vocabulary now sees `
 | Truncated successor windows remain UNKNOWN | Replaced `UNKNOWN if window_truncated else FAIL` with `FAIL if window_truncated else FAIL`. | `tests.test_r2_4_sequence_pattern.SequencePatternOperatorTests.test_truncated_window_is_unknown_not_fail` | FAIL observed: expected `UNKNOWN`, got `FAIL`; restored. |
 | Continuity violations are excluded | Disabled `_continuity_satisfied(...)` filtering with `False and`. | `tests.test_r2_4_sequence_pattern.SequencePatternOperatorTests.test_continuity_violation_is_excluded` | FAIL observed: expected stage-2 empty-window failure, got stage-3 empty-window failure; restored. |
 | Restore check | `PYTHONPATH=/private/tmp/priori-r2-4-single-20260705095024/src UV_CACHE_DIR=/private/tmp/uv-cache-priori /Users/luisrevilla/code/priori/.venv/bin/python -m unittest tests.test_r2_4_sequence_pattern tests.test_scp2_1_meaning_to_target` | N/A | PASS; 26 tests in `0.054s`. |
+
+
+## Generated Contract Refresh
+
+| Item | Evidence |
+| --- | --- |
+| Trigger | Full-suite stale-artifact guards found runtime/registry drift after `sequence_pattern` added `possession_id` / `team_role` evidence for continuity. |
+| M1.1 artifacts | `scripts/m1_1/build_gate_a_artifacts.py` regenerated `generated/capability-catalog.json`; focused stale-artifact guard passed. |
+| SCP-0 artifacts | Existing product/AI waivers for denied `join_episode_sets` updated to observed baseline hash `4464b25fda2f2c4b2b109bc1779a38c3f3aa46ce37fadf223b09c38901f83a22`; `TQE_WRITE=1 PYTHONPATH=src /Users/luisrevilla/code/priori/.venv/bin/python -m tqe.verification.scp0` regenerated semantic projections and lock with status `PASS`. |
+| Drift check | `check_scp0_artifacts()` returned `PASS`, zero findings, zero drift. |
+| Protected paths | `git diff --name-only | grep -E '(^generated/coverage-map|^artifacts/autonomous|r1-5|R1-5)'` returned no paths. |
+| Focused guard suite | `PYTHONPATH=src /Users/luisrevilla/code/priori/.venv/bin/python -m unittest tests.test_m1_1_binder tests.test_scp0_semantic_registry tests.test_verifier_write_mode tests.test_r2_4_sequence_pattern tests.test_scp2_1_meaning_to_target` passed 110 tests in `33.301s`. |
 
 ## Verification
 

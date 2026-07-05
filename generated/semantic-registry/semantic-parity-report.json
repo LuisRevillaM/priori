@@ -819,7 +819,7 @@
           "baseline_contract_hash": "7ae43012a6725d814b7484c7c92de81096359754b7911cb77c3663ab0449c453"
         },
         "runtime:primitive:join_episode_sets:0.1.0": {
-          "baseline_contract_hash": "2f6bdc456dd304ea076428c34091df75e8080f09fd3f59ced8438a733cbc55ae"
+          "baseline_contract_hash": "4464b25fda2f2c4b2b109bc1779a38c3f3aa46ce37fadf223b09c38901f83a22"
         },
         "runtime:primitive:marking:0.1.0": {
           "baseline_contract_hash": "cd562049b2d56bc8e66313150e2e44514c85807660affce1c437516c322aca72"
@@ -852,11 +852,11 @@
       "shared_count": 48
     },
     "baseline_sources": {
-      "baseline_artifact_revision": "d7e5335358b55b72db61b06ce34258eb83b84e91a9580c5b49e98899dcbb842d",
+      "baseline_artifact_revision": "c4ce9e9a38d7c7d6f234e5d9a04919923603610b4962dd431d78779271767b2d",
       "capability_catalog": {
         "exists": true,
         "path": "generated/capability-catalog.json",
-        "source_artifact_sha256": "8d3a0a36f71b43cb87712244bef14ce81e5d349e8f694806217728bed0a9ae8c"
+        "source_artifact_sha256": "5de851a0280b40fb7b523996a564b90a2ca8580ed22f4047783fa74934f3609f"
       },
       "product_recipe_contracts": {
         "frozen_baseline": false,
@@ -867,7 +867,7 @@
       "tactical_knowledge_pack": {
         "exists": true,
         "path": "generated/tactical-knowledge-pack.json",
-        "source_artifact_sha256": "3fb2f36e0cdf8c90a6744d93b6bf7726c7c1c986d154b9e91ee7baaf86c7ae55"
+        "source_artifact_sha256": "d5581ce65b4d2ae77f570d1169cfcc741ec81073edc299ecc14e6c477375f0ee"
       }
     },
     "product": {
@@ -908,7 +908,7 @@
           "baseline_contract_hash": "7ae43012a6725d814b7484c7c92de81096359754b7911cb77c3663ab0449c453"
         },
         "runtime:primitive:join_episode_sets:0.1.0": {
-          "baseline_contract_hash": "2f6bdc456dd304ea076428c34091df75e8080f09fd3f59ced8438a733cbc55ae"
+          "baseline_contract_hash": "4464b25fda2f2c4b2b109bc1779a38c3f3aa46ce37fadf223b09c38901f83a22"
         },
         "runtime:primitive:marking:0.1.0": {
           "baseline_contract_hash": "cd562049b2d56bc8e66313150e2e44514c85807660affce1c437516c322aca72"
@@ -950,16 +950,16 @@
   },
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "d7e5335358b55b72db61b06ce34258eb83b84e91a9580c5b49e98899dcbb842d",
+    "baseline_artifact_revision": "c4ce9e9a38d7c7d6f234e5d9a04919923603610b4962dd431d78779271767b2d",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "b2822f744474db8c32a4316e184e1e395e70129c5152ea5a51d1e071a81cacbb",
+    "lock_hash": "b5aff1579813563495dca563e5f3d4b90e8fc6021a77d2d903eae0480f0f4a39",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "b84a6bf0d7bf020c4e66cbf07fcaeef89f4bce7d736b0a645fc638839139e08e",
+    "registry_revision": "e7354e2c236fd3701cc65d8d01229bf4bc357748761fd60084375e01bf9a366b",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "c9190051ffd9b5022809d0026244a1e520b3fd2a4040fab076b4cc947e11963d",
+    "runtime_manifest_revision": "2afa35322ca23d66fd226efa62985e06ce2cb131491f58800e17f3a3bc35b790",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"

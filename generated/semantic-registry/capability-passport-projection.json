@@ -1,6 +1,6 @@
 {
   "passport_count": 48,
-  "passport_revision": "14d31819253a81947b3e20745edefdb7694a5fecb7ba25dba9180e3246121f93",
+  "passport_revision": "43c555af4225ec179387c37a28fe4c6f1414d8372fa576fb69fce21df8740046",
   "passports": [
     {
       "binding": {
@@ -2279,7 +2279,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "757582655a782b7b619a0f50eb7b4183da8d70a462c9dd679a00b55024cd32cd",
+      "passport_hash": "216da0ff54173f7dae2f8eef3bb1ba6f33bb5f2fe64519ec10890f51b91d4d2b",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -2354,6 +2354,8 @@
             "evidence_fields": [
               "carry_episode_id",
               "carrier_id",
+              "team_role",
+              "possession_id",
               "carry_start_frame_id",
               "carry_end_frame_id",
               "carry_status",
@@ -2391,6 +2393,8 @@
               "anchor_frame_id",
               "carry_episode_id",
               "carrier_id",
+              "team_role",
+              "possession_id",
               "carry_status",
               "carry_reason",
               "source_reception_pass_id",
@@ -6635,7 +6639,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "5ff1add23a3c408e0573929a73e63144797130c1969a8e36335203e30d032d35",
+      "passport_hash": "2487da69db0cc80ac67f7fa9058c63861569bcfedb7f8ed5251e513fe058d827",
       "projection_membership": {
         "ai": false,
         "product": false
@@ -6741,6 +6745,8 @@
               "carry_status",
               "carry_episode_id",
               "carrier_id",
+              "team_role",
+              "possession_id",
               "carry_start_frame_id",
               "carry_end_frame_id",
               "terminal_pass_id",
@@ -19167,7 +19173,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "80fe89aacd9f0920ce127feafd81887b97e87066efb4295b83c93f200e2853d9",
+      "passport_hash": "62dacfae404b481b1d25b9c406867092a82c23a0b88e4e00b6e176354643a763",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -19183,6 +19189,7 @@
           "transition_status",
           "transition_reason",
           "transition_type",
+          "possession_id",
           "transition_frame_id",
           "previous_frame_id",
           "previous_team_role",
@@ -19222,6 +19229,7 @@
               "transition_status",
               "transition_reason",
               "transition_type",
+              "possession_id",
               "transition_frame_id",
               "previous_frame_id",
               "previous_team_role",
@@ -26691,16 +26699,16 @@
   "projection_id": "priori.capability_passport_projection.afl08",
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "d7e5335358b55b72db61b06ce34258eb83b84e91a9580c5b49e98899dcbb842d",
+    "baseline_artifact_revision": "c4ce9e9a38d7c7d6f234e5d9a04919923603610b4962dd431d78779271767b2d",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "b2822f744474db8c32a4316e184e1e395e70129c5152ea5a51d1e071a81cacbb",
+    "lock_hash": "b5aff1579813563495dca563e5f3d4b90e8fc6021a77d2d903eae0480f0f4a39",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "b84a6bf0d7bf020c4e66cbf07fcaeef89f4bce7d736b0a645fc638839139e08e",
+    "registry_revision": "e7354e2c236fd3701cc65d8d01229bf4bc357748761fd60084375e01bf9a366b",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "c9190051ffd9b5022809d0026244a1e520b3fd2a4040fab076b4cc947e11963d",
+    "runtime_manifest_revision": "2afa35322ca23d66fd226efa62985e06ce2cb131491f58800e17f3a3bc35b790",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"
