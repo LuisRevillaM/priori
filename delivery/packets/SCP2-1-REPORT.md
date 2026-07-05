@@ -23,7 +23,8 @@ Frontier base: `df622a7` (`codex/afl08-passport-loop`)
 | `2c44dab` | Stage report update after round-1 implementation. |
 | `a1a8104` | Final round-1 report with full-suite table. |
 | `7e57c2e` | Round-2 REJECT fixes: composition grammar in pack, real writer guard, typed constraints, new fixtures, regenerated evidence, tests. |
-| `PENDING` | Generator-envelope unit test, mutation evidence report update, final full-suite report. |
+| `1b7105d` | Generator-envelope unit test and mutation evidence report update. |
+| `PENDING` | Final report-only update with full-suite table. |
 
 ## Round-2 Director Rulings
 
@@ -94,12 +95,30 @@ All mutations were restored; the focused suite passed afterward.
 | `PYTHONPATH=src UV_CACHE_DIR=/private/tmp/uv-cache-priori ./.venv/bin/python -m unittest tests.test_scp2_1_meaning_to_target tests.test_r1_c_checkpoint` | PASS | 29 tests in `0.175s`. |
 | `PYTHONPATH=src UV_CACHE_DIR=/private/tmp/uv-cache-priori ./.venv/bin/python -m unittest tests.test_scp2_1_meaning_to_target tests.test_r1_c_checkpoint tests.test_r2_1_aggregate_over` | PASS | 47 tests in `0.206s` after mutation restoration. |
 | `UV_CACHE_DIR=/private/tmp/uv-cache-priori ./.venv/bin/python scripts/packets/scp2_1_roundtrip_generator.py` | PASS | Wrote round-trip evidence; novel one-match execution status `pass`, result_count `13`, requested_evidence_failure_count `0`. |
-| `UV_CACHE_DIR=/private/tmp/uv-cache-priori make test` | PENDING | Will run on committed tree after staged implementation commits. |
+| `UV_CACHE_DIR=/private/tmp/uv-cache-priori make test` | FAIL | 517 tests in `429.865s`; long execution flagged (>300s); failures enumerated below. |
 
 ## Full-Suite Table
 
-PENDING: final table will be run on the committed round-2 tree.
+Run on committed tree `1b7105d` before this report-only update.
 
 | Command | Result | Tests | Duration | Failures |
 | --- | --- | ---: | ---: | --- |
-| `UV_CACHE_DIR=/private/tmp/uv-cache-priori make test` | PENDING | PENDING | PENDING | PENDING |
+| `UV_CACHE_DIR=/private/tmp/uv-cache-priori make test` | FAIL | 517 | `429.865s` | 2 |
+
+Failure enumeration and attribution:
+
+| Test | Failure | Attribution |
+| --- | --- | --- |
+| `test_scp0_semantic_registry.SCP0SemanticRegistryTests.test_checked_in_lock_and_parity_report_match_fresh_regeneration` | Checked-in `semantic-registry/registry.lock.json` hash `609baad93cb9c3198ebc9c17db4197cdb8a670dcac845b1ed596c234370c541d` did not match fresh SCP0 lock hash `6deb002fd809dcbdb552178d3251dd08c808cf3fe9a7ec0bbc87fa3a31785df9`. | R-AE governance ripple: the knowledge pack now carries composition grammar from the runtime registry. Packet fence says no freezes/no re-pins, so I did not update SCP0 lock/projection artifacts. Director must re-verify and ratify the contract chain at merge. Fresh SCP0 report status is `PASS` with no findings; runtime manifest revision remained `c9190051ffd9b5022809d0026244a1e520b3fd2a4040fab076b4cc947e11963d`. |
+| `test_verifier_write_mode.CheckModeIsReadOnlyTests.test_scp0_verifier_check_mode_leaves_tracked_files_untouched` | `tqe.verification.scp0` check mode exited `SystemExit(1)`. | Same SCP0 lock/projection drift as above. This is not a bridge ledger or writer failure; it is the expected stale-green guard firing because the re-pin is fenced out of this packet. |
+
+Full output summary:
+
+```text
+Ran 517 tests in 429.865s
+
+FAILED (failures=2)
+{"attestation_status": "VERIFIED", "blocking_reasons": []}
+```
+
+Ratification request: director should ratify or perform the SCP0 contract-chain re-pin for the R-AE knowledge-pack grammar ripple; this executor did not do it because the packet fence says no freezes/no re-pins.
