@@ -196,14 +196,12 @@ Generator verification:
 
 ## Full-suite table on committed tree
 
-Status: stale from round 1; pending round 2 final committed tree.
+Status: round 2 final suite complete.
 
-Committed tree tested: clone commit `d1b195d` in `/private/tmp/priori-r2-1-work`.
-
-Environment note: the clone needed untracked local test data copied from the source workspace (`data/canonical/v1` and seven `data/raw/idsse/figshare-28196177-v1/*/tracking.xml` files) because the source repo's `.git/index.lock` EPERM required a `/private/tmp` recovery clone.
+Committed tree tested: main workspace commit `e5465c4`.
 
 | Command | Result | Tests | Skipped | Failures | Errors | Duration |
 | --- | --- | ---: | ---: | ---: | ---: | ---: |
-| `PYTHON=/Users/luisrevilla/code/priori/.venv/bin/python make test` | PASS | 473 | 42 | 0 | 0 | 432.952s |
+| `make test` | PASS | 480 | 0 | 0 | 0 | 442.462s |
 
 Failure enumeration for the final committed-tree run: none.
