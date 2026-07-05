@@ -11,7 +11,7 @@ Branch: `packet/r1-c` from `codex/afl08-passport-loop` at
 | C2 KPI semantic-correspondence hardening | DONE | `scripts/coverage_map/compiler_search_reachability.py`, `tests/test_r1_c_checkpoint.py` |
 | C3 R1-5 riders | DONE | `tests/test_r1_5_typed_join.py`, `scripts/audits/r1_5_population_audit.py`, `tests/test_r1_c_checkpoint.py`, `delivery/packets/r1-c-sweep/population-audit/` |
 | C4 gate integrity manifest latency | DONE_WITH_CONCERNS | `data/manifest.json`, `src/tqe/runtime/executor.py`, `scripts/data/build_data_manifest.py`, `tests/test_executor_boundaries.py` |
-| Full committed-tree suite | PENDING_ROUND_2 | Round-2 `make test` still pending |
+| Full committed-tree suite | DONE | `make test` on committed tree `662a4dd` |
 
 ## C1 Unified Sweep
 
@@ -209,11 +209,12 @@ Verification:
 
 ## Verification
 
-Full-suite table, run on committed tree `b26627c`:
+Full-suite table, run on committed tree `662a4dd` before this final
+report-only update:
 
 | Command | Result | Tests | Runtime | Attestation | Failures |
 | --- | --- | ---: | ---: | --- | --- |
-| `UV_CACHE_DIR=/private/tmp/uv-cache /usr/bin/time -p make PYTHON="uv run --no-sync python" test` | PASS | 457 | 450.095s (`real 450.99`) | `VERIFIED`, blocking reasons `[]` | None |
+| `UV_CACHE_DIR=/private/tmp/uv-cache /usr/bin/time -p make PYTHON="uv run --no-sync python" test` | PASS | 462 | 436.769s (`real 437.68`) | `VERIFIED`, blocking reasons `[]` | None |
 
 Failure attribution: no full-suite failures.
 
@@ -225,5 +226,8 @@ Failure attribution: no full-suite failures.
 | `7dca26e` | C2 correspondence/plan-reference hardening and tests |
 | `8f317e0` | C3 typed-join assertion and R1-5 audit generator |
 | `b26627c` | C4 data manifest integrity checks and timing report |
+| `d64b8a1` | Round-2 R-Q correspondence declaration-shape guard |
+| `656f06b` | Round-2 R-R regenerated full-corpus R1-C population audit |
+| `662a4dd` | Round-2 R-S/R-T/F6/F7 report corrections |
 
 No push performed.
