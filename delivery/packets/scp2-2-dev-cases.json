@@ -143,7 +143,7 @@
       "case_id": "dev_clarification_support_definition",
       "kind": "clarification_turn",
       "request_text": "Show support after line breaks.",
-      "answer": "use underneath receiving option support",
+      "answer": "use behind-ball outlet support",
       "expected": {
         "outcome": "clarification_required",
         "dimension": "SUPPORT_DEFINITION"
@@ -155,7 +155,7 @@
     {
       "case_id": "dev_clarification_distance_threshold",
       "kind": "clarification_turn",
-      "request_text": "Show nearby support around possessions.",
+      "request_text": "Show support around possessions when teammates are close enough.",
       "answer": "within five metres",
       "expected": {
         "outcome": "clarification_required",

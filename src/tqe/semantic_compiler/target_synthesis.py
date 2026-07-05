@@ -130,6 +130,35 @@ def synthesize_and_bind(
             "document_hash": stable_hash(document_payload),
             "bind": bind_payload,
         }
+    primitive_build = synthesize_single_provider_without_model_composition(
+        expression=expression,
+        target=target,
+        row=row,
+        context=search.SearchContext(
+            catalog=search.CatalogIndex(),
+            target_contract=target["target_contract"],
+        ),
+    )
+    if primitive_build is not None:
+        document_payload = document_payload_for_expression(
+            expression=expression,
+            document=primitive_build["document"],
+        )
+        bind_payload = bind_payload_for_document(document_payload)
+        return {
+            "target": {
+                **target,
+                "target_contract": primitive_build["target_contract"],
+            },
+            "build": {
+                key: _json_ready(value)
+                for key, value in primitive_build.items()
+                if key not in {"document", "target_contract"}
+            },
+            "document": document_payload,
+            "document_hash": stable_hash(document_payload),
+            "bind": bind_payload,
+        }
     build = search.synthesize_by_search(
         target=target,
         row=row,
@@ -154,6 +183,38 @@ def synthesize_and_bind(
         "document_hash": stable_hash(document_payload),
         "bind": bind_payload,
     }
+
+
+def synthesize_single_provider_without_model_composition(
+    *,
+    expression: MeaningExpressionV0,
+    target: dict[str, Any],
+    row: dict[str, Any],
+    context: search.SearchContext,
+) -> dict[str, Any] | None:
+    if not expression.operator_applications and not expression.target_contract.composition_constraints:
+        return None
+    stripped_contract = {
+        **context.target_contract,
+        "composition_constraints": [],
+    }
+    required_fields = search.required_target_fields(stripped_contract)
+    providers = context.catalog.providers_for_fields(required_fields)
+    if not providers:
+        return None
+    concept_refs = set(expression.concept_refs)
+    provider = next((entry for entry in providers if entry.name in concept_refs), providers[0])
+    stripped_target = {**target, "target_contract": stripped_contract}
+    stripped_context = search.SearchContext(
+        catalog=context.catalog,
+        target_contract=stripped_contract,
+    )
+    build = search.synthesize_by_search(target=stripped_target, row=row, context=stripped_context)
+    if build.get("terminal_provider") != provider.name and provider.name in concept_refs:
+        return None
+    build["rules_used"] = sorted({*build.get("rules_used", []), "single_provider_composition_elision"})
+    build["target_contract"] = stripped_contract
+    return build
 
 
 def exact_recipe_plan_for_expression(

@@ -317,6 +317,58 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
         self.assertEqual(["J03WOY"], synthesized["document"]["default_invocation"]["match_ids"])
         self.assertEqual(["firstHalf", "secondHalf"], synthesized["document"]["default_invocation"]["periods"])
 
+    def test_single_provider_synthesis_elides_unnecessary_model_composition(self) -> None:
+        payload = {
+            "schema_version": "meaning_expression.v0",
+            "expression_id": "settled_completed_pass_retained_control",
+            "expression_version": "0.1.0",
+            "concept_identity": "settled_completed_pass_retained_control",
+            "display_name": "Settled Completed Pass Retained Control",
+            "meaning_clauses": [
+                {
+                    "subject": "controlled_pass_episode",
+                    "action": "requires",
+                    "field": "controlled_pass_status",
+                    "operator": "eq",
+                    "value": "PASS",
+                }
+            ],
+            "concept_refs": ["controlled_pass_episode"],
+            "operator_applications": [{"operator": "typed_join", "parameters": []}],
+            "population": {
+                "match_ids": [],
+                "periods": ["firstHalf", "secondHalf"],
+                "perspective_team_roles": ["home"],
+            },
+            "group_by": [],
+            "target": {
+                "target_id": "settled_completed_pass_retained_control_v0",
+                "held_out": True,
+                "multi_step": False,
+            },
+            "target_contract": {
+                "desired_output": "classification",
+                "required_evidence": ["pass_episode_id", "controlled_pass_status"],
+                "required_modalities": ["events", "tracking"],
+                "status_semantics": [
+                    {"field": "controlled_pass_status", "operator": "eq", "required_value": "PASS"}
+                ],
+                "composition_constraints": [{"kind": "typed_join", "parameters": []}],
+                "claim_boundary": "Observed controlled pass status only.",
+            },
+            "correspondence_clauses": [
+                {"name": "claim_boundary", "value": "single provider should satisfy this request"}
+            ],
+        }
+        result = load_meaning_expression_result(payload, vocabulary=self.vocabulary)
+        self.assertEqual("accepted", result.outcome)
+        self.assertIsNotNone(result.expression)
+
+        synthesized = synthesize_and_bind(result.expression, coverage_rows=self.coverage_rows)
+
+        self.assertEqual("controlled_pass_episode", synthesized["build"]["terminal_provider"])
+        self.assertIn("single_provider_composition_elision", synthesized["build"]["rules_used"])
+
     def accepted_expression(self, name: str):
         result = load_meaning_expression_from_path(FIXTURE_DIR / name, vocabulary=self.vocabulary)
         self.assertEqual("accepted", result.outcome)
