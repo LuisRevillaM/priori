@@ -194,10 +194,16 @@ def synthesize_single_provider_without_model_composition(
     context: search.SearchContext,
 ) -> dict[str, Any] | None:
     concept_refs = set(expression.concept_refs)
+    identity_values = {
+        expression.concept_identity,
+        expression.expression_id,
+        expression.target.target_id,
+    }
     has_model_composition = bool(expression.operator_applications or expression.target_contract.composition_constraints)
     has_provider_family_variant = any(
-        expression.concept_identity != ref and recipe_family_candidate_matches(ref, expression.concept_identity)
+        value != ref and recipe_family_candidate_matches(ref, value)
         for ref in concept_refs
+        for value in identity_values
     )
     if not has_model_composition and not has_provider_family_variant:
         return None
