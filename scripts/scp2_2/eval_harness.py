@@ -154,9 +154,17 @@ def evaluate_single_case(
     compiler: CompilerFn,
     coverage_rows: list[dict[str, Any]] | None,
 ) -> dict[str, Any]:
-    outcome = compiler(str(case["request_text"]), None)
-    observation = observe_outcome(outcome, coverage_rows=coverage_rows)
-    failures = expected_failures(case.get("expected") or {}, observation)
+    outcome, observation = compile_observation(
+        compiler,
+        str(case["request_text"]),
+        None,
+        coverage_rows=coverage_rows,
+    )
+    failures = []
+    if outcome is None:
+        failures.append(observation["exception"])
+    else:
+        failures.extend(expected_failures(case.get("expected") or {}, observation))
     return verdict(case, failures, [observation])
 
 
@@ -167,14 +175,19 @@ def evaluate_pair_case(
     coverage_rows: list[dict[str, Any]] | None,
     expect_equal: bool,
 ) -> dict[str, Any]:
-    observations = [
-        observe_outcome(compiler(str(text), None), coverage_rows=coverage_rows)
+    outcomes_and_observations = [
+        compile_observation(compiler, str(text), None, coverage_rows=coverage_rows)
         for text in case.get("request_texts") or []
     ]
+    outcomes = [item[0] for item in outcomes_and_observations]
+    observations = [item[1] for item in outcomes_and_observations]
     failures: list[str] = []
     if len(observations) != 2:
         failures.append("pair case must contain exactly two request_texts")
-    for index, observation in enumerate(observations):
+    for index, (outcome, observation) in enumerate(zip(outcomes, observations, strict=False)):
+        if outcome is None:
+            failures.append(f"request {index + 1}: {observation['exception']}")
+            continue
         if observation["outcome"] != "expression":
             failures.append(f"request {index + 1} outcome was {observation['outcome']}, not expression")
         if observation.get("synthesis_error"):
@@ -197,24 +210,57 @@ def evaluate_clarification_case(
     compiler: CompilerFn,
     coverage_rows: list[dict[str, Any]] | None,
 ) -> dict[str, Any]:
-    first = compiler(str(case["request_text"]), None)
-    first_observation = observe_outcome(first, coverage_rows=coverage_rows)
-    failures = expected_failures(case.get("expected") or {}, first_observation)
+    first, first_observation = compile_observation(
+        compiler,
+        str(case["request_text"]),
+        None,
+        coverage_rows=coverage_rows,
+    )
+    failures = []
+    if first is None:
+        failures.append(first_observation["exception"])
+    else:
+        failures.extend(expected_failures(case.get("expected") or {}, first_observation))
     observations = [first_observation]
     if not isinstance(first, ClarificationRequiredOutcome):
         failures.append(f"first turn outcome was {first_observation['outcome']}, not clarification_required")
         return verdict(case, failures, observations)
     answer = str(case.get("answer") or "")
     context = HermesNLContext(pending_clarification=first.state, answer=answer)
-    second = compiler(answer or str(case["request_text"]), context)
-    second_observation = observe_outcome(second, coverage_rows=coverage_rows)
+    second, second_observation = compile_observation(
+        compiler,
+        answer or str(case["request_text"]),
+        context,
+        coverage_rows=coverage_rows,
+    )
     observations.append(second_observation)
+    if second is None:
+        failures.append(second_observation["exception"])
+        return verdict(case, failures, observations)
     final_expected = dict(case.get("final_expected") or {})
     if final_expected:
         failures.extend(expected_failures(final_expected, second_observation))
     if second_observation["outcome"] == "clarification_required":
         failures.append("clarification resume re-asked instead of resolving typed state")
     return verdict(case, failures, observations)
+
+
+def compile_observation(
+    compiler: CompilerFn,
+    text: str,
+    context: HermesNLContext | None,
+    *,
+    coverage_rows: list[dict[str, Any]] | None,
+) -> tuple[HermesOutcome | None, dict[str, Any]]:
+    try:
+        outcome = compiler(text, context)
+    except Exception as exc:  # noqa: BLE001
+        return None, {
+            "outcome": "exception",
+            "exception_type": type(exc).__name__,
+            "exception": f"{type(exc).__name__}: {exc}",
+        }
+    return outcome, observe_outcome(outcome, coverage_rows=coverage_rows)
 
 
 def observe_outcome(
