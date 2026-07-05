@@ -130,6 +130,7 @@ class R10OperatorScaffoldingTests(unittest.TestCase):
                 "window",
                 "typed_join",
                 "aggregate_over",
+                "rate",
             ),
             tuple(signature.name for signature in OPERATOR_SIGNATURES),
         )
@@ -141,6 +142,7 @@ class R10OperatorScaffoldingTests(unittest.TestCase):
                 ("window", "0.1.0"),
                 ("typed_join", "0.1.0"),
                 ("aggregate_over", "0.1.0"),
+                ("rate", "0.1.0"),
             },
             set(declared_operator_signatures()),
         )
@@ -152,6 +154,7 @@ class R10OperatorScaffoldingTests(unittest.TestCase):
                 ("window", "0.1.0"),
                 ("typed_join", "0.1.0"),
                 ("aggregate_over", "0.1.0"),
+                ("rate", "0.1.0"),
             },
             set(build_operator_registry({})),
         )
@@ -164,6 +167,7 @@ class R10OperatorScaffoldingTests(unittest.TestCase):
                 ("window", "0.1.0"),
                 ("typed_join", "0.1.0"),
                 ("aggregate_over", "0.1.0"),
+                ("rate", "0.1.0"),
             },
             set(executor_module.build_operator_registry(vars(executor_module))),
         )

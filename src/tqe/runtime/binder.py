@@ -576,6 +576,12 @@ class Binder:
             resolved_parameters=resolved_node_parameters,
             path=path,
         )
+        self._validate_rate_constraints(
+            node=node,
+            signature=signature,
+            resolved_parameters=resolved_node_parameters,
+            path=path,
+        )
         outputs = self._bind_operator_outputs(node=node, signature=signature, path=path)
         if (signature.name, signature.version) not in self.composition_operator_registry:
             self._issue(
@@ -938,6 +944,122 @@ class Binder:
                         f"aggregate operator requires upstream composition to enforce "
                         f"{parameter_name}"
                     ),
+                    f"{path}.parameters.{parameter_name}",
+                )
+
+    def _validate_rate_constraints(
+        self,
+        *,
+        node: DraftOperatorNode,
+        signature: CompositionOperatorSignature,
+        resolved_parameters: dict[str, TypedValue],
+        path: str,
+    ) -> None:
+        rate_parameter_names = {
+            "rate_kind",
+            "population_expression",
+            "group_by_fields",
+            "numerator_status_field",
+            "denominator_status_field",
+            "subset_declaration",
+            "subset_predicate_fields",
+            "removed_denominator_predicate_fields",
+            "same_team_perspective_required",
+            "entity_identity_preserved_required",
+            "frame_alignment_required",
+            "constraint_opt_out_reason",
+            "team_role_field",
+        }
+        parameter_names = {parameter.name for parameter in signature.parameters}
+        if not rate_parameter_names.issubset(parameter_names):
+            return
+        rate_kind = _resolved_text(resolved_parameters, "rate_kind")
+        if rate_kind != "rate":
+            self._issue(
+                "operator_rate_kind_unsupported",
+                "rate operator supports rate_kind=rate only in this packet",
+                f"{path}.parameters.rate_kind",
+            )
+        if _resolved_text(resolved_parameters, "subset_declaration", "none") == "none":
+            self._issue(
+                "operator_rate_subset_declaration_missing",
+                "rate numerator must declare its subset relation to the denominator",
+                f"{path}.parameters.subset_declaration",
+            )
+        if _resolved_list(resolved_parameters, "removed_denominator_predicate_fields"):
+            self._issue(
+                "operator_rate_subset_removed_predicate",
+                "rate numerator may add predicates only; removed denominator predicates are not a subset",
+                f"{path}.parameters.removed_denominator_predicate_fields",
+            )
+        numerator_ref = node.inputs.get("numerator")
+        denominator_ref = node.inputs.get("denominator")
+        if numerator_ref is None or denominator_ref is None:
+            return
+        if (
+            numerator_ref.source_node_id != denominator_ref.source_node_id
+            or numerator_ref.output_name != denominator_ref.output_name
+        ):
+            self._issue(
+                "operator_rate_subset_source_mismatch",
+                "rate numerator and denominator must reference the same source relation",
+                f"{path}.inputs",
+            )
+            return
+        upstream_chain = self._bound_upstream_chain(denominator_ref.source_node_id)
+        if not upstream_chain:
+            self._issue(
+                "operator_rate_population_upstream_missing",
+                "rate denominator source must be a previously bound node",
+                f"{path}.inputs.denominator",
+            )
+            return
+
+        same_team_required = _resolved_bool(resolved_parameters, "same_team_perspective_required")
+        entity_required = _resolved_bool(resolved_parameters, "entity_identity_preserved_required")
+        frame_required = _resolved_bool(resolved_parameters, "frame_alignment_required")
+        opt_out_reason = _resolved_text(resolved_parameters, "constraint_opt_out_reason", "none")
+        if not all((same_team_required, entity_required, frame_required)) and opt_out_reason == "none":
+            self._issue(
+                "operator_rate_constraint_opt_out_reason_missing",
+                "rate constraint opt-out requires declared constraint_opt_out_reason",
+                f"{path}.parameters.constraint_opt_out_reason",
+            )
+        if same_team_required and _resolved_text(resolved_parameters, "team_role_field", "none") == "none":
+            self._issue(
+                "operator_rate_team_role_field_missing",
+                "same-team-perspective rate requires declared team_role_field",
+                f"{path}.parameters.team_role_field",
+            )
+        group_by_fields = _resolved_list(resolved_parameters, "group_by_fields")
+        if "perspective_team_role" in group_by_fields and not self._chain_enforces_parameter(
+            upstream_chain,
+            "same_team_perspective_required",
+        ):
+            self._issue(
+                "operator_rate_perspective_group_requires_same_team",
+                "perspective_team_role grouping requires upstream same-team-perspective enforcement",
+                f"{path}.parameters.group_by_fields",
+            )
+        required = {
+            "same_team_perspective_required": same_team_required,
+            "entity_identity_preserved_required": entity_required,
+            "frame_alignment_required": frame_required,
+        }
+        for parameter_name, is_required in required.items():
+            if not is_required:
+                continue
+            if not self._chain_exposes_parameter(upstream_chain, parameter_name):
+                self._issue(
+                    "operator_rate_constraint_not_inherited",
+                    "rate operator requires upstream composition to expose declared constraint parameters",
+                    f"{path}.parameters.{parameter_name}",
+                )
+                continue
+            if not self._chain_enforces_parameter(upstream_chain, parameter_name):
+                self._issue(
+                    "operator_rate_constraint_not_inherited",
+                    f"rate operator requires upstream composition to enforce {parameter_name}",
                     f"{path}.parameters.{parameter_name}",
                 )
 

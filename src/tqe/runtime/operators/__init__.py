@@ -16,6 +16,7 @@ from tqe.runtime.operators.aggregate_over import AGGREGATE_OVER_SIGNATURE
 from tqe.runtime.operators.delta_across_anchor import DELTA_ACROSS_ANCHOR_SIGNATURE
 from tqe.runtime.operators.extremum_over_set import EXTREMUM_OVER_SET_SIGNATURE
 from tqe.runtime.operators.project_onto_axis import PROJECT_ONTO_AXIS_SIGNATURE
+from tqe.runtime.operators.rate import RATE_SIGNATURE
 from tqe.runtime.operators.typed_join import TYPED_JOIN_SIGNATURE
 from tqe.runtime.operators.window import WINDOW_SIGNATURE
 
@@ -30,6 +31,7 @@ OPERATOR_SIGNATURES: tuple[CompositionOperatorSignature, ...] = (
     WINDOW_SIGNATURE,
     TYPED_JOIN_SIGNATURE,
     AGGREGATE_OVER_SIGNATURE,
+    RATE_SIGNATURE,
 )
 OPERATOR_IMPLEMENTATION_NAMES: tuple[tuple[str, str, str], ...] = (
     ("project_onto_axis", "0.1.0", "execute_project_onto_axis"),
@@ -38,12 +40,14 @@ OPERATOR_IMPLEMENTATION_NAMES: tuple[tuple[str, str, str], ...] = (
     ("window", "0.1.0", "execute_window"),
     ("typed_join", "0.1.0", "execute_typed_join"),
     ("aggregate_over", "0.1.0", "execute_aggregate_over"),
+    ("rate", "0.1.0", "execute_rate"),
 )
 OPERATOR_IMPLEMENTATION_MODULES: dict[str, str] = {
     "execute_aggregate_over": "tqe.runtime.operators.aggregate_over",
     "execute_delta_across_anchor": "tqe.runtime.operators.delta_across_anchor",
     "execute_extremum_over_set": "tqe.runtime.operators.extremum_over_set",
     "execute_project_onto_axis": "tqe.runtime.operators.project_onto_axis",
+    "execute_rate": "tqe.runtime.operators.rate",
     "execute_typed_join": "tqe.runtime.operators.typed_join",
     "execute_window": "tqe.runtime.operators.window",
 }

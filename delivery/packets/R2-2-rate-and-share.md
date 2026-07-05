@@ -70,7 +70,7 @@ No numeric (sum/mean) rates — the field-domain mechanism remains
 declared debt from R2-1; count rates only. No new coverage rows or
 ledger targets. No dossier surface.
 
-## Flagship (era acceptance pattern): CAR-0 becomes a rate
+## Flagship (era acceptance pattern): the fragile-retention baseline
 
 "When a team's possession turns fragile, how often do they keep the
 ball anyway?" — numerator: fragile_possession_state rows whose
@@ -86,8 +86,9 @@ standing law now). Reconcile the denominator against R2-1's flagship
 table explicitly (the denominators must be the SAME 14 rows — state
 the comparison in the report).
 
-This is CAR-0 v0: the retention rate in fragile situations, honest
-intervals, per team. The report's flagship section should present the
+This is the FRAGILE-RETENTION BASELINE — the situational layer the
+CAR ladder measures players against (CAR itself is a player metric
+and never ships as a team table; see docs/CAR_NORTH_STAR.md). The report's flagship section should present the
 14-row table exactly as a scout would read it, interval and unknown
 count beside every rate.
 
