@@ -109,3 +109,52 @@ model side is not yet strong enough to produce synthesizeable expressions for
 the DEV expression/clarification cases. The blind harness can run unmodified,
 but the reported DEV result predicts blind expression cases will fail unless
 the director accepts a follow-up packet for expression-target quality.
+
+## Round 2 / R-AS2-Amended Update
+
+Owner directive received after the Anthropic rerun was interrupted: Hermes must
+default to the ChatGPT subscription surface, not a metered API provider. I read
+the addendum in `delivery/packets/SCP2-2-REVIEW.md` and flipped the committed
+defaults accordingly:
+
+| Surface | Value |
+| --- | --- |
+| Bridge default provider | `openai-codex` |
+| Bridge default model | `gpt-5.5` |
+| Harness default provider | `openai-codex` |
+| Harness default model | `gpt-5.5` |
+| Billing surface | ChatGPT subscription, not metered API |
+| Canonical Hermes home | `/Users/luisrevilla/.hermes-priori` |
+
+Prompt projection after the default flip:
+
+| Field | Value |
+| --- | --- |
+| Pack hash | `b40458086fe5d81e3f709ceb5f2301038391d6a97f64ee02585f4a9019018099` |
+| Prompt hash | `7c770eb04471dc81734d11a651dd48a08eb12581f79306524aac96d2a8ad8ef8` |
+| Prompt length | `204343` chars |
+
+Subscription smoke status:
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| `hermes status` with `HERMES_HOME=/Users/luisrevilla/.hermes-priori` | PASS for login state | `OpenAI Codex ✓ logged in`; model `gpt-5.5`; provider `OpenAI Codex`. |
+| Bridge smoke via `compile_nl_request("Show controlled passes.")` | FAIL | `HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.` |
+| Direct invocation shim smoke with tiny JSON prompt | FAIL | Safe MCP surface, exact expected tool names, but `{"ok": false, "stderr": "Hermes produced no final response."}`. |
+
+Per the amended ruling, I did **not** fall back to Anthropic or any other
+metered API provider. No valid subscription-backed DEV eval was run, and
+`delivery/packets/scp2-2-dev-results.json` is not updated for this amended run.
+The interrupted Anthropic output remains unstaged and is not evidence for
+R-AS2-amended.
+
+Round-2 acceptance is therefore BLOCKED by the subscription invocation path:
+the canonical Hermes home is logged in and exposes the safe tactical MCP
+surface, but `openai-codex/gpt-5.5` returns no final response even for a tiny
+prompt. The blind set remains sealed.
+
+Post-amendment local verification:
+
+| Check | Result | Notes |
+| --- | --- | --- |
+| `PYTHONPATH=src:. .venv/bin/python -m unittest tests.test_scp2_2_hermes_nl tests.test_scp2_1_meaning_to_target` | PASS | 40 tests in 0.475s. |

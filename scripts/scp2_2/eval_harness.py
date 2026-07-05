@@ -43,8 +43,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--pack-path", default=DEFAULT_KNOWLEDGE_PACK_PATH, type=Path)
     parser.add_argument("--coverage-map", default=DEFAULT_COVERAGE_MAP_PATH, type=Path)
-    parser.add_argument("--provider", default=os.environ.get("HERMES_SCP2_2_PROVIDER", "anthropic"))
-    parser.add_argument("--model", default=os.environ.get("HERMES_SCP2_2_MODEL", "claude-opus-4-8"))
+    parser.add_argument("--provider", default=os.environ.get("HERMES_SCP2_2_PROVIDER", "openai-codex"))
+    parser.add_argument("--model", default=os.environ.get("HERMES_SCP2_2_MODEL", "gpt-5.5"))
     parser.add_argument("--long-threshold-seconds", default=300.0, type=float)
     args = parser.parse_args(argv)
 
@@ -60,12 +60,22 @@ def main(argv: list[str] | None = None) -> int:
         pack_path=args.pack_path,
         coverage_map_path=args.coverage_map,
         long_threshold_seconds=args.long_threshold_seconds,
-        model_tier={"provider": args.provider, "model": args.model},
+        model_tier={
+            "provider": args.provider,
+            "model": args.model,
+            "billing_surface": billing_surface_for_provider(args.provider),
+        },
     )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print_verdict_table(result)
     return 0 if result["summary"]["fail"] == 0 else 1
+
+
+def billing_surface_for_provider(provider: str) -> str:
+    if provider == "openai-codex":
+        return "chatgpt_subscription"
+    return "metered_api_explicit_owner_grant_required"
 
 
 def evaluate_case_set(

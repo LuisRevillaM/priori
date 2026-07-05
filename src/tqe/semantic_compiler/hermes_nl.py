@@ -26,8 +26,8 @@ from tqe.semantic_compiler.meaning_expression import (
 )
 
 
-DEFAULT_PROVIDER = "anthropic"
-DEFAULT_MODEL = "claude-opus-4-8"
+DEFAULT_PROVIDER = "openai-codex"
+DEFAULT_MODEL = "gpt-5.5"
 DEFAULT_TOOLSET = "mcp-priori_tactical"
 MAX_MODEL_REPAIR_ATTEMPTS = 2
 CERTIFIED_FEW_SHOT_PATHS = (
