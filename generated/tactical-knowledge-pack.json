@@ -14878,7 +14878,7 @@
     ]
   },
   "generated_at": "reproducible_from_source_hashes",
-  "knowledge_pack_sha256": "395dcd06d4d153abcd3b1cb139d5724763b973a63e346f386b3239d62062adf5",
+  "knowledge_pack_sha256": "791927dbae00152187571864b843e8233cfcb674e59ddd0436cd1620bab78d34",
   "knowledge_pack_version": "m1.2-s2i-a.0",
   "model_visible_tool_schemas": {
     "compare_query_versions": {
@@ -34625,7 +34625,7 @@
     "generated/capability-context.json": "b17ea9761a5a5d93655787a28a5a0351358778268417d1c5ffc5738078c28f08",
     "generated/tactical-query-plan.schema.json": "7904105efeba7b8297ee3d3dbd183b92c6b8d67f5f034e34da8c52f42b0b54ae",
     "generated/tactical-query-plan.types.ts": "5c027189c9b5f314bc62fd765656e30aeaebe163add038320f74cca932627ceb",
-    "src/tqe/runtime/binder.py": "98ae67d9d5eaa930f1746b9f0fb1aa8c57cf1e78d337e98cdaf4428ae5c9db94",
+    "src/tqe/runtime/binder.py": "0de072fdc42fad0b74a3aedf6bc1efc7c48e114fe8ac69d4bb04ebd0f96b3d60",
     "src/tqe/runtime/catalog.py": "0f58e55acdd789f1f101b969a0255b864bdc333d6c4a8f596160c57e8b00590f",
     "src/tqe/runtime/executor.py": "2334d4e124e0d3802f0885ee5c7658a1242e024dd234498f9562855ac6038856",
     "src/tqe/runtime/ir.py": "33e4885a6ad75afa7b4e9df96b72eba43c49b92b24ac67c8d2979d0bde13eedd",

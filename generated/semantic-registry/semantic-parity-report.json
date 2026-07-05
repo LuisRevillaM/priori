@@ -852,7 +852,7 @@
       "shared_count": 48
     },
     "baseline_sources": {
-      "baseline_artifact_revision": "5c1ef8d21508558aad77737bf1fd556a1552bdffe49835e028f2e27dcc63d66e",
+      "baseline_artifact_revision": "539783a8c35c8afd5140f4403f46698725decebe106fb2f1f215ecee44b413f5",
       "capability_catalog": {
         "exists": true,
         "path": "generated/capability-catalog.json",
@@ -867,7 +867,7 @@
       "tactical_knowledge_pack": {
         "exists": true,
         "path": "generated/tactical-knowledge-pack.json",
-        "source_artifact_sha256": "b89220114333eb228af81babd94321f35e79d843d5e34d3e2dc996656c403ef2"
+        "source_artifact_sha256": "6278145aa4e3945db9f70c315904823e3842d3eaff585c93e50c6e3140ba8fdb"
       }
     },
     "product": {
@@ -950,10 +950,10 @@
   },
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "5c1ef8d21508558aad77737bf1fd556a1552bdffe49835e028f2e27dcc63d66e",
+    "baseline_artifact_revision": "539783a8c35c8afd5140f4403f46698725decebe106fb2f1f215ecee44b413f5",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "3d2ca1969d57d0ee6e1c92b461ae6cf02cea89ec0a9485b6e53d4a0d90837aee",
+    "lock_hash": "234500a868831d01675b7bcfb27bf61d4180fa82ea629bf10a8151a082f280ac",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
