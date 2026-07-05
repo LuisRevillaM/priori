@@ -20,18 +20,18 @@ if str(SRC) not in sys.path:
 from tqe.runtime.binder import bind_document  # noqa: E402
 from tqe.runtime.executor import TacticalQueryExecutor, canonical_data_manifest_hash, runtime_parameters, utc_now_iso  # noqa: E402
 from tqe.runtime.ir import TacticalQueryDocument, stable_hash  # noqa: E402
-from tqe.runtime.operators.rate import RATE_SIGNATURE, RateIntervalResult  # noqa: E402
+from tqe.runtime.operators.rate import RateIntervalResult  # noqa: E402
 from tqe.semantic_compiler.meaning_expression import load_meaning_expression_from_path, load_pack_vocabulary  # noqa: E402
 from tqe.semantic_compiler.target_synthesis import synthesize_and_bind  # noqa: E402
 
 OUT_DIR = Path("delivery/packets/r2-4-flagship")
-MEANING_EXPRESSION = OUT_DIR / "meaning-expressions" / "counterattack_initiation_chain_count.v0.json"
+MEANING_EXPRESSION = OUT_DIR / "meaning-expressions" / "counterattack_initiation_sequence_rate.v0.json"
 PLAN_PATH = OUT_DIR / "counterattack_initiation_v0.json"
 PROVENANCE_PATH = OUT_DIR / "provenance.json"
 TABLE_JSON = OUT_DIR / "counterattack_initiation_table.json"
 TABLE_MD = OUT_DIR / "counterattack_initiation_table.md"
 LOCAL_SIDECAR = OUT_DIR / "run-sidecar.local.json"
-RATE_NODE_ID = "counterattack_initiation_rate"
+RATE_NODE_ID = "rate"
 SEQUENCE_NODE_ID = "sequence_pattern"
 AGGREGATE_NODE_ID = "aggregate_over"
 MATCH_ORDER = ["J03WOH", "J03WOY", "J03WPY", "J03WQQ", "J03WR9", "J03WMX", "J03WN1"]
@@ -63,64 +63,13 @@ def json_ready(payload: Any) -> Any:
     return payload
 
 
-def rate_node_payload() -> dict[str, Any]:
-    return {
-        "kind": "operator",
-        "node_id": RATE_NODE_ID,
-        "operator": {"name": "rate", "version": "0.1.0"},
-        "inputs": {
-            "numerator": {"source_node_id": SEQUENCE_NODE_ID, "output_name": "chain_records"},
-            "denominator": {"source_node_id": SEQUENCE_NODE_ID, "output_name": "chain_records"},
-        },
-        "parameters": {
-            "rate_kind": enum("rate"),
-            "population_expression": enum(POPULATION_EXPRESSION),
-            "group_by_fields": entity_set(["team_role", "match_id"]),
-            "numerator_status_field": enum("chain_status"),
-            "denominator_status_field": enum("stage_1_status"),
-            "subset_declaration": enum(SUBSET_DECLARATION),
-            "subset_predicate_fields": entity_set(["stage_2_status", "stage_3_status"]),
-            "removed_denominator_predicate_fields": entity_set([]),
-            "same_team_perspective_required": boolean(True),
-            "entity_identity_preserved_required": boolean(False),
-            "frame_alignment_required": boolean(False),
-            "constraint_opt_out_reason": enum(
-                "entity identity and frame alignment are not part of this sequence rate denominator"
-            ),
-            "team_role_field": enum("team_role"),
-        },
-        "outputs": [output.model_dump(mode="json") for output in RATE_SIGNATURE.outputs],
-    }
-
-
-def enum(value: str) -> dict[str, Any]:
-    return {"payload_type": "enum", "unit": "none", "value": value}
-
-
-def boolean(value: bool) -> dict[str, Any]:
-    return {"payload_type": "boolean", "unit": "none", "value": bool(value)}
-
-
-def entity_set(value: list[str]) -> dict[str, Any]:
-    return {"payload_type": "entity_set", "unit": "none", "value": list(value)}
-
-
 def synthesized_plan_bundle() -> tuple[dict[str, Any], dict[str, Any]]:
     vocabulary = load_pack_vocabulary()
     load_result = load_meaning_expression_from_path(MEANING_EXPRESSION, vocabulary=vocabulary)
     if load_result.expression is None:
         raise RuntimeError(f"R2-4 meaning expression refused: {load_result.refusal}")
     synthesized = synthesize_and_bind(load_result.expression, coverage_rows=load_json(Path("generated/coverage-map.json")))
-    bundle = copy.deepcopy(synthesized["document"])
-    for role, document in sorted(bundle["documents"].items()):
-        nodes = document["draft_plan"]["nodes"]
-        if not any(node.get("node_id") == RATE_NODE_ID for node in nodes):
-            insert_at = next((idx for idx, node in enumerate(nodes) if node.get("kind") == "predicate"), len(nodes))
-            nodes.insert(insert_at, copy.deepcopy(rate_node_payload()))
-        document["default_invocation"]["invocation_id"] = f"r2_4_counterattack_initiation_v0_{role}"
-        document["default_invocation"]["max_results"] = 100
-    bundle["target_id"] = "r2_4_counterattack_initiation_v0"
-    return bundle, synthesized
+    return synthesized["document"], synthesized
 
 
 def validate_plan_bundle(plan_bundle: dict[str, Any]) -> None:
@@ -385,7 +334,7 @@ def table_payload(
         "meaning_expression_hash": stable_hash(load_json(MEANING_EXPRESSION)),
         "plan": str(PLAN_PATH),
         "plan_hash": stable_hash(plan_bundle),
-        "synthesized_chain_count_document_hash": synthesized["document_hash"],
+        "synthesized_sequence_rate_document_hash": synthesized["document_hash"],
         "sequence_node_id": SEQUENCE_NODE_ID,
         "aggregate_node_id": AGGREGATE_NODE_ID,
         "rate_node_id": RATE_NODE_ID,
@@ -469,7 +418,7 @@ def write_artifacts(*, canonical_root: Path, raw_root: Path, long_threshold_seco
         "generated_by": "scripts/packets/r2_4_flagship_generator.py",
         "meaning_expression": str(MEANING_EXPRESSION),
         "meaning_expression_hash": stable_hash(load_json(MEANING_EXPRESSION)),
-        "synthesized_chain_count_document_hash": synthesized["document_hash"],
+        "synthesized_sequence_rate_document_hash": synthesized["document_hash"],
         "flagship_plan": str(PLAN_PATH),
         "flagship_plan_hash": stable_hash(plan_bundle),
         "table": str(TABLE_JSON),

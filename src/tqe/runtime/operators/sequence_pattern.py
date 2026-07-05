@@ -19,6 +19,7 @@ from tqe.runtime.ir import (
     Unit,
     stable_hash,
 )
+from tqe.runtime.possession_identity import possession_identity_at_frame
 from tqe.runtime.values import FrameSignal, RuntimeValue, canonical_anchor_record_id
 
 
@@ -344,6 +345,12 @@ class SequenceConfig:
     stage_specs: tuple[StageSpec, StageSpec, StageSpec]
 
 
+@dataclass(frozen=True)
+class CandidateScan:
+    records: list[dict[str, Any]]
+    policy_excluded_count: int
+
+
 def execute_sequence_pattern(
     *,
     state: Any,
@@ -407,7 +414,7 @@ def execute_sequence_pattern(
                     "candidate_count": 0,
                     "unknown_candidate_count": 0,
                 }
-                candidates = _stage_candidates(
+                scan = _stage_candidates(
                     records=stage_records[next_stage],
                     state=state,
                     config=config,
@@ -417,9 +424,19 @@ def execute_sequence_pattern(
                     window_end=window_end,
                     used_successors=used_successors[next_stage],
                 )
+                candidates = scan.records
                 window["candidate_count"] = len(candidates)
-                pass_candidates = [record for record in candidates if _tri_state(record, config.stage_specs[next_stage - 1].status_field) == "PASS"]
-                unknown_candidates = [record for record in candidates if _tri_state(record, config.stage_specs[next_stage - 1].status_field) == "UNKNOWN"]
+                window["policy_excluded_count"] = scan.policy_excluded_count
+                pass_candidates = [
+                    record
+                    for record in candidates
+                    if _candidate_status(record, config=config, stage_index=next_stage) == "PASS"
+                ]
+                unknown_candidates = [
+                    record
+                    for record in candidates
+                    if _candidate_status(record, config=config, stage_index=next_stage) == "UNKNOWN"
+                ]
                 window["unknown_candidate_count"] = len(unknown_candidates)
                 if pass_candidates:
                     selected = pass_candidates[:1] if config.match_policy == "first" else pass_candidates
@@ -454,7 +471,11 @@ def execute_sequence_pattern(
                         chain_reason=(
                             f"stage_{next_stage}_window_truncated"
                             if window["window_truncated"]
-                            else f"stage_{next_stage}_fully_observed_empty_window"
+                            else (
+                                f"stage_{next_stage}_policy_excluded"
+                                if window["policy_excluded_count"]
+                                else f"stage_{next_stage}_fully_observed_empty_window"
+                            )
                         ),
                         windows={**windows, next_stage: window},
                     )
@@ -566,21 +587,26 @@ def _stage_candidates(
     reference_frame: int,
     window_end: int,
     used_successors: set[str],
-) -> list[dict[str, Any]]:
+) -> CandidateScan:
     spec = config.stage_specs[stage_index - 1]
     result = []
+    policy_excluded_count = 0
     for record in records:
         frame = _frame(record, spec.frame_field)
         if frame <= reference_frame or frame > window_end:
             continue
-        if config.overlap_policy == "non_overlapping" and _record_identity(record) in used_successors:
-            continue
-        if stage_index == 2 and not _minimum_numeric_satisfied(record, config):
+        if _candidate_status(record, config=config, stage_index=stage_index) == "FAIL":
             continue
         if not _continuity_satisfied(witnesses[0], record, state=state, config=config, stage_index=stage_index):
             continue
+        if config.overlap_policy == "non_overlapping" and _record_identity(record) in used_successors:
+            policy_excluded_count += 1
+            continue
         result.append(record)
-    return sorted(result, key=lambda item: (_frame(item, spec.frame_field), _record_identity(item)))
+    return CandidateScan(
+        records=sorted(result, key=lambda item: (_frame(item, spec.frame_field), _record_identity(item))),
+        policy_excluded_count=policy_excluded_count,
+    )
 
 
 def _continuity_satisfied(
@@ -625,45 +651,37 @@ def _possession_identity(
     team_role = _field(record, spec.team_role_field)
     if team_role is None:
         return None
-    return _state_possession_identity(state, frame_id=_frame(record, spec.frame_field), team_role=team_role)
+    return possession_identity_at_frame(
+        state,
+        frame_id=_frame(record, spec.frame_field),
+        team_role=team_role,
+        unobserved_value=None,
+    )
 
 
-def _state_possession_identity(state: Any, *, frame_id: int, team_role: str) -> str | None:
-    raw_frame_ids = getattr(state, "frame_ids", None)
-    raw_possession_role = getattr(state, "possession_role", None)
-    raw_ball_alive = getattr(state, "ball_alive", None)
-    frame_ids = [] if raw_frame_ids is None else list(raw_frame_ids)
-    possession_role = [] if raw_possession_role is None else list(raw_possession_role)
-    ball_alive = [] if raw_ball_alive is None else list(raw_ball_alive)
-    if not frame_ids or not possession_role or len(frame_ids) != len(possession_role):
-        return None
-    try:
-        index = next(idx for idx, value in enumerate(frame_ids) if int(value) == int(frame_id))
-    except StopIteration:
-        return None
-    if str(possession_role[index]) != str(team_role):
-        return None
-    if ball_alive and not bool(ball_alive[index]):
-        return None
-    start = index
-    while start > 0 and str(possession_role[start - 1]) == str(team_role):
-        if ball_alive and not bool(ball_alive[start - 1]):
-            break
-        start -= 1
-    match_id = str(getattr(state, "match_id", ""))
-    period = str(getattr(state, "period", ""))
-    return f"possession:{match_id}:{period}:{team_role}:{int(frame_ids[start])}"
+def _candidate_status(record: dict[str, Any], *, config: SequenceConfig, stage_index: int) -> str:
+    status = _tri_state(record, config.stage_specs[stage_index - 1].status_field)
+    if status == "FAIL":
+        return "FAIL"
+    if stage_index != 2:
+        return status
+    numeric_status = _minimum_numeric_status(record, config)
+    if numeric_status == "FAIL":
+        return "FAIL"
+    if status == "UNKNOWN" or numeric_status == "UNKNOWN":
+        return "UNKNOWN"
+    return "PASS"
 
 
-def _minimum_numeric_satisfied(record: dict[str, Any], config: SequenceConfig) -> bool:
+def _minimum_numeric_status(record: dict[str, Any], config: SequenceConfig) -> str:
     field = config.stage_2_minimum_numeric_field
     if field == "none":
-        return True
+        return "PASS"
     raw = record.get(field)
     try:
-        return float(raw) >= float(config.stage_2_minimum_numeric_value)
+        return "PASS" if float(raw) >= float(config.stage_2_minimum_numeric_value) else "FAIL"
     except (TypeError, ValueError):
-        return False
+        return "UNKNOWN"
 
 
 def _window_fully_observed(

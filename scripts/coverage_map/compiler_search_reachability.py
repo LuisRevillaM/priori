@@ -458,6 +458,7 @@ EXTREMUM_OVER_SET_SIGNATURE = OPERATOR_SIGNATURES_BY_CONSTRAINT_KIND["extremum_o
 WINDOW_SIGNATURE = OPERATOR_SIGNATURES_BY_CONSTRAINT_KIND["window"]
 TYPED_JOIN_SIGNATURE = OPERATOR_SIGNATURES_BY_CONSTRAINT_KIND["typed_join"]
 AGGREGATE_OVER_SIGNATURE = OPERATOR_SIGNATURES_BY_CONSTRAINT_KIND["aggregate_over"]
+RATE_SIGNATURE = OPERATOR_SIGNATURES_BY_CONSTRAINT_KIND["rate"]
 SEQUENCE_PATTERN_SIGNATURE = OPERATOR_SIGNATURES_BY_CONSTRAINT_KIND["sequence_pattern"]
 
 
@@ -475,6 +476,7 @@ EXTREMUM_OVER_SET_FIELDS = declared_operator_fields(EXTREMUM_OVER_SET_SIGNATURE)
 WINDOW_FIELDS = declared_operator_fields(WINDOW_SIGNATURE)
 TYPED_JOIN_FIELDS = declared_operator_fields(TYPED_JOIN_SIGNATURE)
 AGGREGATE_OVER_FIELDS = declared_operator_fields(AGGREGATE_OVER_SIGNATURE)
+RATE_FIELDS = declared_operator_fields(RATE_SIGNATURE)
 SEQUENCE_PATTERN_FIELDS = declared_operator_fields(SEQUENCE_PATTERN_SIGNATURE)
 TYPED_JOIN_CORE_FIELDS = {
     "typed_join_records",
@@ -908,6 +910,12 @@ def operator_constraint_fields(constraint: dict[str, Any], required_fields: set[
         for nested in constraint.get("population_composition_constraints", []):
             if isinstance(nested, dict):
                 fields.update(operator_constraint_fields(nested, required_fields))
+    if kind == "rate":
+        for side in ("numerator", "denominator"):
+            fields.update(required_fields & {str(item) for item in constraint.get(f"{side}_required_fields", [])})
+            for nested in constraint.get(f"{side}_composition_constraints", []):
+                if isinstance(nested, dict):
+                    fields.update(operator_constraint_fields(nested, required_fields))
     if kind == "typed_join":
         for side in ("left", "right"):
             fields.update(required_fields & {str(item) for item in constraint.get(f"{side}_required_fields", [])})
@@ -2674,6 +2682,275 @@ def required_sequence_field_list(constraint: dict[str, Any], key: str) -> list[s
     return [str(item) for item in value if str(item) != "none"]
 
 
+def build_rate_operator(
+    context: SearchContext,
+    required_fields: set[str],
+    *,
+    depth: int,
+) -> BuildResult:
+    constraint = first_target_constraint(context, "rate")
+    rate_constraint = rate_constraint_payload(constraint)
+    source_required_fields = set(rate_constraint["numerator_required_fields"])
+    source_required_fields.update(rate_constraint["denominator_required_fields"])
+    source_required_fields.update(rate_constraint["group_by_fields"])
+    source_required_fields.add(rate_constraint["numerator_status_field"])
+    source_required_fields.add(rate_constraint["denominator_status_field"])
+    source_required_fields.discard("none")
+
+    source_constraints = rate_same_source_constraints(rate_constraint)
+    source_context = SearchContext(
+        catalog=context.catalog,
+        target_contract={
+            "desired_output": "classification",
+            "required_evidence": sorted(source_required_fields),
+            "status_semantics": [],
+            "composition_constraints": source_constraints,
+            "claim_boundary": context.target_contract.get("claim_boundary", ""),
+        },
+        counter=context.counter,
+        max_depth=context.max_depth,
+        max_branching=context.max_branching,
+    )
+    source_build = build_operator_composition(
+        source_context,
+        source_required_fields,
+        depth=depth,
+    )
+    missing_source_fields = sorted(field for field in source_required_fields if field not in source_build.field_sources)
+    if missing_source_fields:
+        raise SynthesisError(
+            "missing_constraint",
+            "rate source composition did not cover declared numerator/denominator fields.",
+            {"missing_rate_source_fields": missing_source_fields},
+        )
+
+    nodes = [*source_build.nodes]
+    field_sources = dict(source_build.field_sources)
+    companion_aggregate = rate_companion_aggregate_constraint(context, source_constraints)
+    aggregate_node_id = None
+    if companion_aggregate is not None:
+        aggregate_node_id = context.node_id("aggregate_over")
+        nodes.append(aggregate_operator_node(aggregate_node_id, source_build, companion_aggregate))
+        for field in AGGREGATE_OVER_FIELDS:
+            field_sources[field] = (aggregate_node_id, "aggregate_records")
+
+    node_id = context.node_id("rate")
+    node = operator_node(
+        node_id=node_id,
+        operator_name="rate",
+        version="0.1.0",
+        inputs={
+            "numerator": ref(source_build.terminal_node_id, source_build.terminal_output),
+            "denominator": ref(source_build.terminal_node_id, source_build.terminal_output),
+        },
+        parameters={
+            "rate_kind": enum(rate_constraint["rate_kind"]),
+            "population_expression": enum(rate_constraint["population_expression"]),
+            "group_by_fields": entity_set(rate_constraint["group_by_fields"]),
+            "numerator_status_field": enum(rate_constraint["numerator_status_field"]),
+            "denominator_status_field": enum(rate_constraint["denominator_status_field"]),
+            "subset_declaration": enum(rate_constraint["subset_declaration"]),
+            "subset_predicate_fields": entity_set(rate_constraint["subset_predicate_fields"]),
+            "removed_denominator_predicate_fields": entity_set(
+                rate_constraint["removed_denominator_predicate_fields"]
+            ),
+            "same_team_perspective_required": boolean(
+                bool(rate_constraint["same_team_perspective_required"])
+            ),
+            "entity_identity_preserved_required": boolean(
+                bool(rate_constraint["entity_identity_preserved_required"])
+            ),
+            "frame_alignment_required": boolean(bool(rate_constraint["frame_alignment_required"])),
+            "constraint_opt_out_reason": enum(rate_constraint["constraint_opt_out_reason"]),
+            "team_role_field": enum(rate_constraint["team_role_field"]),
+        },
+    )
+    for field in RATE_FIELDS:
+        field_sources[field] = (node_id, "rate_records")
+    return BuildResult(
+        nodes=[*dedupe_nodes(nodes), node],
+        terminal_node_id=node_id,
+        terminal_entry="operator:rate",
+        terminal_output="rate_records",
+        field_sources=field_sources,
+        rules_used=sorted({*source_build.rules_used, "rate_operator_composition"}),
+        providers_used=[*source_build.providers_used, "operator:rate"],
+        metadata={
+            "rate_constraint": rate_constraint,
+            "population_terminal": source_build.terminal_entry,
+            "anchor_source_node_id": source_build.terminal_node_id,
+            "anchor_source_output_name": source_build.terminal_output,
+            "companion_aggregate_node_id": aggregate_node_id,
+            "source_build_metadata": source_build.metadata,
+        },
+    )
+
+
+def rate_constraint_payload(constraint: dict[str, Any]) -> dict[str, Any]:
+    allowed_keys = {
+        "kind",
+        "rate_kind",
+        "population_expression",
+        "group_by_fields",
+        "numerator_status_field",
+        "denominator_status_field",
+        "subset_declaration",
+        "subset_predicate_fields",
+        "removed_denominator_predicate_fields",
+        "same_team_perspective_required",
+        "entity_identity_preserved_required",
+        "frame_alignment_required",
+        "constraint_opt_out_reason",
+        "team_role_field",
+        "numerator_required_fields",
+        "denominator_required_fields",
+        "numerator_composition_constraints",
+        "denominator_composition_constraints",
+    }
+    unapplied = sorted(key for key in constraint if key not in allowed_keys)
+    if unapplied:
+        raise SynthesisError(
+            "missing_constraint",
+            "rate supplied unsupported keys that synthesis cannot apply.",
+            {"unapplied_rate_constraint_keys": unapplied},
+        )
+    return {
+        "rate_kind": required_rate_constraint(constraint, "rate_kind"),
+        "population_expression": required_rate_constraint(constraint, "population_expression"),
+        "group_by_fields": required_rate_field_list(constraint, "group_by_fields"),
+        "numerator_status_field": required_rate_constraint(constraint, "numerator_status_field"),
+        "denominator_status_field": required_rate_constraint(constraint, "denominator_status_field"),
+        "subset_declaration": required_rate_constraint(constraint, "subset_declaration"),
+        "subset_predicate_fields": [
+            str(item) for item in constraint.get("subset_predicate_fields", []) if str(item) != "none"
+        ],
+        "removed_denominator_predicate_fields": [
+            str(item)
+            for item in constraint.get("removed_denominator_predicate_fields", [])
+            if str(item) != "none"
+        ],
+        "same_team_perspective_required": bool(constraint.get("same_team_perspective_required", True)),
+        "entity_identity_preserved_required": bool(constraint.get("entity_identity_preserved_required", True)),
+        "frame_alignment_required": bool(constraint.get("frame_alignment_required", True)),
+        "constraint_opt_out_reason": str(constraint.get("constraint_opt_out_reason", "none")),
+        "team_role_field": str(constraint.get("team_role_field", "none")),
+        "numerator_required_fields": required_rate_field_list(constraint, "numerator_required_fields"),
+        "denominator_required_fields": required_rate_field_list(constraint, "denominator_required_fields"),
+        "numerator_composition_constraints": list(constraint.get("numerator_composition_constraints", [])),
+        "denominator_composition_constraints": list(constraint.get("denominator_composition_constraints", [])),
+    }
+
+
+def required_rate_constraint(constraint: dict[str, Any], key: str) -> str:
+    value = constraint.get(key)
+    if value is None or str(value) == "" or str(value) == "none":
+        raise SynthesisError(
+            "missing_constraint",
+            f"rate requires declared {key}; no provider-field default is allowed.",
+            {"missing_rate_constraint_key": key},
+        )
+    return str(value)
+
+
+def required_rate_field_list(constraint: dict[str, Any], key: str) -> list[str]:
+    value = constraint.get(key)
+    if not isinstance(value, list) or not value:
+        raise SynthesisError(
+            "missing_constraint",
+            f"rate requires declared non-empty {key}.",
+            {"missing_rate_constraint_key": key},
+        )
+    return [str(item) for item in value if str(item) != "none"]
+
+
+def rate_same_source_constraints(rate_constraint: dict[str, Any]) -> list[dict[str, Any]]:
+    numerator = list(rate_constraint["numerator_composition_constraints"])
+    denominator = list(rate_constraint["denominator_composition_constraints"])
+    if not numerator or not denominator:
+        raise SynthesisError(
+            "missing_constraint",
+            "rate requires declared numerator and denominator source compositions.",
+            {"constraint_kind": "rate"},
+        )
+    if stable_hash(numerator) != stable_hash(denominator):
+        raise SynthesisError(
+            "missing_constraint",
+            "rate numerator and denominator compositions must be the same source relation.",
+            {
+                "numerator_composition_hash": stable_hash(numerator),
+                "denominator_composition_hash": stable_hash(denominator),
+            },
+        )
+    return denominator
+
+
+def rate_companion_aggregate_constraint(
+    context: SearchContext,
+    source_constraints: list[dict[str, Any]],
+) -> dict[str, Any] | None:
+    aggregate_constraints = target_constraints(context, "aggregate_over")
+    if not aggregate_constraints:
+        return None
+    for constraint in aggregate_constraints:
+        if stable_hash(constraint.get("population_composition_constraints", [])) == stable_hash(source_constraints):
+            return constraint
+    raise SynthesisError(
+        "missing_constraint",
+        "rate companion aggregate must use the same source composition.",
+        {
+            "rate_source_composition_hash": stable_hash(source_constraints),
+            "aggregate_composition_hashes": [
+                stable_hash(constraint.get("population_composition_constraints", []))
+                for constraint in aggregate_constraints
+            ],
+        },
+    )
+
+
+def aggregate_operator_node(
+    node_id: str,
+    population_build: BuildResult,
+    constraint: dict[str, Any],
+) -> dict[str, Any]:
+    population_required_fields = {
+        str(field)
+        for field in constraint.get("population_required_fields", [])
+        if str(field) != "none"
+    }
+    missing_fields = sorted(field for field in population_required_fields if field not in population_build.field_sources)
+    if missing_fields:
+        raise SynthesisError(
+            "missing_constraint",
+            "rate companion aggregate source did not cover declared fields.",
+            {"missing_aggregate_population_fields": missing_fields},
+        )
+    return operator_node(
+        node_id=node_id,
+        operator_name="aggregate_over",
+        version="0.1.0",
+        inputs={
+            "population": ref(population_build.terminal_node_id, population_build.terminal_output),
+        },
+        parameters={
+            "aggregation_kind": enum(str(constraint["aggregation_kind"])),
+            "population_expression": enum(str(constraint["population_expression"])),
+            "group_by_fields": entity_set([str(item) for item in constraint["group_by_fields"]]),
+            "status_field": enum(str(constraint["status_field"])),
+            "same_team_perspective_required": boolean(
+                bool(constraint.get("same_team_perspective_required", True))
+            ),
+            "entity_identity_preserved_required": boolean(
+                bool(constraint.get("entity_identity_preserved_required", True))
+            ),
+            "frame_alignment_required": boolean(
+                bool(constraint.get("frame_alignment_required", True))
+            ),
+            "constraint_opt_out_reason": enum(str(constraint.get("constraint_opt_out_reason", "none"))),
+            "team_role_field": enum(str(constraint.get("team_role_field", "none"))),
+        },
+    )
+
+
 def build_aggregate_over_operator(
     context: SearchContext,
     required_fields: set[str],
@@ -2765,6 +3042,7 @@ def build_aggregate_over_operator(
 
 OPERATOR_COMPOSITION_BUILDERS = {
     "aggregate_over": build_aggregate_over_operator,
+    "rate": build_rate_operator,
     "sequence_pattern": build_sequence_pattern_operator,
     "delta_across_anchor": build_delta_across_anchor_operator,
     "extremum_over_set": build_extremum_over_set_operator,
@@ -4126,7 +4404,7 @@ def assemble_document(
 
 
 def anchor_source_for_build(build: BuildResult) -> dict[str, str]:
-    if build.terminal_entry == "operator:aggregate_over":
+    if build.terminal_entry in {"operator:aggregate_over", "operator:rate"}:
         source_node_id = build.metadata.get("anchor_source_node_id")
         output_name = build.metadata.get("anchor_source_output_name")
         if source_node_id and output_name:
@@ -4149,6 +4427,8 @@ def terminal_output_fields(build: BuildResult) -> set[str]:
         return set(PROJECT_ONTO_AXIS_FIELDS)
     if build.terminal_entry == "operator:aggregate_over":
         return set(AGGREGATE_OVER_FIELDS)
+    if build.terminal_entry == "operator:rate":
+        return set(RATE_FIELDS)
     if build.terminal_entry == "operator:sequence_pattern":
         return set(SEQUENCE_PATTERN_FIELDS)
     return set()

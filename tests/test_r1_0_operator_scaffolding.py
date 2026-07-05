@@ -41,6 +41,7 @@ R1_OPERATOR_NAMES = (
 )
 R1_SHARED_CODE_RATCHET_NAMES = (
     "aggregate_over",
+    "sequence_pattern",
     "typed_join",
     "extremum_over_set",
     "project_onto_axis",

@@ -8,7 +8,6 @@ from __future__ import annotations
 
 from typing import Any
 
-import numpy as np
 import pandas as pd
 
 from tqe.runtime.controlled_pass import (
@@ -38,24 +37,8 @@ from tqe.runtime.one_touch import (
     parse_successful_pass_event,
 )
 from tqe.runtime.pass_bypass import PassBypassConfig, evaluate_pass_bypass_measurements
+from tqe.runtime.possession_identity import possession_identity_at_frame
 from tqe.runtime.values import FrameSignal
-
-
-def possession_identity_at_frame(state: PeriodState, frame_id: int, team_role: str) -> str:
-    indexes = np.where(state.frame_ids == frame_id)[0]
-    if len(indexes) == 0:
-        return f"possession:{state.match_id}:{state.period}:{team_role}:unobserved:{frame_id}"
-    index = int(indexes[0])
-    if str(state.possession_role[index]) != str(team_role) or not bool(state.ball_alive[index]):
-        return f"possession:{state.match_id}:{state.period}:{team_role}:unobserved:{frame_id}"
-    start = index
-    while (
-        start > 0
-        and str(state.possession_role[start - 1]) == str(team_role)
-        and bool(state.ball_alive[start - 1])
-    ):
-        start -= 1
-    return f"possession:{state.match_id}:{state.period}:{team_role}:{int(state.frame_ids[start])}"
 
 
 def primitive_action_event_anchor(state: PeriodState, node: BoundCatalogNode) -> None:

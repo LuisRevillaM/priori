@@ -1,15 +1,15 @@
 {
-  "canonical_manifest_hash": "e0432575c15a1895dec843d2a5d1b6e5ca0e9b241f0af425657a6725db239c46",
+  "canonical_manifest_hash": "e1fad3b9489ff86c173e81eed450b5b686730976d94da07eb195e34084eacff5",
   "flagship_plan": "delivery/packets/r2-4-flagship/counterattack_initiation_v0.json",
-  "flagship_plan_hash": "65654d53e23bb8757d454a34e9657f325db3acf9ab0dd53842ab741f5d956a10",
+  "flagship_plan_hash": "bf12768919f517f7b9412bd42622d2e4f262a6ceba6667319a597fae06921749",
   "generated_by": "scripts/packets/r2_4_flagship_generator.py",
   "long_execution_threshold_seconds": 300.0,
-  "meaning_expression": "delivery/packets/r2-4-flagship/meaning-expressions/counterattack_initiation_chain_count.v0.json",
-  "meaning_expression_hash": "757b0bc7d9b1835dab8c8da553fc98127ef54dc2ce85f04bbf8df67b0fa4522d",
+  "meaning_expression": "delivery/packets/r2-4-flagship/meaning-expressions/counterattack_initiation_sequence_rate.v0.json",
+  "meaning_expression_hash": "4c11f6699e3788951d4e4f33ee4cb7c8f54f7375ee333dda7df88362008f146e",
   "period_record_count": 28,
   "period_records_hash": "3fb270eda29fc14f57746491881afacaee388f7799284ee9f6caf2bf74416afd",
   "schema_version": "r2_4_flagship_provenance.v1",
-  "synthesized_chain_count_document_hash": "7e876649b73fd502e79291389b76ef028a229e8fa83bd3b39a4d224c10489dc7",
+  "synthesized_sequence_rate_document_hash": "bf12768919f517f7b9412bd42622d2e4f262a6ceba6667319a597fae06921749",
   "table": "delivery/packets/r2-4-flagship/counterattack_initiation_table.json",
-  "table_hash": "64ddb4ed5c1a4d923e5f2385b8b536485206cf762535afdec85dee2ecbc32fee"
+  "table_hash": "49bf6720be24f417b179d17abfe2e4ee9231ce2fcab55194109697fa17def411"
 }

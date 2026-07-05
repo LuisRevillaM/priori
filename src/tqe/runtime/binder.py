@@ -1144,7 +1144,7 @@ class Binder:
         if stage_count != 3:
             self._issue(
                 "operator_sequence_stage_count_unsupported",
-                "sequence_pattern R2-4 supports exactly three stages",
+                "sequence composition supports exactly three stages in this packet",
                 f"{path}.parameters.stage_count",
             )
         same_team_required = _resolved_bool(resolved_parameters, "same_team_perspective_required")
@@ -1230,7 +1230,7 @@ class Binder:
         if field_name not in declared_fields:
             self._issue(
                 "operator_sequence_stage_field_not_in_input",
-                f"sequence_pattern parameter {parameter_name} references field {field_name}, but its stage input does not declare it",
+                f"sequence parameter {parameter_name} references field {field_name}, but its stage input does not declare it",
                 f"{path}.parameters.{parameter_name}",
             )
 

@@ -163,6 +163,7 @@ def sequence_params(*, match_policy: str = "first", same_possession: bool = True
         "stage_2_minimum_numeric_value": typed_number(3.0),
         "same_team_perspective_required": typed_bool(True),
         "same_possession_required": typed_bool(same_possession),
+        "possession_continuity_source": typed_enum("stage_fields"),
         "same_player_required": typed_bool(False),
         "constraint_opt_out_reason": typed_enum("entity identity is not part of the counterattack initiation chain"),
         "team_role_field": typed_enum("team_role"),
@@ -176,12 +177,19 @@ def run_sequence(
     *,
     frame_ids: list[int] | None = None,
     match_policy: str = "first",
+    overlap_policy: str = "allow_overlaps",
+    same_possession: bool = True,
+    parameter_overrides: dict[str, TypedValue] | None = None,
+    possession_role: list[str] | None = None,
+    ball_alive: list[bool] | None = None,
 ) -> list[dict[str, object]]:
     state = SimpleNamespace(
         match_id="TST",
         period="firstHalf",
         perspective_team_role="home",
         frame_ids=frame_ids or list(range(0, 401)),
+        possession_role=possession_role,
+        ball_alive=ball_alive,
         signals={},
     )
     node = SimpleNamespace(
@@ -192,6 +200,10 @@ def run_sequence(
             "stage_3": SimpleNamespace(source_node_id="passes", output_name="anchor_evaluations"),
         },
     )
+    parameters = sequence_params(match_policy=match_policy, same_possession=same_possession)
+    parameters["overlap_policy"] = typed_enum(overlap_policy)
+    if parameter_overrides:
+        parameters.update(parameter_overrides)
     execute_sequence_pattern(
         state=state,
         node=node,
@@ -200,7 +212,7 @@ def run_sequence(
             "stage_2": runtime_stage("stage_2", stage_2),
             "stage_3": runtime_stage("stage_3", stage_3),
         },
-        parameters=sequence_params(match_policy=match_policy),
+        parameters=parameters,
     )
     return state.signals["sequence"]["chain_records"]
 
@@ -230,6 +242,16 @@ class SequencePatternOperatorTests(unittest.TestCase):
         self.assertEqual("stage_2_window_truncated", result["chain_reason"])
         self.assertTrue(result["stage_2_window_truncated"])
 
+    def test_coverage_gap_window_is_unknown_not_fail(self) -> None:
+        observed_frames = [*range(0, 121), *range(126, 401)]
+        results = run_sequence([regain(100)], [], [], frame_ids=observed_frames)
+        [result] = results
+
+        self.assertEqual(1, len(results))
+        self.assertEqual("UNKNOWN", result["chain_status"])
+        self.assertEqual("stage_2_window_truncated", result["chain_reason"])
+        self.assertTrue(result["stage_2_window_truncated"])
+
     def test_unknown_status_candidate_is_unknown_not_fail(self) -> None:
         [result] = run_sequence([regain(100)], [carry(150, 175, status="UNKNOWN")], [])
 
@@ -237,12 +259,35 @@ class SequencePatternOperatorTests(unittest.TestCase):
         self.assertEqual("stage_2_unknown_candidate", result["chain_reason"])
         self.assertEqual("UNKNOWN", result["stage_2_status"])
 
+    def test_missing_numeric_threshold_candidate_is_unknown_not_fail(self) -> None:
+        unmeasured_carry = carry(150, 175)
+        del unmeasured_carry["carry_forward_progression_m"]
+
+        [result] = run_sequence([regain(100)], [unmeasured_carry], [])
+
+        self.assertEqual("UNKNOWN", result["chain_status"])
+        self.assertEqual("stage_2_unknown_candidate", result["chain_reason"])
+        self.assertEqual(1, result["stage_2_candidate_count"])
+        self.assertEqual(1, result["stage_2_unknown_candidate_count"])
+
     def test_continuity_violation_is_excluded(self) -> None:
         [result] = run_sequence([regain(100, team="home")], [carry(150, 175, team="away")], [])
 
         self.assertEqual("FAIL", result["chain_status"])
         self.assertEqual("stage_2_fully_observed_empty_window", result["chain_reason"])
         self.assertEqual(0, result["stage_2_candidate_count"])
+
+    def test_both_team_patterns_are_preserved(self) -> None:
+        results = run_sequence(
+            [regain(100, team="home", possession="h1"), regain(300, team="away", possession="a1")],
+            [carry(150, 175, team="home", possession="h1"), carry(325, 340, team="away", possession="a1")],
+            [controlled_pass(250, team="home", possession="h1"), controlled_pass(420, team="away", possession="a1")],
+            frame_ids=list(range(0, 501)),
+        )
+
+        self.assertEqual(2, len(results))
+        self.assertEqual({"home", "away"}, {str(record["team_role"]) for record in results})
+        self.assertTrue(all(record["chain_status"] == "PASS" for record in results))
 
     def test_match_policy_first_vs_all(self) -> None:
         first = run_sequence(
@@ -262,12 +307,52 @@ class SequencePatternOperatorTests(unittest.TestCase):
         self.assertGreater(len(all_matches), len(first))
         self.assertTrue(all(record["chain_status"] == "PASS" for record in all_matches))
 
+    def test_non_overlapping_policy_excludes_reused_successors_with_policy_reason(self) -> None:
+        results = run_sequence(
+            [regain(100), regain(101)],
+            [carry(150, 175)],
+            [controlled_pass(250)],
+            overlap_policy="non_overlapping",
+        )
+
+        self.assertEqual(2, len(results))
+        self.assertEqual(["PASS", "FAIL"], [record["chain_status"] for record in results])
+        self.assertEqual("stage_2_policy_excluded", results[1]["chain_reason"])
+        self.assertEqual(0, results[1]["stage_2_candidate_count"])
+
     def test_successor_at_window_edge_is_included(self) -> None:
         [result] = run_sequence([regain(100)], [carry(225, 250)], [controlled_pass(350)])
 
         self.assertEqual("PASS", result["chain_status"])
         self.assertEqual(225, result["stage_2_frame_id"])
         self.assertEqual(350, result["stage_3_frame_id"])
+
+    def test_successor_at_window_edge_plus_one_is_excluded(self) -> None:
+        [result] = run_sequence([regain(100)], [carry(226, 250)], [], frame_ids=list(range(0, 401)))
+
+        self.assertEqual("FAIL", result["chain_status"])
+        self.assertEqual("stage_2_fully_observed_empty_window", result["chain_reason"])
+        self.assertEqual(0, result["stage_2_candidate_count"])
+
+    def test_observed_possession_stream_supplies_continuity_identity(self) -> None:
+        frame_ids = list(range(0, 401))
+        [result] = run_sequence(
+            [regain(100)],
+            [carry(150, 175)],
+            [controlled_pass(250)],
+            frame_ids=frame_ids,
+            parameter_overrides={
+                "stage_1_possession_id_field": typed_enum("none"),
+                "stage_2_possession_id_field": typed_enum("none"),
+                "stage_3_possession_id_field": typed_enum("none"),
+                "possession_continuity_source": typed_enum("observed_possession_stream"),
+            },
+            possession_role=["home" for _ in frame_ids],
+            ball_alive=[True for _ in frame_ids],
+        )
+
+        self.assertEqual("PASS", result["chain_status"])
+        self.assertEqual("all_stages_pass", result["chain_reason"])
 
     def test_chain_records_compose_under_aggregate_over(self) -> None:
         records = []

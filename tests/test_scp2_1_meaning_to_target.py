@@ -217,7 +217,7 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
 
     def test_r2_4_sequence_expression_synthesizes_from_registry_grammar(self) -> None:
         result = load_meaning_expression_from_path(
-            R2_4_FIXTURE_DIR / "counterattack_initiation_chain_count.v0.json",
+            R2_4_FIXTURE_DIR / "counterattack_initiation_sequence_rate.v0.json",
             vocabulary=self.vocabulary,
         )
         self.assertEqual("accepted", result.outcome)
@@ -226,10 +226,11 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
         synthesized = synthesize_and_bind(result.expression, coverage_rows=self.coverage_rows)
 
         self.assertEqual("PASS", synthesized["bind"]["status"])
-        self.assertEqual("operator:aggregate_over", synthesized["build"]["terminal_provider"])
+        self.assertEqual("operator:rate", synthesized["build"]["terminal_provider"])
         self.assertEqual("operator:sequence_pattern", synthesized["build"]["build_metadata"]["population_terminal"])
+        self.assertEqual("aggregate_over", synthesized["build"]["build_metadata"]["companion_aggregate_node_id"])
         self.assertEqual(
-            "r2_4_counterattack_initiation_chain_count",
+            "r2_4_counterattack_initiation_sequence_rate",
             synthesized["target"]["semantic_correspondence"]["coverage_row"],
         )
 
