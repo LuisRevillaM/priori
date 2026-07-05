@@ -18,6 +18,7 @@ from tqe.semantic_compiler.meaning_expression import (
     BridgeRefusalKind,
     DEFAULT_KNOWLEDGE_PACK_PATH,
     MeaningExpressionV0,
+    MissingGapCodeError,
     PackVocabulary,
     load_meaning_expression_result,
     load_pack_vocabulary,
@@ -268,6 +269,16 @@ def build_prompt_projection(pack_path: Path = DEFAULT_KNOWLEDGE_PACK_PATH) -> Pr
         "from the normalized meaning rather than the user's phrasing.\n"
         "For understood_but_not_expressible, cite the smallest missing capability and one generated gap_code.\n"
         "For unsupported_modality, cite the unsupported modality and generated gap_code.\n"
+        "The final JSON must validate against model_output_schema exactly. Use key message, not explanation. "
+        "Use key modality, not unsupported_modality. For clarification use dimension as a string, question as "
+        "a string, and readings with reading_id, label, answer_aliases, expression. Do not use "
+        "ambiguity_dimension, ambiguity, description, or reading_label.\n"
+        "Vocabulary placement is strict: concept_refs may contain only generated concept names; composition "
+        "operator names belong only in operator_applications.operator or composition_constraints.kind. "
+        "All field names must come from generated field_names; do not invent required_evidence or status fields. "
+        "The supported modalities are tracking, events, and tracking_event_synchronized. Do not refuse merely "
+        "because a request relies on event data or tracking data. Use unsupported_modality only for unavailable "
+        "source media such as video, audio, images, or external annotation.\n"
         "Do not output Markdown, explanations, tool calls, plans, recipes, or any fifth outcome shape.\n"
         "The machine side will reject anything outside MeaningExpressionV0 plus the vocabulary gate.\n\n"
         "GENERATED_KNOWLEDGE_PROJECTION:\n"
@@ -292,6 +303,7 @@ def prompt_sections_from_pack(pack: dict[str, Any]) -> dict[str, Any]:
     return {
         "pack_sha256": pack.get("knowledge_pack_sha256"),
         "meaning_expression_schema": MeaningExpressionV0.model_json_schema(mode="validation"),
+        "model_output_schema": MODEL_OUTPUT_ADAPTER.json_schema(),
         "required_outcome_values": [
             "expression",
             "clarification_required",
@@ -528,7 +540,16 @@ def expression_outcome(
     transcript: TranscriptEvidence,
     vocabulary: PackVocabulary,
 ) -> HermesOutcome:
-    result = load_meaning_expression_result(payload, vocabulary=vocabulary)
+    try:
+        result = load_meaning_expression_result(payload, vocabulary=vocabulary)
+    except MissingGapCodeError as exc:
+        raise HermesNLModelOutputError(
+            f"expression references out-of-pack vocabulary without a generated gap code: {exc}"
+        ) from exc
+    except Exception as exc:  # noqa: BLE001
+        raise HermesNLModelOutputError(
+            f"expression is not a valid gated MeaningExpressionV0: {exc}"
+        ) from exc
     if result.refusal is not None:
         refusal = result.refusal
         if refusal.outcome == BridgeRefusalKind.UNSUPPORTED_MODALITY:
