@@ -12,7 +12,9 @@ from unittest.mock import patch
 from pydantic import ValidationError
 from scripts.coverage_map import compiler_search_reachability as search
 from scripts.packets import scp2_1_roundtrip_generator as roundtrip_generator
+from tqe.runtime.binder import bind_document
 from tqe.runtime.ir import stable_hash
+from tqe.runtime.ir import TacticalQueryDocument
 from tqe.semantic_compiler.meaning_expression import (
     BridgeRefusalKind,
     CompositionConstraint,
@@ -221,6 +223,72 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
         self.assertEqual("PASS", synthesized["bind"]["status"])
         self.assertEqual(expected_hash, synthesized["document_hash"])
 
+    def test_typed_join_synthesis_does_not_emit_inactive_missing_field_defaults(self) -> None:
+        contract = {
+            "desired_output": "classification",
+            "required_evidence": [
+                "typed_join_status",
+                "left_anchor_id",
+                "right_anchor_id",
+                "left_frame_id",
+                "right_frame_id",
+            ],
+            "required_modalities": [],
+            "status_semantics": [{"field": "typed_join_status", "required_value": "PASS"}],
+            "claim_boundary": "Bind regression only.",
+            "composition_constraints": [
+                {
+                    "kind": "typed_join",
+                    "join_key": "same_anchor",
+                    "no_match_policy": "UNKNOWN",
+                    "same_team_perspective_required": False,
+                    "entity_identity_preserved_required": False,
+                    "frame_alignment_required": True,
+                    "left_required_fields": ["anchor_id", "anchor_frame_id"],
+                    "right_required_fields": ["anchor_id", "anchor_frame_id"],
+                }
+            ],
+        }
+        target = {
+            "target_id": "be_011_fragile_possession_state_bind_regression",
+            "concept": "fragile_possession_state",
+            "held_out": True,
+            "multi_step": True,
+            "semantic_correspondence": {
+                "coverage_row": "fragile_possession_state",
+                "meaning": "regression",
+                "composition": "typed_join",
+                "claim_boundary": "Bind regression only.",
+            },
+            "target_contract": contract,
+        }
+
+        build = search.synthesize_by_search(
+            target=target,
+            row={"concept": "fragile_possession_state"},
+            context=search.SearchContext(
+                catalog=search.CatalogIndex(),
+                target_contract=contract,
+            ),
+        )
+        join_node = next(
+            node
+            for node in build["document"]["draft_plan"]["nodes"]
+            if node.get("operator", {}).get("name") == "typed_join"
+        )
+
+        for parameter in (
+            "left_start_frame_field",
+            "left_end_frame_field",
+            "right_start_frame_field",
+            "right_end_frame_field",
+        ):
+            self.assertEqual("none", join_node["parameters"][parameter]["value"])
+        self.assertEqual("anchor_id", join_node["parameters"]["left_anchor_id_field"]["value"])
+        self.assertEqual("anchor_frame_id", join_node["parameters"]["left_frame_field"]["value"])
+
+        bind_document(TacticalQueryDocument.model_validate(build["document"]))
+
     def test_binder_accepts_novel_in_grammar_composition(self) -> None:
         expression = self.accepted_expression("fragile_window_join_count_novel.v0.json")
 
@@ -234,7 +302,7 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
             synthesized["target"]["semantic_correspondence"]["coverage_row"],
         )
 
-    def test_r2_4_sequence_expression_uses_committed_certified_plan_ref(self) -> None:
+    def test_r2_4_sequence_expression_uses_search_not_committed_certified_plan_ref(self) -> None:
         result = load_meaning_expression_from_path(
             R2_4_FIXTURE_DIR / "counterattack_initiation_sequence_rate.v0.json",
             vocabulary=self.vocabulary,
@@ -243,58 +311,16 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
         self.assertIsNotNone(result.expression)
 
         synthesized = synthesize_and_bind(result.expression, coverage_rows=self.coverage_rows)
-        expected_document = json.loads(
-            Path("delivery/packets/r2-4-flagship/counterattack_initiation_v0.json").read_text(encoding="utf-8")
-        )
 
         self.assertEqual("PASS", synthesized["bind"]["status"])
-        self.assertEqual(
-            "certified:r2_4_counterattack_initiation_sequence_rate",
-            synthesized["build"]["terminal_provider"],
-        )
-        self.assertEqual(stable_hash(expected_document), synthesized["document_hash"])
-        self.assertEqual(
-            "r2_4_counterattack_initiation_sequence_rate",
-            synthesized["target"]["semantic_correspondence"]["coverage_row"],
-        )
+        self.assertEqual("operator:rate", synthesized["build"]["terminal_provider"])
+        self.assertIn("provider_field_backward_search", synthesized["build"]["rules_used"])
+        self.assertIn("rate_operator_composition", synthesized["build"]["rules_used"])
+        self.assertIn("sequence_pattern_operator_composition", synthesized["build"]["rules_used"])
+        self.assertIsNone(synthesized["document"].get("plan_id"))
+        self.assertIsNone(synthesized["document"].get("recipe_id"))
 
-    def test_r2_4_sequence_family_uses_committed_certified_plan_ref(self) -> None:
-        expected_document = json.loads(
-            Path("delivery/packets/r2-4-flagship/counterattack_initiation_v0.json").read_text(encoding="utf-8")
-        )
-        for expression_id, concept_identity in (
-            (
-                "regain_progressive_carry_controlled_pass_count_rate_by_team_match",
-                "regain_progressive_carry_controlled_pass_count_rate",
-            ),
-            (
-                "counterattack_initiation_chain_count_and_per_regain_rate",
-                "counterattack_initiation_chain_count_and_per_regain_rate",
-            ),
-            (
-                "counterattack_initiation_chain_count_and_rate_by_team_match",
-                "counterattack_initiation_chain_count_and_rate",
-            ),
-        ):
-            payload = json.loads(
-                (R2_4_FIXTURE_DIR / "counterattack_initiation_sequence_rate.v0.json").read_text(encoding="utf-8")
-            )
-            payload["expression_id"] = expression_id
-            payload["concept_identity"] = concept_identity
-            payload["target"]["target_id"] = f"{expression_id}_v0"
-            result = load_meaning_expression_result(payload, vocabulary=self.vocabulary)
-            self.assertEqual("accepted", result.outcome)
-            self.assertIsNotNone(result.expression)
-
-            synthesized = synthesize_and_bind(result.expression, coverage_rows=self.coverage_rows)
-
-            self.assertEqual(
-                "certified:r2_4_counterattack_initiation_sequence_rate",
-                synthesized["build"]["terminal_provider"],
-            )
-            self.assertEqual(stable_hash(expected_document), synthesized["document_hash"])
-
-    def test_recipe_backed_expression_uses_generated_exact_plan_ref(self) -> None:
+    def test_recipe_id_does_not_bypass_search_with_exact_plan_ref(self) -> None:
         pack = json.loads(Path("generated/tactical-knowledge-pack.json").read_text(encoding="utf-8"))
         recipe = next(
             item for item in pack["recipes"] if item["recipe_id"] == "line_break_support_response_v1"
@@ -304,95 +330,10 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
         self.assertEqual("accepted", result.outcome)
         self.assertIsNotNone(result.expression)
 
-        synthesized = synthesize_and_bind(result.expression, coverage_rows=self.coverage_rows)
+        with self.assertRaises(search.SynthesisError):
+            synthesize_and_bind(result.expression, coverage_rows=self.coverage_rows)
 
-        self.assertEqual("PASS", synthesized["bind"]["status"])
-        self.assertEqual(
-            "recipe:line_break_support_response_v1",
-            synthesized["build"]["terminal_provider"],
-        )
-        self.assertEqual(
-            "generated_exact_typed_plan_ref",
-            synthesized["build"]["rules_used"][0],
-        )
-        self.assertEqual(
-            "line_break_support_response_v1",
-            synthesized["document"]["recipe"]["recipe_id"],
-        )
-
-    def test_recipe_backed_expression_accepts_family_suffix_identity(self) -> None:
-        pack = json.loads(Path("generated/tactical-knowledge-pack.json").read_text(encoding="utf-8"))
-        recipe = next(
-            item for item in pack["recipes"] if item["recipe_id"] == "line_break_support_response_v1"
-        )
-        payload = self.recipe_expression_payload(recipe)
-        payload["expression_id"] = "line_break_support_response_underneath"
-        payload["concept_identity"] = "line_break_support_response_underneath"
-        payload["target"]["target_id"] = "line_break_support_response_underneath_v0"
-        result = load_meaning_expression_result(payload, vocabulary=self.vocabulary)
-        self.assertEqual("accepted", result.outcome)
-        self.assertIsNotNone(result.expression)
-
-        synthesized = synthesize_and_bind(result.expression, coverage_rows=self.coverage_rows)
-
-        self.assertEqual("recipe:line_break_support_response_v1", synthesized["build"]["terminal_provider"])
-
-    def test_recipe_backed_expression_accepts_inserted_qualifier_identity(self) -> None:
-        pack = json.loads(Path("generated/tactical-knowledge-pack.json").read_text(encoding="utf-8"))
-        recipe = next(
-            item for item in pack["recipes"] if item["recipe_id"] == "line_break_support_response_v1"
-        )
-        payload = self.recipe_expression_payload(recipe)
-        payload["expression_id"] = "line_break_underneath_support_response"
-        payload["concept_identity"] = "line_break_underneath_support_response"
-        payload["target"]["target_id"] = "line_break_underneath_support_response_v0"
-        payload["population"]["match_ids"] = ["J03WOH"]
-        payload["population"]["periods"] = []
-        result = load_meaning_expression_result(payload, vocabulary=self.vocabulary)
-        self.assertEqual("accepted", result.outcome)
-        self.assertIsNotNone(result.expression)
-
-        synthesized = synthesize_and_bind(result.expression, coverage_rows=self.coverage_rows)
-
-        self.assertEqual("recipe:line_break_support_response_v1", synthesized["build"]["terminal_provider"])
-        self.assertEqual(["J03WOY"], synthesized["document"]["default_invocation"]["match_ids"])
-        self.assertEqual(["firstHalf", "secondHalf"], synthesized["document"]["default_invocation"]["periods"])
-
-    def test_recipe_backed_expression_accepts_line_break_support_without_response_token(self) -> None:
-        pack = json.loads(Path("generated/tactical-knowledge-pack.json").read_text(encoding="utf-8"))
-        recipe = next(
-            item for item in pack["recipes"] if item["recipe_id"] == "line_break_support_response_v1"
-        )
-        payload = self.recipe_expression_payload(recipe)
-        payload["expression_id"] = "line_break_support_arrival_after_receiver_crosses_line"
-        payload["concept_identity"] = "line_break_support_arrival_after_receiver_crosses_line"
-        payload["target"]["target_id"] = "line_break_support_arrival_after_receiver_crosses_line_v0"
-        result = load_meaning_expression_result(payload, vocabulary=self.vocabulary)
-        self.assertEqual("accepted", result.outcome)
-        self.assertIsNotNone(result.expression)
-
-        synthesized = synthesize_and_bind(result.expression, coverage_rows=self.coverage_rows)
-
-        self.assertEqual("recipe:line_break_support_response_v1", synthesized["build"]["terminal_provider"])
-
-    def test_recipe_backed_expression_accepts_possession_corridor_available_alias(self) -> None:
-        pack = json.loads(Path("generated/tactical-knowledge-pack.json").read_text(encoding="utf-8"))
-        recipe = next(
-            item for item in pack["recipes"] if item["recipe_id"] == "possession_corridor_availability_v1"
-        )
-        payload = self.recipe_expression_payload(recipe)
-        payload["expression_id"] = "possessions_progressive_corridor_ball_side_available"
-        payload["concept_identity"] = "possessions_progressive_corridor_ball_side_available"
-        payload["target"]["target_id"] = "possessions_progressive_corridor_ball_side_available_v0"
-        result = load_meaning_expression_result(payload, vocabulary=self.vocabulary)
-        self.assertEqual("accepted", result.outcome)
-        self.assertIsNotNone(result.expression)
-
-        synthesized = synthesize_and_bind(result.expression, coverage_rows=self.coverage_rows)
-
-        self.assertEqual("recipe:possession_corridor_availability_v1", synthesized["build"]["terminal_provider"])
-
-    def test_single_provider_synthesis_elides_unnecessary_model_composition(self) -> None:
+    def test_single_provider_overcomposition_is_not_silently_elided(self) -> None:
         payload = self.controlled_pass_variant_payload("settled_completed_pass_retained_control")
         payload["operator_applications"] = [{"operator": "typed_join", "parameters": []}]
         payload["target_contract"]["composition_constraints"] = [{"kind": "typed_join", "parameters": []}]
@@ -400,66 +341,8 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
         self.assertEqual("accepted", result.outcome)
         self.assertIsNotNone(result.expression)
 
-        synthesized = synthesize_and_bind(result.expression, coverage_rows=self.coverage_rows)
-
-        self.assertEqual("controlled_pass_episode", synthesized["build"]["terminal_provider"])
-        self.assertIn("single_provider_composition_elision", synthesized["build"]["rules_used"])
-
-    def test_single_provider_family_variants_share_document_hash(self) -> None:
-        left = load_meaning_expression_result(
-            self.controlled_pass_variant_payload("controlled_pass_episode_home_away"),
-            vocabulary=self.vocabulary,
-        )
-        right = load_meaning_expression_result(
-            self.controlled_pass_variant_payload("controlled_pass_episode_ledger"),
-            vocabulary=self.vocabulary,
-        )
-        self.assertEqual("accepted", left.outcome)
-        self.assertEqual("accepted", right.outcome)
-        self.assertIsNotNone(left.expression)
-        self.assertIsNotNone(right.expression)
-
-        left_synthesized = synthesize_and_bind(left.expression, coverage_rows=self.coverage_rows)
-        right_synthesized = synthesize_and_bind(right.expression, coverage_rows=self.coverage_rows)
-
-        self.assertEqual(left_synthesized["document_hash"], right_synthesized["document_hash"])
-        self.assertEqual("controlled_pass_episode_v0", left_synthesized["document"]["target_id"])
-
-    def test_single_provider_family_variant_canonicalizes_model_noise(self) -> None:
-        left_payload = self.controlled_pass_variant_payload("controlled_pass_episode_home_away")
-        noisy_payload = self.controlled_pass_variant_payload("controlled_pass_episode_listing")
-        noisy_payload["population"]["perspective_team_roles"] = ["away", "home"]
-        noisy_payload["target_contract"]["required_evidence"].append("opponents_bypassed_count")
-        left = load_meaning_expression_result(left_payload, vocabulary=self.vocabulary)
-        noisy = load_meaning_expression_result(noisy_payload, vocabulary=self.vocabulary)
-        self.assertEqual("accepted", left.outcome)
-        self.assertEqual("accepted", noisy.outcome)
-        self.assertIsNotNone(left.expression)
-        self.assertIsNotNone(noisy.expression)
-
-        left_synthesized = synthesize_and_bind(left.expression, coverage_rows=self.coverage_rows)
-        noisy_synthesized = synthesize_and_bind(noisy.expression, coverage_rows=self.coverage_rows)
-
-        self.assertEqual(left_synthesized["document_hash"], noisy_synthesized["document_hash"])
-        self.assertEqual("controlled_pass_episode_v0", noisy_synthesized["document"]["target_id"])
-
-    def test_single_provider_exact_identity_variants_share_document_hash(self) -> None:
-        left_payload = self.controlled_pass_variant_payload("find_controlled_pass_episodes_home_away")
-        right_payload = self.controlled_pass_variant_payload("list_controlled_pass_episodes")
-        left_payload["concept_identity"] = "controlled_pass_episode"
-        right_payload["concept_identity"] = "controlled_pass_episode"
-        left = load_meaning_expression_result(left_payload, vocabulary=self.vocabulary)
-        right = load_meaning_expression_result(right_payload, vocabulary=self.vocabulary)
-        self.assertEqual("accepted", left.outcome)
-        self.assertEqual("accepted", right.outcome)
-        self.assertIsNotNone(left.expression)
-        self.assertIsNotNone(right.expression)
-
-        left_synthesized = synthesize_and_bind(left.expression, coverage_rows=self.coverage_rows)
-        right_synthesized = synthesize_and_bind(right.expression, coverage_rows=self.coverage_rows)
-
-        self.assertEqual(left_synthesized["document_hash"], right_synthesized["document_hash"])
-        self.assertEqual("controlled_pass_episode_v0", left_synthesized["document"]["target_id"])
+        with self.assertRaisesRegex(search.SynthesisError, "No registered operator composition"):
+            synthesize_and_bind(result.expression, coverage_rows=self.coverage_rows)
 
     @staticmethod
     def controlled_pass_variant_payload(identity: str) -> dict:

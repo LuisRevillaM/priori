@@ -26,6 +26,7 @@ from tqe.semantic_compiler.hermes_nl import (
     ClarificationRequiredOutcome,
     ExpressionOutcome,
     HermesNLContext,
+    HermesNLModelOutputError,
     HermesOutcome,
     compile_nl_request,
 )
@@ -274,11 +275,15 @@ def compile_observation(
     try:
         outcome = compiler(text, context)
     except Exception as exc:  # noqa: BLE001
-        return None, {
+        observation = {
             "outcome": "exception",
             "exception_type": type(exc).__name__,
             "exception": f"{type(exc).__name__}: {exc}",
         }
+        if isinstance(exc, HermesNLModelOutputError):
+            observation["raw_completion"] = exc.raw_completion
+            observation["rejected_attempts"] = exc.rejected_attempts
+        return None, observation
     return outcome, observe_outcome(outcome, coverage_rows=coverage_rows)
 
 
@@ -357,8 +362,10 @@ def transcript_ref(transcript: Any) -> dict[str, Any]:
     return {
         "prompt_hash": transcript.prompt_hash,
         "completion_hash": transcript.completion_hash,
+        "raw_completion": transcript.raw_completion,
         "model_provider": transcript.model_provider,
         "model_name": transcript.model_name,
+        "invocation": transcript.invocation,
     }
 
 

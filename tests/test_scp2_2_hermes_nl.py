@@ -204,7 +204,7 @@ class SCP2HermesNLTests(unittest.TestCase):
         self.assertEqual(sequence["expression_id"], second.expression.expression_id)
         self.assertEqual(1, len(invoker.prompts))
 
-    def test_clarification_with_reading_already_in_request_resolves_without_reasking(self) -> None:
+    def test_clarification_with_reading_already_in_request_does_not_auto_resolve(self) -> None:
         controlled = self.fixture_payload("fragile_possession_state_known.v0.json")
         sequence = self.fixture_payload("fragile_window_join_count_novel.v0.json")
         raw = json.dumps(
@@ -232,9 +232,8 @@ class SCP2HermesNLTests(unittest.TestCase):
 
         outcome = compile_nl_request("find underneath support", invoker=invoker)
 
-        self.assertEqual("expression", outcome.outcome)
-        self.assertEqual(sequence["expression_id"], outcome.expression.expression_id)
-        self.assertEqual("preanswered_clarification_state", outcome.transcript.invocation["source"])
+        self.assertEqual("clarification_required", outcome.outcome)
+        self.assertEqual("SUPPORT_DEFINITION", outcome.dimension)
         self.assertEqual(1, len(invoker.prompts))
 
     def test_distance_clarification_alias_does_not_preanswer_without_numeric_threshold(self) -> None:
@@ -296,35 +295,6 @@ class SCP2HermesNLTests(unittest.TestCase):
         self.assertEqual("clarification_required", outcome.outcome)
         self.assertEqual("SUPPORT_DEFINITION", outcome.dimension)
 
-    def test_alias_only_support_uses_generated_typed_clarification_without_model_call(self) -> None:
-        first = compile_nl_request("Show support.")
-
-        self.assertEqual("clarification_required", first.outcome)
-        self.assertEqual("SUPPORT_DEFINITION", first.dimension)
-        self.assertIsNone(first.transcript.model_provider)
-        self.assertEqual(
-            "generated_classifier_clarification",
-            first.transcript.invocation["source"],
-        )
-
-        second = compile_nl_request(
-            "use support arrival within distance",
-            context=HermesNLContext(
-                pending_clarification=first.state,
-                answer="use support arrival within distance",
-            ),
-        )
-
-        self.assertEqual("expression", second.outcome)
-        self.assertEqual(
-            "scp2_2_support_arrival_within_distance_reading",
-            second.expression.expression_id,
-        )
-        self.assertEqual(
-            "typed_clarification_state",
-            second.transcript.invocation["source"],
-        )
-
     def test_clarification_resume_selects_fuzzy_typed_reading(self) -> None:
         controlled = self.fixture_payload("fragile_possession_state_known.v0.json")
         sequence = self.fixture_payload("fragile_window_join_count_novel.v0.json")
@@ -360,6 +330,47 @@ class SCP2HermesNLTests(unittest.TestCase):
 
         self.assertEqual("expression", second.outcome)
         self.assertEqual(controlled["expression_id"], second.expression.expression_id)
+        self.assertEqual(1, len(invoker.prompts))
+
+    def test_clarification_resume_regates_selected_reading(self) -> None:
+        controlled = self.fixture_payload("fragile_possession_state_known.v0.json")
+        sequence = self.fixture_payload("fragile_window_join_count_novel.v0.json")
+        raw = json.dumps(
+            {
+                "outcome": "clarification_required",
+                "dimension": "SUPPORT_DEFINITION",
+                "question": "Which support definition should be shown?",
+                "readings": [
+                    {
+                        "reading_id": "support_within_distance",
+                        "label": "within distance support",
+                        "answer_aliases": [],
+                        "expression": controlled,
+                    },
+                    {
+                        "reading_id": "support_lane",
+                        "label": "passing lane support",
+                        "answer_aliases": [],
+                        "expression": sequence,
+                    },
+                ],
+            }
+        )
+        invoker = FakeInvoker(raw)
+        first = compile_nl_request("show support", invoker=invoker)
+        first.state.readings[0].expression.concept_refs.append("body_orientation")
+
+        second = compile_nl_request(
+            "within distance support",
+            context=HermesNLContext(
+                pending_clarification=first.state,
+                answer="within distance support",
+            ),
+            invoker=invoker,
+        )
+
+        self.assertEqual("understood_but_not_expressible", second.outcome)
+        self.assertEqual("BODY_ORIENTATION", second.gap_code)
         self.assertEqual(1, len(invoker.prompts))
 
     def test_clarification_resume_can_select_by_reading_expression_identity(self) -> None:
@@ -453,6 +464,7 @@ class SCP2HermesNLTests(unittest.TestCase):
 
         self.assertEqual(3, result["summary"]["pass"])
         self.assertEqual(0, result["summary"]["fail"])
+        self.assertIn("raw_completion", result["verdicts"][0]["observations"][0]["transcript"])
 
     def expression_for(self, name: str):
         payload = self.fixture_payload(name)

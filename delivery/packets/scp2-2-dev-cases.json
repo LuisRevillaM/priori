@@ -6,8 +6,8 @@
       "case_id": "dev_same_meaning_controlled_pass",
       "kind": "same_meaning_pair",
       "request_texts": [
-        "Find controlled pass episodes across all configured matches for the home and away teams.",
-        "List controlled-pass episodes across all configured matches for both team roles."
+        "Find controlled pass episodes for the home and away teams.",
+        "Show the settled completed passes where the receiving team keeps control."
       ],
       "expected": {
         "outcome": "expression"
@@ -17,8 +17,8 @@
       "case_id": "dev_same_meaning_sequence_rate",
       "kind": "same_meaning_pair",
       "request_texts": [
-        "For each team and match, report count and per-regain rate for counterattack initiation chains where a regain is followed by a progressive carry of at least 3 metres within 5 seconds and then a controlled pass within 4 seconds.",
-        "Measure regains that turn into a 3 metre progressive carry and then a controlled pass, reported as count and per-regain rate by team and match."
+        "For each team and match, rate counterattack initiation chains where a regain is followed by a progressive carry of at least 3 metres within 5 seconds and then a controlled pass within 4 seconds.",
+        "Measure regains that turn into a 3 metre progressive carry and then a controlled pass, reported as a per-regain rate by team and match."
       ],
       "expected": {
         "outcome": "expression",
@@ -33,7 +33,7 @@
       "kind": "same_meaning_pair",
       "request_texts": [
         "Show line breaks where a support option arrives after the receiver crosses the line.",
-        "Find controlled line-break support responses where an underneath option arrives after reception."
+        "Find receiver line transitions during passes with an underneath support arrival response."
       ],
       "expected": {
         "outcome": "expression"
@@ -142,8 +142,8 @@
     {
       "case_id": "dev_clarification_support_definition",
       "kind": "clarification_turn",
-      "request_text": "Show support.",
-      "answer": "use support arrival within distance",
+      "request_text": "Show support after line breaks.",
+      "answer": "use underneath receiving option support",
       "expected": {
         "outcome": "clarification_required",
         "dimension": "SUPPORT_DEFINITION"
@@ -155,8 +155,8 @@
     {
       "case_id": "dev_clarification_distance_threshold",
       "kind": "clarification_turn",
-      "request_text": "Show support around possessions using a distance threshold, but the threshold is not specified.",
-      "answer": "use the default 8 metre support distance",
+      "request_text": "Show nearby support around possessions.",
+      "answer": "within five metres",
       "expected": {
         "outcome": "clarification_required",
         "dimension": "DISTANCE_THRESHOLD"

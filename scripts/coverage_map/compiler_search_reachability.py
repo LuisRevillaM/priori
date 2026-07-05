@@ -1692,6 +1692,11 @@ def build_typed_join_operator(
                         "typed_join side did not expose all declared fields.",
                         {"missing_left_fields": missing_left, "missing_right_fields": missing_right},
                     )
+                emitted_join_constraint = bind_safe_typed_join_constraint(
+                    join_constraint,
+                    left_fields=set(left.field_sources),
+                    right_fields=set(right.field_sources),
+                )
                 node_id = context.node_id("typed_join")
                 output_fields = set(TYPED_JOIN_CORE_FIELDS)
                 output_fields.update(left.field_sources)
@@ -1716,18 +1721,18 @@ def build_typed_join_operator(
                             "frame_alignment_required": boolean(join_constraint["frame_alignment_required"]),
                             "unconstrained": boolean(join_constraint["unconstrained"]),
                             "unconstrained_rationale": enum(join_constraint["unconstrained_rationale"]),
-                            "left_anchor_id_field": enum(join_constraint["left_anchor_id_field"]),
-                            "right_anchor_id_field": enum(join_constraint["right_anchor_id_field"]),
-                            "left_frame_field": enum(join_constraint["left_frame_field"]),
-                            "right_frame_field": enum(join_constraint["right_frame_field"]),
-                            "left_entity_id_field": enum(join_constraint["left_entity_id_field"]),
-                            "right_entity_id_field": enum(join_constraint["right_entity_id_field"]),
-                            "left_start_frame_field": enum(join_constraint["left_start_frame_field"]),
-                            "left_end_frame_field": enum(join_constraint["left_end_frame_field"]),
-                            "right_start_frame_field": enum(join_constraint["right_start_frame_field"]),
-                            "right_end_frame_field": enum(join_constraint["right_end_frame_field"]),
-                            "left_team_role_field": enum(join_constraint["left_team_role_field"]),
-                            "right_team_role_field": enum(join_constraint["right_team_role_field"]),
+                            "left_anchor_id_field": enum(emitted_join_constraint["left_anchor_id_field"]),
+                            "right_anchor_id_field": enum(emitted_join_constraint["right_anchor_id_field"]),
+                            "left_frame_field": enum(emitted_join_constraint["left_frame_field"]),
+                            "right_frame_field": enum(emitted_join_constraint["right_frame_field"]),
+                            "left_entity_id_field": enum(emitted_join_constraint["left_entity_id_field"]),
+                            "right_entity_id_field": enum(emitted_join_constraint["right_entity_id_field"]),
+                            "left_start_frame_field": enum(emitted_join_constraint["left_start_frame_field"]),
+                            "left_end_frame_field": enum(emitted_join_constraint["left_end_frame_field"]),
+                            "right_start_frame_field": enum(emitted_join_constraint["right_start_frame_field"]),
+                            "right_end_frame_field": enum(emitted_join_constraint["right_end_frame_field"]),
+                            "left_team_role_field": enum(emitted_join_constraint["left_team_role_field"]),
+                            "right_team_role_field": enum(emitted_join_constraint["right_team_role_field"]),
                             "left_status_field": enum(join_constraint["left_status_field"]),
                             "right_status_field": enum(join_constraint["right_status_field"]),
                             "required_status_value": enum(join_constraint["required_status_value"]),
@@ -1763,7 +1768,7 @@ def build_typed_join_operator(
                                 "source_kind": right_candidate["source_kind"],
                             },
                         },
-                        "typed_join_constraint": join_constraint,
+                        "typed_join_constraint": emitted_join_constraint,
                         "typed_join_output_fields": sorted(output_fields),
                         "left_build_metadata": left.metadata,
                         "right_build_metadata": right.metadata,
@@ -1893,6 +1898,51 @@ def typed_join_side_required_fields(constraint: dict[str, Any], side: str) -> se
         fields.add(status_field)
     fields.discard("none")
     return fields
+
+
+def bind_safe_typed_join_constraint(
+    constraint: dict[str, Any],
+    *,
+    left_fields: set[str],
+    right_fields: set[str],
+) -> dict[str, Any]:
+    emitted = dict(constraint)
+    join_key = str(constraint["join_key"])
+    active_by_key = {
+        "left_anchor_id_field": join_key == "same_anchor",
+        "right_anchor_id_field": join_key == "same_anchor",
+        "left_frame_field": join_key == "same_frame_window" or bool(constraint["frame_alignment_required"]),
+        "right_frame_field": join_key == "same_frame_window" or bool(constraint["frame_alignment_required"]),
+        "left_entity_id_field": join_key == "same_entity" or bool(constraint["entity_identity_preserved_required"]),
+        "right_entity_id_field": join_key == "same_entity" or bool(constraint["entity_identity_preserved_required"]),
+        "left_start_frame_field": join_key == "episode_overlap",
+        "left_end_frame_field": join_key == "episode_overlap",
+        "right_start_frame_field": join_key == "episode_overlap",
+        "right_end_frame_field": join_key == "episode_overlap",
+        "left_team_role_field": bool(constraint["same_team_perspective_required"]),
+        "right_team_role_field": bool(constraint["same_team_perspective_required"]),
+    }
+    fields_by_key = {
+        "left_anchor_id_field": left_fields,
+        "left_frame_field": left_fields,
+        "left_entity_id_field": left_fields,
+        "left_start_frame_field": left_fields,
+        "left_end_frame_field": left_fields,
+        "left_team_role_field": left_fields,
+        "right_anchor_id_field": right_fields,
+        "right_frame_field": right_fields,
+        "right_entity_id_field": right_fields,
+        "right_start_frame_field": right_fields,
+        "right_end_frame_field": right_fields,
+        "right_team_role_field": right_fields,
+    }
+    for key, active in active_by_key.items():
+        value = str(emitted[key])
+        if value == "none" or active:
+            continue
+        if value not in fields_by_key[key]:
+            emitted[key] = "none"
+    return emitted
 
 
 def typed_join_side_field_parameter_names(side: str, join_key: str) -> tuple[str, ...]:
