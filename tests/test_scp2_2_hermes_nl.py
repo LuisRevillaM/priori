@@ -237,6 +237,36 @@ class SCP2HermesNLTests(unittest.TestCase):
         self.assertEqual("preanswered_clarification_state", outcome.transcript.invocation["source"])
         self.assertEqual(1, len(invoker.prompts))
 
+    def test_clarification_dimension_label_canonicalizes_to_generated_code(self) -> None:
+        controlled = self.fixture_payload("fragile_possession_state_known.v0.json")
+        sequence = self.fixture_payload("fragile_window_join_count_novel.v0.json")
+        raw = json.dumps(
+            {
+                "outcome": "clarification_required",
+                "dimension": "support",
+                "question": "What support reading should be used?",
+                "readings": [
+                    {
+                        "reading_id": "within_distance",
+                        "label": "within distance support",
+                        "answer_aliases": ["nearby"],
+                        "expression": controlled,
+                    },
+                    {
+                        "reading_id": "behind_ball",
+                        "label": "behind ball outlet support",
+                        "answer_aliases": ["outlet"],
+                        "expression": sequence,
+                    },
+                ],
+            }
+        )
+
+        outcome = compile_nl_request("show support", invoker=FakeInvoker(raw))
+
+        self.assertEqual("clarification_required", outcome.outcome)
+        self.assertEqual("SUPPORT_DEFINITION", outcome.dimension)
+
     def test_harness_verdict_correctness_on_tiny_fixture_set(self) -> None:
         fragile = self.expression_for("fragile_possession_state_known.v0.json")
         sequence = self.expression_for_r2_4("counterattack_initiation_sequence_rate.v0.json")

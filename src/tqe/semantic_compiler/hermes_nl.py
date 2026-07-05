@@ -712,6 +712,7 @@ def parse_hermes_completion(
     if isinstance(parsed, ModelExpressionOutput):
         return expression_outcome(parsed.expression, transcript=transcript, vocabulary=vocabulary)
     if isinstance(parsed, ModelClarificationOutput):
+        dimension = canonical_ambiguity_dimension(parsed.dimension, pack_path=vocabulary.pack_path)
         readings = [
             ClarificationReading(
                 reading_id=item.reading_id,
@@ -724,14 +725,14 @@ def parse_hermes_completion(
         state = ClarificationState(
             state_id=stable_hash(
                 {
-                    "dimension": parsed.dimension,
+                    "dimension": dimension,
                     "question": parsed.question,
                     "readings": [reading.model_dump(mode="json", exclude_none=True) for reading in readings],
                     "prompt_hash": transcript.prompt_hash,
                 }
             ),
             original_text=str(transcript.invocation.get("request_text") or ""),
-            dimension=parsed.dimension,
+            dimension=dimension,
             question=parsed.question,
             readings=readings,
             prompt_hash=transcript.prompt_hash,
@@ -739,7 +740,7 @@ def parse_hermes_completion(
         )
         return ClarificationRequiredOutcome(
             outcome="clarification_required",
-            dimension=parsed.dimension,
+            dimension=dimension,
             question=parsed.question,
             readings=readings,
             state=state,
@@ -912,3 +913,25 @@ def strip_json_fence(text: str) -> str:
 
 def normalize_text(text: str) -> str:
     return " ".join(re.sub(r"[^a-z0-9_]+", " ", text.lower()).split())
+
+
+def canonical_ambiguity_dimension(dimension: str, *, pack_path: Path) -> str:
+    normalized = normalize_text(dimension)
+    if not normalized:
+        return dimension
+    try:
+        pack = json.loads(pack_path.read_text(encoding="utf-8"))
+    except OSError:
+        return dimension
+    aliases: dict[str, str] = {}
+    for item in pack.get("ambiguity_dimensions") or []:
+        code = str(item.get("code") or "")
+        if not code:
+            continue
+        aliases[normalize_text(code)] = code
+        aliases[normalize_text(str(item.get("label") or ""))] = code
+        aliases[normalize_text(str(item.get("description") or ""))] = code
+    for alias, code in sorted(aliases.items(), key=lambda item: (-len(item[0]), item[0])):
+        if alias and (normalized == alias or normalized in alias or alias in normalized):
+            return code
+    return dimension
