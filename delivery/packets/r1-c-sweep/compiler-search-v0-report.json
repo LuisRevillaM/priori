@@ -1,0 +1,168 @@
+{
+  "failure_distribution": {
+    "missing_constraint": 1,
+    "unsupported_modality": 1
+  },
+  "findings": [],
+  "held_out_multi_step_successes": [
+    "shape_expansion_episode",
+    "support_depth",
+    "pressure_change_after",
+    "nearest_defender_relation",
+    "same_team_control_after",
+    "fragile_possession_state"
+  ],
+  "held_out_successes": [
+    "carry_displacement",
+    "support_arrival_relation",
+    "shape_expansion_episode",
+    "support_depth",
+    "pressure_change_after",
+    "nearest_defender_relation",
+    "same_team_control_after",
+    "fragile_possession_state"
+  ],
+  "multi_step_successes": [
+    "shape_expansion_episode",
+    "carry_out_of_pressure",
+    "support_depth",
+    "pressure_change_after",
+    "nearest_defender_relation",
+    "same_team_control_after",
+    "fragile_possession_state"
+  ],
+  "plan_dir": "generated/compiler-search-v0/plans",
+  "report_priority": "Held-out successes and real failure distribution are the meaningful outputs.",
+  "result_distribution": {
+    "compiler_reachable": 12,
+    "not_compiler_reachable": 2
+  },
+  "row_csv_path": "generated/compiler-search-v0/row-ledger.csv",
+  "row_ledger_path": "generated/compiler-search-v0/row-ledger.json",
+  "schema_version": "compiler_search_reachability_report.v0",
+  "scope": {
+    "atlas_wide_execution": false,
+    "concept_name_allowed_as_input": false,
+    "coverage_gold_chain_allowed_as_input": false,
+    "coverage_ledger_update_enabled": false,
+    "mode": "r1_c_unified_era_checkpoint",
+    "natural_language": false,
+    "pattern_dispatch_allowed": false,
+    "persistent_node_cache_enabled": false,
+    "perspective_team_roles": [
+      "home",
+      "away"
+    ],
+    "provider_name_allowed_as_input": false,
+    "search_worker_count": 4,
+    "shared_node_cache_enabled": false,
+    "target_count": 14
+  },
+  "search_budget": {
+    "allowed_catalog_refs": [
+      "acceleration",
+      "action_chain",
+      "action_event_anchor",
+      "ball_lateral_fraction",
+      "carry_episode",
+      "change_across_anchor",
+      "controlled_pass_episode",
+      "controlled_pass_team_keyed_anchors",
+      "cover_shadow",
+      "defender_distance_candidate_set",
+      "defensive_line_model",
+      "defensive_outfield_centroid",
+      "geometric_progressive_corridor",
+      "geometric_progressive_corridor_from_anchor_set",
+      "join_episode_sets",
+      "lane_occupancy",
+      "local_number_relation",
+      "marking",
+      "multi_line_model",
+      "off_ball_run",
+      "off_ball_run_type",
+      "one_touch_relay_episode",
+      "opponents_bypassed_by_action",
+      "outcome_window",
+      "pairwise_distance",
+      "pass_chain_episode",
+      "possession_segment",
+      "possession_segment_team_keyed_episodes",
+      "pressure_on_carrier",
+      "receiver_line_transition_during_pass_leg",
+      "relation_destination_entry",
+      "relative_position_to_line",
+      "set_piece_structure",
+      "signed_lateral_shift",
+      "space_region_generation",
+      "structured_zone",
+      "support_arrival_point_pair",
+      "support_arrival_relation",
+      "switch_of_play",
+      "team_compactness",
+      "team_press",
+      "time_to_arrival",
+      "tracking_quality",
+      "transition_anchor",
+      "velocity"
+    ],
+    "budget_label": "max_depth=4.max_branching=6",
+    "excluded_catalog_refs": [
+      "controlled_line_break_episode",
+      "outcome_classification",
+      "relation_destination_entry_classification"
+    ],
+    "max_branching": 6,
+    "max_depth": 4,
+    "rules": [
+      "provider_field_backward_search",
+      "generic_before_after_change",
+      "generic_binary_episode_join",
+      "generic_delta_across_anchor_operator",
+      "generic_vector_projection_operator"
+    ]
+  },
+  "status": "PASS",
+  "summary": {
+    "compiler_reachable_count": 12,
+    "compiler_reachable_pct": 1.6,
+    "coverage_supported_count": 363,
+    "coverage_supported_pct": 48.9,
+    "execution_cache_backend": {
+      "backend": "disabled",
+      "backends": [
+        "disabled"
+      ],
+      "disk_loads": 0,
+      "enabled": false,
+      "entry_count": 0,
+      "memory_entries": 0,
+      "memory_loads": 0,
+      "stores": 0,
+      "worker_count": 4
+    },
+    "execution_node_cache": {
+      "bypassed": 0,
+      "disabled": 0,
+      "hits": 84,
+      "local_hits": 84,
+      "misses": 1232,
+      "shared_hits": 0
+    },
+    "execution_reuse_enabled": false,
+    "held_out_compiler_reachable_count": 8,
+    "held_out_compiler_reachable_pct": 100.0,
+    "held_out_multi_step_compiler_reachable_count": 6,
+    "held_out_multi_step_target_count": 6,
+    "held_out_target_count": 8,
+    "multi_step_compiler_reachable_count": 7,
+    "multi_step_target_count": 7,
+    "sample_compiler_reachable_count": 12,
+    "sample_compiler_reachable_pct": 85.7,
+    "sample_only_note": "sample_* fields are the measurement for non-updating runs; compiler_reachable_count reflects the supplied coverage ledger after mutation only when ledger updates are enabled.",
+    "sample_target_count": 14
+  },
+  "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+  "synthesizer_version": "search_synthesizer.v0.1",
+  "targets_path": "delivery/packets/r1-c-sweep/targets.v0.json"
+}

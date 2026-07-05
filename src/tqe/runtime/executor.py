@@ -66,6 +66,7 @@ PITCH_HALF_LENGTH_M = 52.5
 DEFAULT_PLAN_PATH = Path("config/query-plans/ball_side_block_shift.ir.v1.json")
 DEFAULT_CANONICAL_ROOT = Path(os.environ.get("TQE_DATA_ROOT", "data/canonical/v1"))
 DEFAULT_RAW_ROOT = Path(os.environ.get("TQE_RAW_ROOT", str(Path("data/raw/idsse") / SOURCE_VERSION)))
+DEFAULT_DATA_MANIFEST_PATH = Path(os.environ.get("TQE_DATA_MANIFEST_PATH", "data/manifest.json"))
 GENERIC_EXECUTION_PROFILE = "generic"
 SUPPORTED_PREDICATE_OPERATORS = frozenset(
     {
@@ -750,6 +751,13 @@ def catalog_node_cache_key(node: BoundCatalogNode) -> str:
 
 def canonical_data_manifest_hash(canonical_root: Path) -> str:
     root = canonical_root.resolve()
+    data_manifest = repo_relative_path(Path(os.environ.get("TQE_DATA_MANIFEST_PATH", str(DEFAULT_DATA_MANIFEST_PATH))))
+    if data_manifest.is_file() and manifest_covers_root(data_manifest, root):
+        verify_data_manifest_for_root(data_manifest, root, deep_verify=os.environ.get("TQE_DEEP_VERIFY") == "1")
+        return file_content_hash(
+            data_manifest,
+            schema_version="canonical_data_manifest_file.v1",
+        )
     candidates = (
         root / "manifest.json",
         root / "canonical_manifest.json",
@@ -780,6 +788,84 @@ def canonical_data_manifest_hash(canonical_root: Path) -> str:
         with path.open("rb") as handle:
             for chunk in iter(lambda: handle.read(1024 * 1024), b""):
                 digest.update(chunk)
+    return digest.hexdigest()
+
+
+def repo_relative_path(path: Path) -> Path:
+    return path if path.is_absolute() else Path(__file__).resolve().parents[3] / path
+
+
+def manifest_covers_root(manifest_path: Path, root: Path) -> bool:
+    try:
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False
+    for entry in payload.get("files", []):
+        entry_path = manifest_entry_path(entry, manifest_path)
+        try:
+            entry_path.resolve().relative_to(root)
+            return True
+        except ValueError:
+            continue
+    return False
+
+
+def verify_data_manifest_for_root(manifest_path: Path, root: Path, *, deep_verify: bool) -> None:
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if payload.get("schema_version") != "priori_data_manifest.v1":
+        raise RuntimeError(f"Unsupported data manifest schema: {payload.get('schema_version')}")
+    entries: dict[str, dict[str, Any]] = {}
+    for entry in payload.get("files", []):
+        entry_path = manifest_entry_path(entry, manifest_path)
+        try:
+            relative = entry_path.resolve().relative_to(root).as_posix()
+        except ValueError:
+            continue
+        if relative in entries:
+            raise RuntimeError(f"Duplicate data manifest entry for {relative}")
+        entries[relative] = entry
+
+    actual_files = {
+        path.relative_to(root).as_posix(): path
+        for path in root.rglob("*")
+        if path.is_file()
+    }
+    missing = sorted(set(entries) - set(actual_files))
+    extra = sorted(set(actual_files) - set(entries))
+    if missing or extra:
+        raise RuntimeError(
+            "Data manifest file set mismatch: "
+            f"missing={missing[:5]} extra={extra[:5]}"
+        )
+
+    for relative, path in sorted(actual_files.items()):
+        entry = entries[relative]
+        expected_size = int(entry.get("size", -1))
+        actual_size = path.stat().st_size
+        if actual_size != expected_size:
+            raise RuntimeError(
+                f"Data manifest size mismatch for {relative}: "
+                f"expected {expected_size}, actual {actual_size}"
+            )
+        expected_sha = str(entry.get("sha256") or "")
+        if not expected_sha:
+            raise RuntimeError(f"Data manifest entry missing sha256 for {relative}")
+        if deep_verify and sha256_path(path) != expected_sha:
+            raise RuntimeError(f"Data manifest sha256 mismatch for {relative}")
+
+
+def manifest_entry_path(entry: dict[str, Any], manifest_path: Path) -> Path:
+    value = Path(str(entry.get("path") or ""))
+    if value.is_absolute():
+        return value
+    return repo_relative_path(value)
+
+
+def sha256_path(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
     return digest.hexdigest()
 
 
