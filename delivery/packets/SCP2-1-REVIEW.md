@@ -148,3 +148,30 @@ case law costs twenty minutes.
    any, flagged with a ratification request.
 
 Round 2 appends to packet/scp2-1.
+
+---
+
+# SCP2-1 Round 2: ACCEPTED
+
+Reviewed 2026-07-05 at c4eb4de. Every ruling verified by the
+director's own probes: the pack carries the grammar (all seven
+operators + constraint kinds under composition_grammar, generated
+from the registry); the fabricated teleport constraint cannot even be
+CONSTRUCTED (typed schema rejection — stronger than refusal); the
+committed novel expression applies window + typed_join +
+aggregate_over and is accepted; the REAL update_coverage_rows raises
+PermissionError without TQE_WRITE=1 and TQE_SEARCH_UPDATE_LEDGER=1 —
+the decoy is dead; fixture (a) is the spec-named
+fragile_possession_state; fixture (b) is structurally novel (the
+spec's own windowed-join + count example); the meaning sentence is
+machine-rendered from typed clauses; the shared certification
+envelope is used; timestamps are out of committed artifacts; gap-code
+assertions rose from one to eight.
+
+Process note for the record: the executor followed the escalated
+deviation law exactly this round — the two SCP0 failures from the
+ordered pack extension were enumerated, attributed, NOT re-pinned
+(fence respected), and submitted with a ratification request. That is
+the law working. RATIFIED: the drift is the R-AE governance ripple;
+the director resolves it through the sanctioned regeneration at
+merge.
