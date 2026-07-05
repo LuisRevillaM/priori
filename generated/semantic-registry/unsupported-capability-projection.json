@@ -5761,10 +5761,10 @@
   ],
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "e26c034a2eb5f8a4c9cc14f5a88321a21cb7a0dacec69cc331967199e20e603a",
+    "baseline_artifact_revision": "7cb510b7b6507dd6831dd9adb6e48e7698fabe6c0d3614be6c43400df5fbf011",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "4cba6b4bd0abb1be22380d03c4be8da96237dea96c5052807ace8089a815753d",
+    "lock_hash": "40a50ebc02cb51509a51073a76b270c7a3d12fc76c41c065b1c9511c458cafcb",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
