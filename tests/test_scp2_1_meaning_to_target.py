@@ -271,6 +271,10 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
                 "counterattack_initiation_chain_count_and_per_regain_rate",
                 "counterattack_initiation_chain_count_and_per_regain_rate",
             ),
+            (
+                "counterattack_initiation_chain_count_and_rate_by_team_match",
+                "counterattack_initiation_chain_count_and_rate",
+            ),
         ):
             payload = json.loads(
                 (R2_4_FIXTURE_DIR / "counterattack_initiation_sequence_rate.v0.json").read_text(encoding="utf-8")

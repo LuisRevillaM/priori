@@ -298,6 +298,8 @@ def r2_4_sequence_rate_family(expression: MeaningExpressionV0) -> bool:
         return True
     if {"counterattack", "initiation", "chain", "regain", "rate"}.issubset(tokens):
         return True
+    if {"counterattack", "initiation", "chain", "count", "rate"}.issubset(tokens):
+        return True
     return {"regain", "progressive", "carry", "controlled", "pass"}.issubset(tokens) and (
         "rate" in tokens or "count" in tokens
     )
