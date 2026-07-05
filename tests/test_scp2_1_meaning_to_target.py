@@ -318,11 +318,45 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
         self.assertEqual(["firstHalf", "secondHalf"], synthesized["document"]["default_invocation"]["periods"])
 
     def test_single_provider_synthesis_elides_unnecessary_model_composition(self) -> None:
-        payload = {
+        payload = self.controlled_pass_variant_payload("settled_completed_pass_retained_control")
+        payload["operator_applications"] = [{"operator": "typed_join", "parameters": []}]
+        payload["target_contract"]["composition_constraints"] = [{"kind": "typed_join", "parameters": []}]
+        result = load_meaning_expression_result(payload, vocabulary=self.vocabulary)
+        self.assertEqual("accepted", result.outcome)
+        self.assertIsNotNone(result.expression)
+
+        synthesized = synthesize_and_bind(result.expression, coverage_rows=self.coverage_rows)
+
+        self.assertEqual("controlled_pass_episode", synthesized["build"]["terminal_provider"])
+        self.assertIn("single_provider_composition_elision", synthesized["build"]["rules_used"])
+
+    def test_single_provider_family_variants_share_document_hash(self) -> None:
+        left = load_meaning_expression_result(
+            self.controlled_pass_variant_payload("controlled_pass_episode_home_away"),
+            vocabulary=self.vocabulary,
+        )
+        right = load_meaning_expression_result(
+            self.controlled_pass_variant_payload("controlled_pass_episode_ledger"),
+            vocabulary=self.vocabulary,
+        )
+        self.assertEqual("accepted", left.outcome)
+        self.assertEqual("accepted", right.outcome)
+        self.assertIsNotNone(left.expression)
+        self.assertIsNotNone(right.expression)
+
+        left_synthesized = synthesize_and_bind(left.expression, coverage_rows=self.coverage_rows)
+        right_synthesized = synthesize_and_bind(right.expression, coverage_rows=self.coverage_rows)
+
+        self.assertEqual(left_synthesized["document_hash"], right_synthesized["document_hash"])
+        self.assertEqual("controlled_pass_episode_v0", left_synthesized["document"]["target_id"])
+
+    @staticmethod
+    def controlled_pass_variant_payload(identity: str) -> dict:
+        return {
             "schema_version": "meaning_expression.v0",
-            "expression_id": "settled_completed_pass_retained_control",
+            "expression_id": identity,
             "expression_version": "0.1.0",
-            "concept_identity": "settled_completed_pass_retained_control",
+            "concept_identity": identity,
             "display_name": "Settled Completed Pass Retained Control",
             "meaning_clauses": [
                 {
@@ -334,15 +368,15 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
                 }
             ],
             "concept_refs": ["controlled_pass_episode"],
-            "operator_applications": [{"operator": "typed_join", "parameters": []}],
+            "operator_applications": [],
             "population": {
                 "match_ids": [],
                 "periods": ["firstHalf", "secondHalf"],
-                "perspective_team_roles": ["home"],
+                "perspective_team_roles": ["home", "away"],
             },
             "group_by": [],
             "target": {
-                "target_id": "settled_completed_pass_retained_control_v0",
+                "target_id": f"{identity}_v0",
                 "held_out": True,
                 "multi_step": False,
             },
@@ -353,21 +387,13 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
                 "status_semantics": [
                     {"field": "controlled_pass_status", "operator": "eq", "required_value": "PASS"}
                 ],
-                "composition_constraints": [{"kind": "typed_join", "parameters": []}],
+                "composition_constraints": [],
                 "claim_boundary": "Observed controlled pass status only.",
             },
             "correspondence_clauses": [
                 {"name": "claim_boundary", "value": "single provider should satisfy this request"}
             ],
         }
-        result = load_meaning_expression_result(payload, vocabulary=self.vocabulary)
-        self.assertEqual("accepted", result.outcome)
-        self.assertIsNotNone(result.expression)
-
-        synthesized = synthesize_and_bind(result.expression, coverage_rows=self.coverage_rows)
-
-        self.assertEqual("controlled_pass_episode", synthesized["build"]["terminal_provider"])
-        self.assertIn("single_provider_composition_elision", synthesized["build"]["rules_used"])
 
     def accepted_expression(self, name: str):
         result = load_meaning_expression_from_path(FIXTURE_DIR / name, vocabulary=self.vocabulary)

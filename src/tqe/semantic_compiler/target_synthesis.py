@@ -143,6 +143,7 @@ def synthesize_and_bind(
         document_payload = document_payload_for_expression(
             expression=expression,
             document=primitive_build["document"],
+            target_id_override=primitive_build.get("canonical_target_id"),
         )
         bind_payload = bind_payload_for_document(document_payload)
         return {
@@ -192,7 +193,13 @@ def synthesize_single_provider_without_model_composition(
     row: dict[str, Any],
     context: search.SearchContext,
 ) -> dict[str, Any] | None:
-    if not expression.operator_applications and not expression.target_contract.composition_constraints:
+    concept_refs = set(expression.concept_refs)
+    has_model_composition = bool(expression.operator_applications or expression.target_contract.composition_constraints)
+    has_provider_family_variant = any(
+        expression.concept_identity != ref and recipe_family_candidate_matches(ref, expression.concept_identity)
+        for ref in concept_refs
+    )
+    if not has_model_composition and not has_provider_family_variant:
         return None
     stripped_contract = {
         **context.target_contract,
@@ -202,9 +209,9 @@ def synthesize_single_provider_without_model_composition(
     providers = context.catalog.providers_for_fields(required_fields)
     if not providers:
         return None
-    concept_refs = set(expression.concept_refs)
     provider = next((entry for entry in providers if entry.name in concept_refs), providers[0])
-    stripped_target = {**target, "target_contract": stripped_contract}
+    canonical_target_id = f"{provider.name}_v0"
+    stripped_target = {**target, "target_id": canonical_target_id, "target_contract": stripped_contract}
     stripped_context = search.SearchContext(
         catalog=context.catalog,
         target_contract=stripped_contract,
@@ -214,6 +221,7 @@ def synthesize_single_provider_without_model_composition(
         return None
     build["rules_used"] = sorted({*build.get("rules_used", []), "single_provider_composition_elision"})
     build["target_contract"] = stripped_contract
+    build["canonical_target_id"] = canonical_target_id
     return build
 
 
@@ -283,6 +291,7 @@ def document_payload_for_expression(
     document: dict[str, Any],
     default_invocation: dict[str, Any] | None = None,
     preserve_default_invocation: bool = False,
+    target_id_override: str | None = None,
 ) -> dict[str, Any]:
     defaults = default_invocation or {}
     if preserve_default_invocation:
@@ -301,13 +310,14 @@ def document_payload_for_expression(
         invocation["periods"] = list(periods)
         invocation["perspective_team_role"] = role
         if len(roles) > 1:
-            invocation["invocation_id"] = f"{expression.target.target_id}_{role}_probe"
+            target_id = target_id_override or expression.target.target_id
+            invocation["invocation_id"] = f"{target_id}_{role}_probe"
         role_documents[role] = role_doc
     if len(roles) == 1:
         return next(iter(role_documents.values()))
     return {
         "schema_version": "compiler_search_perspective_bundle.v1",
-        "target_id": expression.target.target_id,
+        "target_id": target_id_override or expression.target.target_id,
         "perspective_team_roles": list(roles),
         "documents": role_documents,
     }
