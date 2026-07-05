@@ -565,6 +565,8 @@
           "evidence_fields": [
             "carry_episode_id",
             "carrier_id",
+            "team_role",
+            "possession_id",
             "carry_start_frame_id",
             "carry_end_frame_id",
             "carry_status",
@@ -602,6 +604,8 @@
             "anchor_frame_id",
             "carry_episode_id",
             "carrier_id",
+            "team_role",
+            "possession_id",
             "carry_status",
             "carry_reason",
             "source_reception_pass_id",
@@ -1987,6 +1991,8 @@
             "carry_status",
             "carry_episode_id",
             "carrier_id",
+            "team_role",
+            "possession_id",
             "carry_start_frame_id",
             "carry_end_frame_id",
             "terminal_pass_id",
@@ -5792,6 +5798,7 @@
         "transition_status",
         "transition_reason",
         "transition_type",
+        "possession_id",
         "transition_frame_id",
         "previous_frame_id",
         "previous_team_role",
@@ -5831,6 +5838,7 @@
             "transition_status",
             "transition_reason",
             "transition_type",
+            "possession_id",
             "transition_frame_id",
             "previous_frame_id",
             "previous_team_role",
@@ -9207,6 +9215,6 @@
       "unit": "none"
     }
   ],
-  "runtime_manifest_revision": "c9190051ffd9b5022809d0026244a1e520b3fd2a4040fab076b4cc947e11963d",
+  "runtime_manifest_revision": "2afa35322ca23d66fd226efa62985e06ce2cb131491f58800e17f3a3bc35b790",
   "schema_version": "1.0"
 }

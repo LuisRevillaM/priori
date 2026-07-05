@@ -35,6 +35,7 @@ from tqe.runtime.executor import (
 from tqe.runtime.ir import BoundCatalogNode, Unit
 from tqe.runtime.one_touch import evaluate_pass_chain
 from tqe.runtime.pass_bypass import attack_x_sign_for
+from tqe.runtime.possession_identity import possession_identity_at_frame
 from tqe.runtime.values import FrameSignal
 
 
@@ -437,6 +438,7 @@ def carry_episode_anchor_record(
         "terminal_pass_id": terminal_record.get("pass_episode_id") if isinstance(terminal_record, dict) else None,
         "carrier_id": carrier_id,
         "team_role": team_role,
+        "possession_id": possession_identity_at_frame(state, start_frame_id, team_role),
         "carry_status": status,
         "carry_reason": reason,
         "control_model": "controlled_pass_distance_plus_comovement_v0_1",

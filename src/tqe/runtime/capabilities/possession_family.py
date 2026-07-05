@@ -41,6 +41,7 @@ from tqe.runtime.controlled_pass import align_event_to_frame
 from tqe.runtime.ir import BoundCatalogNode, Unit
 from tqe.runtime.one_touch import EVENT_COLUMNS
 from tqe.runtime.pass_bypass import attack_x_sign_for
+from tqe.runtime.possession_identity import possession_identity_at_frame
 from tqe.runtime.values import FrameSignal
 
 
@@ -171,6 +172,7 @@ def primitive_transition_anchor(state: PeriodState, node: BoundCatalogNode) -> N
                 "transition_status": status,
                 "transition_reason": reason,
                 "transition_type": transition_type,
+                "possession_id": possession_identity_at_frame(state, frame_id, new_role),
                 "transition_frame_id": frame_id,
                 "previous_frame_id": previous_frame_id,
                 "previous_team_role": previous_role,

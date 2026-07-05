@@ -1001,6 +1001,8 @@
               "evidence_fields": [
                 "carry_episode_id",
                 "carrier_id",
+                "team_role",
+                "possession_id",
                 "carry_start_frame_id",
                 "carry_end_frame_id",
                 "carry_status",
@@ -1040,6 +1042,8 @@
                 "anchor_frame_id",
                 "carry_episode_id",
                 "carrier_id",
+                "team_role",
+                "possession_id",
                 "carry_status",
                 "carry_reason",
                 "source_reception_pass_id",
@@ -4223,6 +4227,8 @@
                 "carry_status",
                 "carry_episode_id",
                 "carrier_id",
+                "team_role",
+                "possession_id",
                 "carry_start_frame_id",
                 "carry_end_frame_id",
                 "terminal_pass_id",
@@ -11053,6 +11059,7 @@
                 "transition_status",
                 "transition_reason",
                 "transition_type",
+                "possession_id",
                 "transition_frame_id",
                 "previous_frame_id",
                 "previous_team_role",
@@ -14360,6 +14367,49 @@
         ]
       },
       {
+        "kind": "sequence_pattern",
+        "operator": "sequence_pattern",
+        "operator_version": "0.1.0",
+        "parameters": [
+          "constraint_opt_out_reason",
+          "frame_rate_hz",
+          "match_policy",
+          "overlap_policy",
+          "possession_continuity_source",
+          "same_player_required",
+          "same_possession_required",
+          "same_team_perspective_required",
+          "stage_1_end_frame_field",
+          "stage_1_frame_field",
+          "stage_1_player_id_field",
+          "stage_1_possession_id_field",
+          "stage_1_required_fields",
+          "stage_1_status_field",
+          "stage_1_team_role_field",
+          "stage_2_end_frame_field",
+          "stage_2_frame_field",
+          "stage_2_minimum_numeric_field",
+          "stage_2_minimum_numeric_value",
+          "stage_2_player_id_field",
+          "stage_2_possession_id_field",
+          "stage_2_required_fields",
+          "stage_2_status_field",
+          "stage_2_team_role_field",
+          "stage_2_window_seconds",
+          "stage_3_end_frame_field",
+          "stage_3_frame_field",
+          "stage_3_player_id_field",
+          "stage_3_possession_id_field",
+          "stage_3_required_fields",
+          "stage_3_status_field",
+          "stage_3_team_role_field",
+          "stage_3_window_seconds",
+          "stage_count",
+          "team_role_field",
+          "window_boundary_policy"
+        ]
+      },
+      {
         "kind": "temporal_order",
         "operator": null,
         "parameters": [
@@ -14450,7 +14500,7 @@
         ]
       }
     ],
-    "operator_count": 7,
+    "operator_count": 8,
     "operators": [
       {
         "coverage_propagation_rule_id": "missing_vector_evidence_to_unknown",
@@ -16864,6 +16914,580 @@
         "purpose": "Compute interval-typed count rates from a joint numerator/denominator tri-state partition under a declared subset law.",
         "version": "0.1.0",
         "witness_rule_id": "rate_group_population_witnesses"
+      },
+      {
+        "coverage_propagation_rule_id": "sequence_successor_unknown_preserved",
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "stage_1",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "stage_2",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "stage_3",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "limitations": [
+          "R2-4 supports three-stage chains; variable-length authoring is future work.",
+          "Window start is exclusive and window end is inclusive.",
+          "A fully observed empty successor window is FAIL; truncated windows and UNKNOWN-status candidates are UNKNOWN."
+        ],
+        "name": "sequence_pattern",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "chain_id",
+              "chain_status",
+              "chain_reason",
+              "chain_length",
+              "stage_count",
+              "match_policy",
+              "overlap_policy",
+              "window_boundary_policy",
+              "frame_rate_hz",
+              "same_team_perspective_required",
+              "same_possession_required",
+              "possession_continuity_source",
+              "same_player_required",
+              "constraint_opt_out_reason",
+              "team_role_field",
+              "team_role",
+              "match_id",
+              "period",
+              "perspective_team_role",
+              "anchor_id",
+              "anchor_frame_id",
+              "start_frame_id",
+              "end_frame_id",
+              "stage_1_anchor_id",
+              "stage_1_frame_id",
+              "stage_1_start_frame_id",
+              "stage_1_end_frame_id",
+              "stage_1_status",
+              "stage_1_status_field",
+              "stage_1_frame_field",
+              "stage_1_team_role",
+              "stage_1_possession_id",
+              "stage_1_player_id",
+              "stage_1_record_hash",
+              "stage_1_source_node_id",
+              "stage_1_source_output_name",
+              "stage_2_anchor_id",
+              "stage_2_frame_id",
+              "stage_2_start_frame_id",
+              "stage_2_end_frame_id",
+              "stage_2_status",
+              "stage_2_status_field",
+              "stage_2_frame_field",
+              "stage_2_team_role",
+              "stage_2_possession_id",
+              "stage_2_player_id",
+              "stage_2_record_hash",
+              "stage_2_source_node_id",
+              "stage_2_source_output_name",
+              "stage_2_window_start_frame_id",
+              "stage_2_window_end_frame_id",
+              "stage_2_window_seconds",
+              "stage_2_window_truncated",
+              "stage_2_candidate_count",
+              "stage_2_unknown_candidate_count",
+              "stage_2_minimum_numeric_field",
+              "stage_2_minimum_numeric_value",
+              "stage_3_anchor_id",
+              "stage_3_frame_id",
+              "stage_3_start_frame_id",
+              "stage_3_end_frame_id",
+              "stage_3_status",
+              "stage_3_status_field",
+              "stage_3_frame_field",
+              "stage_3_team_role",
+              "stage_3_possession_id",
+              "stage_3_player_id",
+              "stage_3_record_hash",
+              "stage_3_source_node_id",
+              "stage_3_source_output_name",
+              "stage_3_window_start_frame_id",
+              "stage_3_window_end_frame_id",
+              "stage_3_window_seconds",
+              "stage_3_window_truncated",
+              "stage_3_candidate_count",
+              "stage_3_unknown_candidate_count",
+              "witness_stage_count",
+              "source_node_id",
+              "source_output_name",
+              "source_record_count",
+              "source_records"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "chain_records",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "chain_id",
+              "chain_status",
+              "chain_reason",
+              "chain_length",
+              "stage_count",
+              "match_policy",
+              "overlap_policy",
+              "window_boundary_policy",
+              "frame_rate_hz",
+              "same_team_perspective_required",
+              "same_possession_required",
+              "possession_continuity_source",
+              "same_player_required",
+              "constraint_opt_out_reason",
+              "team_role_field",
+              "team_role",
+              "match_id",
+              "period",
+              "perspective_team_role",
+              "anchor_id",
+              "anchor_frame_id",
+              "start_frame_id",
+              "end_frame_id",
+              "stage_1_anchor_id",
+              "stage_1_frame_id",
+              "stage_1_start_frame_id",
+              "stage_1_end_frame_id",
+              "stage_1_status",
+              "stage_1_status_field",
+              "stage_1_frame_field",
+              "stage_1_team_role",
+              "stage_1_possession_id",
+              "stage_1_player_id",
+              "stage_1_record_hash",
+              "stage_1_source_node_id",
+              "stage_1_source_output_name",
+              "stage_2_anchor_id",
+              "stage_2_frame_id",
+              "stage_2_start_frame_id",
+              "stage_2_end_frame_id",
+              "stage_2_status",
+              "stage_2_status_field",
+              "stage_2_frame_field",
+              "stage_2_team_role",
+              "stage_2_possession_id",
+              "stage_2_player_id",
+              "stage_2_record_hash",
+              "stage_2_source_node_id",
+              "stage_2_source_output_name",
+              "stage_2_window_start_frame_id",
+              "stage_2_window_end_frame_id",
+              "stage_2_window_seconds",
+              "stage_2_window_truncated",
+              "stage_2_candidate_count",
+              "stage_2_unknown_candidate_count",
+              "stage_2_minimum_numeric_field",
+              "stage_2_minimum_numeric_value",
+              "stage_3_anchor_id",
+              "stage_3_frame_id",
+              "stage_3_start_frame_id",
+              "stage_3_end_frame_id",
+              "stage_3_status",
+              "stage_3_status_field",
+              "stage_3_frame_field",
+              "stage_3_team_role",
+              "stage_3_possession_id",
+              "stage_3_player_id",
+              "stage_3_record_hash",
+              "stage_3_source_node_id",
+              "stage_3_source_output_name",
+              "stage_3_window_start_frame_id",
+              "stage_3_window_end_frame_id",
+              "stage_3_window_seconds",
+              "stage_3_window_truncated",
+              "stage_3_candidate_count",
+              "stage_3_unknown_candidate_count",
+              "witness_stage_count",
+              "source_node_id",
+              "source_output_name",
+              "source_record_count",
+              "source_records"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "chain_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "parameters": [
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "count",
+              "value": 3
+            },
+            "description": "R2-4 sequence_pattern supports exactly three declared stages.",
+            "minimum": 3.0,
+            "name": "stage_count",
+            "payload_type": "number",
+            "required": false,
+            "unit": "count"
+          },
+          {
+            "allowed_values": [
+              "first",
+              "all"
+            ],
+            "description": "Whether each stage advances by the first matching successor or all successors.",
+            "name": "match_policy",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "allow_overlaps",
+              "non_overlapping"
+            ],
+            "description": "Whether successor records may be reused by multiple emitted chains.",
+            "name": "overlap_policy",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "exclusive_start_inclusive_end"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "exclusive_start_inclusive_end"
+            },
+            "description": "Successor window is open at the predecessor frame and closed at the declared end frame.",
+            "name": "window_boundary_policy",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "description": "Frame rate used to convert declared stage windows from seconds to frames.",
+            "minimum": 0.001,
+            "name": "frame_rate_hz",
+            "payload_type": "number",
+            "required": true,
+            "unit": "hertz"
+          },
+          {
+            "description": "Maximum time from stage 1 reference frame to stage 2 anchor frame.",
+            "minimum": 0.0,
+            "name": "stage_2_window_seconds",
+            "payload_type": "number",
+            "required": true,
+            "unit": "second"
+          },
+          {
+            "description": "Maximum time from stage 2 reference frame to stage 3 anchor frame.",
+            "minimum": 0.0,
+            "name": "stage_3_window_seconds",
+            "payload_type": "number",
+            "required": true,
+            "unit": "second"
+          },
+          {
+            "description": "Declared sequence stage parameter stage_1_status_field.",
+            "name": "stage_1_status_field",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "description": "Declared sequence stage parameter stage_2_status_field.",
+            "name": "stage_2_status_field",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "description": "Declared sequence stage parameter stage_3_status_field.",
+            "name": "stage_3_status_field",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "description": "Declared sequence stage parameter stage_1_frame_field.",
+            "name": "stage_1_frame_field",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "description": "Declared sequence stage parameter stage_2_frame_field.",
+            "name": "stage_2_frame_field",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "description": "Declared sequence stage parameter stage_3_frame_field.",
+            "name": "stage_3_frame_field",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Declared sequence stage parameter stage_1_end_frame_field.",
+            "name": "stage_1_end_frame_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Declared sequence stage parameter stage_2_end_frame_field.",
+            "name": "stage_2_end_frame_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Declared sequence stage parameter stage_3_end_frame_field.",
+            "name": "stage_3_end_frame_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "description": "Declared sequence stage parameter stage_1_team_role_field.",
+            "name": "stage_1_team_role_field",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "description": "Declared sequence stage parameter stage_2_team_role_field.",
+            "name": "stage_2_team_role_field",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "description": "Declared sequence stage parameter stage_3_team_role_field.",
+            "name": "stage_3_team_role_field",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Declared sequence stage parameter stage_1_possession_id_field.",
+            "name": "stage_1_possession_id_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Declared sequence stage parameter stage_2_possession_id_field.",
+            "name": "stage_2_possession_id_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Declared sequence stage parameter stage_3_possession_id_field.",
+            "name": "stage_3_possession_id_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Declared sequence stage parameter stage_1_player_id_field.",
+            "name": "stage_1_player_id_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Declared sequence stage parameter stage_2_player_id_field.",
+            "name": "stage_2_player_id_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Declared sequence stage parameter stage_3_player_id_field.",
+            "name": "stage_3_player_id_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Declared sequence stage parameter stage_2_minimum_numeric_field.",
+            "name": "stage_2_minimum_numeric_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "none",
+              "value": 0.0
+            },
+            "description": "Minimum numeric threshold for stage 2 when a field is declared.",
+            "name": "stage_2_minimum_numeric_value",
+            "payload_type": "number",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "boolean",
+              "unit": "none",
+              "value": true
+            },
+            "description": "Require all stage witnesses to share the declared team role.",
+            "name": "same_team_perspective_required",
+            "payload_type": "boolean",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "boolean",
+              "unit": "none",
+              "value": false
+            },
+            "description": "Require all stage witnesses to share declared possession identity fields.",
+            "name": "same_possession_required",
+            "payload_type": "boolean",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "stage_fields",
+              "observed_possession_stream"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "stage_fields"
+            },
+            "description": "Source for same-possession continuity when stage fields do not expose a possession id.",
+            "name": "possession_continuity_source",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "boolean",
+              "unit": "none",
+              "value": false
+            },
+            "description": "Require all stage witnesses to share declared player identity fields.",
+            "name": "same_player_required",
+            "payload_type": "boolean",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Required when same-team perspective is explicitly disabled.",
+            "name": "constraint_opt_out_reason",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "team_role"
+            },
+            "description": "Canonical team-role field echoed for aggregate/rate grouping.",
+            "name": "team_role_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          }
+        ],
+        "purpose": "Build tri-state ordered anchor chains across declared stage outputs, preserving UNKNOWN when successor windows are unobserved or only UNKNOWN candidates match.",
+        "version": "0.1.0",
+        "witness_rule_id": "sequence_stage_witnesses"
       }
     ]
   },
@@ -17515,6 +18139,7 @@
     ],
     "transition_anchor": [
       "new_team_role",
+      "possession_id",
       "previous_frame_id",
       "previous_team_role",
       "transition_frame_id",
@@ -17537,7 +18162,7 @@
     ]
   },
   "generated_at": "reproducible_from_source_hashes",
-  "knowledge_pack_sha256": "d5d204b79244a1bbdd73b4eb6dff5abb8af4aa188f6937815f4a746190578ad0",
+  "knowledge_pack_sha256": "55288c6f2a50705b285ff4c990be0455b2442e4b0f562a07c6e405b6f76c4104",
   "knowledge_pack_version": "m1.2-s2i-a.0",
   "model_visible_tool_schemas": {
     "compare_query_versions": {
@@ -20681,6 +21306,7 @@
         "transition_status",
         "transition_reason",
         "transition_type",
+        "possession_id",
         "transition_frame_id",
         "previous_frame_id",
         "previous_team_role",
@@ -20720,6 +21346,7 @@
             "transition_status",
             "transition_reason",
             "transition_type",
+            "possession_id",
             "transition_frame_id",
             "previous_frame_id",
             "previous_team_role",
@@ -23764,6 +24391,8 @@
           "evidence_fields": [
             "carry_episode_id",
             "carrier_id",
+            "team_role",
+            "possession_id",
             "carry_start_frame_id",
             "carry_end_frame_id",
             "carry_status",
@@ -23803,6 +24432,8 @@
             "anchor_frame_id",
             "carry_episode_id",
             "carrier_id",
+            "team_role",
+            "possession_id",
             "carry_status",
             "carry_reason",
             "source_reception_pass_id",
@@ -24098,6 +24729,8 @@
             "carry_status",
             "carry_episode_id",
             "carrier_id",
+            "team_role",
+            "possession_id",
             "carry_start_frame_id",
             "carry_end_frame_id",
             "terminal_pass_id",
@@ -37284,22 +37917,23 @@
     "generated/capability-context.json": "b17ea9761a5a5d93655787a28a5a0351358778268417d1c5ffc5738078c28f08",
     "generated/tactical-query-plan.schema.json": "7904105efeba7b8297ee3d3dbd183b92c6b8d67f5f034e34da8c52f42b0b54ae",
     "generated/tactical-query-plan.types.ts": "5c027189c9b5f314bc62fd765656e30aeaebe163add038320f74cca932627ceb",
-    "src/tqe/runtime/binder.py": "19e85bbae959644dcb4295a420361d06f92355987ba7af62a2cc14ea51b5c8f6",
-    "src/tqe/runtime/catalog.py": "0f58e55acdd789f1f101b969a0255b864bdc333d6c4a8f596160c57e8b00590f",
+    "src/tqe/runtime/binder.py": "309772e09f93ddb1fbbdfbb48525bfcf6c115c2243e791f3d2d41393a1224794",
+    "src/tqe/runtime/catalog.py": "374140666a0e610f4279c6ac89f6ce4219be55cd165151beac3f63f3f7ae7519",
     "src/tqe/runtime/executor.py": "7a2cd8a4641f7d179111064dbafa17f83e1d8b44bcc330f1237a1a1e33b0814d",
     "src/tqe/runtime/ir.py": "33e4885a6ad75afa7b4e9df96b72eba43c49b92b24ac67c8d2979d0bde13eedd",
-    "src/tqe/runtime/operators/__init__.py": "a7b90947588a8e675ceb337a7398fa9d2309d34ace7f177c537696204972e860",
+    "src/tqe/runtime/operators/__init__.py": "1d2d394ef971040862981964e221370b17d56daaefb6090c6d8047383a005c14",
     "src/tqe/runtime/operators/aggregate_over.py": "1f883d7035795e97ad4ff12a78ce13deda417c857fc18244758e095608aa1b64",
     "src/tqe/runtime/operators/delta_across_anchor.py": "acd81710c06856c71aac2ac41e68a7e07d17262a69f597a92696a0721f77b806",
     "src/tqe/runtime/operators/extremum_over_set.py": "e9bf407db795f44600ffe65f6c0333a3cdaae3b8b234206e1157eed533eb15e3",
     "src/tqe/runtime/operators/project_onto_axis.py": "65159a823e7573cc19fd3728f425680a8cc80349e1bc8e790db890b589ecd9d0",
     "src/tqe/runtime/operators/rate.py": "6e87f7520107efe0a0219d929f8799b822eee17bdc42c9cf5795ea91c117ca88",
+    "src/tqe/runtime/operators/sequence_pattern.py": "1328ee80e0670795f195233b0179944d83236528f70be935009f30c17f16382d",
     "src/tqe/runtime/operators/typed_join.py": "8b897658f357f9cda39c287816daacf95733c3d75c69843d449c35fe8bd10af1",
     "src/tqe/runtime/operators/window.py": "c7247d0fb72c8c0c1705b75d71ced179d7c814c3c2aee93a2dbd9948c773188e",
     "src/tqe/runtime/relations.py": "eb305cd2ff4c9c5f886342eeb8c35253500e6dd777bdf7b4dc403469b771d8e0",
     "src/tqe/verification/m1_2_gate_s2i.py": "9397f1a8a6b11e28d1f0bb48105a44dfae9a2c49ca61ff44413108f1d85ce125",
     "src/tqe/workshop/hermes_s2.py": "ae2bb93b3444749d8fd131075e29404141e517820faf103fb58de2ebafcb1591",
-    "src/tqe/workshop/knowledge_pack.py": "5c2c072fe7241dc765216e504de9dc9ff03e9ae62604f71247842dd70497bef5",
+    "src/tqe/workshop/knowledge_pack.py": "ff3ee2e2780e4535e40bad327fce72d98a6c0b25194de8287337e52b3d8d919a",
     "src/tqe/workshop/m1_2.py": "481097c94dfe922a2e8e6322263e7124841c028601ae78d0608145acca65266c"
   },
   "tool_surfaces": {

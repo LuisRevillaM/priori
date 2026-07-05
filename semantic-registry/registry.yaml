@@ -5309,7 +5309,7 @@ projection_policies:
         review_condition: Remove this waiver when the capability passes exposure review and enters the product projection.
       - subject_ref: runtime:primitive:join_episode_sets:0.1.0
         difference_kind: REMOVED
-        baseline_contract_hash: 2f6bdc456dd304ea076428c34091df75e8080f09fd3f59ced8438a733cbc55ae
+        baseline_contract_hash: 4464b25fda2f2c4b2b109bc1779a38c3f3aa46ce37fadf223b09c38901f83a22
         permitted_fields: []
         rationale: Join episode sets is runtime-executable substrate but is intentionally denied from the product projection pending exposure and product-claim review.
         review_condition: Remove this waiver when the capability passes exposure review and enters the product projection.
@@ -5395,7 +5395,7 @@ projection_policies:
         review_condition: Remove this waiver when the capability passes exposure review and enters the AI projection, or when Hermes exposure becomes registry-driven.
       - subject_ref: runtime:primitive:join_episode_sets:0.1.0
         difference_kind: REMOVED
-        baseline_contract_hash: 2f6bdc456dd304ea076428c34091df75e8080f09fd3f59ced8438a733cbc55ae
+        baseline_contract_hash: 4464b25fda2f2c4b2b109bc1779a38c3f3aa46ce37fadf223b09c38901f83a22
         permitted_fields: []
         rationale: Join-episode-sets is Hermes-authorable substrate (agent exposure is still blocklist-gated, audit finding V5) but is intentionally denied from the AI projection pending exposure review.
         review_condition: Remove this waiver when the capability passes exposure review and enters the AI projection, or when Hermes exposure becomes registry-driven.

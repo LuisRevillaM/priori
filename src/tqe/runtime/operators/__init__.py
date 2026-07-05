@@ -18,6 +18,7 @@ from tqe.runtime.operators.extremum_over_set import EXTREMUM_OVER_SET_SIGNATURE
 from tqe.runtime.operators.project_onto_axis import PROJECT_ONTO_AXIS_SIGNATURE
 from tqe.runtime.operators.rate import RATE_SIGNATURE
 from tqe.runtime.operators.typed_join import TYPED_JOIN_SIGNATURE
+from tqe.runtime.operators.sequence_pattern import SEQUENCE_PATTERN_SIGNATURE
 from tqe.runtime.operators.window import WINDOW_SIGNATURE
 
 OperatorImplementation = Callable[..., None]
@@ -32,6 +33,7 @@ OPERATOR_SIGNATURES: tuple[CompositionOperatorSignature, ...] = (
     TYPED_JOIN_SIGNATURE,
     AGGREGATE_OVER_SIGNATURE,
     RATE_SIGNATURE,
+    SEQUENCE_PATTERN_SIGNATURE,
 )
 OPERATOR_SIGNATURES_BY_CONSTRAINT_KIND: dict[str, CompositionOperatorSignature] = {
     "aggregate_over": AGGREGATE_OVER_SIGNATURE,
@@ -41,6 +43,7 @@ OPERATOR_SIGNATURES_BY_CONSTRAINT_KIND: dict[str, CompositionOperatorSignature] 
     "typed_join": TYPED_JOIN_SIGNATURE,
     "vector_projection": PROJECT_ONTO_AXIS_SIGNATURE,
     "window": WINDOW_SIGNATURE,
+    "sequence_pattern": SEQUENCE_PATTERN_SIGNATURE,
 }
 LEGACY_COMPOSITION_CONSTRAINT_KIND_SCHEMAS: dict[str, dict[str, Any]] = {
     "before_after_same_anchor": {
@@ -99,6 +102,7 @@ OPERATOR_IMPLEMENTATION_NAMES: tuple[tuple[str, str, str], ...] = (
     ("typed_join", "0.1.0", "execute_typed_join"),
     ("aggregate_over", "0.1.0", "execute_aggregate_over"),
     ("rate", "0.1.0", "execute_rate"),
+    ("sequence_pattern", "0.1.0", "execute_sequence_pattern"),
 )
 OPERATOR_IMPLEMENTATION_MODULES: dict[str, str] = {
     "execute_aggregate_over": "tqe.runtime.operators.aggregate_over",
@@ -108,6 +112,7 @@ OPERATOR_IMPLEMENTATION_MODULES: dict[str, str] = {
     "execute_rate": "tqe.runtime.operators.rate",
     "execute_typed_join": "tqe.runtime.operators.typed_join",
     "execute_window": "tqe.runtime.operators.window",
+    "execute_sequence_pattern": "tqe.runtime.operators.sequence_pattern",
 }
 
 
@@ -153,6 +158,14 @@ def composition_constraint_kind_schemas() -> dict[str, dict[str, Any]]:
                     "denominator_required_fields",
                     "numerator_composition_constraints",
                     "numerator_required_fields",
+                }
+            )
+        if kind == "sequence_pattern":
+            parameters.update(
+                {
+                    "stage_1_required_fields",
+                    "stage_2_required_fields",
+                    "stage_3_required_fields",
                 }
             )
         schemas[kind] = {

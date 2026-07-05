@@ -1,0 +1,15 @@
+{
+  "canonical_manifest_hash": "e1fad3b9489ff86c173e81eed450b5b686730976d94da07eb195e34084eacff5",
+  "flagship_plan": "delivery/packets/r2-4-flagship/counterattack_initiation_v0.json",
+  "flagship_plan_hash": "bf12768919f517f7b9412bd42622d2e4f262a6ceba6667319a597fae06921749",
+  "generated_by": "scripts/packets/r2_4_flagship_generator.py",
+  "long_execution_threshold_seconds": 300.0,
+  "meaning_expression": "delivery/packets/r2-4-flagship/meaning-expressions/counterattack_initiation_sequence_rate.v0.json",
+  "meaning_expression_hash": "4c11f6699e3788951d4e4f33ee4cb7c8f54f7375ee333dda7df88362008f146e",
+  "period_record_count": 28,
+  "period_records_hash": "3fb270eda29fc14f57746491881afacaee388f7799284ee9f6caf2bf74416afd",
+  "schema_version": "r2_4_flagship_provenance.v1",
+  "synthesized_sequence_rate_document_hash": "bf12768919f517f7b9412bd42622d2e4f262a6ceba6667319a597fae06921749",
+  "table": "delivery/packets/r2-4-flagship/counterattack_initiation_table.json",
+  "table_hash": "49bf6720be24f417b179d17abfe2e4ee9231ce2fcab55194109697fa17def411"
+}
