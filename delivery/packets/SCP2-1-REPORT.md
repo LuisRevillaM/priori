@@ -19,7 +19,7 @@ Frontier base: `df622a7` (`codex/afl08-passport-loop`)
 | Commit | Contents |
 | --- | --- |
 | `b102bd0` | Report scaffold and onboarding provenance. |
-| pending | Meaning-expression schema, pack-derived vocabulary gate, target synthesizer, round-trip fixtures/evidence, generator, tests. |
+| `8c5514c` | Meaning-expression schema, pack-derived vocabulary gate, target synthesizer, round-trip fixtures/evidence, generator, tests. |
 
 ## Round-Trip Fixtures
 
