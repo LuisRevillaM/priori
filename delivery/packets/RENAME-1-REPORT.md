@@ -10,8 +10,8 @@ Frontier base: `f90fce4` (`codex/afl08-passport-loop`)
 | --- | --- | --- |
 | Packet read | DONE | `delivery/packets/RENAME-1-entrelineas.md` |
 | Branch | DONE | `packet/rename-1` from `f90fce4` |
-| Stage-0 inventory commit | IN_PROGRESS | This report section is committed before any rename edit lands. |
-| Laws | ACTIVE | Historical records remain byte-exact; atlas/README attribution retained. |
+| Stage-0 inventory commit | DONE | `0fc5370`; committed before any rename edit landed. |
+| Laws | SATISFIED | Historical records remain byte-exact; atlas/README attribution retained. |
 | Push | NOT_DONE | Local commits only. |
 
 ## Classified Inventory
@@ -53,8 +53,8 @@ These are live project/product/source surfaces, excluding Hermes toolset names,
 | `data/manifest.json`, `scripts/data/build_data_manifest.py`, `src/tqe/runtime/executor.py`, `tests/test_executor_boundaries.py` | Rename data-manifest schema version together. |
 | `scripts/create-demo-data-bundle.py`, `scripts/provision-demo-data.py`, `scripts/render-start.sh` | Rename human descriptions, default bundle/temp names, and temp prewarm filename. |
 | `src/tqe/idsse/source_lock.py` | Rename HTTP user agent. |
-| `src/tqe/runtime/artifacts.py` | Rename tactical-query schema `$id`. |
-| `src/tqe/semantic_registry/generate.py`, `src/tqe/semantic_registry/runtime_manifest.py` | Rename generator ids; generated outputs are not edited by hand. |
+| `src/tqe/runtime/artifacts.py` | Reclassified as generated-schema coupled; flag for sanctioned schema regeneration rather than edit in this packet. |
+| `src/tqe/semantic_registry/generate.py`, `src/tqe/semantic_registry/runtime_manifest.py` | Reclassified as registry/knowledge-pack coupled; flag for sanctioned SCP regeneration rather than edit in this packet. |
 | `src/tqe/workshop/app_service.py`, `src/tqe/workshop/hermes_invocation.py`, `src/tqe/workshop/mcp_server.py` | Rename human-facing prompt/instruction text only; preserve frozen Hermes identifiers. |
 
 ### B. Historical Record To Keep
@@ -104,10 +104,11 @@ These are flagged for the director and not hand-edited in this packet.
 Regeneration commands to run after merge-time ratification, not in this packet:
 
 ```text
-TQE_WRITE=1 make scp-0-verify
-TQE_WRITE=1 make knowledge-pack-write
-TQE_WRITE=1 make coverage-map
-TQE_WRITE=1 make compiler-search-reachability
+make scp-0-write
+make knowledge-pack-write
+make coverage-map-write
+make compiler-search-reachability
+make m1-1-build
 npm --prefix apps/workbench-alpha run build
 make cloud-alpha-bundle
 ```
@@ -120,8 +121,60 @@ renamed.
 
 | Commit | Contents |
 | --- | --- |
-| inventory commit | Classified inventory only; no rename edits. |
+| `0fc5370` | Classified inventory only; no rename edits. |
+| `79b7ad2` | Renamed living README/product/package/config/data/source strings, preserved Hermes names, added atlas `PROVENANCE.md`. |
+| `d1d54b2` | Updated the attestation provenance test allowlist so `source_file.mcp_server` remains an explicit fail-closed identity drift. |
+| report commit | This final report update with verification table. |
+
+## Implementation Summary
+
+Renamed living surfaces to Entrelíneas/`entrelineas` where the change was not a
+historical rewrite, pinned evidence mutation, Hermes toolset rename, repo/folder
+rename, or generated refreeze. The `tqe` package name remains unchanged.
+
+Attribution is preserved at the atlas via
+`semantic-registry/atlas/PROVENANCE.md`, and the README now states that the
+project was inspired by an exchange with Priori (the company), built
+independently on public IDSSE/DFL data, and renamed Entrelíneas on 2026-07-05.
+
+No `generated/`, prior `delivery/packets/*-REPORT.md`/`*-REVIEW.md`, prior
+packet briefs, `delivery/ledger.jsonl`, ADR body text, committed evidence, or
+`review-packets/` files were edited.
+
+Expected old-name leftovers are the classified ones: Priori company attribution
+and no-access history; current Render/GitHub/local-folder names; frozen Hermes
+toolset identifiers; generated/registry/coverage outputs pending sanctioned
+regeneration; protected AFL/imported-reference records; and historical evidence.
+
+The first full-suite attempt on `79b7ad2` exposed the N1D attestation test
+allowlist gap: the code correctly reported `source_file.mcp_server` as identity
+drift after the MCP server prompt text changed, but the test did not list that
+identity key. `d1d54b2` adds that key without weakening the fail-closed
+attestation behavior. The pre-fix failure is the guard evidence for that one
+line: without the key, the named test fails; with it, the named test passes and
+still requires explicit identity-drift failures.
 
 ## Verification
 
-Pending implementation.
+| Command | Result | Tests | Duration | Notes |
+| --- | --- | ---: | ---: | --- |
+| `PYTHONPATH=src .venv/bin/python -m unittest tests.test_executor_boundaries` | PASS | 17 | `0.179s` | Data-manifest schema source/test pair. |
+| `PYTHONPATH=src .venv/bin/python -m unittest tests.test_workbench_beta0_contract.WorkbenchBeta0ContractTests.test_match_library_is_limited_to_deployed_manifest_with_canonical_metadata` | PASS | 1 | `0.059s` | Deploy manifest still loads. |
+| `npm --prefix apps/workbench-alpha run test:unit` | FAIL | 0 | pre-test | Sandbox denied `tsx` IPC pipe under `/var/folders/.../T`. |
+| `TMPDIR=/private/tmp npm --prefix apps/workbench-alpha run test:unit` | PASS | 7 groups | not timed | `api`, `geometry`, `playback`, `presentation`, `workbenchState`, `overlay`, `momentZero`. |
+| `UV_CACHE_DIR=/private/tmp/uv-cache-priori make PYTHON=/Users/luisrevilla/code/priori/.venv/bin/python test` on `79b7ad2` | FAIL | 532 | `475.725s` | Long execution; one failure, `test_attested_novel_composition_requires_verified_plan_hash`, due missing `source_file.mcp_server` identity-key allowlist. |
+| `PYTHONPATH=src .venv/bin/python -m unittest tests.test_workbench_beta0_contract.WorkbenchBeta0ContractTests.test_attested_novel_composition_requires_verified_plan_hash` | PASS | 1 | `0.023s` | After `d1d54b2`. |
+| `UV_CACHE_DIR=/private/tmp/uv-cache-priori make PYTHON=/Users/luisrevilla/code/priori/.venv/bin/python test` on `d1d54b2` | PASS | 532 | `454.378s` | Long execution flagged; final committed-tree full suite. |
+
+Final full-suite output summary:
+
+```text
+Ran 532 tests in 454.378s
+
+OK
+{"attestation_status": "VERIFIED", "blocking_reasons": []}
+```
+
+Untracked local files intentionally not staged:
+`delivery/packets/r2-4-flagship/run-sidecar.local.json` and
+`docs/visual-explainers/tactical-compilation-concept.png`.
