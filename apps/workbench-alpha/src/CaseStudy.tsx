@@ -365,7 +365,7 @@ export function CaseStudy() {
       <style>{CSS}</style>
 
       <article className="cs-col">
-        <p className="cs-eyebrow">Priori · Engineering note</p>
+        <p className="cs-eyebrow">Entrelíneas · Engineering note</p>
         <h1>A soccer language compiler: approach, library, and what testing it revealed</h1>
         <p className="cs-lede">
           A compiler for football concepts: describe a situation, compile it into

@@ -44,8 +44,8 @@ make cloud-alpha-bundle
 This writes:
 
 ```text
-artifacts/cloud-alpha/priori-cloud-workbench-alpha-fortuna-v1.tar.gz
-artifacts/cloud-alpha/priori-cloud-workbench-alpha-fortuna-v1.manifest.json
+artifacts/cloud-alpha/entrelineas-cloud-workbench-alpha-seven-match-v1.tar.gz
+artifacts/cloud-alpha/entrelineas-cloud-workbench-alpha-seven-match-v1.manifest.json
 ```
 
 The bundle is shaped like this:

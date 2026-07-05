@@ -1,7 +1,7 @@
-# Priori
+# Entrelíneas
 
-Priori is a research prototype for evidence-backed football tactical queries over
-tracking and event data. The core idea is simple:
+Entrelíneas is a research prototype for evidence-backed football tactical
+queries over tracking and event data. The core idea is simple:
 
 ```text
 A tactical claim should be compiled into explicit, typed conditions,
@@ -27,7 +27,7 @@ Current active branch for the public alpha work:
 codex/afl08-passport-loop
 ```
 
-Live alpha surfaces:
+Live alpha surfaces, still served from the pre-rename Render service:
 
 - Coach preview: `https://priori-integrated-alpha.onrender.com/`
 - Case study: `https://priori-integrated-alpha.onrender.com/case-study`
@@ -148,6 +148,12 @@ the same evidence discipline, not a place where stronger claims are invented.
 Pixels and prose are treated as claims too.
 
 ## History And Context
+
+Entrelíneas was inspired by an exchange with Priori (the company), then built
+independently on public IDSSE/DFL data without Priori SDK/API access, private
+Priori data, or production integration. The project was renamed Entrelíneas on
+2026-07-05 so its public identity is distinct while the repo preserves truthful
+attribution and historical records.
 
 The project has gone through several proof phases. The names below reflect the
 local milestone/gate language preserved in this repo.

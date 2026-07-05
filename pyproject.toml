@@ -1,5 +1,5 @@
 [project]
-name = "priori-tactical-evidence"
+name = "entrelineas-tactical-evidence"
 version = "0.1.0"
 description = "Independent tactical evidence demo using public IDSSE/DFL data."
 requires-python = ">=3.12,<3.13"

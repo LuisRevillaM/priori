@@ -24,7 +24,7 @@ from typing import Any
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Provision Priori demo data for cloud Workbench.")
+    parser = argparse.ArgumentParser(description="Provision Entrelíneas demo data for cloud Workbench.")
     parser.add_argument("--dataset-root", type=Path, default=Path("/var/data/dataset"))
     parser.add_argument("--manifest", type=Path, default=Path("config/deploy/demo-data-manifest.json"))
     parser.add_argument("--bundle-manifest", type=Path, default=Path(os.environ.get("TQE_DATA_BUNDLE_MANIFEST", "")) if os.environ.get("TQE_DATA_BUNDLE_MANIFEST") else None)
@@ -43,7 +43,7 @@ def main() -> int:
         print(json.dumps(missing_report(args.dataset_root, manifest), indent=2, sort_keys=True))
         return 1
 
-    with tempfile.TemporaryDirectory(prefix="priori-demo-data-") as temp_dir:
+    with tempfile.TemporaryDirectory(prefix="entrelineas-demo-data-") as temp_dir:
         temp_path = Path(temp_dir)
         archive = temp_path / "bundle.tar.gz"
         download(args.bundle_url, archive)

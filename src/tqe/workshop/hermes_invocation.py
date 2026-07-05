@@ -1,7 +1,7 @@
 """Hermes invocation shim for the Workbench product path.
 
 Hermes' one-shot CLI validates explicit toolsets before MCP discovery. The
-Priori tactical toolset is dynamic, so the host invokes this module under the
+Entrelíneas tactical toolset is dynamic, so the host invokes this module under the
 Hermes Python environment: discover MCP tools first, verify the exact tool
 surface, then run the one-shot agent with the dynamic MCP toolset.
 """
@@ -45,7 +45,7 @@ FORBIDDEN_TOOL_FRAGMENTS = {
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Run Hermes through the frozen Priori tactical MCP surface.")
+    parser = argparse.ArgumentParser(description="Run Hermes through the frozen Entrelíneas tactical MCP surface.")
     subcommands = parser.add_subparsers(dest="command", required=True)
 
     probe = subcommands.add_parser("probe", help="Verify the model-visible MCP tool surface.")

@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
-  "bundle_id": "priori-cloud-workbench-alpha-seven-match-v1",
+  "bundle_id": "entrelineas-cloud-workbench-alpha-seven-match-v1",
   "bundle_sha256": "9e680b8b41670eece292e736ccd62184470b87e7e719eb578135b5be462f64a0",
-  "description": "Runtime data required for the deployed Priori Workbench and coach preview over the seven-match IDSSE/DFL sample corpus.",
+  "description": "Runtime data required for the deployed Entrelíneas Workbench and coach preview over the seven-match IDSSE/DFL sample corpus.",
   "canonical_root": "canonical/v1",
   "raw_root": "raw/idsse/figshare-28196177-v1",
   "match_ids": [

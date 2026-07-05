@@ -1,9 +1,9 @@
 # A soccer language compiler: approach, library, and what testing it revealed
 
-> Canonical text of the public Priori case study. The live interactive version —
+> Canonical text of the public Entrelíneas case study. The live interactive version —
 > with animated coordinate replays for every example — is served at
 > `/case-study` on the deployed Workbench
-> (https://priori-integrated-alpha.onrender.com/case-study) and rendered from
+> (currently https://priori-integrated-alpha.onrender.com/case-study) and rendered from
 > `apps/workbench-alpha/src/CaseStudy.tsx`. This document is the
 > version-controlled narrative of record; if the two drift, the component should
 > be updated to match this text or vice versa in the same change.

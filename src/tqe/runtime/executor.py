@@ -812,7 +812,7 @@ def manifest_covers_root(manifest_path: Path, root: Path) -> bool:
 
 def verify_data_manifest_for_root(manifest_path: Path, root: Path, *, deep_verify: bool) -> None:
     payload = json.loads(manifest_path.read_text(encoding="utf-8"))
-    if payload.get("schema_version") != "priori_data_manifest.v1":
+    if payload.get("schema_version") != "entrelineas_data_manifest.v1":
         raise RuntimeError(f"Unsupported data manifest schema: {payload.get('schema_version')}")
     entries: dict[str, dict[str, Any]] = {}
     for entry in payload.get("files", []):

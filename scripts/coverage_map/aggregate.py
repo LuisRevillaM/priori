@@ -154,7 +154,7 @@ def main() -> None:
         "schema_version": "coverage-map.v0",
         "claim_status": CLAIM_STATUS,
         "catalog_basis": "codex/afl08-passport-loop substrate after Q5, time_to_arrival static-point reachability, carry_episode movement-under-control, Q2 generic binary episode joins, acceleration, set_piece_structure observed restart arrangement, off_ball_run observed movement, marking observed proximity, off_ball_run_type observed path geometry, space_region_generation sampled open-space geometry, cover_shadow observed ball-target lane screening geometry, and team_press observed multi-defender pressure geometry",
-        "denominator_note": "Coverage of Priori's authored 741-concept atlas inventory — NOT coverage of all questions users may ask. True denominator is the held-out NL eval.",
+        "denominator_note": "Coverage of Priori (the company)'s authored 741-concept atlas inventory — NOT coverage of all questions users may ask. True denominator is the held-out NL eval.",
         "audit_note": AUDIT_NOTE,
         "roadmap_implications": ROADMAP_IMPLICATIONS,
         "total_concepts": total,

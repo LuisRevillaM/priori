@@ -181,6 +181,7 @@ class WorkbenchBeta0ContractTests(unittest.TestCase):
             "source_file.runtime_binder",
             "source_file.runtime_catalog",
             "source_file.runtime_executor",
+            "source_file.mcp_server",
             "source_file.workshop_service",
         }
         self.assertTrue(set(details["failures"]).issubset(identity_failures), details["failures"])

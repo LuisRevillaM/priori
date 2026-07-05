@@ -41,7 +41,7 @@ def file_records(roots: list[Path]) -> list[dict[str, Any]]:
 def build_manifest(roots: list[Path]) -> dict[str, Any]:
     records = file_records(roots)
     return {
-        "schema_version": "priori_data_manifest.v1",
+        "schema_version": "entrelineas_data_manifest.v1",
         "integrity_policy": {
             "default_gate_verify": "manifest_hash_plus_file_sizes",
             "deep_verify_env": "TQE_DEEP_VERIFY=1",

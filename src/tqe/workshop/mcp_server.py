@@ -26,7 +26,7 @@ DEFAULT_OUTPUT_ROOT = Path("artifacts/m1.2/workshop")
 mcp = FastMCP(
     SERVER_NAME,
     instructions=(
-        "Use these tools to inspect Priori tactical-query capabilities, submit "
+        "Use these tools to inspect Entrelíneas tactical-query capabilities, submit "
         "experimental typed plans, validate bound interpretations, and inspect "
         "host-created results/replay handles. Host confirmation and execution "
         "are intentionally unavailable."

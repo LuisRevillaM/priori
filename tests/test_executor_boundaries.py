@@ -41,7 +41,7 @@ from tqe.runtime.values import RuntimeValue
 
 def write_data_manifest(path: Path, files: list[Path]) -> None:
     payload = {
-        "schema_version": "priori_data_manifest.v1",
+        "schema_version": "entrelineas_data_manifest.v1",
         "files": [
             {
                 "path": file_path.as_posix(),

@@ -1737,7 +1737,7 @@ def parse_invocation_json(text: str) -> dict[str, Any]:
 
 def hermes_interpret_prompt(query: str) -> str:
     return f"""
-You are the Priori M1.2 Integrated Alpha tactical query interpreter.
+You are the Entrelíneas M1.2 Integrated Alpha tactical query interpreter.
 
 Use only the priori_tactical MCP tools. Do not use filesystem, terminal, Python,
 SQL, raw coordinate dumps, host confirmation, or execution. Stop before

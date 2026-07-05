@@ -311,5 +311,5 @@
     "data/canonical/v1",
     "data/raw/idsse/figshare-28196177-v1"
   ],
-  "schema_version": "priori_data_manifest.v1"
+  "schema_version": "entrelineas_data_manifest.v1"
 }
