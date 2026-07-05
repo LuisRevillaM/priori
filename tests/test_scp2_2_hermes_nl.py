@@ -19,7 +19,7 @@ from tqe.semantic_compiler.hermes_nl import (
     parse_hermes_completion,
     transcript_for,
 )
-from tqe.semantic_compiler.meaning_expression import load_pack_vocabulary
+from tqe.semantic_compiler.meaning_expression import load_meaning_expression_result, load_pack_vocabulary
 
 
 FIXTURE_DIR = Path("delivery/packets/scp2-1-roundtrip/meaning-expressions")
@@ -105,6 +105,28 @@ class SCP2HermesNLTests(unittest.TestCase):
 
         self.assertIn(sentinel, mutated.prompt)
         self.assertNotEqual(baseline.prompt_hash, mutated.prompt_hash)
+
+    def test_prompt_projection_contains_generated_certified_few_shots(self) -> None:
+        examples = self.projection.sections["certified_few_shot_examples"]
+
+        self.assertEqual(3, len(examples))
+        fixture_paths = {item["fixture_path"] for item in examples}
+        self.assertIn(
+            "delivery/packets/scp2-1-roundtrip/meaning-expressions/fragile_possession_state_known.v0.json",
+            fixture_paths,
+        )
+        self.assertIn(
+            "delivery/packets/r2-4-flagship/meaning-expressions/counterattack_initiation_sequence_rate.v0.json",
+            fixture_paths,
+        )
+        self.assertNotIn(
+            "delivery/packets/scp2-1-roundtrip/meaning-expressions/body_orientation_oov.v0.json",
+            fixture_paths,
+        )
+        for example in examples:
+            result = load_meaning_expression_result(example["expression"], vocabulary=self.vocabulary)
+            self.assertEqual("accepted", result.outcome)
+            self.assertTrue(example["minimal_contract_guidance"]["required_evidence"])
 
     def test_multi_turn_clarification_state_resumes_without_reasking_model(self) -> None:
         controlled = self.fixture_payload("fragile_possession_state_known.v0.json")

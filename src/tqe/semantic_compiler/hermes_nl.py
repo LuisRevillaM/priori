@@ -29,6 +29,11 @@ from tqe.semantic_compiler.meaning_expression import (
 DEFAULT_PROVIDER = "anthropic"
 DEFAULT_MODEL = "claude-sonnet-4-5"
 DEFAULT_TOOLSET = "mcp-priori_tactical"
+CERTIFIED_FEW_SHOT_PATHS = (
+    Path("delivery/packets/scp2-1-roundtrip/meaning-expressions/fragile_possession_state_known.v0.json"),
+    Path("delivery/packets/scp2-1-roundtrip/meaning-expressions/fragile_window_join_count_novel.v0.json"),
+    Path("delivery/packets/r2-4-flagship/meaning-expressions/counterattack_initiation_sequence_rate.v0.json"),
+)
 
 
 class StrictModel(BaseModel):
@@ -255,8 +260,8 @@ def compile_nl_request(
 
 def build_prompt_projection(pack_path: Path = DEFAULT_KNOWLEDGE_PACK_PATH) -> PromptProjection:
     payload = json.loads(pack_path.read_text(encoding="utf-8"))
-    sections = prompt_sections_from_pack(payload)
-    section_json = json.dumps(sections, indent=2, sort_keys=True)
+    sections = prompt_sections_from_pack(payload, pack_path=pack_path)
+    section_json = json.dumps(sections, separators=(",", ":"), sort_keys=True)
     prompt = (
         "You are the SCP2-2 Hermes NL-to-meaning compiler.\n"
         "Your only valid output is one JSON object with outcome equal to exactly one of: "
@@ -287,6 +292,10 @@ def build_prompt_projection(pack_path: Path = DEFAULT_KNOWLEDGE_PACK_PATH) -> Pr
         "the primitive's generated status/output fields plus predicate status_semantics. For composed asks, use "
         "composition_constraints.kind from generated constraint_kinds and only that kind's generated parameter "
         "names. Do not place unsupported join keys or field names in constraint parameters.\n"
+        "Use generated certified_few_shot_examples as examples of synthesizeable MeaningExpressionV0 shape. "
+        "They are generated from committed certified fixtures. Do not copy fixture IDs unless the request truly "
+        "matches; copy the contract discipline: minimal required_evidence, concrete status fields, and only needed "
+        "composition constraints.\n"
         "You may use read-only priori_tactical MCP tools to inspect capabilities, recipes, or field contracts "
         "before the final answer. Never submit, validate, execute, inspect results, or retrieve replay. Tool "
         "observations are not an output surface; the final answer is still only the JSON object.\n"
@@ -304,7 +313,7 @@ def build_prompt_projection(pack_path: Path = DEFAULT_KNOWLEDGE_PACK_PATH) -> Pr
     )
 
 
-def prompt_sections_from_pack(pack: dict[str, Any]) -> dict[str, Any]:
+def prompt_sections_from_pack(pack: dict[str, Any], *, pack_path: Path) -> dict[str, Any]:
     primitives = pack.get("primitives") or []
     relations = pack.get("relations") or []
     predicate_operators = pack.get("operators") or []
@@ -359,6 +368,9 @@ def prompt_sections_from_pack(pack: dict[str, Any]) -> dict[str, Any]:
             for item in sorted(pack.get("ambiguity_dimensions") or [], key=lambda item: item["code"])
         ],
         "refusal_routing": refusal_routing_projection(pack),
+        "certified_few_shot_examples": certified_few_shot_examples(
+            vocabulary=load_pack_vocabulary(pack_path),
+        ),
         "claim_boundaries": claim_boundary_projection(pack),
     }
 
@@ -448,6 +460,42 @@ def refusal_routing_projection(pack: dict[str, Any]) -> dict[str, Any]:
         "unsupported_modality_gap_codes": unsupported,
         "understood_but_not_expressible_gap_codes": [
             code for code in codes if code not in set(unsupported)
+        ],
+    }
+
+
+def certified_few_shot_examples(*, vocabulary: PackVocabulary) -> list[dict[str, Any]]:
+    examples: list[dict[str, Any]] = []
+    for path in CERTIFIED_FEW_SHOT_PATHS:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        result = load_meaning_expression_result(payload, vocabulary=vocabulary)
+        if result.expression is None:
+            raise ValueError(f"certified few-shot fixture is not accepted: {path}")
+        expression = result.expression
+        examples.append(
+            {
+                "fixture_path": str(path),
+                "expression": expression.canonical_payload(),
+                "minimal_contract_guidance": minimal_contract_guidance(expression),
+            }
+        )
+    return examples
+
+
+def minimal_contract_guidance(expression: MeaningExpressionV0) -> dict[str, Any]:
+    contract = expression.target_contract
+    return {
+        "required_evidence": list(contract.required_evidence),
+        "status_fields": [item.field for item in contract.status_semantics],
+        "status_values": [
+            item.model_dump(mode="json", exclude_none=True) for item in contract.status_semantics
+        ],
+        "composition_constraint_kinds": [
+            constraint.kind for constraint in contract.composition_constraints
+        ],
+        "operator_applications": [
+            item.model_dump(mode="json", exclude_none=True)
+            for item in expression.operator_applications
         ],
     }
 
