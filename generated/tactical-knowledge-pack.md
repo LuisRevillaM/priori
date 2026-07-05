@@ -1,7 +1,7 @@
 # Tactical Knowledge Pack
 
 Version: `m1.2-s2i-a.0`
-SHA-256: `05194a314b681e3e02e440910662e1c6eab1412d0741689ab95b4785a0c9a930`
+SHA-256: `b40458086fe5d81e3f709ceb5f2301038391d6a97f64ee02585f4a9019018099`
 Generated: `reproducible_from_source_hashes`
 
 ## Architecture
@@ -228,7 +228,7 @@ Composition constraint kinds:
 - `generated/tactical-query-plan.types.ts`: `5c027189c9b5f314bc62fd765656e30aeaebe163add038320f74cca932627ceb`
 - `src/tqe/runtime/binder.py`: `dbf680cc9a115b6039870eeff00c3c5d851296532ccd2d2465226f5ae2f0f40f`
 - `src/tqe/runtime/catalog.py`: `374140666a0e610f4279c6ac89f6ce4219be55cd165151beac3f63f3f7ae7519`
-- `src/tqe/runtime/executor.py`: `7a2cd8a4641f7d179111064dbafa17f83e1d8b44bcc330f1237a1a1e33b0814d`
+- `src/tqe/runtime/executor.py`: `edf4a75e60ced589935d00dfbfd7e34a2dd6b190f658ad1bc08b702800798483`
 - `src/tqe/runtime/ir.py`: `33e4885a6ad75afa7b4e9df96b72eba43c49b92b24ac67c8d2979d0bde13eedd`
 - `src/tqe/runtime/operators/__init__.py`: `1d2d394ef971040862981964e221370b17d56daaefb6090c6d8047383a005c14`
 - `src/tqe/runtime/operators/aggregate_over.py`: `1f883d7035795e97ad4ff12a78ce13deda417c857fc18244758e095608aa1b64`

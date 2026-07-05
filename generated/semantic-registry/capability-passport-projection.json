@@ -26699,10 +26699,10 @@
   "projection_id": "priori.capability_passport_projection.afl08",
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "1bcfcebdcfe8769ac7a25360bbc61e223f2838ac804ba1da0404bcce3ac62f16",
+    "baseline_artifact_revision": "12449b9abb05f105ee123803bb70d558885f007d249bfb43e6c5236d2f3f0419",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "8b88ca685c1dde397e4f9cd8549b633f69756c77bb235ee483fa0c34f6b2dd10",
+    "lock_hash": "0508b0be60b77ceebdad72e64f605cfb268e05eb40d8ea6d693491e0df3dfce5",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
