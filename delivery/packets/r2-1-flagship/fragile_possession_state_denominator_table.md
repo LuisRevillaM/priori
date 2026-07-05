@@ -1,7 +1,7 @@
 # R2-1 Flagship Denominator Table
 
 Plan: `delivery/packets/r2-1-flagship/aggregate_over_fragile_possession_state_v0.json`
-Plan hash: `f6e8310c02cf22d65f3faf85d4af3bdcc9cf6c47a057e655dd1915df0e2d6031`
+Plan hash: `243655e375aaebfa4b74167a9505f856925776b71a255ce1a79cd38896756b5f`
 Sealed audit: `delivery/packets/r1-c-sweep/population-audit/audit.json`
 
 | Role | Match | Observed PASS | Lower | Upper | UNKNOWN | Population | FAIL |

@@ -168,6 +168,31 @@ Round 2 mutation checks performed:
 | Malformed population fail-closed check disabled | `test_malformed_population_raises` | FAIL, `ValueError` not raised |
 | Shared-runtime ratchet literal reintroduced | `test_r1_operator_names_do_not_leak_into_shared_runtime_code` | FAIL, `aggregate_over` leaked into binder |
 
+## Round 2 Item 2: Flagship Generator
+
+Status: implemented; byte-reproduction check pending committed tree.
+
+Files:
+
+- `scripts/packets/r2_1_flagship_generator.py`
+- `delivery/packets/r2-1-flagship/aggregate_over_fragile_possession_state_v0.json`
+- `delivery/packets/r2-1-flagship/provenance.json`
+- `delivery/packets/r2-1-flagship/fragile_possession_state_denominator_table.json`
+- `delivery/packets/r2-1-flagship/fragile_possession_state_denominator_table.md`
+
+Implemented:
+
+- Added a committed generator that derives the R2-1 plan from the sealed R1-C sweep plan without editing sealed artifacts.
+- The generator declares `match_id`, `period`, and `perspective_team_role` on the derived typed_join outputs before appending the aggregate node.
+- The per-match merge routes through `AggregateIntervalResult`; period counts are summed as a union population, then constructed as one count interval.
+- The aggregate plan opts out of entity identity with the declared evidence reason `entity identity is not part of the CAR-0 count denominator`; same-team and frame alignment remain required.
+
+Generator verification:
+
+| Command | Result |
+| --- | --- |
+| `PYTHONPATH=src UV_CACHE_DIR=/private/tmp/uv-cache uv run --no-sync python scripts/packets/r2_1_flagship_generator.py` | PASS, 14 rows, reconciled `true`, totals observed/lower 145, upper 5799, UNKNOWN 5654, population 8414 |
+
 ## Full-suite table on committed tree
 
 Status: stale from round 1; pending round 2 final committed tree.

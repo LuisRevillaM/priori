@@ -186,9 +186,9 @@
     }
   ],
   "period_record_count": 28,
-  "period_records_hash": "030a52303d6938e27bdb9e99627cee0dc8905f88930f0e2b11516ea592461d81",
+  "period_records_hash": "28a070ab78409032baa459b923e3fe1eda690297f495a6aece10112216029d2a",
   "plan": "delivery/packets/r2-1-flagship/aggregate_over_fragile_possession_state_v0.json",
-  "plan_hash": "f6e8310c02cf22d65f3faf85d4af3bdcc9cf6c47a057e655dd1915df0e2d6031",
+  "plan_hash": "243655e375aaebfa4b74167a9505f856925776b71a255ce1a79cd38896756b5f",
   "reconciliation": {
     "aggregate_fail_rows": 2615,
     "aggregate_lower_bound_sum": 145,

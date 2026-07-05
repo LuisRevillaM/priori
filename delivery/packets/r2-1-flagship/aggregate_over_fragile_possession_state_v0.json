@@ -928,6 +928,9 @@
                 "cardinality": "collection",
                 "entity_scope": "anchor",
                 "evidence_fields": [
+                  "match_id",
+                  "period",
+                  "perspective_team_role",
                   "anchor_evaluations",
                   "anchor_frame_field",
                   "anchor_frame_id",
@@ -1109,6 +1112,9 @@
                 "cardinality": "single",
                 "entity_scope": "anchor",
                 "evidence_fields": [
+                  "match_id",
+                  "period",
+                  "perspective_team_role",
                   "anchor_evaluations",
                   "anchor_frame_field",
                   "anchor_frame_id",
@@ -1455,7 +1461,7 @@
                   "group_by_fields",
                   "group_key",
                   "status_field",
-                  "numeric_field",
+                  "constraint_opt_out_reason",
                   "observed",
                   "lower_bound",
                   "upper_bound",
@@ -1478,6 +1484,10 @@
                 "payload_type": "enum",
                 "value": "count"
               },
+              "constraint_opt_out_reason": {
+                "payload_type": "enum",
+                "value": "entity identity is not part of the CAR-0 count denominator"
+              },
               "entity_identity_preserved_required": {
                 "payload_type": "boolean",
                 "value": false
@@ -1492,10 +1502,6 @@
                   "perspective_team_role",
                   "match_id"
                 ]
-              },
-              "numeric_field": {
-                "payload_type": "enum",
-                "value": "none"
               },
               "population_expression": {
                 "payload_type": "enum",
@@ -2704,6 +2710,9 @@
                 "cardinality": "collection",
                 "entity_scope": "anchor",
                 "evidence_fields": [
+                  "match_id",
+                  "period",
+                  "perspective_team_role",
                   "anchor_evaluations",
                   "anchor_frame_field",
                   "anchor_frame_id",
@@ -2885,6 +2894,9 @@
                 "cardinality": "single",
                 "entity_scope": "anchor",
                 "evidence_fields": [
+                  "match_id",
+                  "period",
+                  "perspective_team_role",
                   "anchor_evaluations",
                   "anchor_frame_field",
                   "anchor_frame_id",
@@ -3231,7 +3243,7 @@
                   "group_by_fields",
                   "group_key",
                   "status_field",
-                  "numeric_field",
+                  "constraint_opt_out_reason",
                   "observed",
                   "lower_bound",
                   "upper_bound",
@@ -3254,6 +3266,10 @@
                 "payload_type": "enum",
                 "value": "count"
               },
+              "constraint_opt_out_reason": {
+                "payload_type": "enum",
+                "value": "entity identity is not part of the CAR-0 count denominator"
+              },
               "entity_identity_preserved_required": {
                 "payload_type": "boolean",
                 "value": false
@@ -3268,10 +3284,6 @@
                   "perspective_team_role",
                   "match_id"
                 ]
-              },
-              "numeric_field": {
-                "payload_type": "enum",
-                "value": "none"
               },
               "population_expression": {
                 "payload_type": "enum",
