@@ -143,7 +143,7 @@
       "case_id": "dev_clarification_support_definition",
       "kind": "clarification_turn",
       "request_text": "Show support.",
-      "answer": "use support within distance",
+      "answer": "use support arrival",
       "expected": {
         "outcome": "clarification_required",
         "dimension": "SUPPORT_DEFINITION"
