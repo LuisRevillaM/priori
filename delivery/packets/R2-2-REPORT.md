@@ -4,7 +4,9 @@ Branch: `packet/r2-2`
 
 ## Item 1: `rate_and_share` operator and bind guards
 
-Status: implemented and focused-test verified; first item commit pending.
+Status: implemented and focused-test verified.
+
+Commit: `c742920`.
 
 Files:
 
@@ -44,7 +46,54 @@ Mutation checks:
 
 ## Item 2: flagship CAR-0 v0 rate artifact
 
-Status: pending.
+Status: implemented and byte-reproduction verified.
+
+Files:
+
+- `scripts/packets/r2_2_flagship_generator.py`
+- `delivery/packets/r2-2-flagship/rate_and_share_car0_retention_v0.json`
+- `delivery/packets/r2-2-flagship/provenance.json`
+- `delivery/packets/r2-2-flagship/car0_retention_rate_table.json`
+- `delivery/packets/r2-2-flagship/car0_retention_rate_table.md`
+
+Implemented:
+
+- Added a committed generator that derives the R2-2 rate plan from `delivery/packets/r1-c-sweep/plans/r1_5_fragile_possession_state_v0.json`.
+- The derived plan appends `rate_and_share_car0_retention` with same-source numerator and denominator inputs from `typed_join_2.typed_join_records`.
+- Numerator status: `typed_join_status` (`PASS` is retained final CAR-0 fragile state).
+- Denominator status: `right_status` (the right-side fragile condition in the terminal CAR-0 join).
+- The subset declaration states that `typed_join_status PASS` is the same-source retained subset of `right_status PASS`, with `window_status` as the added retention predicate; removed predicate fields are empty.
+- The generator binds the derived plan, then derives the table from the committed R1-C population audit rows and routes period and merged rows through `RateIntervalResult`.
+
+Flagship totals:
+
+| Partition/count | Total |
+| --- | ---: |
+| A: numerator PASS, denominator PASS | 145 |
+| B: numerator FAIL, denominator PASS | 77 |
+| C: numerator UNKNOWN, denominator PASS | 54 |
+| D1: numerator FAIL, denominator UNKNOWN | 0 |
+| D2: numerator UNKNOWN, denominator UNKNOWN | 2560 |
+| E: denominator FAIL, excluded | 5578 |
+| Observed denominator count `A+B` | 222 |
+| Source record count | 8414 |
+
+R2-1 denominator reconciliation:
+
+| Check | Result |
+| --- | --- |
+| Same 14 role-match rows as R2-1 flagship table | TRUE |
+| Source population count matches R2-1 | `8414 == 8414` |
+| A count matches R2-1 `typed_join_status` PASS count | `145 == 145` |
+| All 14 source populations match R2-1 row-for-row | TRUE |
+| All 14 retained fragile PASS counts match R2-1 row-for-row | TRUE |
+
+Generator verification:
+
+| Command | Result |
+| --- | --- |
+| `PYTHONPATH=src UV_CACHE_DIR=/private/tmp/uv-cache uv run --no-sync python scripts/packets/r2_2_flagship_generator.py` | PASS, 14 rows, reconciled source populations `true`, reconciled pass counts `true` |
+| Hash before/after rerun for all four generated artifacts | PASS, identical hashes: `3d50a189fd82ce80b02451a65c11e8c61f784149`, `a7688ce838f8154909a0e43827d2829fe7d2923d`, `27d7b6faa343c56fb43b19b0cfc5bc6b7ad5824b`, `4699bab7c31fe4c24f88a5363b9cf3ed2d8391fa` |
 
 ## Full-suite table on committed tree
 

@@ -1,0 +1,1314 @@
+{
+  "denominator": "right_status PASS/UNKNOWN over the same typed_join_2 source relation",
+  "numerator": "typed_join_status PASS: retained final CAR-0 fragile state",
+  "per_row_r2_1_reconciliation": [
+    {
+      "audit_role": "home",
+      "match_id": "J03WOH",
+      "r2_1_pass_count": 13,
+      "r2_1_population_count": 503,
+      "r2_1_status_field": "typed_join_status",
+      "rate_a_count": 13,
+      "rate_num_status_field": "typed_join_status",
+      "rate_source_record_count": 503,
+      "retained_fragile_pass_count_matches": true,
+      "source_population_matches": true
+    },
+    {
+      "audit_role": "home",
+      "match_id": "J03WOY",
+      "r2_1_pass_count": 11,
+      "r2_1_population_count": 575,
+      "r2_1_status_field": "typed_join_status",
+      "rate_a_count": 11,
+      "rate_num_status_field": "typed_join_status",
+      "rate_source_record_count": 575,
+      "retained_fragile_pass_count_matches": true,
+      "source_population_matches": true
+    },
+    {
+      "audit_role": "home",
+      "match_id": "J03WPY",
+      "r2_1_pass_count": 15,
+      "r2_1_population_count": 654,
+      "r2_1_status_field": "typed_join_status",
+      "rate_a_count": 15,
+      "rate_num_status_field": "typed_join_status",
+      "rate_source_record_count": 654,
+      "retained_fragile_pass_count_matches": true,
+      "source_population_matches": true
+    },
+    {
+      "audit_role": "home",
+      "match_id": "J03WQQ",
+      "r2_1_pass_count": 7,
+      "r2_1_population_count": 662,
+      "r2_1_status_field": "typed_join_status",
+      "rate_a_count": 7,
+      "rate_num_status_field": "typed_join_status",
+      "rate_source_record_count": 662,
+      "retained_fragile_pass_count_matches": true,
+      "source_population_matches": true
+    },
+    {
+      "audit_role": "home",
+      "match_id": "J03WR9",
+      "r2_1_pass_count": 14,
+      "r2_1_population_count": 649,
+      "r2_1_status_field": "typed_join_status",
+      "rate_a_count": 14,
+      "rate_num_status_field": "typed_join_status",
+      "rate_source_record_count": 649,
+      "retained_fragile_pass_count_matches": true,
+      "source_population_matches": true
+    },
+    {
+      "audit_role": "home",
+      "match_id": "J03WMX",
+      "r2_1_pass_count": 10,
+      "r2_1_population_count": 714,
+      "r2_1_status_field": "typed_join_status",
+      "rate_a_count": 10,
+      "rate_num_status_field": "typed_join_status",
+      "rate_source_record_count": 714,
+      "retained_fragile_pass_count_matches": true,
+      "source_population_matches": true
+    },
+    {
+      "audit_role": "home",
+      "match_id": "J03WN1",
+      "r2_1_pass_count": 3,
+      "r2_1_population_count": 450,
+      "r2_1_status_field": "typed_join_status",
+      "rate_a_count": 3,
+      "rate_num_status_field": "typed_join_status",
+      "rate_source_record_count": 450,
+      "retained_fragile_pass_count_matches": true,
+      "source_population_matches": true
+    },
+    {
+      "audit_role": "away",
+      "match_id": "J03WOH",
+      "r2_1_pass_count": 11,
+      "r2_1_population_count": 503,
+      "r2_1_status_field": "typed_join_status",
+      "rate_a_count": 11,
+      "rate_num_status_field": "typed_join_status",
+      "rate_source_record_count": 503,
+      "retained_fragile_pass_count_matches": true,
+      "source_population_matches": true
+    },
+    {
+      "audit_role": "away",
+      "match_id": "J03WOY",
+      "r2_1_pass_count": 6,
+      "r2_1_population_count": 575,
+      "r2_1_status_field": "typed_join_status",
+      "rate_a_count": 6,
+      "rate_num_status_field": "typed_join_status",
+      "rate_source_record_count": 575,
+      "retained_fragile_pass_count_matches": true,
+      "source_population_matches": true
+    },
+    {
+      "audit_role": "away",
+      "match_id": "J03WPY",
+      "r2_1_pass_count": 4,
+      "r2_1_population_count": 654,
+      "r2_1_status_field": "typed_join_status",
+      "rate_a_count": 4,
+      "rate_num_status_field": "typed_join_status",
+      "rate_source_record_count": 654,
+      "retained_fragile_pass_count_matches": true,
+      "source_population_matches": true
+    },
+    {
+      "audit_role": "away",
+      "match_id": "J03WQQ",
+      "r2_1_pass_count": 25,
+      "r2_1_population_count": 662,
+      "r2_1_status_field": "typed_join_status",
+      "rate_a_count": 25,
+      "rate_num_status_field": "typed_join_status",
+      "rate_source_record_count": 662,
+      "retained_fragile_pass_count_matches": true,
+      "source_population_matches": true
+    },
+    {
+      "audit_role": "away",
+      "match_id": "J03WR9",
+      "r2_1_pass_count": 8,
+      "r2_1_population_count": 649,
+      "r2_1_status_field": "typed_join_status",
+      "rate_a_count": 8,
+      "rate_num_status_field": "typed_join_status",
+      "rate_source_record_count": 649,
+      "retained_fragile_pass_count_matches": true,
+      "source_population_matches": true
+    },
+    {
+      "audit_role": "away",
+      "match_id": "J03WMX",
+      "r2_1_pass_count": 12,
+      "r2_1_population_count": 714,
+      "r2_1_status_field": "typed_join_status",
+      "rate_a_count": 12,
+      "rate_num_status_field": "typed_join_status",
+      "rate_source_record_count": 714,
+      "retained_fragile_pass_count_matches": true,
+      "source_population_matches": true
+    },
+    {
+      "audit_role": "away",
+      "match_id": "J03WN1",
+      "r2_1_pass_count": 6,
+      "r2_1_population_count": 450,
+      "r2_1_status_field": "typed_join_status",
+      "rate_a_count": 6,
+      "rate_num_status_field": "typed_join_status",
+      "rate_source_record_count": 450,
+      "retained_fragile_pass_count_matches": true,
+      "source_population_matches": true
+    }
+  ],
+  "period_record_count": 28,
+  "period_records_hash": "93401c89977af5db60a2193aa2cd0a74c711226e98a38db75d00a2e5d2445715",
+  "plan": "delivery/packets/r2-2-flagship/rate_and_share_car0_retention_v0.json",
+  "plan_hash": "4a5650d8072539b68363d776bc146566bf47758226815f7eb523d5e71a675dba",
+  "question": "When a team's possession turns fragile, how often do they keep the ball anyway?",
+  "r2_1_reconciliation": {
+    "all_14_retained_fragile_pass_counts_match_r2_1": true,
+    "all_14_source_populations_match_r2_1": true,
+    "r2_1_pass_count": 145,
+    "r2_1_population_count": 8414,
+    "r2_1_table": "delivery/packets/r2-1-flagship/fragile_possession_state_denominator_table.json",
+    "r2_1_table_hash": "32fc3c7696aec2a7822644905af280af8524f5059478029c4376deaa6d0cea77",
+    "rate_a_count": 145,
+    "rate_source_record_count": 8414,
+    "same_14_role_match_rows": true
+  },
+  "rate_node_id": "rate_and_share_car0_retention",
+  "rows": [
+    {
+      "a_count": 13,
+      "audit_role": "home",
+      "b_count": 5,
+      "c_count": 2,
+      "d1_count": 0,
+      "d2_count": 167,
+      "denominator_count_interval": {
+        "fail_count": 316,
+        "lower_bound": 20,
+        "observed": 20,
+        "pass_count": 20,
+        "population_count": 503,
+        "unknown_count": 167,
+        "upper_bound": 187
+      },
+      "denominator_status_field": "right_status",
+      "e_count": 316,
+      "group_by_fields": [
+        "perspective_team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WOH",
+        "perspective_team_role": "home"
+      },
+      "lower_bound": 0.06951871657754011,
+      "match_id": "J03WOH",
+      "numerator_count_interval": {
+        "fail_count": 5,
+        "lower_bound": 13,
+        "observed": 13,
+        "pass_count": 13,
+        "population_count": 187,
+        "unknown_count": 169,
+        "upper_bound": 182
+      },
+      "numerator_status_field": "typed_join_status",
+      "observed": 0.7222222222222222,
+      "observed_denominator_count": 18,
+      "periods": [
+        {
+          "a_count": 8,
+          "b_count": 4,
+          "c_count": 1,
+          "d1_count": 0,
+          "d2_count": 95,
+          "e_count": 146,
+          "lower_bound": 0.07407407407407407,
+          "observed": 0.6666666666666666,
+          "observed_denominator_count": 12,
+          "period": "firstHalf",
+          "rate_status": "PASS",
+          "source_record_count": 254,
+          "upper_bound": 0.9629629629629629
+        },
+        {
+          "a_count": 5,
+          "b_count": 1,
+          "c_count": 1,
+          "d1_count": 0,
+          "d2_count": 72,
+          "e_count": 170,
+          "lower_bound": 0.06329113924050633,
+          "observed": 0.8333333333333334,
+          "observed_denominator_count": 6,
+          "period": "secondHalf",
+          "rate_status": "PASS",
+          "source_record_count": 249,
+          "upper_bound": 0.9873417721518988
+        }
+      ],
+      "population_expression": "CAR-0 retained fragile-condition rate: final typed_join_status over right_status, per team perspective per match",
+      "rate_kind": "rate",
+      "rate_status": "PASS",
+      "source_record_count": 503,
+      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal CAR-0 join",
+      "upper_bound": 0.9732620320855615
+    },
+    {
+      "a_count": 11,
+      "audit_role": "home",
+      "b_count": 5,
+      "c_count": 2,
+      "d1_count": 0,
+      "d2_count": 155,
+      "denominator_count_interval": {
+        "fail_count": 402,
+        "lower_bound": 18,
+        "observed": 18,
+        "pass_count": 18,
+        "population_count": 575,
+        "unknown_count": 155,
+        "upper_bound": 173
+      },
+      "denominator_status_field": "right_status",
+      "e_count": 402,
+      "group_by_fields": [
+        "perspective_team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WOY",
+        "perspective_team_role": "home"
+      },
+      "lower_bound": 0.06358381502890173,
+      "match_id": "J03WOY",
+      "numerator_count_interval": {
+        "fail_count": 5,
+        "lower_bound": 11,
+        "observed": 11,
+        "pass_count": 11,
+        "population_count": 173,
+        "unknown_count": 157,
+        "upper_bound": 168
+      },
+      "numerator_status_field": "typed_join_status",
+      "observed": 0.6875,
+      "observed_denominator_count": 16,
+      "periods": [
+        {
+          "a_count": 9,
+          "b_count": 2,
+          "c_count": 2,
+          "d1_count": 0,
+          "d2_count": 72,
+          "e_count": 198,
+          "lower_bound": 0.10588235294117647,
+          "observed": 0.8181818181818182,
+          "observed_denominator_count": 11,
+          "period": "firstHalf",
+          "rate_status": "PASS",
+          "source_record_count": 283,
+          "upper_bound": 0.9764705882352941
+        },
+        {
+          "a_count": 2,
+          "b_count": 3,
+          "c_count": 0,
+          "d1_count": 0,
+          "d2_count": 83,
+          "e_count": 204,
+          "lower_bound": 0.022727272727272728,
+          "observed": 0.4,
+          "observed_denominator_count": 5,
+          "period": "secondHalf",
+          "rate_status": "PASS",
+          "source_record_count": 292,
+          "upper_bound": 0.9659090909090909
+        }
+      ],
+      "population_expression": "CAR-0 retained fragile-condition rate: final typed_join_status over right_status, per team perspective per match",
+      "rate_kind": "rate",
+      "rate_status": "PASS",
+      "source_record_count": 575,
+      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal CAR-0 join",
+      "upper_bound": 0.9710982658959537
+    },
+    {
+      "a_count": 15,
+      "audit_role": "home",
+      "b_count": 9,
+      "c_count": 1,
+      "d1_count": 0,
+      "d2_count": 183,
+      "denominator_count_interval": {
+        "fail_count": 446,
+        "lower_bound": 25,
+        "observed": 25,
+        "pass_count": 25,
+        "population_count": 654,
+        "unknown_count": 183,
+        "upper_bound": 208
+      },
+      "denominator_status_field": "right_status",
+      "e_count": 446,
+      "group_by_fields": [
+        "perspective_team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WPY",
+        "perspective_team_role": "home"
+      },
+      "lower_bound": 0.07211538461538461,
+      "match_id": "J03WPY",
+      "numerator_count_interval": {
+        "fail_count": 9,
+        "lower_bound": 15,
+        "observed": 15,
+        "pass_count": 15,
+        "population_count": 208,
+        "unknown_count": 184,
+        "upper_bound": 199
+      },
+      "numerator_status_field": "typed_join_status",
+      "observed": 0.625,
+      "observed_denominator_count": 24,
+      "periods": [
+        {
+          "a_count": 9,
+          "b_count": 5,
+          "c_count": 0,
+          "d1_count": 0,
+          "d2_count": 102,
+          "e_count": 299,
+          "lower_bound": 0.07758620689655173,
+          "observed": 0.6428571428571429,
+          "observed_denominator_count": 14,
+          "period": "firstHalf",
+          "rate_status": "PASS",
+          "source_record_count": 415,
+          "upper_bound": 0.9568965517241379
+        },
+        {
+          "a_count": 6,
+          "b_count": 4,
+          "c_count": 1,
+          "d1_count": 0,
+          "d2_count": 81,
+          "e_count": 147,
+          "lower_bound": 0.06521739130434782,
+          "observed": 0.6,
+          "observed_denominator_count": 10,
+          "period": "secondHalf",
+          "rate_status": "PASS",
+          "source_record_count": 239,
+          "upper_bound": 0.9565217391304348
+        }
+      ],
+      "population_expression": "CAR-0 retained fragile-condition rate: final typed_join_status over right_status, per team perspective per match",
+      "rate_kind": "rate",
+      "rate_status": "PASS",
+      "source_record_count": 654,
+      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal CAR-0 join",
+      "upper_bound": 0.9567307692307693
+    },
+    {
+      "a_count": 7,
+      "audit_role": "home",
+      "b_count": 3,
+      "c_count": 12,
+      "d1_count": 0,
+      "d2_count": 107,
+      "denominator_count_interval": {
+        "fail_count": 533,
+        "lower_bound": 22,
+        "observed": 22,
+        "pass_count": 22,
+        "population_count": 662,
+        "unknown_count": 107,
+        "upper_bound": 129
+      },
+      "denominator_status_field": "right_status",
+      "e_count": 533,
+      "group_by_fields": [
+        "perspective_team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WQQ",
+        "perspective_team_role": "home"
+      },
+      "lower_bound": 0.05426356589147287,
+      "match_id": "J03WQQ",
+      "numerator_count_interval": {
+        "fail_count": 3,
+        "lower_bound": 7,
+        "observed": 7,
+        "pass_count": 7,
+        "population_count": 129,
+        "unknown_count": 119,
+        "upper_bound": 126
+      },
+      "numerator_status_field": "typed_join_status",
+      "observed": 0.7,
+      "observed_denominator_count": 10,
+      "periods": [
+        {
+          "a_count": 6,
+          "b_count": 2,
+          "c_count": 7,
+          "d1_count": 0,
+          "d2_count": 53,
+          "e_count": 321,
+          "lower_bound": 0.08823529411764706,
+          "observed": 0.75,
+          "observed_denominator_count": 8,
+          "period": "firstHalf",
+          "rate_status": "PASS",
+          "source_record_count": 389,
+          "upper_bound": 0.9705882352941176
+        },
+        {
+          "a_count": 1,
+          "b_count": 1,
+          "c_count": 5,
+          "d1_count": 0,
+          "d2_count": 54,
+          "e_count": 212,
+          "lower_bound": 0.01639344262295082,
+          "observed": 0.5,
+          "observed_denominator_count": 2,
+          "period": "secondHalf",
+          "rate_status": "PASS",
+          "source_record_count": 273,
+          "upper_bound": 0.9836065573770492
+        }
+      ],
+      "population_expression": "CAR-0 retained fragile-condition rate: final typed_join_status over right_status, per team perspective per match",
+      "rate_kind": "rate",
+      "rate_status": "PASS",
+      "source_record_count": 662,
+      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal CAR-0 join",
+      "upper_bound": 0.9767441860465116
+    },
+    {
+      "a_count": 14,
+      "audit_role": "home",
+      "b_count": 6,
+      "c_count": 4,
+      "d1_count": 0,
+      "d2_count": 170,
+      "denominator_count_interval": {
+        "fail_count": 455,
+        "lower_bound": 24,
+        "observed": 24,
+        "pass_count": 24,
+        "population_count": 649,
+        "unknown_count": 170,
+        "upper_bound": 194
+      },
+      "denominator_status_field": "right_status",
+      "e_count": 455,
+      "group_by_fields": [
+        "perspective_team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WR9",
+        "perspective_team_role": "home"
+      },
+      "lower_bound": 0.07216494845360824,
+      "match_id": "J03WR9",
+      "numerator_count_interval": {
+        "fail_count": 6,
+        "lower_bound": 14,
+        "observed": 14,
+        "pass_count": 14,
+        "population_count": 194,
+        "unknown_count": 174,
+        "upper_bound": 188
+      },
+      "numerator_status_field": "typed_join_status",
+      "observed": 0.7,
+      "observed_denominator_count": 20,
+      "periods": [
+        {
+          "a_count": 8,
+          "b_count": 3,
+          "c_count": 2,
+          "d1_count": 0,
+          "d2_count": 85,
+          "e_count": 260,
+          "lower_bound": 0.08163265306122448,
+          "observed": 0.7272727272727273,
+          "observed_denominator_count": 11,
+          "period": "firstHalf",
+          "rate_status": "PASS",
+          "source_record_count": 358,
+          "upper_bound": 0.9693877551020408
+        },
+        {
+          "a_count": 6,
+          "b_count": 3,
+          "c_count": 2,
+          "d1_count": 0,
+          "d2_count": 85,
+          "e_count": 195,
+          "lower_bound": 0.0625,
+          "observed": 0.6666666666666666,
+          "observed_denominator_count": 9,
+          "period": "secondHalf",
+          "rate_status": "PASS",
+          "source_record_count": 291,
+          "upper_bound": 0.96875
+        }
+      ],
+      "population_expression": "CAR-0 retained fragile-condition rate: final typed_join_status over right_status, per team perspective per match",
+      "rate_kind": "rate",
+      "rate_status": "PASS",
+      "source_record_count": 649,
+      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal CAR-0 join",
+      "upper_bound": 0.9690721649484536
+    },
+    {
+      "a_count": 10,
+      "audit_role": "home",
+      "b_count": 6,
+      "c_count": 4,
+      "d1_count": 0,
+      "d2_count": 229,
+      "denominator_count_interval": {
+        "fail_count": 465,
+        "lower_bound": 20,
+        "observed": 20,
+        "pass_count": 20,
+        "population_count": 714,
+        "unknown_count": 229,
+        "upper_bound": 249
+      },
+      "denominator_status_field": "right_status",
+      "e_count": 465,
+      "group_by_fields": [
+        "perspective_team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WMX",
+        "perspective_team_role": "home"
+      },
+      "lower_bound": 0.040160642570281124,
+      "match_id": "J03WMX",
+      "numerator_count_interval": {
+        "fail_count": 6,
+        "lower_bound": 10,
+        "observed": 10,
+        "pass_count": 10,
+        "population_count": 249,
+        "unknown_count": 233,
+        "upper_bound": 243
+      },
+      "numerator_status_field": "typed_join_status",
+      "observed": 0.625,
+      "observed_denominator_count": 16,
+      "periods": [
+        {
+          "a_count": 2,
+          "b_count": 5,
+          "c_count": 3,
+          "d1_count": 0,
+          "d2_count": 139,
+          "e_count": 290,
+          "lower_bound": 0.013422818791946308,
+          "observed": 0.2857142857142857,
+          "observed_denominator_count": 7,
+          "period": "firstHalf",
+          "rate_status": "PASS",
+          "source_record_count": 439,
+          "upper_bound": 0.9664429530201343
+        },
+        {
+          "a_count": 8,
+          "b_count": 1,
+          "c_count": 1,
+          "d1_count": 0,
+          "d2_count": 90,
+          "e_count": 175,
+          "lower_bound": 0.08,
+          "observed": 0.8888888888888888,
+          "observed_denominator_count": 9,
+          "period": "secondHalf",
+          "rate_status": "PASS",
+          "source_record_count": 275,
+          "upper_bound": 0.99
+        }
+      ],
+      "population_expression": "CAR-0 retained fragile-condition rate: final typed_join_status over right_status, per team perspective per match",
+      "rate_kind": "rate",
+      "rate_status": "PASS",
+      "source_record_count": 714,
+      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal CAR-0 join",
+      "upper_bound": 0.9759036144578314
+    },
+    {
+      "a_count": 3,
+      "audit_role": "home",
+      "b_count": 2,
+      "c_count": 2,
+      "d1_count": 0,
+      "d2_count": 269,
+      "denominator_count_interval": {
+        "fail_count": 174,
+        "lower_bound": 7,
+        "observed": 7,
+        "pass_count": 7,
+        "population_count": 450,
+        "unknown_count": 269,
+        "upper_bound": 276
+      },
+      "denominator_status_field": "right_status",
+      "e_count": 174,
+      "group_by_fields": [
+        "perspective_team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WN1",
+        "perspective_team_role": "home"
+      },
+      "lower_bound": 0.010869565217391304,
+      "match_id": "J03WN1",
+      "numerator_count_interval": {
+        "fail_count": 2,
+        "lower_bound": 3,
+        "observed": 3,
+        "pass_count": 3,
+        "population_count": 276,
+        "unknown_count": 271,
+        "upper_bound": 274
+      },
+      "numerator_status_field": "typed_join_status",
+      "observed": 0.6,
+      "observed_denominator_count": 5,
+      "periods": [
+        {
+          "a_count": 3,
+          "b_count": 2,
+          "c_count": 1,
+          "d1_count": 0,
+          "d2_count": 166,
+          "e_count": 120,
+          "lower_bound": 0.01744186046511628,
+          "observed": 0.6,
+          "observed_denominator_count": 5,
+          "period": "firstHalf",
+          "rate_status": "PASS",
+          "source_record_count": 292,
+          "upper_bound": 0.9883720930232558
+        },
+        {
+          "a_count": 0,
+          "b_count": 0,
+          "c_count": 1,
+          "d1_count": 0,
+          "d2_count": 103,
+          "e_count": 54,
+          "lower_bound": 0,
+          "observed": null,
+          "observed_denominator_count": 0,
+          "period": "secondHalf",
+          "rate_status": "PASS",
+          "source_record_count": 158,
+          "upper_bound": 1
+        }
+      ],
+      "population_expression": "CAR-0 retained fragile-condition rate: final typed_join_status over right_status, per team perspective per match",
+      "rate_kind": "rate",
+      "rate_status": "PASS",
+      "source_record_count": 450,
+      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal CAR-0 join",
+      "upper_bound": 0.9927536231884058
+    },
+    {
+      "a_count": 11,
+      "audit_role": "away",
+      "b_count": 6,
+      "c_count": 3,
+      "d1_count": 0,
+      "d2_count": 167,
+      "denominator_count_interval": {
+        "fail_count": 316,
+        "lower_bound": 20,
+        "observed": 20,
+        "pass_count": 20,
+        "population_count": 503,
+        "unknown_count": 167,
+        "upper_bound": 187
+      },
+      "denominator_status_field": "right_status",
+      "e_count": 316,
+      "group_by_fields": [
+        "perspective_team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WOH",
+        "perspective_team_role": "away"
+      },
+      "lower_bound": 0.058823529411764705,
+      "match_id": "J03WOH",
+      "numerator_count_interval": {
+        "fail_count": 6,
+        "lower_bound": 11,
+        "observed": 11,
+        "pass_count": 11,
+        "population_count": 187,
+        "unknown_count": 170,
+        "upper_bound": 181
+      },
+      "numerator_status_field": "typed_join_status",
+      "observed": 0.6470588235294118,
+      "observed_denominator_count": 17,
+      "periods": [
+        {
+          "a_count": 4,
+          "b_count": 1,
+          "c_count": 0,
+          "d1_count": 0,
+          "d2_count": 95,
+          "e_count": 154,
+          "lower_bound": 0.04,
+          "observed": 0.8,
+          "observed_denominator_count": 5,
+          "period": "firstHalf",
+          "rate_status": "PASS",
+          "source_record_count": 254,
+          "upper_bound": 0.99
+        },
+        {
+          "a_count": 7,
+          "b_count": 5,
+          "c_count": 3,
+          "d1_count": 0,
+          "d2_count": 72,
+          "e_count": 162,
+          "lower_bound": 0.08045977011494253,
+          "observed": 0.5833333333333334,
+          "observed_denominator_count": 12,
+          "period": "secondHalf",
+          "rate_status": "PASS",
+          "source_record_count": 249,
+          "upper_bound": 0.9425287356321839
+        }
+      ],
+      "population_expression": "CAR-0 retained fragile-condition rate: final typed_join_status over right_status, per team perspective per match",
+      "rate_kind": "rate",
+      "rate_status": "PASS",
+      "source_record_count": 503,
+      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal CAR-0 join",
+      "upper_bound": 0.9679144385026738
+    },
+    {
+      "a_count": 6,
+      "audit_role": "away",
+      "b_count": 5,
+      "c_count": 4,
+      "d1_count": 0,
+      "d2_count": 155,
+      "denominator_count_interval": {
+        "fail_count": 405,
+        "lower_bound": 15,
+        "observed": 15,
+        "pass_count": 15,
+        "population_count": 575,
+        "unknown_count": 155,
+        "upper_bound": 170
+      },
+      "denominator_status_field": "right_status",
+      "e_count": 405,
+      "group_by_fields": [
+        "perspective_team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WOY",
+        "perspective_team_role": "away"
+      },
+      "lower_bound": 0.03529411764705882,
+      "match_id": "J03WOY",
+      "numerator_count_interval": {
+        "fail_count": 5,
+        "lower_bound": 6,
+        "observed": 6,
+        "pass_count": 6,
+        "population_count": 170,
+        "unknown_count": 159,
+        "upper_bound": 165
+      },
+      "numerator_status_field": "typed_join_status",
+      "observed": 0.5454545454545454,
+      "observed_denominator_count": 11,
+      "periods": [
+        {
+          "a_count": 2,
+          "b_count": 1,
+          "c_count": 2,
+          "d1_count": 0,
+          "d2_count": 72,
+          "e_count": 206,
+          "lower_bound": 0.025974025974025976,
+          "observed": 0.6666666666666666,
+          "observed_denominator_count": 3,
+          "period": "firstHalf",
+          "rate_status": "PASS",
+          "source_record_count": 283,
+          "upper_bound": 0.987012987012987
+        },
+        {
+          "a_count": 4,
+          "b_count": 4,
+          "c_count": 2,
+          "d1_count": 0,
+          "d2_count": 83,
+          "e_count": 199,
+          "lower_bound": 0.043010752688172046,
+          "observed": 0.5,
+          "observed_denominator_count": 8,
+          "period": "secondHalf",
+          "rate_status": "PASS",
+          "source_record_count": 292,
+          "upper_bound": 0.956989247311828
+        }
+      ],
+      "population_expression": "CAR-0 retained fragile-condition rate: final typed_join_status over right_status, per team perspective per match",
+      "rate_kind": "rate",
+      "rate_status": "PASS",
+      "source_record_count": 575,
+      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal CAR-0 join",
+      "upper_bound": 0.9705882352941176
+    },
+    {
+      "a_count": 4,
+      "audit_role": "away",
+      "b_count": 2,
+      "c_count": 6,
+      "d1_count": 0,
+      "d2_count": 183,
+      "denominator_count_interval": {
+        "fail_count": 459,
+        "lower_bound": 12,
+        "observed": 12,
+        "pass_count": 12,
+        "population_count": 654,
+        "unknown_count": 183,
+        "upper_bound": 195
+      },
+      "denominator_status_field": "right_status",
+      "e_count": 459,
+      "group_by_fields": [
+        "perspective_team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WPY",
+        "perspective_team_role": "away"
+      },
+      "lower_bound": 0.020512820512820513,
+      "match_id": "J03WPY",
+      "numerator_count_interval": {
+        "fail_count": 2,
+        "lower_bound": 4,
+        "observed": 4,
+        "pass_count": 4,
+        "population_count": 195,
+        "unknown_count": 189,
+        "upper_bound": 193
+      },
+      "numerator_status_field": "typed_join_status",
+      "observed": 0.6666666666666666,
+      "observed_denominator_count": 6,
+      "periods": [
+        {
+          "a_count": 1,
+          "b_count": 2,
+          "c_count": 3,
+          "d1_count": 0,
+          "d2_count": 102,
+          "e_count": 307,
+          "lower_bound": 0.009259259259259259,
+          "observed": 0.3333333333333333,
+          "observed_denominator_count": 3,
+          "period": "firstHalf",
+          "rate_status": "PASS",
+          "source_record_count": 415,
+          "upper_bound": 0.9814814814814815
+        },
+        {
+          "a_count": 3,
+          "b_count": 0,
+          "c_count": 3,
+          "d1_count": 0,
+          "d2_count": 81,
+          "e_count": 152,
+          "lower_bound": 0.034482758620689655,
+          "observed": 1,
+          "observed_denominator_count": 3,
+          "period": "secondHalf",
+          "rate_status": "PASS",
+          "source_record_count": 239,
+          "upper_bound": 1
+        }
+      ],
+      "population_expression": "CAR-0 retained fragile-condition rate: final typed_join_status over right_status, per team perspective per match",
+      "rate_kind": "rate",
+      "rate_status": "PASS",
+      "source_record_count": 654,
+      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal CAR-0 join",
+      "upper_bound": 0.9897435897435898
+    },
+    {
+      "a_count": 25,
+      "audit_role": "away",
+      "b_count": 11,
+      "c_count": 4,
+      "d1_count": 0,
+      "d2_count": 107,
+      "denominator_count_interval": {
+        "fail_count": 515,
+        "lower_bound": 40,
+        "observed": 40,
+        "pass_count": 40,
+        "population_count": 662,
+        "unknown_count": 107,
+        "upper_bound": 147
+      },
+      "denominator_status_field": "right_status",
+      "e_count": 515,
+      "group_by_fields": [
+        "perspective_team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WQQ",
+        "perspective_team_role": "away"
+      },
+      "lower_bound": 0.17006802721088435,
+      "match_id": "J03WQQ",
+      "numerator_count_interval": {
+        "fail_count": 11,
+        "lower_bound": 25,
+        "observed": 25,
+        "pass_count": 25,
+        "population_count": 147,
+        "unknown_count": 111,
+        "upper_bound": 136
+      },
+      "numerator_status_field": "typed_join_status",
+      "observed": 0.6944444444444444,
+      "observed_denominator_count": 36,
+      "periods": [
+        {
+          "a_count": 8,
+          "b_count": 7,
+          "c_count": 3,
+          "d1_count": 0,
+          "d2_count": 53,
+          "e_count": 318,
+          "lower_bound": 0.11267605633802817,
+          "observed": 0.5333333333333333,
+          "observed_denominator_count": 15,
+          "period": "firstHalf",
+          "rate_status": "PASS",
+          "source_record_count": 389,
+          "upper_bound": 0.9014084507042254
+        },
+        {
+          "a_count": 17,
+          "b_count": 4,
+          "c_count": 1,
+          "d1_count": 0,
+          "d2_count": 54,
+          "e_count": 197,
+          "lower_bound": 0.2236842105263158,
+          "observed": 0.8095238095238095,
+          "observed_denominator_count": 21,
+          "period": "secondHalf",
+          "rate_status": "PASS",
+          "source_record_count": 273,
+          "upper_bound": 0.9473684210526315
+        }
+      ],
+      "population_expression": "CAR-0 retained fragile-condition rate: final typed_join_status over right_status, per team perspective per match",
+      "rate_kind": "rate",
+      "rate_status": "PASS",
+      "source_record_count": 662,
+      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal CAR-0 join",
+      "upper_bound": 0.9251700680272109
+    },
+    {
+      "a_count": 8,
+      "audit_role": "away",
+      "b_count": 2,
+      "c_count": 1,
+      "d1_count": 0,
+      "d2_count": 170,
+      "denominator_count_interval": {
+        "fail_count": 468,
+        "lower_bound": 11,
+        "observed": 11,
+        "pass_count": 11,
+        "population_count": 649,
+        "unknown_count": 170,
+        "upper_bound": 181
+      },
+      "denominator_status_field": "right_status",
+      "e_count": 468,
+      "group_by_fields": [
+        "perspective_team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WR9",
+        "perspective_team_role": "away"
+      },
+      "lower_bound": 0.04419889502762431,
+      "match_id": "J03WR9",
+      "numerator_count_interval": {
+        "fail_count": 2,
+        "lower_bound": 8,
+        "observed": 8,
+        "pass_count": 8,
+        "population_count": 181,
+        "unknown_count": 171,
+        "upper_bound": 179
+      },
+      "numerator_status_field": "typed_join_status",
+      "observed": 0.8,
+      "observed_denominator_count": 10,
+      "periods": [
+        {
+          "a_count": 6,
+          "b_count": 1,
+          "c_count": 0,
+          "d1_count": 0,
+          "d2_count": 85,
+          "e_count": 266,
+          "lower_bound": 0.06521739130434782,
+          "observed": 0.8571428571428571,
+          "observed_denominator_count": 7,
+          "period": "firstHalf",
+          "rate_status": "PASS",
+          "source_record_count": 358,
+          "upper_bound": 0.9891304347826086
+        },
+        {
+          "a_count": 2,
+          "b_count": 1,
+          "c_count": 1,
+          "d1_count": 0,
+          "d2_count": 85,
+          "e_count": 202,
+          "lower_bound": 0.02247191011235955,
+          "observed": 0.6666666666666666,
+          "observed_denominator_count": 3,
+          "period": "secondHalf",
+          "rate_status": "PASS",
+          "source_record_count": 291,
+          "upper_bound": 0.9887640449438202
+        }
+      ],
+      "population_expression": "CAR-0 retained fragile-condition rate: final typed_join_status over right_status, per team perspective per match",
+      "rate_kind": "rate",
+      "rate_status": "PASS",
+      "source_record_count": 649,
+      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal CAR-0 join",
+      "upper_bound": 0.988950276243094
+    },
+    {
+      "a_count": 12,
+      "audit_role": "away",
+      "b_count": 7,
+      "c_count": 6,
+      "d1_count": 0,
+      "d2_count": 229,
+      "denominator_count_interval": {
+        "fail_count": 460,
+        "lower_bound": 25,
+        "observed": 25,
+        "pass_count": 25,
+        "population_count": 714,
+        "unknown_count": 229,
+        "upper_bound": 254
+      },
+      "denominator_status_field": "right_status",
+      "e_count": 460,
+      "group_by_fields": [
+        "perspective_team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WMX",
+        "perspective_team_role": "away"
+      },
+      "lower_bound": 0.047244094488188976,
+      "match_id": "J03WMX",
+      "numerator_count_interval": {
+        "fail_count": 7,
+        "lower_bound": 12,
+        "observed": 12,
+        "pass_count": 12,
+        "population_count": 254,
+        "unknown_count": 235,
+        "upper_bound": 247
+      },
+      "numerator_status_field": "typed_join_status",
+      "observed": 0.631578947368421,
+      "observed_denominator_count": 19,
+      "periods": [
+        {
+          "a_count": 6,
+          "b_count": 6,
+          "c_count": 6,
+          "d1_count": 0,
+          "d2_count": 139,
+          "e_count": 282,
+          "lower_bound": 0.03821656050955414,
+          "observed": 0.5,
+          "observed_denominator_count": 12,
+          "period": "firstHalf",
+          "rate_status": "PASS",
+          "source_record_count": 439,
+          "upper_bound": 0.9617834394904459
+        },
+        {
+          "a_count": 6,
+          "b_count": 1,
+          "c_count": 0,
+          "d1_count": 0,
+          "d2_count": 90,
+          "e_count": 178,
+          "lower_bound": 0.061855670103092786,
+          "observed": 0.8571428571428571,
+          "observed_denominator_count": 7,
+          "period": "secondHalf",
+          "rate_status": "PASS",
+          "source_record_count": 275,
+          "upper_bound": 0.9896907216494846
+        }
+      ],
+      "population_expression": "CAR-0 retained fragile-condition rate: final typed_join_status over right_status, per team perspective per match",
+      "rate_kind": "rate",
+      "rate_status": "PASS",
+      "source_record_count": 714,
+      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal CAR-0 join",
+      "upper_bound": 0.9724409448818898
+    },
+    {
+      "a_count": 6,
+      "audit_role": "away",
+      "b_count": 8,
+      "c_count": 3,
+      "d1_count": 0,
+      "d2_count": 269,
+      "denominator_count_interval": {
+        "fail_count": 164,
+        "lower_bound": 17,
+        "observed": 17,
+        "pass_count": 17,
+        "population_count": 450,
+        "unknown_count": 269,
+        "upper_bound": 286
+      },
+      "denominator_status_field": "right_status",
+      "e_count": 164,
+      "group_by_fields": [
+        "perspective_team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WN1",
+        "perspective_team_role": "away"
+      },
+      "lower_bound": 0.02097902097902098,
+      "match_id": "J03WN1",
+      "numerator_count_interval": {
+        "fail_count": 8,
+        "lower_bound": 6,
+        "observed": 6,
+        "pass_count": 6,
+        "population_count": 286,
+        "unknown_count": 272,
+        "upper_bound": 278
+      },
+      "numerator_status_field": "typed_join_status",
+      "observed": 0.42857142857142855,
+      "observed_denominator_count": 14,
+      "periods": [
+        {
+          "a_count": 3,
+          "b_count": 6,
+          "c_count": 1,
+          "d1_count": 0,
+          "d2_count": 166,
+          "e_count": 116,
+          "lower_bound": 0.017045454545454544,
+          "observed": 0.3333333333333333,
+          "observed_denominator_count": 9,
+          "period": "firstHalf",
+          "rate_status": "PASS",
+          "source_record_count": 292,
+          "upper_bound": 0.9659090909090909
+        },
+        {
+          "a_count": 3,
+          "b_count": 2,
+          "c_count": 2,
+          "d1_count": 0,
+          "d2_count": 103,
+          "e_count": 48,
+          "lower_bound": 0.02727272727272727,
+          "observed": 0.6,
+          "observed_denominator_count": 5,
+          "period": "secondHalf",
+          "rate_status": "PASS",
+          "source_record_count": 158,
+          "upper_bound": 0.9818181818181818
+        }
+      ],
+      "population_expression": "CAR-0 retained fragile-condition rate: final typed_join_status over right_status, per team perspective per match",
+      "rate_kind": "rate",
+      "rate_status": "PASS",
+      "source_record_count": 450,
+      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal CAR-0 join",
+      "upper_bound": 0.972027972027972
+    }
+  ],
+  "schema_version": "r2_2_flagship_car0_retention_rate_table.v1",
+  "totals": {
+    "a_count": 145,
+    "b_count": 77,
+    "c_count": 54,
+    "d1_count": 0,
+    "d2_count": 2560,
+    "denominator_pass_count": 276,
+    "denominator_unknown_count": 2560,
+    "denominator_upper_bound": 2836,
+    "e_count": 5578,
+    "numerator_upper_bound": 2759,
+    "observed_denominator_count": 222,
+    "source_record_count": 8414
+  }
+}
