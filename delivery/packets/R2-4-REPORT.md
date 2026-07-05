@@ -28,7 +28,8 @@ use this clone's commit SHAs via `format-patch`.
 | `198e0d7` | Report scaffold and clone-route provenance. |
 | `93bf39a` | sequence_pattern operator, registry, pack delta, focused tests. |
 | `c40a008` | Possession-continuity evidence, compiler-search sequence builder, R2-4 meaning-expression fixture, bridge regression test. |
-| `PENDING` | Byte-reproducing flagship generator, synthesized sequence+rate plan, counterattack initiation table, provenance. |
+| `4d74bd0` | Byte-reproducing flagship generator, synthesized sequence+rate plan, counterattack initiation table, provenance. |
+| `PENDING` | Mutation evidence and final verification table. |
 
 ## Pack Delta
 
@@ -68,6 +69,14 @@ The bridge schema was not extended. The meaning-expression vocabulary now sees `
 | Totals | Completed chains `1`; population rows `2811`; unknown chain rows `2810`; rate interval `1.000 [0.0003557452863749555, 1.000]`. |
 | Denominator reconciliation | All 14 chain populations match rate denominators; all 14 completed-chain counts match rate A counts. |
 | Timestamp fence | Committed plan/table/provenance contain no run timestamp; timing data is in the uncommitted local sidecar. |
+
+## Mutation Evidence
+
+| Guard | Temporary mutation | Expected failing test | Result |
+| --- | --- | --- | --- |
+| Truncated successor windows remain UNKNOWN | Replaced `UNKNOWN if window_truncated else FAIL` with `FAIL if window_truncated else FAIL`. | `tests.test_r2_4_sequence_pattern.SequencePatternOperatorTests.test_truncated_window_is_unknown_not_fail` | FAIL observed: expected `UNKNOWN`, got `FAIL`; restored. |
+| Continuity violations are excluded | Disabled `_continuity_satisfied(...)` filtering with `False and`. | `tests.test_r2_4_sequence_pattern.SequencePatternOperatorTests.test_continuity_violation_is_excluded` | FAIL observed: expected stage-2 empty-window failure, got stage-3 empty-window failure; restored. |
+| Restore check | `PYTHONPATH=/private/tmp/priori-r2-4-single-20260705095024/src UV_CACHE_DIR=/private/tmp/uv-cache-priori /Users/luisrevilla/code/priori/.venv/bin/python -m unittest tests.test_r2_4_sequence_pattern tests.test_scp2_1_meaning_to_target` | N/A | PASS; 26 tests in `0.054s`. |
 
 ## Verification
 
