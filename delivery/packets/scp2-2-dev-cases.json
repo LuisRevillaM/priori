@@ -7,7 +7,7 @@
       "kind": "same_meaning_pair",
       "request_texts": [
         "Find controlled pass episodes for the home and away teams.",
-        "Show the settled completed passes where the receiving team keeps control."
+        "List controlled-pass episodes for both team roles."
       ],
       "expected": {
         "outcome": "expression"
