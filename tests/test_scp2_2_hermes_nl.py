@@ -1,0 +1,231 @@
+from __future__ import annotations
+
+import json
+import tempfile
+import unittest
+from pathlib import Path
+
+from pydantic import ValidationError
+
+from scripts.scp2_2.eval_harness import evaluate_case_set_payload
+from tqe.semantic_compiler.hermes_nl import (
+    HERMES_OUTCOME_ADAPTER,
+    HermesNLContext,
+    HermesNLModelOutputError,
+    UnderstoodButNotExpressibleOutcome,
+    build_prompt_projection,
+    compile_nl_request,
+    expression_outcome,
+    parse_hermes_completion,
+    transcript_for,
+)
+from tqe.semantic_compiler.meaning_expression import load_pack_vocabulary
+
+
+FIXTURE_DIR = Path("delivery/packets/scp2-1-roundtrip/meaning-expressions")
+R2_4_FIXTURE_DIR = Path("delivery/packets/r2-4-flagship/meaning-expressions")
+
+
+class FakeInvoker:
+    provider = "test-provider"
+    model = "test-model"
+
+    def __init__(self, *outputs: str) -> None:
+        self.outputs = list(outputs)
+        self.prompts: list[str] = []
+
+    def invoke(self, prompt: str) -> str:
+        self.prompts.append(prompt)
+        if not self.outputs:
+            raise AssertionError("FakeInvoker was called more times than expected")
+        return self.outputs.pop(0)
+
+
+class SCP2HermesNLTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.vocabulary = load_pack_vocabulary()
+        cls.projection = build_prompt_projection()
+        cls.coverage_rows = json.loads(Path("generated/coverage-map.json").read_text(encoding="utf-8"))
+
+    def test_outcome_type_exhaustiveness_rejects_fifth_outcome_shape(self) -> None:
+        with self.assertRaises(ValidationError):
+            HERMES_OUTCOME_ADAPTER.validate_python(
+                {
+                    "outcome": "compiler_error",
+                    "message": "not an allowed SCP2-2 outcome",
+                }
+            )
+
+    def test_model_output_parser_rejects_fifth_raw_shape(self) -> None:
+        with self.assertRaises(HermesNLModelOutputError):
+            parse_hermes_completion(
+                json.dumps({"outcome": "best_effort", "notes": "nope"}),
+                transcript=self.transcript("{}"),
+                vocabulary=self.vocabulary,
+            )
+
+    def test_mutation_bypassing_expression_gate_would_accept_body_orientation_oov(self) -> None:
+        raw = json.dumps(
+            {
+                "outcome": "expression",
+                "expression": self.fixture_payload("body_orientation_oov.v0.json"),
+            }
+        )
+
+        outcome = compile_nl_request("show body orientation", invoker=FakeInvoker(raw))
+
+        self.assertIsInstance(outcome, UnderstoodButNotExpressibleOutcome)
+        self.assertEqual("understood_but_not_expressible", outcome.outcome)
+        self.assertEqual("BODY_ORIENTATION", outcome.gap_code)
+        self.assertEqual("concept:body_orientation", outcome.missing_capability)
+
+    def test_expression_gate_routes_unsupported_modality_to_typed_refusal(self) -> None:
+        payload = self.fixture_payload("fragile_window_join_count_novel.v0.json")
+        payload["target_contract"]["required_modalities"].append("video")
+        raw = json.dumps({"outcome": "expression", "expression": payload})
+
+        outcome = compile_nl_request("show the video", invoker=FakeInvoker(raw))
+
+        self.assertEqual("unsupported_modality", outcome.outcome)
+        self.assertEqual("VIDEO", outcome.gap_code)
+        self.assertEqual("video", outcome.modality)
+
+    def test_prompt_projection_changes_when_pack_copy_changes_and_no_hand_sentinel_exists(self) -> None:
+        baseline = build_prompt_projection()
+        sentinel = "scp2_2_projection_sentinel"
+        self.assertNotIn(sentinel, baseline.prompt)
+        payload = json.loads(Path("generated/tactical-knowledge-pack.json").read_text(encoding="utf-8"))
+        payload["primitives"][0]["limitations"].append(sentinel)
+        with tempfile.TemporaryDirectory() as tmp:
+            pack_path = Path(tmp) / "pack.json"
+            pack_path.write_text(json.dumps(payload), encoding="utf-8")
+
+            mutated = build_prompt_projection(pack_path)
+
+        self.assertIn(sentinel, mutated.prompt)
+        self.assertNotEqual(baseline.prompt_hash, mutated.prompt_hash)
+
+    def test_multi_turn_clarification_state_resumes_without_reasking_model(self) -> None:
+        controlled = self.fixture_payload("fragile_possession_state_known.v0.json")
+        sequence = self.fixture_payload("fragile_window_join_count_novel.v0.json")
+        raw = json.dumps(
+            {
+                "outcome": "clarification_required",
+                "dimension": "SUPPORT_DEFINITION",
+                "question": "Which support reading should be used?",
+                "readings": [
+                    {
+                        "reading_id": "possession_window",
+                        "label": "same possession support window",
+                        "answer_aliases": ["window"],
+                        "expression": controlled,
+                    },
+                    {
+                        "reading_id": "count_window",
+                        "label": "count support windows",
+                        "answer_aliases": ["count"],
+                        "expression": sequence,
+                    },
+                ],
+            }
+        )
+        invoker = FakeInvoker(raw)
+
+        first = compile_nl_request("show support", invoker=invoker)
+        second = compile_nl_request(
+            "count",
+            context=HermesNLContext(pending_clarification=first.state, answer="count"),
+            invoker=invoker,
+        )
+
+        self.assertEqual("clarification_required", first.outcome)
+        self.assertEqual("expression", second.outcome)
+        self.assertEqual(sequence["expression_id"], second.expression.expression_id)
+        self.assertEqual(1, len(invoker.prompts))
+
+    def test_harness_verdict_correctness_on_tiny_fixture_set(self) -> None:
+        fragile = self.expression_for("fragile_possession_state_known.v0.json")
+        sequence = self.expression_for_r2_4("counterattack_initiation_sequence_rate.v0.json")
+
+        def fake_compiler(text: str, _context: HermesNLContext | None = None):
+            if text in {"same one", "same two", "changed one"}:
+                return fragile
+            if text == "changed two":
+                return sequence
+            return UnderstoodButNotExpressibleOutcome(
+                outcome="understood_but_not_expressible",
+                gap_code="BODY_ORIENTATION",
+                missing_capability="concept:body_orientation",
+                message="Body orientation is out of pack.",
+                transcript=self.transcript("body"),
+            )
+
+        payload = {
+            "schema_version": "scp2_2.dev_cases.v0",
+            "cases": [
+                {
+                    "case_id": "same",
+                    "kind": "same_meaning_pair",
+                    "request_texts": ["same one", "same two"],
+                    "expected": {"outcome": "expression"},
+                },
+                {
+                    "case_id": "changed",
+                    "kind": "changed_meaning_pair",
+                    "request_texts": ["changed one", "changed two"],
+                    "expected": {"outcome": "expression"},
+                },
+                {
+                    "case_id": "refusal",
+                    "kind": "single",
+                    "request_text": "body",
+                    "expected": {
+                        "outcome": "understood_but_not_expressible",
+                        "gap_code": "BODY_ORIENTATION",
+                    },
+                },
+            ],
+        }
+
+        result = evaluate_case_set_payload(
+            payload,
+            compiler=fake_compiler,
+            case_set_ref="<unit>",
+            coverage_rows=self.coverage_rows,
+        )
+
+        self.assertEqual(3, result["summary"]["pass"])
+        self.assertEqual(0, result["summary"]["fail"])
+
+    def expression_for(self, name: str):
+        payload = self.fixture_payload(name)
+        return expression_outcome(
+            payload,
+            transcript=self.transcript(name),
+            vocabulary=self.vocabulary,
+        )
+
+    def expression_for_r2_4(self, name: str):
+        payload = json.loads((R2_4_FIXTURE_DIR / name).read_text(encoding="utf-8"))
+        return expression_outcome(
+            payload,
+            transcript=self.transcript(name),
+            vocabulary=self.vocabulary,
+        )
+
+    def transcript(self, raw: str):
+        return transcript_for(
+            projection=self.projection,
+            raw_completion=raw,
+            provider="test-provider",
+            model="test-model",
+        )
+
+    @staticmethod
+    def fixture_payload(name: str) -> dict:
+        return json.loads((FIXTURE_DIR / name).read_text(encoding="utf-8"))
+
+
+if __name__ == "__main__":
+    unittest.main()
