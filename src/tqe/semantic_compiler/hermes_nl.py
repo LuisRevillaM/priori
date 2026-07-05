@@ -278,7 +278,9 @@ def build_prompt_projection(pack_path: Path = DEFAULT_KNOWLEDGE_PACK_PATH) -> Pr
         "All field names must come from generated field_names; do not invent required_evidence or status fields. "
         "The supported modalities are tracking, events, and tracking_event_synchronized. Do not refuse merely "
         "because a request relies on event data or tracking data. Use unsupported_modality only for unavailable "
-        "source media such as video, audio, images, or external annotation.\n"
+        "source media such as video, audio, images, or external annotation. Use generated refusal_routing: only "
+        "gap codes listed under unsupported_modality_gap_codes may use unsupported_modality; all other generated "
+        "gap codes are understood_but_not_expressible.\n"
         "Target contracts are declarative compiler-search contracts, not prose summaries and not direct query "
         "plans. required_evidence and status_semantics.field must be concrete generated evidence/output fields, "
         "never the reporting concept name, recipe_id, display_name, or tactical phrase. For primitive asks, prefer "
@@ -356,6 +358,7 @@ def prompt_sections_from_pack(pack: dict[str, Any]) -> dict[str, Any]:
             }
             for item in sorted(pack.get("ambiguity_dimensions") or [], key=lambda item: item["code"])
         ],
+        "refusal_routing": refusal_routing_projection(pack),
         "claim_boundaries": claim_boundary_projection(pack),
     }
 
@@ -435,6 +438,17 @@ def predicate_operator_projection(item: dict[str, Any]) -> dict[str, Any]:
         "output_payload_type": str(item.get("output_payload_type")),
         "output_temporal_type": str(item.get("output_temporal_type")),
         "limitations": [str(value) for value in item.get("limitations") or []],
+    }
+
+
+def refusal_routing_projection(pack: dict[str, Any]) -> dict[str, Any]:
+    codes = sorted(str(item.get("code")) for item in pack.get("capability_gap_codes") or [])
+    unsupported = [code for code in codes if code == "VIDEO"]
+    return {
+        "unsupported_modality_gap_codes": unsupported,
+        "understood_but_not_expressible_gap_codes": [
+            code for code in codes if code not in set(unsupported)
+        ],
     }
 
 
