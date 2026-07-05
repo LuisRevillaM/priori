@@ -123,3 +123,26 @@ truth, not one variable).
 Round 2 appends to packet/r2-1. The clone-route provenance discipline
 (report the clone path + SHAs prominently) worked well this round —
 keep it.
+
+---
+
+# R2-1 Round 2: ACCEPTED
+
+Reviewed 2026-07-05 at c6cc4aa. All rulings verified by the director's
+own execution: AGGREGATION_KINDS is ('count',) with zero sum/mean in
+source (R-U amputation), external bounds raise and the ordering
+invariant has its named test, zero operator-name literals in the
+binder with the ratchet extended (R-V), the ambient field injection is
+gone with both rejection tests (R-W), perspective grouping without
+same_team lineage fails to bind (R-X — the exact negative test),
+constraint defaults are TRUE with declared-reason opt-out and
+fail-closed population handling (R-Z), and the committed generator
+BYTE-REPRODUCES the committed flagship table on the committed tree
+(R-Y): 14 rows, 145 observed [145, 5799], unknown 5,654 of 8,414,
+reconciled true against the sealed audit. Director's full suite green.
+
+The flagship interval's width is the era working as designed: UNKNOWN
+dominance is now a visible, measurable number that future detector
+work narrows — not a silent omission. The field-domain mechanism for
+numeric aggregation (sum/mean) is declared debt with its own future
+packet, per R-U.
