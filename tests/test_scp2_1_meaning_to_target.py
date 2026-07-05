@@ -371,6 +371,23 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
 
         self.assertEqual("recipe:line_break_support_response_v1", synthesized["build"]["terminal_provider"])
 
+    def test_recipe_backed_expression_accepts_possession_corridor_available_alias(self) -> None:
+        pack = json.loads(Path("generated/tactical-knowledge-pack.json").read_text(encoding="utf-8"))
+        recipe = next(
+            item for item in pack["recipes"] if item["recipe_id"] == "possession_corridor_availability_v1"
+        )
+        payload = self.recipe_expression_payload(recipe)
+        payload["expression_id"] = "possessions_progressive_corridor_ball_side_available"
+        payload["concept_identity"] = "possessions_progressive_corridor_ball_side_available"
+        payload["target"]["target_id"] = "possessions_progressive_corridor_ball_side_available_v0"
+        result = load_meaning_expression_result(payload, vocabulary=self.vocabulary)
+        self.assertEqual("accepted", result.outcome)
+        self.assertIsNotNone(result.expression)
+
+        synthesized = synthesize_and_bind(result.expression, coverage_rows=self.coverage_rows)
+
+        self.assertEqual("recipe:possession_corridor_availability_v1", synthesized["build"]["terminal_provider"])
+
     def test_single_provider_synthesis_elides_unnecessary_model_composition(self) -> None:
         payload = self.controlled_pass_variant_payload("settled_completed_pass_retained_control")
         payload["operator_applications"] = [{"operator": "typed_join", "parameters": []}]
@@ -502,7 +519,7 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
             {
                 "field": predicate["input"]["output_name"],
                 "operator": predicate["operator"]["name"],
-                "required_value": predicate["compare"].get("value"),
+                "required_value": (predicate.get("compare") or {}).get("value"),
             }
             for predicate in recipe["authoring_contract"]["required_predicates"]
         ]

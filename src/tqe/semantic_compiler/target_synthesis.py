@@ -351,6 +351,12 @@ def recipe_matches_expression(recipe: dict[str, Any], candidates: set[str]) -> b
         return True
     if recipe_id == "line_break_support_response_v1":
         return any({"line", "break", "support"}.issubset(identifier_tokens(candidate)) for candidate in candidates)
+    if recipe_id == "possession_corridor_availability_v1":
+        return any(
+            {"possession", "corridor"}.issubset(identifier_tokens(candidate))
+            and ({"availability", "available", "progressive"} & identifier_tokens(candidate))
+            for candidate in candidates
+        )
     return False
 
 
