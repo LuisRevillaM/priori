@@ -11,7 +11,7 @@ Branch: `packet/r1-c` from `codex/afl08-passport-loop` at
 | C2 KPI semantic-correspondence hardening | DONE | `scripts/coverage_map/compiler_search_reachability.py`, `tests/test_r1_c_checkpoint.py` |
 | C3 R1-5 riders | DONE | `tests/test_r1_5_typed_join.py`, `scripts/audits/r1_5_population_audit.py`, `tests/test_r1_c_checkpoint.py`, `delivery/packets/r1-c-sweep/population-audit/` |
 | C4 gate integrity manifest latency | DONE_WITH_CONCERNS | `data/manifest.json`, `src/tqe/runtime/executor.py`, `scripts/data/build_data_manifest.py`, `tests/test_executor_boundaries.py` |
-| Full committed-tree suite | DONE | `make test` on committed tree `b26627c` |
+| Full committed-tree suite | PENDING_ROUND_2 | Round-2 `make test` still pending |
 
 ## C1 Unified Sweep
 
@@ -48,7 +48,7 @@ Artifacts:
 
 Sweep summary:
 
-| Target | Rows searched | Rows compiler_reachable | Correspondence status |
+| Target | Rows searched | Rows compiler_reachable | Correspondence |
 | --- | ---: | ---: | --- |
 | `search_heldout_carry_displacement_v0` | 40 | 40 | NOT_DECLARED |
 | `search_heldout_support_arrival_v0` | 40 | 40 | NOT_DECLARED |
@@ -59,18 +59,23 @@ Sweep summary:
 | `search_carry_out_of_pressure_v0` | 2 | 2 | NOT_DECLARED |
 | `search_penetration_support_response_v0` | 0 | 0 | N/A, `missing_constraint` |
 | `search_expected_pass_completion_v0` | 0 | 0 | N/A, `unsupported_modality` |
-| `r1_1_goalward_axis_projection_v0` | 40 | 40 | PASS |
-| `r1_2_pressure_distance_delta_v0` | 40 | 40 | PASS |
-| `r1_3_argmin_defender_distance_v0` | 40 | 40 | PASS |
-| `r1_4_same_team_control_after_reception_v0` | 40 | 40 | PASS |
-| `r1_5_fragile_possession_state_v0` | 40 | 40 | PASS |
+| `r1_1_goalward_axis_projection_v0` | 40 | 40 | DECLARED |
+| `r1_2_pressure_distance_delta_v0` | 40 | 40 | DECLARED |
+| `r1_3_argmin_defender_distance_v0` | 40 | 40 | DECLARED |
+| `r1_4_same_team_control_after_reception_v0` | 40 | 40 | DECLARED |
+| `r1_5_fragile_possession_state_v0` | 40 | 40 | DECLARED |
 
 C1 finding: the unified sweep proves 12 compiler-reachable rows in one
 invocation on one tree, but only the five R1 target rows carry declared
 `semantic_correspondence` in their source target files. The seven reachable
 pre-era rows from `search-targets.v0.json` are reported as NOT_DECLARED.
 This is a deviation from the packet's expected "12/12 with correspondence
-PASS" and is recorded here as a finding, not fixed in C1.
+declared" and is recorded here as a finding, not fixed in C1.
+
+F7 note: the round-1 sweep evidence is a fresh derivation on the round-1 tree.
+Eleven of the twelve compiler-reachable sweep plans differ by `document_hash`
+from their original flip-plan artifacts; that divergence is disclosed here as
+fresh derivation, not byte-for-byte reproduction of the earlier flip evidence.
 
 Operational note: an earlier serial attempt was interrupted before artifacts
 were written because it was spending time deep-copying shared node cache
@@ -180,11 +185,19 @@ Timing:
 | direct `canonical_data_manifest_hash(Path("data/canonical/v1"))` | default manifest+sizes | PASS | 0.41s |
 | direct `TQE_DEEP_VERIFY=1 canonical_data_manifest_hash(Path("data/canonical/v1"))` | manifest+sizes+sha256 | PASS | 0.50s |
 
-C4 concern: whole `scp-0-verify` wall time did not improve in this local
-measurement because the target is dominated by the SCP-0 verifier/unit tests,
-not by canonical-data hashing. The integrity path itself no longer reads the
-182 MB canonical tree in default mode; focused tests enforce that by patching
-`sha256_path` to fail if default verification attempts content hashing.
+C4 concern and F6 correction: the whole `scp-0-verify` before/after timing is
+round-1 context only and does not exercise the changed code path enough to
+measure the win. No `scp-0-verify` speedup is claimed. The exercised path is
+`canonical_data_manifest_hash(Path("data/canonical/v1"))`, which now avoids
+default content hashing when the repo manifest covers the canonical root. The
+win lands where executor instantiation and shared-node-cache keys need the
+canonical data manifest hash.
+
+Declared C4 debt under R-T: default verification checks manifest hash,
+file set, file existence, and file sizes, so a same-size content tamper remains
+detectable only under `TQE_DEEP_VERIFY=1`. The manifest is also unpinned to an
+external trust root; freeze/pin policy remains director-owned, and this packet
+did not freeze, re-pin, or move that trust boundary.
 
 Verification:
 
