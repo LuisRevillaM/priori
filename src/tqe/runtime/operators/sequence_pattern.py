@@ -19,13 +19,14 @@ from tqe.runtime.ir import (
     Unit,
     stable_hash,
 )
-from tqe.runtime.values import RuntimeValue, canonical_anchor_record_id
+from tqe.runtime.values import FrameSignal, RuntimeValue, canonical_anchor_record_id
 
 
 TRI_STATE_VALUES = ("PASS", "FAIL", "UNKNOWN")
 MATCH_POLICY_VALUES = ("first", "all")
 OVERLAP_POLICY_VALUES = ("allow_overlaps", "non_overlapping")
 WINDOW_BOUNDARY_VALUES = ("exclusive_start_inclusive_end",)
+POSSESSION_CONTINUITY_SOURCE_VALUES = ("stage_fields", "observed_possession_stream")
 CHAIN_EVIDENCE_FIELDS = [
     "chain_id",
     "chain_status",
@@ -38,6 +39,7 @@ CHAIN_EVIDENCE_FIELDS = [
     "frame_rate_hz",
     "same_team_perspective_required",
     "same_possession_required",
+    "possession_continuity_source",
     "same_player_required",
     "constraint_opt_out_reason",
     "team_role_field",
@@ -164,6 +166,16 @@ SEQUENCE_PATTERN_SIGNATURE = CompositionOperatorSignature(
             missing_data_semantics=MissingDataSemantics.UNKNOWN,
             evidence_fields=CHAIN_EVIDENCE_FIELDS,
         ),
+        OperatorOutputDeclaration(
+            name="chain_status",
+            temporal_type=TemporalContainer.FRAME_SIGNAL,
+            payload_type=PayloadType.ENUM,
+            cardinality=Cardinality.SINGLE,
+            unit=Unit.NONE,
+            entity_scope=EntityScope.ANCHOR,
+            missing_data_semantics=MissingDataSemantics.UNKNOWN,
+            evidence_fields=CHAIN_EVIDENCE_FIELDS,
+        ),
     ],
     parameters=[
         ParameterDefinition(
@@ -263,6 +275,14 @@ SEQUENCE_PATTERN_SIGNATURE = CompositionOperatorSignature(
             description="Require all stage witnesses to share declared possession identity fields.",
         ),
         ParameterDefinition(
+            name="possession_continuity_source",
+            payload_type=PayloadType.ENUM,
+            required=False,
+            default=TypedValue(payload_type=PayloadType.ENUM, value="stage_fields"),
+            allowed_values=list(POSSESSION_CONTINUITY_SOURCE_VALUES),
+            description="Source for same-possession continuity when stage fields do not expose a possession id.",
+        ),
+        ParameterDefinition(
             name="same_player_required",
             payload_type=PayloadType.BOOLEAN,
             required=False,
@@ -315,6 +335,7 @@ class SequenceConfig:
     stage_3_window_seconds: float
     same_team_perspective_required: bool
     same_possession_required: bool
+    possession_continuity_source: str
     same_player_required: bool
     constraint_opt_out_reason: str
     team_role_field: str
@@ -388,6 +409,7 @@ def execute_sequence_pattern(
                 }
                 candidates = _stage_candidates(
                     records=stage_records[next_stage],
+                    state=state,
                     config=config,
                     witnesses=witnesses,
                     stage_index=next_stage,
@@ -464,9 +486,22 @@ def execute_sequence_pattern(
             str(record.get("chain_id") or ""),
         )
     )
+    frame_ids = [int(record["anchor_frame_id"]) for record in chain_records]
+    status_values = [
+        None if str(record["chain_status"]) == "UNKNOWN" else str(record["chain_status"])
+        for record in chain_records
+    ]
     state.signals[node.node_id] = {
         "chain_records": chain_records,
         "chain_records_records": chain_records,
+        "chain_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=status_values,
+            unknown_mask=[value is None for value in status_values],
+            unit=Unit.NONE,
+            entity_scope=EntityScope.ANCHOR,
+        ),
+        "chain_status_records": chain_records,
     }
 
 
@@ -497,6 +532,7 @@ def _sequence_config(parameters: dict[str, TypedValue]) -> SequenceConfig:
         stage_3_window_seconds=_number(parameters, "stage_3_window_seconds"),
         same_team_perspective_required=_boolean(parameters, "same_team_perspective_required", True),
         same_possession_required=_boolean(parameters, "same_possession_required", False),
+        possession_continuity_source=_enum(parameters, "possession_continuity_source", "stage_fields"),
         same_player_required=_boolean(parameters, "same_player_required", False),
         constraint_opt_out_reason=_enum(parameters, "constraint_opt_out_reason", "none"),
         team_role_field=_enum(parameters, "team_role_field", "team_role"),
@@ -523,6 +559,7 @@ def _sorted_records(records: list[dict[str, Any]], spec: StageSpec) -> list[dict
 def _stage_candidates(
     *,
     records: list[dict[str, Any]],
+    state: Any,
     config: SequenceConfig,
     witnesses: list[dict[str, Any]],
     stage_index: int,
@@ -540,7 +577,7 @@ def _stage_candidates(
             continue
         if stage_index == 2 and not _minimum_numeric_satisfied(record, config):
             continue
-        if not _continuity_satisfied(witnesses[0], record, config=config, stage_index=stage_index):
+        if not _continuity_satisfied(witnesses[0], record, state=state, config=config, stage_index=stage_index):
             continue
         result.append(record)
     return sorted(result, key=lambda item: (_frame(item, spec.frame_field), _record_identity(item)))
@@ -550,6 +587,7 @@ def _continuity_satisfied(
     first: dict[str, Any],
     candidate: dict[str, Any],
     *,
+    state: Any,
     config: SequenceConfig,
     stage_index: int,
 ) -> bool:
@@ -558,9 +596,11 @@ def _continuity_satisfied(
     if config.same_team_perspective_required and _field(first, first_spec.team_role_field) != _field(candidate, candidate_spec.team_role_field):
         return False
     if config.same_possession_required:
-        if first_spec.possession_id_field == "none" or candidate_spec.possession_id_field == "none":
+        first_possession = _possession_identity(first, first_spec, state=state, config=config)
+        candidate_possession = _possession_identity(candidate, candidate_spec, state=state, config=config)
+        if first_possession is None or candidate_possession is None:
             return False
-        if _field(first, first_spec.possession_id_field) != _field(candidate, candidate_spec.possession_id_field):
+        if first_possession != candidate_possession:
             return False
     if config.same_player_required:
         if first_spec.player_id_field == "none" or candidate_spec.player_id_field == "none":
@@ -568,6 +608,51 @@ def _continuity_satisfied(
         if _field(first, first_spec.player_id_field) != _field(candidate, candidate_spec.player_id_field):
             return False
     return True
+
+
+def _possession_identity(
+    record: dict[str, Any],
+    spec: StageSpec,
+    *,
+    state: Any,
+    config: SequenceConfig,
+) -> str | None:
+    declared = _field(record, spec.possession_id_field)
+    if declared is not None:
+        return declared
+    if config.possession_continuity_source != "observed_possession_stream":
+        return None
+    team_role = _field(record, spec.team_role_field)
+    if team_role is None:
+        return None
+    return _state_possession_identity(state, frame_id=_frame(record, spec.frame_field), team_role=team_role)
+
+
+def _state_possession_identity(state: Any, *, frame_id: int, team_role: str) -> str | None:
+    raw_frame_ids = getattr(state, "frame_ids", None)
+    raw_possession_role = getattr(state, "possession_role", None)
+    raw_ball_alive = getattr(state, "ball_alive", None)
+    frame_ids = [] if raw_frame_ids is None else list(raw_frame_ids)
+    possession_role = [] if raw_possession_role is None else list(raw_possession_role)
+    ball_alive = [] if raw_ball_alive is None else list(raw_ball_alive)
+    if not frame_ids or not possession_role or len(frame_ids) != len(possession_role):
+        return None
+    try:
+        index = next(idx for idx, value in enumerate(frame_ids) if int(value) == int(frame_id))
+    except StopIteration:
+        return None
+    if str(possession_role[index]) != str(team_role):
+        return None
+    if ball_alive and not bool(ball_alive[index]):
+        return None
+    start = index
+    while start > 0 and str(possession_role[start - 1]) == str(team_role):
+        if ball_alive and not bool(ball_alive[start - 1]):
+            break
+        start -= 1
+    match_id = str(getattr(state, "match_id", ""))
+    period = str(getattr(state, "period", ""))
+    return f"possession:{match_id}:{period}:{team_role}:{int(frame_ids[start])}"
 
 
 def _minimum_numeric_satisfied(record: dict[str, Any], config: SequenceConfig) -> bool:
@@ -655,6 +740,7 @@ def _chain_record(
         "frame_rate_hz": config.frame_rate_hz,
         "same_team_perspective_required": config.same_team_perspective_required,
         "same_possession_required": config.same_possession_required,
+        "possession_continuity_source": config.possession_continuity_source,
         "same_player_required": config.same_player_required,
         "constraint_opt_out_reason": config.constraint_opt_out_reason,
         "team_role_field": config.team_role_field,

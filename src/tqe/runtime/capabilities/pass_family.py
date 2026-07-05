@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
+import numpy as np
 import pandas as pd
 
 from tqe.runtime.controlled_pass import (
@@ -38,6 +39,23 @@ from tqe.runtime.one_touch import (
 )
 from tqe.runtime.pass_bypass import PassBypassConfig, evaluate_pass_bypass_measurements
 from tqe.runtime.values import FrameSignal
+
+
+def possession_identity_at_frame(state: PeriodState, frame_id: int, team_role: str) -> str:
+    indexes = np.where(state.frame_ids == frame_id)[0]
+    if len(indexes) == 0:
+        return f"possession:{state.match_id}:{state.period}:{team_role}:unobserved:{frame_id}"
+    index = int(indexes[0])
+    if str(state.possession_role[index]) != str(team_role) or not bool(state.ball_alive[index]):
+        return f"possession:{state.match_id}:{state.period}:{team_role}:unobserved:{frame_id}"
+    start = index
+    while (
+        start > 0
+        and str(state.possession_role[start - 1]) == str(team_role)
+        and bool(state.ball_alive[start - 1])
+    ):
+        start -= 1
+    return f"possession:{state.match_id}:{state.period}:{team_role}:{int(state.frame_ids[start])}"
 
 
 def primitive_action_event_anchor(state: PeriodState, node: BoundCatalogNode) -> None:
@@ -195,6 +213,11 @@ def controlled_pass_anchor_record(state: PeriodState, evaluation: dict[str, Any]
         "match_id": state.match_id,
         "period": state.period,
         "anchor_frame_id": anchor_frame_id,
+        "possession_id": possession_identity_at_frame(
+            state,
+            start_frame_id,
+            str(evaluation.get("team_role") or ""),
+        ),
         "start_frame_id": start_frame_id,
         "end_frame_id": end_frame_id,
         "entity_refs": entity_refs,
@@ -214,6 +237,11 @@ def controlled_pass_episode_record(
     return {
         **episode,
         "source_controlled_pass_anchor_id": str(episode.get("anchor_id")),
+        "possession_id": (
+            str(anchor.get("possession_id"))
+            if anchor is not None and anchor.get("possession_id") is not None
+            else possession_identity_at_frame(state, int(release_frame_id or reception_frame_id or 0), str(episode.get("team_role") or ""))
+        ),
         "anchor_id": str(anchor["anchor_id"]) if anchor is not None else str(episode.get("anchor_id")),
         "anchor_frame_id": int(anchor["anchor_frame_id"]) if anchor is not None else int(reception_frame_id or 0),
         "start_frame_id": int(anchor["start_frame_id"]) if anchor is not None else int(release_frame_id or 0),

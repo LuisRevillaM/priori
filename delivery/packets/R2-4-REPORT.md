@@ -26,7 +26,8 @@ use this clone's commit SHAs via `format-patch`.
 | Commit | Contents |
 | --- | --- |
 | `198e0d7` | Report scaffold and clone-route provenance. |
-| `PENDING` | sequence_pattern operator, registry, pack delta, focused tests. |
+| `93bf39a` | sequence_pattern operator, registry, pack delta, focused tests. |
+| `PENDING` | Possession-continuity evidence, compiler-search sequence builder, R2-4 meaning-expression fixture, bridge regression test. |
 
 ## Pack Delta
 
@@ -41,7 +42,17 @@ The bridge schema was not extended. The meaning-expression vocabulary now sees `
 
 | Command | Result | Notes |
 | --- | --- | --- |
-| `PYTHONPATH=/private/tmp/priori-r2-4-single-20260705095024/src UV_CACHE_DIR=/private/tmp/uv-cache-priori /Users/luisrevilla/code/priori/.venv/bin/python -m unittest tests.test_r2_4_sequence_pattern tests.test_r1_0_operator_scaffolding tests.test_scp2_1_meaning_to_target` | PASS | 31 tests in `0.057s`. |
+| `PYTHONPATH=/private/tmp/priori-r2-4-single-20260705095024/src UV_CACHE_DIR=/private/tmp/uv-cache-priori /Users/luisrevilla/code/priori/.venv/bin/python -m unittest tests.test_r2_4_sequence_pattern tests.test_r1_0_operator_scaffolding tests.test_scp2_1_meaning_to_target` | PASS | 32 tests in `0.066s`; includes R2-4 registry-to-pack-to-synthesis fixture. |
+
+## Bridge Fixture
+
+| Item | Evidence |
+| --- | --- |
+| Fixture | `delivery/packets/r2-4-flagship/meaning-expressions/counterattack_initiation_chain_count.v0.json` |
+| Vocabulary path | Accepted by `load_meaning_expression_from_path` using generated pack SHA. |
+| Synthesis path | `synthesize_and_bind` returns `operator:aggregate_over` with `population_terminal=operator:sequence_pattern`. |
+| Document hash | `7e876649b73fd502e79291389b76ef028a229e8fa83bd3b39a4d224c10489dc7` |
+| Schema change | No bridge schema extension; `stage_N_required_fields` and `possession_continuity_source` are registry-derived composition/operator parameters. |
 
 ## Verification
 

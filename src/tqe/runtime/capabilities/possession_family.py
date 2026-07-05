@@ -44,6 +44,23 @@ from tqe.runtime.pass_bypass import attack_x_sign_for
 from tqe.runtime.values import FrameSignal
 
 
+def possession_identity_at_frame(state: PeriodState, frame_id: int, team_role: str) -> str:
+    indexes = np.where(state.frame_ids == frame_id)[0]
+    if len(indexes) == 0:
+        return f"possession:{state.match_id}:{state.period}:{team_role}:unobserved:{frame_id}"
+    index = int(indexes[0])
+    if str(state.possession_role[index]) != str(team_role) or not bool(state.ball_alive[index]):
+        return f"possession:{state.match_id}:{state.period}:{team_role}:unobserved:{frame_id}"
+    start = index
+    while (
+        start > 0
+        and str(state.possession_role[start - 1]) == str(team_role)
+        and bool(state.ball_alive[start - 1])
+    ):
+        start -= 1
+    return f"possession:{state.match_id}:{state.period}:{team_role}:{int(state.frame_ids[start])}"
+
+
 def primitive_possession_segment(state: PeriodState, node: BoundCatalogNode) -> None:
     possession_mask = (state.possession_role == state.perspective_team_role) & state.ball_alive
     minimum_frames = int(round(state.params.number("minimum_possession_seconds") * state.params.integer("analysis_rate_hz")))
@@ -171,6 +188,7 @@ def primitive_transition_anchor(state: PeriodState, node: BoundCatalogNode) -> N
                 "transition_status": status,
                 "transition_reason": reason,
                 "transition_type": transition_type,
+                "possession_id": possession_identity_at_frame(state, frame_id, new_role),
                 "transition_frame_id": frame_id,
                 "previous_frame_id": previous_frame_id,
                 "previous_team_role": previous_role,

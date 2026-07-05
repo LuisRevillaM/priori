@@ -458,6 +458,7 @@ EXTREMUM_OVER_SET_SIGNATURE = OPERATOR_SIGNATURES_BY_CONSTRAINT_KIND["extremum_o
 WINDOW_SIGNATURE = OPERATOR_SIGNATURES_BY_CONSTRAINT_KIND["window"]
 TYPED_JOIN_SIGNATURE = OPERATOR_SIGNATURES_BY_CONSTRAINT_KIND["typed_join"]
 AGGREGATE_OVER_SIGNATURE = OPERATOR_SIGNATURES_BY_CONSTRAINT_KIND["aggregate_over"]
+SEQUENCE_PATTERN_SIGNATURE = OPERATOR_SIGNATURES_BY_CONSTRAINT_KIND["sequence_pattern"]
 
 
 def declared_operator_fields(signature: Any) -> set[str]:
@@ -474,6 +475,7 @@ EXTREMUM_OVER_SET_FIELDS = declared_operator_fields(EXTREMUM_OVER_SET_SIGNATURE)
 WINDOW_FIELDS = declared_operator_fields(WINDOW_SIGNATURE)
 TYPED_JOIN_FIELDS = declared_operator_fields(TYPED_JOIN_SIGNATURE)
 AGGREGATE_OVER_FIELDS = declared_operator_fields(AGGREGATE_OVER_SIGNATURE)
+SEQUENCE_PATTERN_FIELDS = declared_operator_fields(SEQUENCE_PATTERN_SIGNATURE)
 TYPED_JOIN_CORE_FIELDS = {
     "typed_join_records",
     "typed_join_status",
@@ -898,6 +900,9 @@ def operator_composition_fields(contract: dict[str, Any], required_fields: set[s
 def operator_constraint_fields(constraint: dict[str, Any], required_fields: set[str]) -> set[str]:
     kind = str(constraint.get("kind", ""))
     fields = set(required_fields & OPERATOR_FIELDS_BY_CONSTRAINT_KIND.get(kind, set()))
+    if kind == "sequence_pattern":
+        for index in (1, 2, 3):
+            fields.update(required_fields & {str(item) for item in constraint.get(f"stage_{index}_required_fields", [])})
     if kind == "aggregate_over":
         fields.update(required_fields & {str(item) for item in constraint.get("population_required_fields", [])})
         for nested in constraint.get("population_composition_constraints", []):
@@ -1151,6 +1156,10 @@ def extremum_over_set_output_for_field(field: str) -> str:
 
 def window_output_for_field(field: str) -> str:
     return operator_output_for_field(WINDOW_SIGNATURE, field)
+
+
+def sequence_pattern_output_for_field(field: str) -> str:
+    return operator_output_for_field(SEQUENCE_PATTERN_SIGNATURE, field)
 
 
 def operator_output_for_field(signature: Any, field: str) -> str:
@@ -2377,6 +2386,294 @@ def delta_across_anchor_candidates(
     return [candidate for *_prefix, candidate in sorted(scored)]
 
 
+
+def build_sequence_pattern_operator(
+    context: SearchContext,
+    required_fields: set[str],
+    *,
+    depth: int,
+) -> BuildResult:
+    constraint = first_target_constraint(context, "sequence_pattern")
+    sequence_constraint = sequence_pattern_constraint_payload(constraint)
+    stage_builds: dict[int, BuildResult] = {}
+    attempts: dict[str, Any] = {}
+    for index, input_def in enumerate(SEQUENCE_PATTERN_SIGNATURE.inputs, start=1):
+        try:
+            stage_builds[index] = build_sequence_pattern_stage(
+                context=context,
+                input_def=input_def,
+                stage_index=index,
+                required_fields=set(sequence_constraint[f"stage_{index}_required_fields"]),
+                depth=depth + 1,
+            )
+        except SynthesisError as error:
+            attempts[f"stage_{index}"] = {
+                "taxonomy": error.taxonomy,
+                "message": error.message,
+                **error.details,
+            }
+            raise SynthesisError(
+                "missing_constraint",
+                "No declared stage source satisfied sequence_pattern.",
+                {"stage_attempts": attempts, "stage_index": index},
+            ) from error
+
+    node_id = context.node_id("sequence_pattern")
+    node = operator_node(
+        node_id=node_id,
+        operator_name="sequence_pattern",
+        version="0.1.0",
+        inputs={
+            f"stage_{index}": ref(stage_builds[index].terminal_node_id, stage_builds[index].terminal_output)
+            for index in (1, 2, 3)
+        },
+        parameters={
+            "stage_count": number(float(sequence_constraint["stage_count"]), "count"),
+            "match_policy": enum(sequence_constraint["match_policy"]),
+            "overlap_policy": enum(sequence_constraint["overlap_policy"]),
+            "window_boundary_policy": enum(sequence_constraint["window_boundary_policy"]),
+            "frame_rate_hz": number(float(sequence_constraint["frame_rate_hz"]), "hertz"),
+            "stage_2_window_seconds": number(float(sequence_constraint["stage_2_window_seconds"]), "second"),
+            "stage_3_window_seconds": number(float(sequence_constraint["stage_3_window_seconds"]), "second"),
+            "stage_1_status_field": enum(sequence_constraint["stage_1_status_field"]),
+            "stage_2_status_field": enum(sequence_constraint["stage_2_status_field"]),
+            "stage_3_status_field": enum(sequence_constraint["stage_3_status_field"]),
+            "stage_1_frame_field": enum(sequence_constraint["stage_1_frame_field"]),
+            "stage_2_frame_field": enum(sequence_constraint["stage_2_frame_field"]),
+            "stage_3_frame_field": enum(sequence_constraint["stage_3_frame_field"]),
+            "stage_1_end_frame_field": enum(sequence_constraint["stage_1_end_frame_field"]),
+            "stage_2_end_frame_field": enum(sequence_constraint["stage_2_end_frame_field"]),
+            "stage_3_end_frame_field": enum(sequence_constraint["stage_3_end_frame_field"]),
+            "stage_1_team_role_field": enum(sequence_constraint["stage_1_team_role_field"]),
+            "stage_2_team_role_field": enum(sequence_constraint["stage_2_team_role_field"]),
+            "stage_3_team_role_field": enum(sequence_constraint["stage_3_team_role_field"]),
+            "stage_1_possession_id_field": enum(sequence_constraint["stage_1_possession_id_field"]),
+            "stage_2_possession_id_field": enum(sequence_constraint["stage_2_possession_id_field"]),
+            "stage_3_possession_id_field": enum(sequence_constraint["stage_3_possession_id_field"]),
+            "stage_1_player_id_field": enum(sequence_constraint["stage_1_player_id_field"]),
+            "stage_2_player_id_field": enum(sequence_constraint["stage_2_player_id_field"]),
+            "stage_3_player_id_field": enum(sequence_constraint["stage_3_player_id_field"]),
+            "stage_2_minimum_numeric_field": enum(sequence_constraint["stage_2_minimum_numeric_field"]),
+            "stage_2_minimum_numeric_value": number(float(sequence_constraint["stage_2_minimum_numeric_value"]), "none"),
+            "same_team_perspective_required": boolean(bool(sequence_constraint["same_team_perspective_required"])),
+            "same_possession_required": boolean(bool(sequence_constraint["same_possession_required"])),
+            "possession_continuity_source": enum(sequence_constraint["possession_continuity_source"]),
+            "same_player_required": boolean(bool(sequence_constraint["same_player_required"])),
+            "constraint_opt_out_reason": enum(sequence_constraint["constraint_opt_out_reason"]),
+            "team_role_field": enum(sequence_constraint["team_role_field"]),
+        },
+    )
+    field_sources: dict[str, tuple[str, str]] = {}
+    nodes: list[dict[str, Any]] = []
+    rules_used: list[str] = []
+    providers_used: list[str] = []
+    for index in (1, 2, 3):
+        stage = stage_builds[index]
+        nodes.extend(stage.nodes)
+        field_sources.update(stage.field_sources)
+        rules_used.extend(stage.rules_used)
+        providers_used.extend(stage.providers_used)
+    for field in SEQUENCE_PATTERN_FIELDS:
+        field_sources[field] = (node_id, sequence_pattern_output_for_field(field))
+    return BuildResult(
+        nodes=[*dedupe_nodes(nodes), node],
+        terminal_node_id=node_id,
+        terminal_entry="operator:sequence_pattern",
+        terminal_output="chain_records",
+        field_sources=field_sources,
+        rules_used=sorted({*rules_used, "sequence_pattern_operator_composition"}),
+        providers_used=[*providers_used, "operator:sequence_pattern"],
+        metadata={
+            "sequence_pattern_constraint": sequence_constraint,
+            "stage_sources": {
+                f"stage_{index}": {
+                    "terminal_provider": stage_builds[index].terminal_entry,
+                    "terminal_node_id": stage_builds[index].terminal_node_id,
+                    "terminal_output": stage_builds[index].terminal_output,
+                    "required_fields": sequence_constraint[f"stage_{index}_required_fields"],
+                }
+                for index in (1, 2, 3)
+            },
+        },
+    )
+
+
+def build_sequence_pattern_stage(
+    *,
+    context: SearchContext,
+    input_def: Any,
+    stage_index: int,
+    required_fields: set[str],
+    depth: int,
+) -> BuildResult:
+    candidates = sequence_pattern_stage_candidates(context, input_def, required_fields)
+    attempts: list[dict[str, Any]] = []
+    for candidate in candidates[: context.max_branching]:
+        entry = candidate["entry"]
+        output = candidate["output"]
+        try:
+            build = build_entry(context, entry, required_fields, depth=depth, input_context={})
+            missing_fields = sorted(field for field in required_fields if field not in build.field_sources)
+            if missing_fields:
+                raise SynthesisError(
+                    "missing_constraint",
+                    "Sequence stage source did not expose all declared fields.",
+                    {
+                        "stage_index": stage_index,
+                        "stage_provider": entry.name,
+                        "stage_output": output.name,
+                        "missing_stage_fields": missing_fields,
+                    },
+                )
+            return build
+        except SynthesisError as error:
+            attempts.append(
+                {
+                    "stage_index": stage_index,
+                    "stage_provider": entry.name,
+                    "stage_output": output.name,
+                    "taxonomy": error.taxonomy,
+                    "message": error.message,
+                    **error.details,
+                }
+            )
+    raise SynthesisError(
+        "missing_constraint",
+        "No compatible anchor output satisfied sequence stage required fields.",
+        {
+            "stage_index": stage_index,
+            "required_fields": sorted(required_fields),
+            "attempted": attempts[: context.max_branching],
+        },
+    )
+
+
+def sequence_pattern_stage_candidates(
+    context: SearchContext,
+    input_def: Any,
+    required_fields: set[str],
+) -> list[dict[str, Any]]:
+    candidates: list[tuple[int, str, str, CatalogEntry, CatalogOutput]] = []
+    for entry in context.catalog.entries.values():
+        for output in entry.outputs:
+            if not composition_output_matches_operator_input(output, input_def):
+                continue
+            output_fields = {output.name, *output.evidence_fields}
+            if not required_fields.issubset(output_fields):
+                continue
+            score = 25 * len(required_fields & output_fields)
+            score += 8 if output.name in {"anchor_evaluations", "anchors"} else 0
+            score += 2 if not entry.inputs else 0
+            candidates.append((-score, entry.name, output.name, entry, output))
+    return [
+        {"entry": entry, "output": output}
+        for _score, _entry_name, _output_name, entry, output in sorted(candidates)
+    ]
+
+
+def sequence_pattern_constraint_payload(constraint: dict[str, Any]) -> dict[str, Any]:
+    allowed_keys = {
+        "kind",
+        "stage_1_required_fields",
+        "stage_2_required_fields",
+        "stage_3_required_fields",
+        "stage_count",
+        "match_policy",
+        "overlap_policy",
+        "window_boundary_policy",
+        "frame_rate_hz",
+        "stage_2_window_seconds",
+        "stage_3_window_seconds",
+        "stage_1_status_field",
+        "stage_2_status_field",
+        "stage_3_status_field",
+        "stage_1_frame_field",
+        "stage_2_frame_field",
+        "stage_3_frame_field",
+        "stage_1_end_frame_field",
+        "stage_2_end_frame_field",
+        "stage_3_end_frame_field",
+        "stage_1_team_role_field",
+        "stage_2_team_role_field",
+        "stage_3_team_role_field",
+        "stage_1_possession_id_field",
+        "stage_2_possession_id_field",
+        "stage_3_possession_id_field",
+        "stage_1_player_id_field",
+        "stage_2_player_id_field",
+        "stage_3_player_id_field",
+        "stage_2_minimum_numeric_field",
+        "stage_2_minimum_numeric_value",
+        "same_team_perspective_required",
+        "same_possession_required",
+        "possession_continuity_source",
+        "same_player_required",
+        "constraint_opt_out_reason",
+        "team_role_field",
+    }
+    unapplied = sorted(key for key in constraint if key not in allowed_keys)
+    if unapplied:
+        raise SynthesisError(
+            "missing_constraint",
+            "sequence_pattern supplied unsupported keys that synthesis cannot apply.",
+            {"unapplied_sequence_pattern_constraint_keys": unapplied},
+        )
+    payload: dict[str, Any] = {
+        "stage_count": int(required_sequence_constraint(constraint, "stage_count")),
+        "match_policy": required_sequence_constraint(constraint, "match_policy"),
+        "overlap_policy": required_sequence_constraint(constraint, "overlap_policy"),
+        "window_boundary_policy": str(constraint.get("window_boundary_policy", "exclusive_start_inclusive_end")),
+        "frame_rate_hz": float(required_sequence_constraint(constraint, "frame_rate_hz")),
+        "stage_2_window_seconds": float(required_sequence_constraint(constraint, "stage_2_window_seconds")),
+        "stage_3_window_seconds": float(required_sequence_constraint(constraint, "stage_3_window_seconds")),
+        "stage_2_minimum_numeric_value": float(constraint.get("stage_2_minimum_numeric_value", 0.0)),
+        "same_team_perspective_required": bool(constraint.get("same_team_perspective_required", True)),
+        "same_possession_required": bool(constraint.get("same_possession_required", False)),
+        "possession_continuity_source": str(constraint.get("possession_continuity_source", "stage_fields")),
+        "same_player_required": bool(constraint.get("same_player_required", False)),
+        "constraint_opt_out_reason": str(constraint.get("constraint_opt_out_reason", "none")),
+        "team_role_field": str(constraint.get("team_role_field", "team_role")),
+    }
+    for index in (1, 2, 3):
+        payload[f"stage_{index}_required_fields"] = required_sequence_field_list(constraint, f"stage_{index}_required_fields")
+        payload[f"stage_{index}_status_field"] = required_sequence_constraint(constraint, f"stage_{index}_status_field")
+        payload[f"stage_{index}_frame_field"] = required_sequence_constraint(constraint, f"stage_{index}_frame_field")
+        payload[f"stage_{index}_end_frame_field"] = str(constraint.get(f"stage_{index}_end_frame_field", "none"))
+        payload[f"stage_{index}_team_role_field"] = required_sequence_constraint(constraint, f"stage_{index}_team_role_field")
+        payload[f"stage_{index}_possession_id_field"] = str(constraint.get(f"stage_{index}_possession_id_field", "none"))
+        payload[f"stage_{index}_player_id_field"] = str(constraint.get(f"stage_{index}_player_id_field", "none"))
+    payload["stage_2_minimum_numeric_field"] = str(constraint.get("stage_2_minimum_numeric_field", "none"))
+    if payload["stage_count"] != 3:
+        raise SynthesisError(
+            "missing_constraint",
+            "sequence_pattern R2-4 synthesis supports exactly three stages.",
+            {"stage_count": payload["stage_count"]},
+        )
+    return payload
+
+
+def required_sequence_constraint(constraint: dict[str, Any], key: str) -> str:
+    value = constraint.get(key)
+    if value is None or str(value) == "" or str(value) == "none":
+        raise SynthesisError(
+            "missing_constraint",
+            f"sequence_pattern requires declared {key}; no provider-field default is allowed.",
+            {"missing_sequence_pattern_constraint_key": key},
+        )
+    return str(value)
+
+
+def required_sequence_field_list(constraint: dict[str, Any], key: str) -> list[str]:
+    value = constraint.get(key)
+    if not isinstance(value, list) or not value:
+        raise SynthesisError(
+            "missing_constraint",
+            f"sequence_pattern requires declared non-empty {key}.",
+            {"missing_sequence_pattern_constraint_key": key},
+        )
+    return [str(item) for item in value if str(item) != "none"]
+
+
 def build_aggregate_over_operator(
     context: SearchContext,
     required_fields: set[str],
@@ -2468,6 +2765,7 @@ def build_aggregate_over_operator(
 
 OPERATOR_COMPOSITION_BUILDERS = {
     "aggregate_over": build_aggregate_over_operator,
+    "sequence_pattern": build_sequence_pattern_operator,
     "delta_across_anchor": build_delta_across_anchor_operator,
     "extremum_over_set": build_extremum_over_set_operator,
     "typed_join": build_typed_join_operator,
@@ -3851,6 +4149,8 @@ def terminal_output_fields(build: BuildResult) -> set[str]:
         return set(PROJECT_ONTO_AXIS_FIELDS)
     if build.terminal_entry == "operator:aggregate_over":
         return set(AGGREGATE_OVER_FIELDS)
+    if build.terminal_entry == "operator:sequence_pattern":
+        return set(SEQUENCE_PATTERN_FIELDS)
     return set()
 
 

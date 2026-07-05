@@ -31,6 +31,7 @@ from tqe.semantic_compiler.target_synthesis import (
 
 
 FIXTURE_DIR = Path("delivery/packets/scp2-1-roundtrip/meaning-expressions")
+R2_4_FIXTURE_DIR = Path("delivery/packets/r2-4-flagship/meaning-expressions")
 
 
 class SCP2MeaningToTargetTests(unittest.TestCase):
@@ -52,6 +53,7 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
         self.assertIn("typed_join", self.vocabulary.constraint_kinds)
         self.assertIn("window", self.vocabulary.constraint_kinds)
         self.assertIn("sequence_pattern", self.vocabulary.constraint_kinds)
+        self.assertIn("possession_continuity_source", self.vocabulary.constraint_kind_parameters["sequence_pattern"])
         self.assertIn("BODY_ORIENTATION", self.vocabulary.gap_codes)
 
     def test_out_of_pack_reference_returns_exact_typed_gap_payload(self) -> None:
@@ -210,6 +212,24 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
         self.assertEqual("scp2_1_fragile_window_join_count", synthesized["target"]["concept"])
         self.assertEqual(
             "scp2_1_fragile_window_join_count",
+            synthesized["target"]["semantic_correspondence"]["coverage_row"],
+        )
+
+    def test_r2_4_sequence_expression_synthesizes_from_registry_grammar(self) -> None:
+        result = load_meaning_expression_from_path(
+            R2_4_FIXTURE_DIR / "counterattack_initiation_chain_count.v0.json",
+            vocabulary=self.vocabulary,
+        )
+        self.assertEqual("accepted", result.outcome)
+        self.assertIsNotNone(result.expression)
+
+        synthesized = synthesize_and_bind(result.expression, coverage_rows=self.coverage_rows)
+
+        self.assertEqual("PASS", synthesized["bind"]["status"])
+        self.assertEqual("operator:aggregate_over", synthesized["build"]["terminal_provider"])
+        self.assertEqual("operator:sequence_pattern", synthesized["build"]["build_metadata"]["population_terminal"])
+        self.assertEqual(
+            "r2_4_counterattack_initiation_chain_count",
             synthesized["target"]["semantic_correspondence"]["coverage_row"],
         )
 

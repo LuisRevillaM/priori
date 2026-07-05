@@ -1132,6 +1132,7 @@ class Binder:
             "stage_3_team_role_field",
             "same_team_perspective_required",
             "same_possession_required",
+            "possession_continuity_source",
             "same_player_required",
             "constraint_opt_out_reason",
         }
@@ -1148,6 +1149,7 @@ class Binder:
             )
         same_team_required = _resolved_bool(resolved_parameters, "same_team_perspective_required")
         same_possession_required = _resolved_bool(resolved_parameters, "same_possession_required")
+        possession_continuity_source = _resolved_text(resolved_parameters, "possession_continuity_source", "stage_fields")
         same_player_required = _resolved_bool(resolved_parameters, "same_player_required")
         opt_out_reason = _resolved_text(resolved_parameters, "constraint_opt_out_reason", "none")
         if not same_team_required and opt_out_reason == "none":
@@ -1183,13 +1185,21 @@ class Binder:
                     path=path,
                 )
             if same_possession_required:
-                self._validate_sequence_stage_field(
-                    declared_fields=declared_fields,
-                    resolved_parameters=resolved_parameters,
-                    parameter_name=f"stage_{index}_possession_id_field",
-                    path=path,
-                    disallow_none=True,
-                )
+                possession_field = _resolved_text(resolved_parameters, f"stage_{index}_possession_id_field", "none")
+                if possession_field == "none" and possession_continuity_source != "observed_possession_stream":
+                    self._issue(
+                        "operator_sequence_continuity_field_missing",
+                        f"sequence same-possession continuity requires declared stage_{index}_possession_id_field or observed_possession_stream",
+                        f"{path}.parameters.stage_{index}_possession_id_field",
+                    )
+                else:
+                    self._validate_sequence_stage_field(
+                        declared_fields=declared_fields,
+                        resolved_parameters=resolved_parameters,
+                        parameter_name=f"stage_{index}_possession_id_field",
+                        path=path,
+                        disallow_none=False,
+                    )
             if same_player_required:
                 self._validate_sequence_stage_field(
                     declared_fields=declared_fields,

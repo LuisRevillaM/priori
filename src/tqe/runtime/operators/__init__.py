@@ -160,6 +160,14 @@ def composition_constraint_kind_schemas() -> dict[str, dict[str, Any]]:
                     "numerator_required_fields",
                 }
             )
+        if kind == "sequence_pattern":
+            parameters.update(
+                {
+                    "stage_1_required_fields",
+                    "stage_2_required_fields",
+                    "stage_3_required_fields",
+                }
+            )
         schemas[kind] = {
             "operator": signature.name,
             "operator_version": signature.version,
