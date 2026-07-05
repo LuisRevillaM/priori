@@ -158,3 +158,9 @@ Post-amendment local verification:
 | Check | Result | Notes |
 | --- | --- | --- |
 | `PYTHONPATH=src:. .venv/bin/python -m unittest tests.test_scp2_2_hermes_nl tests.test_scp2_1_meaning_to_target` | PASS | 40 tests in 0.475s. |
+| `make PYTHON=/Users/luisrevilla/code/priori/.venv/bin/python test` | PASS | 554 tests in 462.229s; long run. Executed in detached worktree `/private/tmp/priori-scp2-2-fullsuite` at `ed2927b`, with `data/canonical`, `data/raw`, and `data/features` linked from the main checkout because those data files are gitignored. Matplotlib/Arrow environment warnings only. |
+
+Full-suite note: the first detached-worktree attempts failed before the data
+links were added because the gitignored canonical/raw data files were absent
+from `/private/tmp/priori-scp2-2-fullsuite`; after linking the same data
+directories used by the main checkout, the committed tree passed.
