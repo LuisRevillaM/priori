@@ -4,163 +4,123 @@ Branch: `packet/scp2-2`
 
 Frontier base: `a412a56` (`codex/afl08-passport-loop`)
 
-## Ratification Flag
+Current evidence commit before this report update: `38c8050`
 
-The canonical Hermes home at `/Users/luisrevilla/.hermes-priori` could not expose
-the required `mcp-priori_tactical` tool surface because its MCP server config
-points at stale `/Users/luisrevilla/Documents/priori` paths. I did not edit the
-canonical home. For model-bound checks I used a temporary home:
-`/private/tmp/hermes-priori-scp2-2`, copied from the canonical config and patched
-only to point the MCP command/PYTHONPATH/output root at this checkout and
-`/private/tmp/priori-scp2-2-workshop`.
+## Resolution Status
 
-The model calls were real and still used `src/tqe/workshop/hermes_invocation.py`
-through the workshop service wrapper. Director action requested before blind
-eval: ratify this temp-home invocation or update the canonical Hermes config.
+The R-AS2-amended subscription blocker is resolved. The owner refreshed the
+OpenAI Codex OAuth credential in the canonical Hermes home
+`/Users/luisrevilla/.hermes-priori` (credential #2), and the director
+smoke-verified a live bridge call returning `ExpressionOutcome` through
+`openai-codex`. The final DEV run used that canonical Hermes home.
 
-## Protocol Status
+No metered API provider was used for the final R-AS2-amended evidence. Billing
+surface is the ChatGPT subscription.
 
-| Item | Status | Evidence |
+Blind set remains sealed. I read only
+`config/scp2-2-blind-eval.sha256`:
+`4161ebcd5cbb890d334a681f2d5ed49402819d01e2ac7978eea413f657445625  scp2-2-blind-eval-set.json`.
+
+No push was performed.
+
+## Round-2 Rulings
+
+| Ruling | Status | Evidence |
 | --- | --- | --- |
-| ADR 0015 reread | DONE | Principles 23-25 govern this packet. |
-| Packet read | DONE | `delivery/packets/SCP2-2-hermes-nl.md` |
-| Branch | DONE | `packet/scp2-2` from `a412a56` |
-| Blind set | FENCED | Only `config/scp2-2-blind-eval.sha256` read: `4161ebcd5cbb890d334a681f2d5ed49402819d01e2ac7978eea413f657445625  scp2-2-blind-eval-set.json`. |
-| Model access | AVAILABLE_WITH_ENV_NOTE | Explicit Anthropic Hermes smoke passed; workshop probe passed only with temp Hermes home above. |
-| Push | NOT_DONE | Local commits only. |
+| R-AQ | DONE | Target contract rendering is mechanically name-free; concept identity remains only in `coverage_row` and the meaning label. Mutation test: `test_renderer_makes_target_contract_name_free_even_when_text_echoes_concept`. |
+| R-AS | DONE | Few-shot examples are generated from committed certified fixtures `scp2-1-roundtrip` and `r2-4-flagship`; prompt projection includes minimal-contract guidance. |
+| R-AS2-amended | DONE | Strongest configured subscription tier: `openai-codex/gpt-5.5`; final DEV latency `842.982s`, long-run flagged. |
+| R-AT | DONE | Canonical Hermes home is fixed at `/Users/luisrevilla/.hermes-priori`; final evidence used it. The director's backup was not modified by this executor. |
 
-## Delivered
-
-| Slice | Status | Evidence |
-| --- | --- | --- |
-| Prompt projection | DONE | `build_prompt_projection()` derives schema, concepts, fields, operators, constraints, gap codes, ambiguity dimensions, refusal routing, and claim boundaries from `generated/tactical-knowledge-pack.json`. |
-| Outcome contract | DONE | `HermesOutcome` is the discriminated union of `expression`, `clarification_required`, `understood_but_not_expressible`, `unsupported_modality`; invalid model JSON raises `HermesNLModelOutputError`, not a fifth outcome. |
-| Vocabulary gate | DONE | Every expression payload routes through `load_meaning_expression_result`; gate refusals become typed refusals. |
-| Multi-turn state | DONE | `ClarificationState` carries expressible readings; answer resume selects a typed reading without model re-entry. |
-| Eval harness/dev set | DONE | `scripts/scp2_2/eval_harness.py`, `delivery/packets/scp2-2-dev-cases.json`, `delivery/packets/scp2-2-dev-results.json`. |
-| Blind set | FENCED | Harness takes a case-set path; no blind cases possessed or reconstructed. |
-
-Prompt projection:
+## Prompt Projection
 
 | Field | Value |
 | --- | --- |
+| Pack path | `generated/tactical-knowledge-pack.json` |
 | Pack hash | `b40458086fe5d81e3f709ceb5f2301038391d6a97f64ee02585f4a9019018099` |
-| Prompt hash | `a18d60848fb810d26258399c28af774fb1da8193043817e9d0ee052bdff20bd6` |
-| Prompt length | `147222` chars |
+| Prompt hash | `7c770eb04471dc81734d11a651dd48a08eb12581f79306524aac96d2a8ad8ef8` |
+| Prompt length | `204343` chars |
 
 ## DEV Eval
 
-Command used:
+Command:
 
 ```text
-HERMES_HOME=/private/tmp/hermes-priori-scp2-2 WORKBENCH_HERMES_WORKSHOP_ROOT=/private/tmp/priori-scp2-2-workshop TQE_WORKSHOP_OUTPUT_ROOT=/private/tmp/priori-scp2-2-workshop PYTHONPATH=src:. .venv/bin/python scripts/scp2_2/eval_harness.py --case-set delivery/packets/scp2-2-dev-cases.json --output delivery/packets/scp2-2-dev-results.json --provider anthropic --model claude-sonnet-4-5 --long-threshold-seconds 300
+HERMES_HOME=/Users/luisrevilla/.hermes-priori PYTHONPATH=src:. .venv/bin/python scripts/scp2_2/eval_harness.py --case-set delivery/packets/scp2-2-dev-cases.json --output delivery/packets/scp2-2-dev-results.json --provider openai-codex --model gpt-5.5 --long-threshold-seconds 300
 ```
 
-Result: `4 PASS / 11 FAIL / 15 total`, elapsed `344.457s`, long-run flag `true`.
+Result:
 
-Passing cases: `dev_refusal_body_orientation`,
-`dev_refusal_pass_probability`, `dev_refusal_player_intent`,
-`dev_refusal_video_modality`.
+| Field | Value |
+| --- | --- |
+| Case-set hash | `0a5ca9eaa6f2af2eab54514a7e1fb87bf8226550a19711a92534709b8b5027fe` |
+| Provider/model | `openai-codex/gpt-5.5` |
+| Billing surface | `chatgpt_subscription` |
+| Pass/fail | `15 PASS / 0 FAIL / 15 total` |
+| Elapsed | `842.982s` |
+| Long-run flag | `true` (`300s` threshold) |
+| Output-shape errors | `0` |
+| Anti-hint refusals | `0` |
 
-Failing pattern: expression outcomes usually passed the model-output and
-vocabulary gates but failed synthesis because target contracts contained
-reporting concept names, unsatisfied fields, or invalid join/parameter shapes.
-Clarification cases did not reliably return `clarification_required` first-turn
-state.
+Clarification note: `dev_clarification_support_definition` now uses a
+generated classifier clarification for alias-only support language, then the
+typed resume path selects the `support_arrival_relation` reading. This is not
+reported as a model-generated first turn. `dev_clarification_distance_threshold`
+uses `openai-codex/gpt-5.5` for the first turn and typed-state resume for the
+answer.
+
+Typed refusals were genuine missing capabilities: `BODY_ORIENTATION`,
+`PASS_PROBABILITY`, `PLAYER_INTENT`, and unsupported modality `VIDEO`.
 
 ## Verification
 
 | Check | Result | Notes |
 | --- | --- | --- |
-| `PYTHONPATH=src:. .venv/bin/python -m unittest tests.test_scp2_2_hermes_nl` | PASS | 7 tests. |
-| `PYTHONPATH=src:. .venv/bin/python -m unittest tests.test_scp2_1_meaning_to_target tests.test_scp2_2_hermes_nl` | PASS | 25 tests. |
-| `make PYTHON=/Users/luisrevilla/code/priori/.venv/bin/python test` | PASS | 539 tests in 479.083s; long run. Sandbox emitted Matplotlib/Arrow environment warnings. |
-| `PYTHONPATH=src:. .venv/bin/python -m py_compile ...` | PASS | New module, harness, and tests compiled. |
-| `PYTHONPATH=src:. .venv/bin/python -m ruff check ...` | NOT_RUN | `ruff` is not installed in the repo venv. |
+| `PYTHONPATH=src:. .venv/bin/python -m unittest tests.test_scp2_2_hermes_nl tests.test_scp2_1_meaning_to_target` | PASS | 46 tests in `0.530s`. |
+| `make PYTHON=/Users/luisrevilla/code/priori/.venv/bin/python test` | PASS | 560 tests in `460.132s`; long run. Executed in detached worktree `/private/tmp/priori-scp2-2-fullsuite-38c8050` at commit `38c8050`, with gitignored `data/canonical`, `data/raw`, and `data/features` symlinked from the main checkout. Matplotlib cache and Arrow `sysctlbyname` warnings only. |
 
-Mutation-standard tests:
+Full-suite output ended with:
+
+```text
+Ran 560 tests in 460.132s
+
+OK
+{"attestation_status": "VERIFIED", "blocking_reasons": []}
+```
+
+## Mutation-Standard Guards
 
 | Guard | Named Test |
 | --- | --- |
 | No fifth outcome constructible | `test_outcome_type_exhaustiveness_rejects_fifth_outcome_shape`, `test_model_output_parser_rejects_fifth_raw_shape` |
-| Expression gate runs on every model expression | `test_mutation_bypassing_expression_gate_would_accept_body_orientation_oov` |
-| Unsupported modality routed through gate | `test_expression_gate_routes_unsupported_modality_to_typed_refusal` |
-| Prompt projection derived from pack | `test_prompt_projection_changes_when_pack_copy_changes_and_no_hand_sentinel_exists` |
-| Multi-turn typed resume | `test_multi_turn_clarification_state_resumes_without_reasking_model` |
+| Expression gate runs on model expressions | `test_mutation_bypassing_expression_gate_would_accept_body_orientation_oov` |
+| Unsupported modality routes to typed refusal | `test_expression_gate_routes_unsupported_modality_to_typed_refusal` |
+| Prompt projection is generated from pack | `test_prompt_projection_changes_when_pack_copy_changes_and_no_hand_sentinel_exists` |
+| Certified few-shots generated into projection | `test_prompt_projection_contains_generated_certified_few_shots` |
+| Recipe authoring guides generated into projection | `test_prompt_projection_contains_generated_recipe_authoring_guides` |
+| Generated classifier rules in projection | `test_prompt_projection_contains_generated_classifier_rules` |
+| Multi-turn typed resume without re-asking | `test_multi_turn_clarification_state_resumes_without_reasking_model`, `test_clarification_resume_selects_fuzzy_typed_reading`, `test_clarification_resume_can_select_by_reading_expression_identity` |
+| Alias-only support clarification guard | `test_alias_only_support_uses_generated_typed_clarification_without_model_call` |
+| Distance aliases do not preanswer without numeric threshold | `test_distance_clarification_alias_does_not_preanswer_without_numeric_threshold` |
+| Name-free contract body | `test_renderer_makes_target_contract_name_free_even_when_text_echoes_concept` |
 | Harness verdict correctness | `test_harness_verdict_correctness_on_tiny_fixture_set` |
 
-## Commits
+## Appended Commits
 
 | Commit | Summary |
 | --- | --- |
-| `6b17b01` | SCP2-2 report scaffold |
-| `696bf49` | Add SCP2-2 Hermes NL compiler harness |
-| `436ba38` | Compact SCP2-2 prompt projection |
-| `1a39d32` | Make SCP2-2 eval harness attribute case failures |
-| `0b790ab` | Tighten SCP2-2 Hermes output prompt contract |
-| `31cf7b7` | Guide SCP2-2 model toward synthesizeable contracts |
-| `0171460` | Add generated refusal routing to SCP2-2 prompt |
-| `5338455` | Record SCP2-2 DEV eval results |
+| `ed2927b` | Default SCP2-2 Hermes to subscription path |
+| `7b58407` | Record SCP2-2 subscription smoke blocker |
+| `37ed44a` | Canonicalize SCP2-2 sequence and support resumes |
+| `7e5a9e5` | Route possession corridor aliases to exact recipe |
+| `a23b5da` | Stabilize SCP2-2 support clarification answer |
+| `f9b3d5c` | Clarify SCP2-2 support arrival answer |
+| `835f65e` | Cover counterattack count-rate sequence alias |
+| `8fc98e1` | Add generated support clarification guard |
+| `38c8050` | Record SCP2-2 openai-codex DEV pass |
 
 ## Residual Risk
 
-The output boundary and refusal discipline are implemented and tested, but the
-model side is not yet strong enough to produce synthesizeable expressions for
-the DEV expression/clarification cases. The blind harness can run unmodified,
-but the reported DEV result predicts blind expression cases will fail unless
-the director accepts a follow-up packet for expression-target quality.
-
-## Round 2 / R-AS2-Amended Update
-
-Owner directive received after the Anthropic rerun was interrupted: Hermes must
-default to the ChatGPT subscription surface, not a metered API provider. I read
-the addendum in `delivery/packets/SCP2-2-REVIEW.md` and flipped the committed
-defaults accordingly:
-
-| Surface | Value |
-| --- | --- |
-| Bridge default provider | `openai-codex` |
-| Bridge default model | `gpt-5.5` |
-| Harness default provider | `openai-codex` |
-| Harness default model | `gpt-5.5` |
-| Billing surface | ChatGPT subscription, not metered API |
-| Canonical Hermes home | `/Users/luisrevilla/.hermes-priori` |
-
-Prompt projection after the default flip:
-
-| Field | Value |
-| --- | --- |
-| Pack hash | `b40458086fe5d81e3f709ceb5f2301038391d6a97f64ee02585f4a9019018099` |
-| Prompt hash | `7c770eb04471dc81734d11a651dd48a08eb12581f79306524aac96d2a8ad8ef8` |
-| Prompt length | `204343` chars |
-
-Subscription smoke status:
-
-| Check | Result | Evidence |
-| --- | --- | --- |
-| `hermes status` with `HERMES_HOME=/Users/luisrevilla/.hermes-priori` | PASS for login state | `OpenAI Codex ✓ logged in`; model `gpt-5.5`; provider `OpenAI Codex`. |
-| Bridge smoke via `compile_nl_request("Show controlled passes.")` | FAIL | `HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.` |
-| Direct invocation shim smoke with tiny JSON prompt | FAIL | Safe MCP surface, exact expected tool names, but `{"ok": false, "stderr": "Hermes produced no final response."}`. |
-
-Per the amended ruling, I did **not** fall back to Anthropic or any other
-metered API provider. No valid subscription-backed DEV eval was run, and
-`delivery/packets/scp2-2-dev-results.json` is not updated for this amended run.
-The interrupted Anthropic output remains unstaged and is not evidence for
-R-AS2-amended.
-
-Round-2 acceptance is therefore BLOCKED by the subscription invocation path:
-the canonical Hermes home is logged in and exposes the safe tactical MCP
-surface, but `openai-codex/gpt-5.5` returns no final response even for a tiny
-prompt. The blind set remains sealed.
-
-Post-amendment local verification:
-
-| Check | Result | Notes |
-| --- | --- | --- |
-| `PYTHONPATH=src:. .venv/bin/python -m unittest tests.test_scp2_2_hermes_nl tests.test_scp2_1_meaning_to_target` | PASS | 40 tests in 0.475s. |
-| `make PYTHON=/Users/luisrevilla/code/priori/.venv/bin/python test` | PASS | 554 tests in 462.229s; long run. Executed in detached worktree `/private/tmp/priori-scp2-2-fullsuite` at `ed2927b`, with `data/canonical`, `data/raw`, and `data/features` linked from the main checkout because those data files are gitignored. Matplotlib/Arrow environment warnings only. |
-
-Full-suite note: the first detached-worktree attempts failed before the data
-links were added because the gitignored canonical/raw data files were absent
-from `/private/tmp/priori-scp2-2-fullsuite`; after linking the same data
-directories used by the main checkout, the committed tree passed.
+The blind set was not possessed or run. The alias-only support first turn is a
+generated deterministic clarification guard, not a model-generated
+clarification; the report and DEV evidence do not claim otherwise.
