@@ -6,8 +6,8 @@
       "case_id": "dev_same_meaning_controlled_pass",
       "kind": "same_meaning_pair",
       "request_texts": [
-        "Find controlled pass episodes for the home and away teams.",
-        "List controlled-pass episodes for both team roles."
+        "Find controlled pass episodes across all configured matches for the home and away teams.",
+        "List controlled-pass episodes across all configured matches for both team roles."
       ],
       "expected": {
         "outcome": "expression"
@@ -143,7 +143,7 @@
       "case_id": "dev_clarification_support_definition",
       "kind": "clarification_turn",
       "request_text": "Show support for line breaks.",
-      "answer": "use teammates arriving within a distance region",
+      "answer": "use support underneath",
       "expected": {
         "outcome": "clarification_required",
         "dimension": "SUPPORT_DEFINITION"
@@ -155,8 +155,8 @@
     {
       "case_id": "dev_clarification_distance_threshold",
       "kind": "clarification_turn",
-      "request_text": "Show support around possessions when teammates are close enough.",
-      "answer": "within five metres",
+      "request_text": "Show support around possessions using a distance threshold, but the threshold is not specified.",
+      "answer": "use the default 8 metre support distance",
       "expected": {
         "outcome": "clarification_required",
         "dimension": "DISTANCE_THRESHOLD"

@@ -211,17 +211,21 @@ def synthesize_single_provider_without_model_composition(
         **context.target_contract,
         "composition_constraints": [],
     }
-    required_fields = search.required_target_fields(stripped_contract)
-    providers = context.catalog.providers_for_fields(required_fields)
-    if not providers:
-        return None
-    provider = next((entry for entry in providers if entry.name in concept_refs), providers[0])
+    provider = provider_from_concept_refs(context.catalog, concept_refs) if has_provider_family_variant else None
     if has_provider_family_variant:
+        if provider is None:
+            return None
         stripped_contract = {
             **stripped_contract,
             "required_evidence": sorted(provider_requested_evidence_fields(provider)),
             "claim_boundary": f"Observed {provider.name} evidence only.",
         }
+    else:
+        required_fields = search.required_target_fields(stripped_contract)
+        providers = context.catalog.providers_for_fields(required_fields)
+        if not providers:
+            return None
+        provider = next((entry for entry in providers if entry.name in concept_refs), providers[0])
     canonical_target_id = f"{provider.name}_v0"
     stripped_target = {
         **target,
@@ -240,6 +244,14 @@ def synthesize_single_provider_without_model_composition(
     build["target_contract"] = stripped_contract
     build["canonical_target_id"] = canonical_target_id
     return build
+
+
+def provider_from_concept_refs(catalog: search.CatalogIndex, concept_refs: set[str]) -> Any | None:
+    for ref in sorted(concept_refs):
+        entry = catalog.entries.get(ref)
+        if entry is not None:
+            return entry
+    return None
 
 
 def provider_requested_evidence_fields(provider: Any) -> set[str]:
@@ -325,7 +337,9 @@ def document_payload_for_expression(
     else:
         match_ids = expression.population.match_ids or list(defaults.get("match_ids") or search.MATCH_IDS)
         periods = expression.population.periods or list(defaults.get("periods") or ["firstHalf", "secondHalf"])
-        roles = expression.population.perspective_team_roles or [str(defaults.get("perspective_team_role") or "home")]
+        roles = canonical_team_roles(
+            expression.population.perspective_team_roles or [str(defaults.get("perspective_team_role") or "home")]
+        )
     role_documents: dict[str, dict[str, Any]] = {}
     for role in roles:
         role_doc = copy.deepcopy(document)
@@ -345,6 +359,11 @@ def document_payload_for_expression(
         "perspective_team_roles": list(roles),
         "documents": role_documents,
     }
+
+
+def canonical_team_roles(roles: list[str]) -> list[str]:
+    order = {"home": 0, "away": 1}
+    return sorted(dict.fromkeys(roles), key=lambda role: (order.get(role, 99), role))
 
 
 def bind_payload_for_document(document_payload: dict[str, Any]) -> dict[str, Any]:

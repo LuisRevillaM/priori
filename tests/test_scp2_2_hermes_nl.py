@@ -237,6 +237,35 @@ class SCP2HermesNLTests(unittest.TestCase):
         self.assertEqual("preanswered_clarification_state", outcome.transcript.invocation["source"])
         self.assertEqual(1, len(invoker.prompts))
 
+    def test_distance_clarification_alias_does_not_preanswer_without_numeric_threshold(self) -> None:
+        controlled = self.fixture_payload("fragile_possession_state_known.v0.json")
+        sequence = self.fixture_payload("fragile_window_join_count_novel.v0.json")
+        raw = json.dumps(
+            {
+                "outcome": "clarification_required",
+                "dimension": "DISTANCE_THRESHOLD",
+                "question": "How close must support be?",
+                "readings": [
+                    {
+                        "reading_id": "default_distance",
+                        "label": "within the default 8 metre distance",
+                        "answer_aliases": ["close enough"],
+                        "expression": controlled,
+                    },
+                    {
+                        "reading_id": "tight_distance",
+                        "label": "within a tighter 4 metre distance",
+                        "answer_aliases": ["very close"],
+                        "expression": sequence,
+                    },
+                ],
+            }
+        )
+        outcome = compile_nl_request("show close enough support", invoker=FakeInvoker(raw))
+
+        self.assertEqual("clarification_required", outcome.outcome)
+        self.assertEqual("DISTANCE_THRESHOLD", outcome.dimension)
+
     def test_clarification_dimension_label_canonicalizes_to_generated_code(self) -> None:
         controlled = self.fixture_payload("fragile_possession_state_known.v0.json")
         sequence = self.fixture_payload("fragile_window_join_count_novel.v0.json")

@@ -339,6 +339,10 @@ def build_prompt_projection(pack_path: Path = DEFAULT_KNOWLEDGE_PACK_PATH) -> Pr
         "Prefer the smallest generated primitive/relation/recipe that already covers the request. Do not add "
         "window, typed_join, aggregate, or rate composition for adjectives that are already covered by a generated "
         "concept purpose, output status field, parameter default, or recipe authoring guide.\n"
+        "Population scope is strict: do not invent match_ids. Leave match_ids empty unless the user names a "
+        "specific generated match id; empty match_ids means the configured corpus/default match set. Do not narrow "
+        "periods or team roles unless the user asks for that scope. For home and away, both teams, or both team "
+        "roles, use perspective_team_roles [\"home\", \"away\"].\n"
         "Use generated certified_few_shot_examples as examples of synthesizeable MeaningExpressionV0 shape. "
         "They are generated from committed certified fixtures. Do not copy fixture IDs unless the request truly "
         "matches; copy the contract discipline: minimal required_evidence, concrete status fields, and only needed "
@@ -862,6 +866,8 @@ def resume_from_clarification(state: ClarificationState, answer: str) -> HermesO
 def resolve_preanswered_clarification(outcome: HermesOutcome, *, answer: str) -> HermesOutcome:
     if not isinstance(outcome, ClarificationRequiredOutcome):
         return outcome
+    if outcome.dimension == "DISTANCE_THRESHOLD" and not contains_numeric_threshold(answer):
+        return outcome
     matches = [reading for reading in outcome.readings if reading.matches(answer)]
     if len(matches) != 1:
         return outcome
@@ -933,6 +939,11 @@ def normalized_tokens(text: str) -> set[str]:
     for token in normalize_text(text).replace("_", " ").split():
         tokens.add(NUMBER_WORDS.get(token, token))
     return tokens
+
+
+def contains_numeric_threshold(text: str) -> bool:
+    tokens = normalized_tokens(text)
+    return any(token.isdigit() for token in tokens)
 
 
 def select_clarification_reading(

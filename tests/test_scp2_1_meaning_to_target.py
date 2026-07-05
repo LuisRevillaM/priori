@@ -350,6 +350,24 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
         self.assertEqual(left_synthesized["document_hash"], right_synthesized["document_hash"])
         self.assertEqual("controlled_pass_episode_v0", left_synthesized["document"]["target_id"])
 
+    def test_single_provider_family_variant_canonicalizes_model_noise(self) -> None:
+        left_payload = self.controlled_pass_variant_payload("controlled_pass_episode_home_away")
+        noisy_payload = self.controlled_pass_variant_payload("controlled_pass_episode_listing")
+        noisy_payload["population"]["perspective_team_roles"] = ["away", "home"]
+        noisy_payload["target_contract"]["required_evidence"].append("opponents_bypassed_count")
+        left = load_meaning_expression_result(left_payload, vocabulary=self.vocabulary)
+        noisy = load_meaning_expression_result(noisy_payload, vocabulary=self.vocabulary)
+        self.assertEqual("accepted", left.outcome)
+        self.assertEqual("accepted", noisy.outcome)
+        self.assertIsNotNone(left.expression)
+        self.assertIsNotNone(noisy.expression)
+
+        left_synthesized = synthesize_and_bind(left.expression, coverage_rows=self.coverage_rows)
+        noisy_synthesized = synthesize_and_bind(noisy.expression, coverage_rows=self.coverage_rows)
+
+        self.assertEqual(left_synthesized["document_hash"], noisy_synthesized["document_hash"])
+        self.assertEqual("controlled_pass_episode_v0", noisy_synthesized["document"]["target_id"])
+
     @staticmethod
     def controlled_pass_variant_payload(identity: str) -> dict:
         return {
