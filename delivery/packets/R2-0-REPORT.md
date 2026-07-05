@@ -10,7 +10,7 @@ Branch: `packet/r2-0` from frontier `codex/afl08-passport-loop` at
 | Seven pre-era declarations | DONE | `config/compiler-reachability/search-targets.v0.json`; appendix below |
 | Loads-well-formed test | DONE | `tests/test_r1_c_checkpoint.py::R1CCheckpointTests.test_committed_target_declarations_are_well_formed` |
 | Mutation verification | DONE | Scratch-copy `coverage_row` corruption failed the named test; clean rerun passed |
-| Full committed-tree suite | PENDING | `make test` pending |
+| Full committed-tree suite | DONE | `make test` on committed tree `de39f6b` |
 
 Fences observed so far: no sweep run, no ledger update, no sealed evidence
 edits, no freeze, no re-pin.
@@ -168,12 +168,20 @@ Initial checks:
 | Mutation: corrupt `coverage_row` for `search_heldout_carry_displacement_v0` in workspace scratch copy `.r2-0-search-targets-mutated.json`, then run the same named test with `R2_0_DECLARATION_TARGET_FILE=.r2-0-search-targets-mutated.json` | FAIL as expected | Failed with `coverage_row does not match coverage row`; scratch files removed; clean named test rerun passed. |
 | `UV_CACHE_DIR=/private/tmp/uv-cache uv run --no-sync python -m unittest tests.test_r1_c_checkpoint -v` | PASS | 12 checkpoint tests, including existing R1-C guards and the new declaration loader. |
 
-Full-suite table pending after the test slice and final committed tree.
+Full-suite table, run on committed tree `de39f6b` before this final
+report-only update:
+
+| Command | Result | Tests | Runtime | Attestation | Failures |
+| --- | --- | ---: | ---: | --- | --- |
+| `UV_CACHE_DIR=/private/tmp/uv-cache /usr/bin/time -p make PYTHON="uv run --no-sync python" test` | PASS | 463 | 442.205s (`real 443.35`) | `VERIFIED`, blocking reasons `[]` | None |
+
+Failure attribution: no full-suite failures.
 
 ## Local Commits
 
 | Commit | Scope |
 | --- | --- |
 | `240dc90` | R2-0 declarations plus verification appendix report |
+| `de39f6b` | Declaration-loader test, mutation evidence, and report update |
 
 No push performed.
