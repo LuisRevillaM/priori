@@ -80,7 +80,7 @@ class ClarificationReading(StrictModel):
 
     def matches(self, answer: str) -> bool:
         normalized = normalize_text(answer)
-        candidates = [self.reading_id, self.label, *self.answer_aliases]
+        candidates = clarification_reading_candidates(self)
         return any(normalize_text(candidate) in normalized for candidate in candidates if candidate)
 
 
@@ -958,9 +958,8 @@ def select_clarification_reading(
         return None
     scored: list[tuple[int, str, ClarificationReading]] = []
     for reading in readings:
-        candidates = [reading.reading_id, reading.label, *reading.answer_aliases]
         candidate_tokens: set[str] = set()
-        for candidate in candidates:
+        for candidate in clarification_reading_candidates(reading):
             candidate_tokens.update(normalized_tokens(candidate))
         score = len(answer_tokens & candidate_tokens)
         if score:
@@ -973,6 +972,16 @@ def select_clarification_reading(
     if len(scored) > 1 and scored[0][0] == scored[1][0]:
         return None
     return scored[0][2]
+
+
+def clarification_reading_candidates(reading: ClarificationReading) -> list[str]:
+    return [
+        reading.reading_id,
+        reading.label,
+        *reading.answer_aliases,
+        reading.expression.expression_id,
+        reading.expression.concept_identity,
+    ]
 
 
 def canonical_ambiguity_dimension(dimension: str, *, pack_path: Path) -> str:

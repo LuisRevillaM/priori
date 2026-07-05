@@ -333,6 +333,44 @@ class SCP2HermesNLTests(unittest.TestCase):
         self.assertEqual(controlled["expression_id"], second.expression.expression_id)
         self.assertEqual(1, len(invoker.prompts))
 
+    def test_clarification_resume_can_select_by_reading_expression_identity(self) -> None:
+        controlled = self.fixture_payload("fragile_possession_state_known.v0.json")
+        controlled["expression_id"] = "support_arrival_relation_reading"
+        sequence = self.fixture_payload("fragile_window_join_count_novel.v0.json")
+        raw = json.dumps(
+            {
+                "outcome": "clarification_required",
+                "dimension": "SUPPORT_DEFINITION",
+                "question": "Which support definition should be shown?",
+                "readings": [
+                    {
+                        "reading_id": "support_within_distance",
+                        "label": "within distance support",
+                        "answer_aliases": [],
+                        "expression": controlled,
+                    },
+                    {
+                        "reading_id": "support_lane",
+                        "label": "passing lane support",
+                        "answer_aliases": [],
+                        "expression": sequence,
+                    },
+                ],
+            }
+        )
+        invoker = FakeInvoker(raw)
+        first = compile_nl_request("show support", invoker=invoker)
+
+        second = compile_nl_request(
+            "support arrival",
+            context=HermesNLContext(pending_clarification=first.state, answer="support arrival"),
+            invoker=invoker,
+        )
+
+        self.assertEqual("expression", second.outcome)
+        self.assertEqual("support_arrival_relation_reading", second.expression.expression_id)
+        self.assertEqual(1, len(invoker.prompts))
+
     def test_harness_verdict_correctness_on_tiny_fixture_set(self) -> None:
         fragile = self.expression_for("fragile_possession_state_known.v0.json")
         sequence = self.expression_for_r2_4("counterattack_initiation_sequence_rate.v0.json")

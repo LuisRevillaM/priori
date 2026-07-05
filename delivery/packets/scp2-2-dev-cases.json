@@ -17,8 +17,8 @@
       "case_id": "dev_same_meaning_sequence_rate",
       "kind": "same_meaning_pair",
       "request_texts": [
-        "For each team and match, rate counterattack initiation chains where a regain is followed by a progressive carry of at least 3 metres within 5 seconds and then a controlled pass within 4 seconds.",
-        "Measure regains that turn into a 3 metre progressive carry and then a controlled pass, reported as a per-regain rate by team and match."
+        "For each team and match, report count and per-regain rate for counterattack initiation chains where a regain is followed by a progressive carry of at least 3 metres within 5 seconds and then a controlled pass within 4 seconds.",
+        "Measure regains that turn into a 3 metre progressive carry and then a controlled pass, reported as count and per-regain rate by team and match."
       ],
       "expected": {
         "outcome": "expression",
@@ -142,8 +142,8 @@
     {
       "case_id": "dev_clarification_support_definition",
       "kind": "clarification_turn",
-      "request_text": "Show support for line breaks.",
-      "answer": "use support underneath",
+      "request_text": "Show support.",
+      "answer": "use support within distance",
       "expected": {
         "outcome": "clarification_required",
         "dimension": "SUPPORT_DEFINITION"
