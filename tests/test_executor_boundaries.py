@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import ast
+import json
 import re
 import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
+from unittest import mock
 
 from tqe.runtime import executor
 from tqe.runtime.capabilities import (
@@ -35,6 +37,21 @@ from tqe.runtime.ir import (
     UnknownEvidencePolicy,
 )
 from tqe.runtime.values import RuntimeValue
+
+
+def write_data_manifest(path: Path, files: list[Path]) -> None:
+    payload = {
+        "schema_version": "priori_data_manifest.v1",
+        "files": [
+            {
+                "path": file_path.as_posix(),
+                "size": file_path.stat().st_size,
+                "sha256": executor.sha256_path(file_path),
+            }
+            for file_path in files
+        ],
+    }
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
 class ExecutorRegistryBoundaryTests(unittest.TestCase):
@@ -226,6 +243,57 @@ class ExecutorRegistryBoundaryTests(unittest.TestCase):
             second = executor.shared_catalog_node_cache_key(state, node, "node-cache-key")
 
         self.assertNotEqual(first, second)
+
+    def test_canonical_data_manifest_uses_manifest_hash_without_default_content_hash(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "canonical"
+            root.mkdir()
+            data_file = root / "sample.parquet"
+            data_file.write_text("one", encoding="utf-8")
+            manifest = Path(directory) / "manifest.json"
+            write_data_manifest(manifest, [data_file])
+
+            with mock.patch.dict("os.environ", {"TQE_DATA_MANIFEST_PATH": str(manifest)}, clear=False):
+                with mock.patch.object(executor, "sha256_path", side_effect=AssertionError("deep hash used")):
+                    observed = executor.canonical_data_manifest_hash(root)
+            expected = executor.file_content_hash(manifest, schema_version="canonical_data_manifest_file.v1")
+
+        self.assertEqual(
+            expected,
+            observed,
+        )
+
+    def test_canonical_data_manifest_default_detects_size_mismatch(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "canonical"
+            root.mkdir()
+            data_file = root / "sample.parquet"
+            data_file.write_text("one", encoding="utf-8")
+            manifest = Path(directory) / "manifest.json"
+            write_data_manifest(manifest, [data_file])
+            data_file.write_text("longer", encoding="utf-8")
+
+            with mock.patch.dict("os.environ", {"TQE_DATA_MANIFEST_PATH": str(manifest)}, clear=False):
+                with self.assertRaisesRegex(RuntimeError, "size mismatch"):
+                    executor.canonical_data_manifest_hash(root)
+
+    def test_canonical_data_manifest_deep_verify_detects_sha_mismatch(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "canonical"
+            root.mkdir()
+            data_file = root / "sample.parquet"
+            data_file.write_text("one", encoding="utf-8")
+            manifest = Path(directory) / "manifest.json"
+            write_data_manifest(manifest, [data_file])
+            data_file.write_text("two", encoding="utf-8")
+
+            with mock.patch.dict(
+                "os.environ",
+                {"TQE_DATA_MANIFEST_PATH": str(manifest), "TQE_DEEP_VERIFY": "1"},
+                clear=False,
+            ):
+                with self.assertRaisesRegex(RuntimeError, "sha256 mismatch"):
+                    executor.canonical_data_manifest_hash(root)
 
     def test_pass_family_relocation_is_registry_only(self) -> None:
         source = Path(executor.__file__).resolve().read_text(encoding="utf-8")

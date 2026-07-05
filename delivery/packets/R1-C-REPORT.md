@@ -10,7 +10,7 @@ Branch: `packet/r1-c` from `codex/afl08-passport-loop` at
 | C1 unified sweep | DONE_WITH_CONCERNS | `delivery/packets/r1-c-sweep/` and `generated/compiler-search-v0/` |
 | C2 KPI semantic-correspondence hardening | DONE | `scripts/coverage_map/compiler_search_reachability.py`, `tests/test_r1_c_checkpoint.py` |
 | C3 R1-5 riders | DONE | `tests/test_r1_5_typed_join.py`, `scripts/audits/r1_5_population_audit.py`, `tests/test_r1_c_checkpoint.py` |
-| C4 gate integrity manifest latency | NOT_STARTED | Pending |
+| C4 gate integrity manifest latency | DONE_WITH_CONCERNS | `data/manifest.json`, `src/tqe/runtime/executor.py`, `scripts/data/build_data_manifest.py`, `tests/test_executor_boundaries.py` |
 | Full committed-tree suite | NOT_STARTED | Pending |
 
 ## C1 Unified Sweep
@@ -119,7 +119,41 @@ Verification:
 
 ## C4 Latency Manifest
 
-Pending.
+Introduced `data/manifest.json` with file path, size, and sha256 entries for
+the current canonical and raw data trees:
+
+- 60 files
+- 2,818,184,986 bytes covered
+- manifest size: 12,048 bytes
+
+`canonical_data_manifest_hash` now uses the repo-level manifest when it covers
+the canonical root. Default verification hashes the manifest itself and checks
+file existence/set/size only. `TQE_DEEP_VERIFY=1` additionally rehashes file
+contents against the manifest sha256 values. If no covering manifest exists,
+the old tree-hash fallback remains.
+
+Timing:
+
+| Command | Mode | Result | Wall time |
+| --- | --- | --- | ---: |
+| `UV_CACHE_DIR=/private/tmp/uv-cache /usr/bin/time -p make PYTHON="uv run --no-sync python" scp-0-verify` | before C4 | PASS | 30.95s |
+| `UV_CACHE_DIR=/private/tmp/uv-cache /usr/bin/time -p make PYTHON="uv run --no-sync python" scp-0-verify` | after C4 | PASS | 31.12s |
+| direct `canonical_data_manifest_hash(Path("data/canonical/v1"))` | default manifest+sizes | PASS | 0.41s |
+| direct `TQE_DEEP_VERIFY=1 canonical_data_manifest_hash(Path("data/canonical/v1"))` | manifest+sizes+sha256 | PASS | 0.50s |
+
+C4 concern: whole `scp-0-verify` wall time did not improve in this local
+measurement because the target is dominated by the SCP-0 verifier/unit tests,
+not by canonical-data hashing. The integrity path itself no longer reads the
+182 MB canonical tree in default mode; focused tests enforce that by patching
+`sha256_path` to fail if default verification attempts content hashing.
+
+Verification:
+
+| Command | Result | Notes |
+| --- | --- | --- |
+| `PYTHONPATH=src UV_CACHE_DIR=/private/tmp/uv-cache uv run --no-sync python -m unittest tests.test_executor_boundaries.ExecutorRegistryBoundaryTests.test_canonical_data_manifest_uses_manifest_hash_without_default_content_hash tests.test_executor_boundaries.ExecutorRegistryBoundaryTests.test_canonical_data_manifest_default_detects_size_mismatch tests.test_executor_boundaries.ExecutorRegistryBoundaryTests.test_canonical_data_manifest_deep_verify_detects_sha_mismatch -v` | PASS | Default no-content-hash, default size mismatch, and deep sha mismatch tests. |
+| `TQE_DEEP_VERIFY=1 ... canonical_data_manifest_hash(Path("data/canonical/v1"))` | PASS | Real canonical tree deep-verified against manifest sha256 values. |
+| `PYTHONPATH=src UV_CACHE_DIR=/private/tmp/uv-cache uv run --no-sync python -m py_compile src/tqe/runtime/executor.py scripts/data/build_data_manifest.py tests/test_executor_boundaries.py` | PASS | Syntax check for changed files. |
 
 ## Verification
 
