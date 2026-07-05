@@ -570,6 +570,12 @@ class Binder:
             resolved_parameters=resolved_node_parameters,
             path=path,
         )
+        self._validate_aggregate_over_constraints(
+            node=node,
+            signature=signature,
+            resolved_parameters=resolved_node_parameters,
+            path=path,
+        )
         outputs = self._bind_operator_outputs(node=node, signature=signature, path=path)
         if (signature.name, signature.version) not in self.composition_operator_registry:
             self._issue(
@@ -726,6 +732,7 @@ class Binder:
         for _, output in bound_inputs.values():
             declared_fields.add(output.name)
             declared_fields.update(output.evidence_fields)
+        declared_fields.update({"match_id", "period"})
         for parameter in signature.parameters:
             if not parameter.name.endswith("_field"):
                 continue
@@ -744,6 +751,26 @@ class Binder:
                     ),
                     f"{path}.parameters.{parameter.name}",
                 )
+        for parameter in signature.parameters:
+            if not parameter.name.endswith("_fields"):
+                continue
+            value = resolved_parameters.get(parameter.name)
+            if value is None:
+                continue
+            if value.payload_type != PayloadType.ENTITY_SET:
+                continue
+            for field_name in [str(item) for item in value.value]:
+                if field_name == "none":
+                    continue
+                if field_name not in declared_fields:
+                    self._issue(
+                        "operator_field_parameter_not_in_input",
+                        (
+                            f"{signature.name}@{signature.version} parameter {parameter.name} "
+                            f"references field {field_name}, but no bound operator input declares it"
+                        ),
+                        f"{path}.parameters.{parameter.name}",
+                    )
 
     def _validate_declared_join_constraints(
         self,
@@ -823,6 +850,73 @@ class Binder:
                         f"frame-alignment constraint requires declared {field_parameter}",
                         f"{path}.parameters.{field_parameter}",
                     )
+
+    def _validate_aggregate_over_constraints(
+        self,
+        *,
+        node: DraftOperatorNode,
+        signature: CompositionOperatorSignature,
+        resolved_parameters: dict[str, TypedValue],
+        path: str,
+    ) -> None:
+        if signature.name != "aggregate_over":
+            return
+        aggregation_kind = _resolved_text(resolved_parameters, "aggregation_kind")
+        numeric_field = _resolved_text(resolved_parameters, "numeric_field", "none")
+        if aggregation_kind == "count" and numeric_field != "none":
+            self._issue(
+                "operator_aggregate_count_numeric_field_forbidden",
+                "aggregate_over count requires numeric_field=none",
+                f"{path}.parameters.numeric_field",
+            )
+        if aggregation_kind in {"sum", "mean"} and numeric_field == "none":
+            self._issue(
+                "operator_aggregate_numeric_field_missing",
+                f"aggregate_over {aggregation_kind} requires numeric_field",
+                f"{path}.parameters.numeric_field",
+            )
+        same_team_required = _resolved_bool(resolved_parameters, "same_team_perspective_required")
+        entity_required = _resolved_bool(resolved_parameters, "entity_identity_preserved_required")
+        frame_required = _resolved_bool(resolved_parameters, "frame_alignment_required")
+        if same_team_required and _resolved_text(resolved_parameters, "team_role_field", "none") == "none":
+            self._issue(
+                "operator_aggregate_team_role_field_missing",
+                "same-team-perspective aggregate requires declared team_role_field",
+                f"{path}.parameters.team_role_field",
+            )
+        if not any((same_team_required, entity_required, frame_required)):
+            return
+        population_ref = node.inputs.get("population")
+        if population_ref is None:
+            return
+        upstream = next(
+            (
+                bound
+                for bound in self.bound_nodes
+                if isinstance(bound, BoundOperatorNode)
+                and bound.node_id == population_ref.source_node_id
+            ),
+            None,
+        )
+        if upstream is None or upstream.operator.name != "typed_join":
+            return
+        required = {
+            "same_team_perspective_required": same_team_required,
+            "entity_identity_preserved_required": entity_required,
+            "frame_alignment_required": frame_required,
+        }
+        for parameter_name, is_required in required.items():
+            if not is_required:
+                continue
+            if not _resolved_bool(upstream.resolved_parameters, parameter_name):
+                self._issue(
+                    "operator_aggregate_constraint_not_inherited",
+                    (
+                        f"aggregate_over requires upstream typed_join to enforce "
+                        f"{parameter_name}"
+                    ),
+                    f"{path}.parameters.{parameter_name}",
+                )
 
     def _bind_operator_outputs(
         self,

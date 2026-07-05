@@ -12,6 +12,7 @@ from importlib import import_module
 from typing import Any
 
 from tqe.runtime.ir import CompositionOperatorSignature
+from tqe.runtime.operators.aggregate_over import AGGREGATE_OVER_SIGNATURE
 from tqe.runtime.operators.delta_across_anchor import DELTA_ACROSS_ANCHOR_SIGNATURE
 from tqe.runtime.operators.extremum_over_set import EXTREMUM_OVER_SET_SIGNATURE
 from tqe.runtime.operators.project_onto_axis import PROJECT_ONTO_AXIS_SIGNATURE
@@ -28,6 +29,7 @@ OPERATOR_SIGNATURES: tuple[CompositionOperatorSignature, ...] = (
     EXTREMUM_OVER_SET_SIGNATURE,
     WINDOW_SIGNATURE,
     TYPED_JOIN_SIGNATURE,
+    AGGREGATE_OVER_SIGNATURE,
 )
 OPERATOR_IMPLEMENTATION_NAMES: tuple[tuple[str, str, str], ...] = (
     ("project_onto_axis", "0.1.0", "execute_project_onto_axis"),
@@ -35,8 +37,10 @@ OPERATOR_IMPLEMENTATION_NAMES: tuple[tuple[str, str, str], ...] = (
     ("extremum_over_set", "0.1.0", "execute_extremum_over_set"),
     ("window", "0.1.0", "execute_window"),
     ("typed_join", "0.1.0", "execute_typed_join"),
+    ("aggregate_over", "0.1.0", "execute_aggregate_over"),
 )
 OPERATOR_IMPLEMENTATION_MODULES: dict[str, str] = {
+    "execute_aggregate_over": "tqe.runtime.operators.aggregate_over",
     "execute_delta_across_anchor": "tqe.runtime.operators.delta_across_anchor",
     "execute_extremum_over_set": "tqe.runtime.operators.extremum_over_set",
     "execute_project_onto_axis": "tqe.runtime.operators.project_onto_axis",
