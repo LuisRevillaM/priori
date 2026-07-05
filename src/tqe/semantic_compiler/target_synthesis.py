@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import copy
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -56,7 +57,7 @@ def derived_semantic_correspondence(expression: MeaningExpressionV0) -> dict[str
 
 def target_contract_payload(expression: MeaningExpressionV0) -> dict[str, Any]:
     contract = expression.target_contract
-    return {
+    payload = {
         "desired_output": contract.desired_output,
         "required_evidence": list(contract.required_evidence),
         "required_modalities": list(contract.required_modalities),
@@ -69,6 +70,11 @@ def target_contract_payload(expression: MeaningExpressionV0) -> dict[str, Any]:
         ],
         "claim_boundary": contract.claim_boundary,
     }
+    return name_free_contract_payload(payload, concept_identity=expression.concept_identity)
+
+
+def name_free_contract_payload(payload: dict[str, Any], *, concept_identity: str) -> dict[str, Any]:
+    return _scrub_concept_identity(_json_ready(payload), concept_identity)
 
 
 def validate_correspondence_with_r1c_guard(target: dict[str, Any]) -> dict[str, Any]:
@@ -217,3 +223,21 @@ def _json_ready(payload: Any) -> Any:
     if isinstance(payload, tuple):
         return [_json_ready(value) for value in payload]
     return payload
+
+
+def _scrub_concept_identity(value: Any, concept_identity: str) -> Any:
+    if isinstance(value, dict):
+        return {str(key): _scrub_concept_identity(child, concept_identity) for key, child in value.items()}
+    if isinstance(value, list):
+        return [_scrub_concept_identity(child, concept_identity) for child in value]
+    if isinstance(value, str):
+        return _name_free_string(value, concept_identity)
+    return value
+
+
+def _name_free_string(value: str, concept_identity: str) -> str:
+    if not concept_identity:
+        return value
+    pattern = re.compile(re.escape(concept_identity), flags=re.IGNORECASE)
+    cleaned = pattern.sub("requested_pattern", value)
+    return " ".join(cleaned.split())

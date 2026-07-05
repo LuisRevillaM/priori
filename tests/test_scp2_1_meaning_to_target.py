@@ -174,6 +174,25 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "coverage_row does not match"):
             validate_correspondence_with_r1c_guard(mutated)
 
+    def test_renderer_makes_target_contract_name_free_even_when_text_echoes_concept(self) -> None:
+        payload = self.fixture_payload("fragile_possession_state_known.v0.json")
+        concept = payload["concept_identity"]
+        payload["meaning_clauses"][0]["value"] = concept
+        payload["target_contract"]["claim_boundary"] = (
+            f"{concept} appears in free text but must not reach the contract body."
+        )
+        result = load_meaning_expression_result(payload, vocabulary=self.vocabulary)
+        self.assertEqual("accepted", result.outcome)
+        self.assertIsNotNone(result.expression)
+
+        target = synthesize_search_target(result.expression)
+
+        contract_json = json.dumps(target["target_contract"], sort_keys=True).lower()
+        self.assertNotIn(concept, contract_json)
+        self.assertFalse(search.concept_name_used_as_hint(target))
+        self.assertEqual(concept, target["semantic_correspondence"]["coverage_row"])
+        self.assertIn(concept, target["semantic_correspondence"]["meaning"])
+
     def test_ledger_write_path_is_unreachable_from_bridge_code(self) -> None:
         with patch.dict(os.environ, {"TQE_WRITE": "0", "TQE_SEARCH_UPDATE_LEDGER": "0"}):
             with self.assertRaises(PermissionError):
