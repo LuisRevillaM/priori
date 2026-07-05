@@ -125,3 +125,26 @@ history is append-only.
   correctly crash on them (spec-mandated tri-state). R2-era entry work.
 - Manifest hash pinning into governance artifacts — director, at merge.
 - F8 dedup semantics — revisit only if duplicate-concept targets appear.
+
+---
+
+# R1-C Round 2: ACCEPTED
+
+Reviewed 2026-07-04 at 98bf917. All four rulings verified by the
+director's own execution: the hardened guard raises on all six forged
+inputs (FAIL string, PASS string, wrong coverage_row, missing meaning,
+None, missing plan reference — the certified-plan requirement is
+plan_path AND document_hash, stronger than the fix list demanded) and
+flips on a well-formed real-schema result. The regenerated full-corpus
+audit matches the sealed R1-5 audit 8,414 rows of 8,414,
+provenance-excluded, across all seven matches — the sealed evidence is
+corroborated, not replaced, exactly per R-R. Report wording honest
+throughout (DECLARED, residual risk stated, F6/F7 corrections in).
+Director's full suite green on the committed tree; final commit
+report-only; fences held.
+
+Debt carried forward (visible, not silent): pre-era correspondence
+declarations (7 rows) before any ledger-updating unified sweep;
+manifest-hash governance pin deferred to R2 entry with rationale — the
+tamper-plus-regenerated-manifest case is already visible as a dirty
+tree, so the pin adds defense-in-depth, not a missing wall.
