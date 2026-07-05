@@ -2165,10 +2165,31 @@
    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
    "target_id": "search_heldout_support_arrival_v0",
    "report_path": "artifacts/autonomous/compiler-search-v0-report.json",
-   "document_hash": "c8bdfb98c6323dd3013f360b09f743e0093ee48c78d8b1f8f7c38b25d579d235",
+   "plan_path": "generated/compiler-search-v0/plans/search_heldout_support_arrival_v0.json",
+   "document_hash": "3791688723d23342754fb659df6f72f39f6e6b0e8d506bb63a6da6e1d41fef58",
    "held_out": true,
-   "result_count": 20,
-   "honest_zero": false
+   "result_count": 40,
+   "honest_zero": false,
+   "semantic_correspondence": {
+    "coverage_row": "support_arrival_relation",
+    "meaning": "A controlled-pass team-keyed anchor with observed support_arrival_status PASS when at least one perspective outfield supporting player arrives within the declared distance and timing window.",
+    "source_relation": "support_arrival_relation.anchor_evaluations + support_arrival_relation.support_arrival_status",
+    "anchor_source": "controlled_pass_team_keyed_anchors.anchors",
+    "anchor_frame_field": "controlled_reception_frame_id",
+    "candidate_scope": "perspective_outfield",
+    "support_region_mode": "WITHIN_DISTANCE_OF_REFERENCE_POINT",
+    "thresholds": {
+     "maximum_arrival_seconds": 3.0,
+     "maximum_support_distance_m": 8.0,
+     "minimum_supporting_players": 1.0
+    },
+    "units": {
+     "maximum_arrival_seconds": "second",
+     "maximum_support_distance_m": "metre",
+     "minimum_supporting_players": "count"
+    },
+    "claim_boundary": "Observed support arrival under declared distance/timing/count parameters only; no tactical quality, optimality, intent, or decision value."
+   }
   }
  },
  {
@@ -2367,10 +2388,26 @@
    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
    "target_id": "search_heldout_carry_displacement_v0",
    "report_path": "artifacts/autonomous/compiler-search-v0-report.json",
-   "document_hash": "d4f9d5e27747a0734ca08478d4728afe33140c62fe56c9381e66f3f61e69f048",
+   "plan_path": "generated/compiler-search-v0/plans/search_heldout_carry_displacement_v0.json",
+   "document_hash": "ce40155cca366eff83ac8b6c47c8bacfaa3ac4ddda3dd83ab99d8c8767d8e63e",
    "held_out": true,
-   "result_count": 20,
-   "honest_zero": false
+   "result_count": 40,
+   "honest_zero": false,
+   "semantic_correspondence": {
+    "coverage_row": "carry_displacement",
+    "meaning": "A carry episode with observed control whose displacement_m is at least 3.0 metres between its carry start and end frames.",
+    "source_relation": "carry_episode anchored from controlled_pass_team_keyed_anchors",
+    "anchor_source": "controlled_pass_team_keyed_anchors.anchors",
+    "result_anchor": "carry_episode.anchor_evaluations",
+    "frame_fields": [
+     "carry_start_frame_id",
+     "carry_end_frame_id"
+    ],
+    "scalar": "displacement_m",
+    "threshold": "displacement_m >= 3.0",
+    "unit": "metre",
+    "claim_boundary": "Observed movement-under-control displacement only; no dribbling skill, defender bypass, intent, carry value, or pressure-break quality."
+   }
   }
  },
  {
@@ -2430,10 +2467,26 @@
    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
    "target_id": "search_carry_out_of_pressure_v0",
    "report_path": "artifacts/autonomous/compiler-search-v0-report.json",
-   "document_hash": "a5ba593a0c438f36a189ef8cc1e9620934a782e3353cca819b934c2a7dd3eeb4",
+   "plan_path": "generated/compiler-search-v0/plans/search_carry_out_of_pressure_v0.json",
+   "document_hash": "60dc348e1fd65cee8d533be555b003a3ce0df7807584ef525c3f8db5454e0776",
    "held_out": false,
    "result_count": 2,
-   "honest_zero": false
+   "honest_zero": false,
+   "semantic_correspondence": {
+    "coverage_row": "carry_out_of_pressure",
+    "meaning": "A carry episode joined on the same anchor to a pressure-distance change where nearest_defender_distance_m increases by at least 2.0 metres from carry start to carry end after a PASS pressure evaluation at carry start.",
+    "composition": "join_episode_sets on anchor_id between carry_episode and change_across_anchor",
+    "anchor_source": "controlled_pass_team_keyed_anchors.anchors",
+    "result_anchor": "join_episode_sets.anchor_evaluations",
+    "before_relation": "pressure_on_carrier.anchor_evaluations at carry_start_frame_id",
+    "after_relation": "pressure_on_carrier_2.anchor_evaluations at carry_end_frame_id",
+    "carrier_id_field": "carrier_id",
+    "value_field": "nearest_defender_distance_m",
+    "change_mode": "increase_at_least",
+    "threshold": "delta_value >= 2.0 and before_value <= 4.0",
+    "unit": "metre",
+    "claim_boundary": "Observed nearest-defender distance increase across the carry only; no absence of all pressure after the carry, pressure-breaking quality, defender bypass, intent, or causation."
+   }
   }
  },
  {
@@ -2467,10 +2520,26 @@
    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
    "target_id": "search_carry_progression_v0",
    "report_path": "artifacts/autonomous/compiler-search-v0-report.json",
-   "document_hash": "b58b07e9c40716bd13bf5aeab38c8b9c56cca7e95c0f811b686536f922a59d0e",
+   "plan_path": "generated/compiler-search-v0/plans/search_carry_progression_v0.json",
+   "document_hash": "47df4bcc7440932fdb6769c636c7902cd69590b4997729b7a74cc4609188ceed",
    "held_out": false,
-   "result_count": 20,
-   "honest_zero": false
+   "result_count": 40,
+   "honest_zero": false,
+   "semantic_correspondence": {
+    "coverage_row": "carry_progression",
+    "meaning": "A carry episode with observed control whose forward_progression_m is at least 3.0 metres between its carry start and end frames.",
+    "source_relation": "carry_episode anchored from controlled_pass_team_keyed_anchors",
+    "anchor_source": "controlled_pass_team_keyed_anchors.anchors",
+    "result_anchor": "carry_episode.anchor_evaluations",
+    "frame_fields": [
+     "carry_start_frame_id",
+     "carry_end_frame_id"
+    ],
+    "scalar": "forward_progression_m",
+    "threshold": "forward_progression_m >= 3.0",
+    "unit": "metre",
+    "claim_boundary": "Observed movement-under-control forward component only; no dribbling skill, defender bypass, intent, carry value, or pressure-break quality."
+   }
   }
  },
  {
@@ -4493,10 +4562,34 @@
    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
    "target_id": "search_direct_pressure_candidate_v0",
    "report_path": "artifacts/autonomous/compiler-search-v0-report.json",
-   "document_hash": "985fac93d5e6093715665762e7c3d9ea47bf45fe1ab3810af5e2fea9d6a1f98a",
+   "plan_path": "generated/compiler-search-v0/plans/search_direct_pressure_candidate_v0.json",
+   "document_hash": "58984e5d0cacf923620f0bda2a2b94a1de93eafef26f6ff489d7a549177ed34d",
    "held_out": false,
-   "result_count": 20,
-   "honest_zero": false
+   "result_count": 40,
+   "honest_zero": false,
+   "semantic_correspondence": {
+    "coverage_row": "direct_pressure_candidate",
+    "meaning": "A pressure_on_carrier PASS evaluation for the controlled-pass receiver at controlled reception using observed nearest-defender distance, closing speed, and approach-angle components.",
+    "source_relation": "pressure_on_carrier.anchor_evaluations + pressure_on_carrier.pressure_status",
+    "anchor_source": "controlled_pass_episode.anchors",
+    "carrier_id_field": "receiver_id",
+    "frame_field": "controlled_reception_frame_id",
+    "candidate_scope": "defending_outfield",
+    "thresholds": {
+     "lookback_seconds": 0.4,
+     "maximum_pressure_distance_m": 4.0,
+     "minimum_closing_speed_mps": 0.2,
+     "maximum_approach_angle_degrees": 100.0
+    },
+    "evidence_fields": [
+     "nearest_defender_id",
+     "nearest_defender_distance_m",
+     "closing_speed_mps",
+     "approach_angle_degrees",
+     "coverage_status"
+    ],
+    "claim_boundary": "Observed nearest-defender pressure components only; no defender intent, pressure quality, tactical causation, or decision forcing."
+   }
   }
  },
  {
@@ -5032,10 +5125,29 @@
    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
    "target_id": "search_post_regain_retention_v0",
    "report_path": "artifacts/autonomous/compiler-search-v0-report.json",
-   "document_hash": "f1356fa06f9759ac9779cf32dcada6c9322f52669ff62c704d46e955ab99a54e",
+   "plan_path": "generated/compiler-search-v0/plans/search_post_regain_retention_v0.json",
+   "document_hash": "782e3299eb8e63641d28c31de9f0aca1215d6ae9a587972ae51f691f85767b21",
    "held_out": false,
-   "result_count": 20,
-   "honest_zero": false
+   "result_count": 40,
+   "honest_zero": false,
+   "semantic_correspondence": {
+    "coverage_row": "post_regain_retention",
+    "meaning": "A regain transition anchor with transition_status PASS whose outcome_window_status is PASS for retaining a settled possession for at least 4.0 seconds within an 8.0-second outcome window.",
+    "anchor_source": "transition_anchor_2.anchor_evaluations",
+    "source_relation": "transition_anchor_2.anchor_evaluations + outcome_window.anchor_evaluations/status",
+    "transition_type": "regain",
+    "transition_frame_field": "transition_frame_id",
+    "minimum_prior_possession_seconds": 0.4,
+    "outcome_window": {
+     "maximum_window_seconds": 8.0,
+     "minimum_settled_possession_seconds": 4.0,
+     "settled_segment_policy": "The 4.0-second settled segment may begin anywhere within the 8.0-second window; an intervening loss before that settled segment does not fail the row.",
+     "required_anchor_status_field": "transition_status",
+     "required_anchor_status_value": "PASS"
+    },
+    "unit": "second",
+    "claim_boundary": "Settled means retained ball-alive for the declared duration threshold after a regain transition; no settled-possession quality, tactical intent, value, or causation."
+   }
   }
  },
  {
@@ -8485,10 +8597,30 @@
    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
    "target_id": "search_heldout_shape_expansion_v0",
    "report_path": "artifacts/autonomous/compiler-search-v0-report.json",
-   "document_hash": "291299688021c7d4b4a65c0fab544f5160427ecba68c4f020ab7a6f6b485dcc7",
+   "plan_path": "generated/compiler-search-v0/plans/search_heldout_shape_expansion_v0.json",
+   "document_hash": "a846a132e22bcbef438e585a32f88c91fd85806ca44aaa40bd3f78704036a592",
    "held_out": true,
-   "result_count": 20,
-   "honest_zero": false
+   "result_count": 40,
+   "honest_zero": false,
+   "semantic_correspondence": {
+    "coverage_row": "shape_expansion_episode",
+    "meaning": "A controlled-pass anchor where observed defending-outfield team_width_m increases by at least 4.0 metres from physical release to controlled reception.",
+    "source_relation": "team_compactness before/after evaluations joined by change_across_anchor",
+    "anchor_source": "controlled_pass_episode.anchors",
+    "before_relation": "team_compactness.anchor_evaluations at physical_release_frame_id",
+    "after_relation": "team_compactness_2.anchor_evaluations at controlled_reception_frame_id",
+    "value_field": "team_width_m",
+    "change_mode": "increase_at_least",
+    "threshold": "delta_value >= 4.0 and before_value <= 80.0",
+    "measurement_policy": {
+     "player_scope": "defending_outfield",
+     "minimum_observed_players": 8.0,
+     "maximum_team_width_m": 45.0,
+     "maximum_team_depth_m": 35.0
+    },
+    "unit": "metre",
+    "claim_boundary": "Observed defending-team width increase only; no depth, area, defensive intent, tactical quality, or causation."
+   }
   }
  },
  {
