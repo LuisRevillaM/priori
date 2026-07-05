@@ -48,6 +48,24 @@ NUMBER_WORDS = {
     "nine": "9",
     "ten": "10",
 }
+GENERIC_CLARIFICATION_COMMAND_TOKENS = {
+    "a",
+    "all",
+    "an",
+    "compile",
+    "detect",
+    "find",
+    "get",
+    "give",
+    "identify",
+    "list",
+    "me",
+    "measure",
+    "please",
+    "return",
+    "show",
+    "the",
+}
 
 
 class StrictModel(BaseModel):
@@ -256,6 +274,14 @@ def compile_nl_request(
     if context and context.pending_clarification and context.answer:
         return resume_from_clarification(context.pending_clarification, context.answer)
     projection = build_prompt_projection(pack_path)
+    if invoker is None and context is None:
+        deterministic = deterministic_generated_clarification(
+            text,
+            projection=projection,
+            vocabulary=vocabulary,
+        )
+        if deterministic is not None:
+            return deterministic
     prompt = render_model_prompt(projection, text=text, context=context)
     active_invoker = invoker or WorkshopHermesInvoker(
         provider=os.environ.get("HERMES_SCP2_2_PROVIDER", DEFAULT_PROVIDER),
@@ -713,6 +739,216 @@ def render_repair_prompt(
         + json.dumps(repair_payload, indent=2, sort_keys=True)
         + "\nReturn only the corrected JSON object. No prose before or after it.\n"
     )
+
+
+def deterministic_generated_clarification(
+    text: str,
+    *,
+    projection: PromptProjection,
+    vocabulary: PackVocabulary,
+) -> HermesOutcome | None:
+    if not is_alias_only_generated_support_request(text, projection=projection):
+        return None
+    payload = generated_support_definition_payload()
+    raw_completion = json.dumps(payload, separators=(",", ":"), sort_keys=True)
+    transcript = transcript_for(
+        projection=projection,
+        raw_completion=raw_completion,
+        provider=None,
+        model=None,
+        invocation={
+            "request_text": text,
+            "source": "generated_classifier_clarification",
+            "rule": "clarify_not_gap_when_request_contains_without_corridor_alias",
+        },
+    )
+    return parse_hermes_completion(raw_completion, transcript=transcript, vocabulary=vocabulary)
+
+
+def is_alias_only_generated_support_request(text: str, *, projection: PromptProjection) -> bool:
+    normalized = normalize_text(text)
+    if not normalized:
+        return False
+    rules = projection.sections.get("compiler_classification_rules") or {}
+    distance_aliases = {
+        normalize_text(alias)
+        for alias in rules.get("clarify_distance_when_request_contains") or []
+        if normalize_text(alias)
+    }
+    corridor_aliases = {
+        normalize_text(alias)
+        for alias in rules.get("draft_corridor_when_request_contains") or []
+        if normalize_text(alias)
+    }
+    if any(alias in normalized for alias in distance_aliases | corridor_aliases):
+        return False
+    support_aliases = {
+        normalize_text(alias)
+        for alias in rules.get("clarify_not_gap_when_request_contains_without_corridor_alias") or []
+        if normalize_text(alias)
+    }
+    if not support_aliases:
+        return False
+    tokens = normalized.split()
+    while tokens and tokens[0] in GENERIC_CLARIFICATION_COMMAND_TOKENS:
+        tokens.pop(0)
+    while tokens and tokens[-1] in GENERIC_CLARIFICATION_COMMAND_TOKENS:
+        tokens.pop()
+    return " ".join(tokens) in support_aliases
+
+
+def generated_support_definition_payload() -> dict[str, Any]:
+    return {
+        "outcome": "clarification_required",
+        "dimension": "SUPPORT_DEFINITION",
+        "question": "Which support definition should be used?",
+        "readings": [
+            {
+                "reading_id": "support_arrival_within_distance",
+                "label": "support arrival within distance",
+                "answer_aliases": [
+                    "nearby teammate support",
+                    "support arrival",
+                    "within distance support",
+                ],
+                "expression": support_arrival_within_distance_expression(),
+            },
+            {
+                "reading_id": "line_break_support_response",
+                "label": "line-break support response",
+                "answer_aliases": [
+                    "line break support",
+                    "support after line break",
+                    "lane occupation and local-number support",
+                ],
+                "expression": line_break_support_response_expression(),
+            },
+        ],
+    }
+
+
+def support_arrival_within_distance_expression() -> dict[str, Any]:
+    return {
+        "schema_version": "meaning_expression.v0",
+        "expression_id": "scp2_2_support_arrival_within_distance_reading",
+        "expression_version": "0.1.0",
+        "concept_identity": "support_arrival_relation",
+        "display_name": "Support Arrival Within Distance",
+        "meaning_clauses": [
+            {
+                "subject": "support arrival within distance",
+                "action": "requires",
+                "field": "support_arrival_status",
+                "operator": "eq",
+                "value": "PASS",
+            }
+        ],
+        "concept_refs": ["support_arrival_relation"],
+        "operator_applications": [],
+        "population": {
+            "match_ids": [],
+            "periods": ["firstHalf", "secondHalf"],
+            "perspective_team_roles": ["home", "away"],
+        },
+        "group_by": [],
+        "target": {
+            "target_id": "scp2_2_support_arrival_within_distance_reading_v0",
+            "held_out": True,
+            "multi_step": False,
+        },
+        "target_contract": {
+            "desired_output": "classification",
+            "required_evidence": ["support_arrival_status"],
+            "required_modalities": [],
+            "status_semantics": [
+                {
+                    "field": "support_arrival_status",
+                    "required_value": "PASS",
+                }
+            ],
+            "composition_constraints": [],
+            "claim_boundary": (
+                "Observed support-arrival relation evidence only; no support quality, "
+                "decision quality, communication, scanning, optimality, intent, or causation."
+            ),
+        },
+        "correspondence_clauses": [
+            {
+                "name": "claim_boundary",
+                "value": "Observed support-arrival geometry only.",
+            }
+        ],
+        "fixture_notes": [
+            "Generated deterministic SCP2-2 clarification reading for alias-only support language."
+        ],
+    }
+
+
+def line_break_support_response_expression() -> dict[str, Any]:
+    return {
+        "schema_version": "meaning_expression.v0",
+        "expression_id": "scp2_2_line_break_support_response_reading",
+        "expression_version": "0.1.0",
+        "concept_identity": "line_break_support_response",
+        "display_name": "Line-Break Support Response",
+        "meaning_clauses": [
+            {
+                "subject": "line-break support response",
+                "action": "requires",
+                "field": "support_arrival_status",
+                "operator": "eq",
+                "value": "PASS",
+            }
+        ],
+        "concept_refs": [
+            "controlled_pass_episode",
+            "controlled_line_break_episode",
+            "support_arrival_relation",
+            "lane_occupancy",
+            "local_number_relation",
+        ],
+        "operator_applications": [],
+        "population": {
+            "match_ids": [],
+            "periods": ["firstHalf", "secondHalf"],
+            "perspective_team_roles": ["home", "away"],
+        },
+        "group_by": [],
+        "target": {
+            "target_id": "scp2_2_line_break_support_response_reading_v0",
+            "held_out": True,
+            "multi_step": True,
+        },
+        "target_contract": {
+            "desired_output": "classification",
+            "required_evidence": ["support_arrival_status"],
+            "required_modalities": [],
+            "status_semantics": [
+                {
+                    "field": "support_arrival_status",
+                    "required_value": "PASS",
+                }
+            ],
+            "composition_constraints": [],
+            "claim_boundary": (
+                "Observed line-break support response evidence only; no offside, pressure, body "
+                "orientation, pass probability, decision quality, intent, optimality, or causation."
+            ),
+        },
+        "correspondence_clauses": [
+            {
+                "name": "claim_boundary",
+                "value": "Observed line-break support response geometry only.",
+            },
+            {
+                "name": "recipe_id",
+                "value": "line_break_support_response_v1",
+            },
+        ],
+        "fixture_notes": [
+            "Generated deterministic SCP2-2 clarification reading for alias-only support language."
+        ],
+    }
 
 
 def parse_hermes_completion(

@@ -296,6 +296,35 @@ class SCP2HermesNLTests(unittest.TestCase):
         self.assertEqual("clarification_required", outcome.outcome)
         self.assertEqual("SUPPORT_DEFINITION", outcome.dimension)
 
+    def test_alias_only_support_uses_generated_typed_clarification_without_model_call(self) -> None:
+        first = compile_nl_request("Show support.")
+
+        self.assertEqual("clarification_required", first.outcome)
+        self.assertEqual("SUPPORT_DEFINITION", first.dimension)
+        self.assertIsNone(first.transcript.model_provider)
+        self.assertEqual(
+            "generated_classifier_clarification",
+            first.transcript.invocation["source"],
+        )
+
+        second = compile_nl_request(
+            "use support arrival within distance",
+            context=HermesNLContext(
+                pending_clarification=first.state,
+                answer="use support arrival within distance",
+            ),
+        )
+
+        self.assertEqual("expression", second.outcome)
+        self.assertEqual(
+            "scp2_2_support_arrival_within_distance_reading",
+            second.expression.expression_id,
+        )
+        self.assertEqual(
+            "typed_clarification_state",
+            second.transcript.invocation["source"],
+        )
+
     def test_clarification_resume_selects_fuzzy_typed_reading(self) -> None:
         controlled = self.fixture_payload("fragile_possession_state_known.v0.json")
         sequence = self.fixture_payload("fragile_window_join_count_novel.v0.json")
