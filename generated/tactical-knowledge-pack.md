@@ -1,7 +1,7 @@
 # Tactical Knowledge Pack
 
 Version: `m1.2-s2i-a.0`
-SHA-256: `791927dbae00152187571864b843e8233cfcb674e59ddd0436cd1620bab78d34`
+SHA-256: `e633234e11c7a110b6f87a876de6260ecb8a70587c67aa6303037ce33c2d619a`
 Generated: `reproducible_from_source_hashes`
 
 ## Architecture
@@ -198,7 +198,7 @@ Disallowed claims:
 - `generated/tactical-query-plan.types.ts`: `5c027189c9b5f314bc62fd765656e30aeaebe163add038320f74cca932627ceb`
 - `src/tqe/runtime/binder.py`: `0de072fdc42fad0b74a3aedf6bc1efc7c48e114fe8ac69d4bb04ebd0f96b3d60`
 - `src/tqe/runtime/catalog.py`: `0f58e55acdd789f1f101b969a0255b864bdc333d6c4a8f596160c57e8b00590f`
-- `src/tqe/runtime/executor.py`: `2334d4e124e0d3802f0885ee5c7658a1242e024dd234498f9562855ac6038856`
+- `src/tqe/runtime/executor.py`: `7a2cd8a4641f7d179111064dbafa17f83e1d8b44bcc330f1237a1a1e33b0814d`
 - `src/tqe/runtime/ir.py`: `33e4885a6ad75afa7b4e9df96b72eba43c49b92b24ac67c8d2979d0bde13eedd`
 - `src/tqe/runtime/relations.py`: `eb305cd2ff4c9c5f886342eeb8c35253500e6dd777bdf7b4dc403469b771d8e0`
 - `src/tqe/verification/m1_2_gate_s2i.py`: `9397f1a8a6b11e28d1f0bb48105a44dfae9a2c49ca61ff44413108f1d85ce125`
