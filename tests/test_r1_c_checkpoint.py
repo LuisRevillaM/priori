@@ -8,6 +8,18 @@ from pathlib import Path
 from scripts.audits import r1_5_population_audit
 from scripts.coverage_map import compiler_search_reachability as search
 
+R2_0_PREERA_TARGET_IDS = {
+    "search_heldout_carry_displacement_v0",
+    "search_heldout_support_arrival_v0",
+    "search_carry_progression_v0",
+    "search_direct_pressure_candidate_v0",
+    "search_post_regain_retention_v0",
+    "search_heldout_shape_expansion_v0",
+    "search_carry_out_of_pressure_v0",
+}
+
+SWEEP_SNAPSHOT_TARGET_FILE = Path("delivery/packets/r1-c-sweep/targets.v0.json")
+
 
 def coverage_row() -> dict[str, object]:
     return {
@@ -33,6 +45,37 @@ def reachable_result() -> dict[str, object]:
             "meaning": "Longitudinal support depth.",
         },
     }
+
+
+def declaration_target_files() -> list[Path]:
+    config_targets = sorted(Path("config/compiler-reachability").glob("*.json"))
+    return [*config_targets, SWEEP_SNAPSHOT_TARGET_FILE]
+
+
+def declared_targets_from_files(target_files: list[Path]) -> set[str]:
+    declared_target_ids: set[str] = set()
+    for target_file in target_files:
+        payload = json.loads(target_file.read_text(encoding="utf-8"))
+        targets = payload.get("targets")
+        if targets is None:
+            continue
+        for target in targets:
+            declaration = target.get("semantic_correspondence")
+            if declaration is None:
+                continue
+            result = {
+                "target_id": target.get("target_id"),
+                "concept": target.get("concept"),
+                "semantic_correspondence": declaration,
+            }
+            validated = search.validated_semantic_correspondence(
+                row={"concept": target.get("concept")},
+                result=result,
+            )
+            if not validated.get("meaning"):
+                raise AssertionError(f"semantic_correspondence is missing meaning in {target_file}")
+            declared_target_ids.add(str(target.get("target_id")))
+    return declared_target_ids
 
 
 class R1CCheckpointTests(unittest.TestCase):
@@ -127,6 +170,14 @@ class R1CCheckpointTests(unittest.TestCase):
 
         self.assertEqual(7, len(set(sealed_signature["match_ids"])))
         self.assertEqual(sealed_signature, regenerated_signature)
+
+    def test_committed_target_declarations_are_well_formed(self) -> None:
+        declared_target_ids = declared_targets_from_files(declaration_target_files())
+
+        self.assertTrue(
+            R2_0_PREERA_TARGET_IDS.issubset(declared_target_ids),
+            R2_0_PREERA_TARGET_IDS - declared_target_ids,
+        )
 
 
 if __name__ == "__main__":
