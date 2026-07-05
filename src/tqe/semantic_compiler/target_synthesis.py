@@ -169,7 +169,7 @@ def exact_recipe_plan_for_expression(
             continue
         base_id = recipe_base_id(recipe_id)
         if recipe_id not in candidates and not any(
-            candidate == base_id or candidate.startswith(f"{base_id}_")
+            recipe_family_candidate_matches(base_id, candidate)
             for candidate in candidates
         ):
             continue
@@ -202,13 +202,25 @@ def recipe_base_id(value: str) -> str:
     return re.sub(r"_v\d+$", "", re.sub(r"_v\d+_\d+$", "", value))
 
 
+def recipe_family_candidate_matches(base_id: str, candidate: str) -> bool:
+    if candidate == base_id or candidate.startswith(f"{base_id}_"):
+        return True
+    base_parts = base_id.split("_")
+    candidate_parts = candidate.split("_")
+    cursor = 0
+    for part in candidate_parts:
+        if cursor < len(base_parts) and part == base_parts[cursor]:
+            cursor += 1
+    return cursor == len(base_parts)
+
+
 def document_payload_for_expression(
     *,
     expression: MeaningExpressionV0,
     document: dict[str, Any],
 ) -> dict[str, Any]:
     match_ids = expression.population.match_ids or list(search.MATCH_IDS)
-    periods = expression.population.periods
+    periods = expression.population.periods or ["firstHalf", "secondHalf"]
     roles = expression.population.perspective_team_roles or ["home"]
     role_documents: dict[str, dict[str, Any]] = {}
     for role in roles:
