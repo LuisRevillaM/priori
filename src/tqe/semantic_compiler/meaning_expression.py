@@ -14,9 +14,7 @@ from tqe.runtime.ir import stable_hash
 
 
 DEFAULT_KNOWLEDGE_PACK_PATH = Path("generated/tactical-knowledge-pack.json")
-EXPECTED_PRIMITIVE_COUNT = 37
-EXPECTED_OPERATOR_COUNT = 8
-EXPECTED_GAP_CODE_COUNT = 14
+MeaningValue = str | int | float | bool | list[str]
 
 
 class StrictModel(BaseModel):
@@ -53,17 +51,46 @@ class VocabularyGateError(ValueError):
         self.refusal = refusal
 
 
+class MissingGapCodeError(RuntimeError):
+    """Raised when the pack has no truthful gap code for a failed vocabulary family."""
+
+
 class MeaningParameter(StrictModel):
     name: str = Field(min_length=1)
-    value: Any
+    value: MeaningValue
     unit: str = "none"
 
 
 class OperatorApplication(StrictModel):
     operator: str = Field(min_length=1)
-    input_field: str | None = None
-    output_field: str | None = None
     parameters: list[MeaningParameter] = Field(default_factory=list)
+
+
+class MeaningClause(StrictModel):
+    subject: str = Field(min_length=1)
+    action: str = Field(min_length=1)
+    field: str | None = None
+    operator: str | None = None
+    value: MeaningValue | None = None
+    unit: str | None = None
+    frame_scope: str | None = None
+
+
+class CorrespondenceClause(StrictModel):
+    name: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
+    value: MeaningValue
+
+
+class CompositionConstraint(StrictModel):
+    kind: str = Field(min_length=1)
+    parameters: list[MeaningParameter] = Field(default_factory=list)
+    left_input_context: list[MeaningParameter] = Field(default_factory=list)
+    right_input_context: list[MeaningParameter] = Field(default_factory=list)
+    left_composition_constraints: list["CompositionConstraint"] = Field(default_factory=list)
+    right_composition_constraints: list["CompositionConstraint"] = Field(default_factory=list)
+    population_composition_constraints: list["CompositionConstraint"] = Field(default_factory=list)
+    numerator_composition_constraints: list["CompositionConstraint"] = Field(default_factory=list)
+    denominator_composition_constraints: list["CompositionConstraint"] = Field(default_factory=list)
 
 
 class PopulationScope(StrictModel):
@@ -92,7 +119,7 @@ class TargetContract(StrictModel):
     required_evidence: list[str] = Field(default_factory=list)
     required_modalities: list[str] = Field(default_factory=list)
     status_semantics: list[StatusSemantic] = Field(default_factory=list)
-    composition_constraints: list[dict[str, Any]] = Field(default_factory=list)
+    composition_constraints: list[CompositionConstraint] = Field(default_factory=list)
     claim_boundary: str = Field(min_length=1)
 
 
@@ -108,7 +135,7 @@ class MeaningExpressionV0(StrictModel):
     expression_version: str = "0.1.0"
     concept_identity: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
     display_name: str = Field(min_length=1)
-    meaning: str = Field(min_length=1)
+    meaning_clauses: list[MeaningClause] = Field(min_length=1)
     concept_refs: list[str] = Field(default_factory=list)
     operator_applications: list[OperatorApplication] = Field(default_factory=list)
     population: PopulationScope = Field(default_factory=PopulationScope)
@@ -116,7 +143,7 @@ class MeaningExpressionV0(StrictModel):
     team_perspective: TeamPerspectiveDeclaration = Field(default_factory=TeamPerspectiveDeclaration)
     target: TargetSynthesisDeclaration
     target_contract: TargetContract
-    correspondence: dict[str, Any] = Field(default_factory=dict)
+    correspondence_clauses: list[CorrespondenceClause] = Field(default_factory=list)
     fixture_notes: list[str] = Field(default_factory=list)
 
     def canonical_payload(self) -> dict[str, Any]:
@@ -130,7 +157,9 @@ class MeaningExpressionV0(StrictModel):
 class PackVocabulary:
     primitive_names: frozenset[str]
     relation_names: frozenset[str]
-    operator_names: frozenset[str]
+    predicate_operator_names: frozenset[str]
+    composition_operator_names: frozenset[str]
+    constraint_kind_parameters: dict[str, frozenset[str]]
     gap_codes: frozenset[str]
     field_names: frozenset[str]
     parameter_names: frozenset[str]
@@ -141,48 +170,47 @@ class PackVocabulary:
     def concept_names(self) -> frozenset[str]:
         return self.primitive_names | self.relation_names
 
-    def gap_code_for_missing(self, reference: str) -> str:
+    @property
+    def operator_names(self) -> frozenset[str]:
+        return self.predicate_operator_names | self.composition_operator_names
+
+    @property
+    def constraint_kinds(self) -> frozenset[str]:
+        return frozenset(self.constraint_kind_parameters)
+
+    def gap_code_for_missing(self, reference: str) -> str | None:
         normalized = _normalize_token(reference)
         aliases: dict[str, str] = {}
         for code in self.gap_codes:
             aliases[_normalize_token(code)] = code
-        if "body_orientation" in normalized:
-            aliases.setdefault("body_orientation", "BODY_ORIENTATION")
-        if "body_shape" in normalized:
-            aliases.setdefault("body_shape", "BODY_SHAPE")
-        if "scan" in normalized or "head_check" in normalized:
-            aliases.setdefault("scan", "SCANNING")
-        if "intent" in normalized:
-            aliases.setdefault("intent", "PLAYER_INTENT")
-        if "pass_probability" in normalized:
-            aliases.setdefault("pass_probability", "PASS_PROBABILITY")
-        if "optimal" in normalized:
-            aliases.setdefault("optimal", "OPTIMALITY")
         for alias, code in sorted(aliases.items(), key=lambda item: (-len(item[0]), item[0])):
             if alias and alias in normalized and code in self.gap_codes:
                 return code
-        return "PRIMITIVE_MUTATION" if "PRIMITIVE_MUTATION" in self.gap_codes else sorted(self.gap_codes)[0]
+        return None
 
 
 def load_pack_vocabulary(path: Path = DEFAULT_KNOWLEDGE_PACK_PATH) -> PackVocabulary:
     payload = json.loads(path.read_text(encoding="utf-8"))
     primitives = payload.get("primitives") or []
-    operators = payload.get("operators") or []
+    predicate_operators = payload.get("operators") or []
     gap_codes = payload.get("capability_gap_codes") or []
-    if len(primitives) != EXPECTED_PRIMITIVE_COUNT:
-        raise ValueError(f"knowledge pack primitive count drifted: {len(primitives)}")
-    if len(operators) != EXPECTED_OPERATOR_COUNT:
-        raise ValueError(f"knowledge pack operator count drifted: {len(operators)}")
-    if len(gap_codes) != EXPECTED_GAP_CODE_COUNT:
-        raise ValueError(f"knowledge pack gap-code count drifted: {len(gap_codes)}")
-
     relations = payload.get("relations") or []
+    grammar = payload.get("composition_grammar") or {}
+    composition_operators = grammar.get("operators") or []
+    constraint_kinds = grammar.get("constraint_kinds") or []
+    if not primitives or not predicate_operators or not gap_codes:
+        raise ValueError("knowledge pack is missing primitive/operator/gap vocabulary")
+    if not composition_operators or not constraint_kinds:
+        raise ValueError("knowledge pack is missing composition_grammar vocabulary")
+
     primitive_names = frozenset(str(item["name"]) for item in primitives)
     relation_names = frozenset(str(item["name"]) for item in relations)
-    operator_names = frozenset(str(item["name"]) for item in operators)
+    predicate_operator_names = frozenset(str(item["name"]) for item in predicate_operators)
+    composition_operator_names = frozenset(str(item["name"]) for item in composition_operators)
     code_names = frozenset(str(item["code"]) for item in gap_codes)
     field_names: set[str] = set()
     parameter_names: set[str] = set()
+    constraint_kind_parameters: dict[str, frozenset[str]] = {}
     for bucket, values in (payload.get("evidence_fields") or {}).items():
         field_names.add(str(bucket))
         field_names.update(str(value) for value in values)
@@ -194,7 +222,7 @@ def load_pack_vocabulary(path: Path = DEFAULT_KNOWLEDGE_PACK_PATH) -> PackVocabu
             field_names.update(str(field) for field in output.get("evidence_fields") or [])
         for parameter in item.get("parameters") or []:
             parameter_names.add(str(parameter["name"]))
-    for operator in operators:
+    for operator in predicate_operators:
         if operator.get("compare_required"):
             parameter_names.add("compare")
             parameter_names.add("threshold")
@@ -204,11 +232,26 @@ def load_pack_vocabulary(path: Path = DEFAULT_KNOWLEDGE_PACK_PATH) -> PackVocabu
         parameter_names.add("output_field")
         parameter_names.add("unit")
         parameter_names.add("required_value")
+    for operator in composition_operators:
+        for output in operator.get("outputs") or []:
+            field_names.add(str(output.get("name")))
+            field_names.update(str(field) for field in output.get("evidence_fields") or [])
+        for parameter in operator.get("parameters") or []:
+            parameter_names.add(str(parameter["name"]))
+    for item in constraint_kinds:
+        kind = str(item["kind"])
+        parameters = frozenset(str(parameter) for parameter in item.get("parameters") or [])
+        if not parameters:
+            raise ValueError(f"composition constraint kind {kind} has no parameter schema")
+        constraint_kind_parameters[kind] = parameters
+        parameter_names.update(parameters)
 
     return PackVocabulary(
         primitive_names=primitive_names,
         relation_names=relation_names,
-        operator_names=operator_names,
+        predicate_operator_names=predicate_operator_names,
+        composition_operator_names=composition_operator_names,
+        constraint_kind_parameters=constraint_kind_parameters,
         gap_codes=code_names,
         field_names=frozenset(field_names),
         parameter_names=frozenset(parameter_names),
@@ -259,16 +302,13 @@ def first_vocabulary_refusal(
         if ref not in vocabulary.concept_names:
             return _refusal(vocabulary, "concept_refs", ref, f"concept:{ref}")
     for application in expression.operator_applications:
-        if application.operator not in vocabulary.operator_names:
+        if application.operator not in vocabulary.composition_operator_names:
             return _refusal(
                 vocabulary,
                 "operator_applications.operator",
                 application.operator,
                 f"operator:{application.operator}",
             )
-        for field in (application.input_field, application.output_field):
-            if field and field not in vocabulary.field_names:
-                return _refusal(vocabulary, "operator_applications.field", field, f"field:{field}")
         for parameter in application.parameters:
             if parameter.name not in vocabulary.parameter_names:
                 return _refusal(
@@ -301,7 +341,7 @@ def first_vocabulary_refusal(
     for item in expression.target_contract.status_semantics:
         if item.field not in vocabulary.field_names:
             return _refusal(vocabulary, "target_contract.status_semantics.field", item.field, f"field:{item.field}")
-        if item.operator and item.operator not in vocabulary.operator_names:
+        if item.operator and item.operator not in vocabulary.predicate_operator_names:
             return _refusal(
                 vocabulary,
                 "target_contract.status_semantics.operator",
@@ -319,17 +359,119 @@ def stable_expression_json(expression: MeaningExpressionV0) -> str:
     return json.dumps(expression.canonical_payload(), indent=2, sort_keys=True) + "\n"
 
 
-def _constraint_refusal(constraint: dict[str, Any], vocabulary: PackVocabulary) -> BridgeRefusal | None:
-    for key, value in sorted(constraint.items()):
-        if key.endswith("_field") and isinstance(value, str) and value != "none":
-            if value not in vocabulary.field_names:
-                return _refusal(vocabulary, f"composition_constraints.{key}", value, f"field:{value}")
-        if key.endswith("_fields") and isinstance(value, list):
-            for item in value:
-                if isinstance(item, str) and item != "none" and item not in vocabulary.field_names:
-                    return _refusal(vocabulary, f"composition_constraints.{key}", item, f"field:{item}")
-        if key in vocabulary.parameter_names:
-            continue
+def render_meaning_sentence(expression: MeaningExpressionV0) -> str:
+    return " ".join(_render_clause(clause) for clause in expression.meaning_clauses)
+
+
+def search_constraint_payload(constraint: CompositionConstraint) -> dict[str, Any]:
+    payload: dict[str, Any] = {"kind": constraint.kind}
+    for parameter in constraint.parameters:
+        payload[parameter.name] = parameter.value
+    if constraint.left_composition_constraints:
+        payload["left_composition_constraints"] = [
+            search_constraint_payload(item) for item in constraint.left_composition_constraints
+        ]
+    if constraint.left_input_context:
+        payload["left_input_context"] = {
+            parameter.name: parameter.value for parameter in constraint.left_input_context
+        }
+    if constraint.right_composition_constraints:
+        payload["right_composition_constraints"] = [
+            search_constraint_payload(item) for item in constraint.right_composition_constraints
+        ]
+    if constraint.right_input_context:
+        payload["right_input_context"] = {
+            parameter.name: parameter.value for parameter in constraint.right_input_context
+        }
+    if constraint.population_composition_constraints:
+        payload["population_composition_constraints"] = [
+            search_constraint_payload(item) for item in constraint.population_composition_constraints
+        ]
+    if constraint.numerator_composition_constraints:
+        payload["numerator_composition_constraints"] = [
+            search_constraint_payload(item) for item in constraint.numerator_composition_constraints
+        ]
+    if constraint.denominator_composition_constraints:
+        payload["denominator_composition_constraints"] = [
+            search_constraint_payload(item) for item in constraint.denominator_composition_constraints
+        ]
+    return payload
+
+
+def _constraint_refusal(
+    constraint: CompositionConstraint,
+    vocabulary: PackVocabulary,
+    *,
+    path: str = "composition_constraints",
+) -> BridgeRefusal | None:
+    if constraint.kind not in vocabulary.constraint_kinds:
+        return _refusal(vocabulary, f"{path}.kind", constraint.kind, f"constraint_kind:{constraint.kind}")
+    allowed_parameters = vocabulary.constraint_kind_parameters[constraint.kind]
+    for parameter in constraint.parameters:
+        if parameter.name not in allowed_parameters:
+            return _refusal(vocabulary, f"{path}.{constraint.kind}.parameters", parameter.name, f"parameter:{parameter.name}")
+        refusal = _parameter_value_refusal(
+            parameter=parameter,
+            vocabulary=vocabulary,
+            path=f"{path}.{constraint.kind}.{parameter.name}",
+        )
+        if refusal is not None:
+            return refusal
+    nested_groups = [
+        ("left_composition_constraints", constraint.left_composition_constraints),
+        ("right_composition_constraints", constraint.right_composition_constraints),
+        ("population_composition_constraints", constraint.population_composition_constraints),
+        ("numerator_composition_constraints", constraint.numerator_composition_constraints),
+        ("denominator_composition_constraints", constraint.denominator_composition_constraints),
+    ]
+    for name, nested in nested_groups:
+        if nested and name not in allowed_parameters:
+            return _refusal(vocabulary, f"{path}.{constraint.kind}", name, f"parameter:{name}")
+        for index, item in enumerate(nested):
+            refusal = _constraint_refusal(
+                item,
+                vocabulary,
+                path=f"{path}.{constraint.kind}.{name}[{index}]",
+            )
+            if refusal is not None:
+                return refusal
+    for name, context_parameters in (
+        ("left_input_context", constraint.left_input_context),
+        ("right_input_context", constraint.right_input_context),
+    ):
+        if context_parameters and name not in allowed_parameters:
+            return _refusal(vocabulary, f"{path}.{constraint.kind}", name, f"parameter:{name}")
+        for parameter in context_parameters:
+            if parameter.name not in vocabulary.parameter_names:
+                return _refusal(vocabulary, f"{path}.{constraint.kind}.{name}", parameter.name, f"parameter:{parameter.name}")
+            refusal = _parameter_value_refusal(
+                parameter=parameter,
+                vocabulary=vocabulary,
+                path=f"{path}.{constraint.kind}.{name}.{parameter.name}",
+            )
+            if refusal is not None:
+                return refusal
+    return None
+
+
+def _parameter_value_refusal(
+    *,
+    parameter: MeaningParameter,
+    vocabulary: PackVocabulary,
+    path: str,
+) -> BridgeRefusal | None:
+    value = parameter.value
+    if parameter.name.endswith("_field") and isinstance(value, str) and value != "none":
+        if value not in vocabulary.field_names:
+            return _refusal(vocabulary, path, value, f"field:{value}")
+    if parameter.name.endswith("_fields") and isinstance(value, list):
+        for item in value:
+            if item != "none" and item not in vocabulary.field_names:
+                return _refusal(vocabulary, path, item, f"field:{item}")
+    if parameter.name in {"status_fields", "value_fields", "left_required_fields", "right_required_fields", "population_required_fields", "numerator_required_fields", "denominator_required_fields"} and isinstance(value, list):
+        for item in value:
+            if item != "none" and item not in vocabulary.field_names:
+                return _refusal(vocabulary, path, item, f"field:{item}")
     return None
 
 
@@ -340,6 +482,10 @@ def _refusal(
     missing_capability: str,
 ) -> BridgeRefusal:
     gap_code = vocabulary.gap_code_for_missing(reference)
+    if gap_code is None:
+        raise MissingGapCodeError(
+            f"No truthful generated gap code exists for {missing_capability} in {section}."
+        )
     return BridgeRefusal(
         outcome=BridgeRefusalKind.UNDERSTOOD_BUT_NOT_EXPRESSIBLE,
         gap_code=gap_code,
@@ -352,6 +498,24 @@ def _refusal(
         ),
         pack_sha256=vocabulary.pack_sha256,
     )
+
+
+def _render_clause(clause: MeaningClause) -> str:
+    pieces = [clause.subject, clause.action]
+    if clause.field is not None:
+        pieces.append(clause.field)
+    if clause.operator is not None:
+        pieces.append(clause.operator)
+    if clause.value is not None:
+        if isinstance(clause.value, list):
+            pieces.append("[" + ", ".join(clause.value) + "]")
+        else:
+            pieces.append(str(clause.value))
+    if clause.unit is not None:
+        pieces.append(clause.unit)
+    if clause.frame_scope is not None:
+        pieces.append(clause.frame_scope)
+    return " ".join(pieces).strip() + "."
 
 
 def _normalize_token(value: str) -> str:

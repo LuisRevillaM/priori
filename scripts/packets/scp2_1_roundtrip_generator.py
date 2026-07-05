@@ -46,6 +46,7 @@ def main() -> int:
 
     vocabulary = load_pack_vocabulary(ROOT / "generated" / "tactical-knowledge-pack.json")
     coverage_rows = json.loads((ROOT / "generated" / "coverage-map.json").read_text(encoding="utf-8"))
+    clean_generated_outputs()
     accepted_targets: list[dict[str, Any]] = []
     report: dict[str, Any] = {
         "schema_version": "scp2_1_roundtrip_report.v0",
@@ -53,7 +54,9 @@ def main() -> int:
             "path": "generated/tactical-knowledge-pack.json",
             "sha256": vocabulary.pack_sha256,
             "primitive_count": len(vocabulary.primitive_names),
-            "operator_count": len(vocabulary.operator_names),
+            "predicate_operator_count": len(vocabulary.predicate_operator_names),
+            "composition_operator_count": len(vocabulary.composition_operator_names),
+            "composition_constraint_kind_count": len(vocabulary.constraint_kinds),
             "gap_code_count": len(vocabulary.gap_codes),
         },
         "fixtures": [],
@@ -109,15 +112,26 @@ def main() -> int:
             fixture_record["execution"] = {
                 "status": execution_payload["status"],
                 "result_count": execution_payload["result_count"],
-                "elapsed_seconds": round(elapsed, 3),
-                "exceeded_long_run_threshold": elapsed > LONG_RUN_THRESHOLD_SECONDS,
+                "requested_evidence_failure_count": execution_payload["requested_evidence_failure_count"],
             }
+            if elapsed > LONG_RUN_THRESHOLD_SECONDS:
+                fixture_record["execution"]["exceeded_long_run_threshold"] = True
         report["fixtures"].append(fixture_record)
 
     write_json(TARGETS_OUT, target_file_payload(accepted_targets))
     write_json(REPORT_OUT, report)
     print(json.dumps({"report": relative(REPORT_OUT), "target_count": len(accepted_targets)}, indent=2))
     return 0
+
+
+def clean_generated_outputs() -> None:
+    for directory in (PLAN_DIR, REFUSAL_DIR, EXECUTION_DIR):
+        directory.mkdir(parents=True, exist_ok=True)
+        for path in directory.glob("*.json"):
+            path.unlink()
+    for path in (TARGETS_OUT, REPORT_OUT):
+        if path.exists():
+            path.unlink()
 
 
 def execute_document(document_payload: dict[str, Any]) -> dict[str, Any]:
@@ -128,6 +142,7 @@ def execute_document(document_payload: dict[str, Any]) -> dict[str, Any]:
         role_payloads = {"single": document_payload}
     roles: dict[str, Any] = {}
     total_rows = 0
+    requested_evidence_failure_count = 0
     all_statuses: list[str] = []
     for role, payload in sorted(role_payloads.items()):
         document = TacticalQueryDocument.model_validate(payload)
@@ -135,18 +150,38 @@ def execute_document(document_payload: dict[str, Any]) -> dict[str, Any]:
         execution = executor.execute(bound)
         rows = execution_result_rows(execution)
         total_rows += len(rows)
+        requested_evidence_failure_count += int(
+            execution.provenance.get("requested_evidence_failure_count") or 0
+        )
         all_statuses.append(execution.status.value)
         roles[role] = {
             "status": execution.status.value,
             "result_count": len(rows),
-            "provenance": execution.provenance,
-            "rows": rows,
+            "provenance": strip_runtime_timestamps(execution.provenance),
+            "rows": strip_runtime_timestamps(rows),
         }
+    if requested_evidence_failure_count:
+        raise RuntimeError(
+            f"requested evidence failures during SCP2-1 roundtrip: {requested_evidence_failure_count}"
+        )
     return {
         "status": "pass" if all(status == "pass" for status in all_statuses) else "fail",
         "result_count": total_rows,
+        "requested_evidence_failure_count": requested_evidence_failure_count,
         "roles": roles,
     }
+
+
+def strip_runtime_timestamps(payload: Any) -> Any:
+    if isinstance(payload, dict):
+        return {
+            str(key): strip_runtime_timestamps(value)
+            for key, value in payload.items()
+            if key != "generated_at"
+        }
+    if isinstance(payload, list):
+        return [strip_runtime_timestamps(item) for item in payload]
+    return payload
 
 
 def relative(path: Path) -> str:

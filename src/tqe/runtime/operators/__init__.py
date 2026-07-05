@@ -33,6 +33,64 @@ OPERATOR_SIGNATURES: tuple[CompositionOperatorSignature, ...] = (
     AGGREGATE_OVER_SIGNATURE,
     RATE_SIGNATURE,
 )
+OPERATOR_SIGNATURES_BY_CONSTRAINT_KIND: dict[str, CompositionOperatorSignature] = {
+    "aggregate_over": AGGREGATE_OVER_SIGNATURE,
+    "delta_across_anchor": DELTA_ACROSS_ANCHOR_SIGNATURE,
+    "extremum_over_set": EXTREMUM_OVER_SET_SIGNATURE,
+    "rate": RATE_SIGNATURE,
+    "typed_join": TYPED_JOIN_SIGNATURE,
+    "vector_projection": PROJECT_ONTO_AXIS_SIGNATURE,
+    "window": WINDOW_SIGNATURE,
+}
+LEGACY_COMPOSITION_CONSTRAINT_KIND_SCHEMAS: dict[str, dict[str, Any]] = {
+    "before_after_same_anchor": {
+        "operator": None,
+        "parameters": [
+            "after_status_field",
+            "change_mode",
+            "maximum_before_value_m",
+            "minimum_change_m",
+            "status_fields",
+            "value_family",
+            "value_fields",
+        ],
+    },
+    "distinct_entity_fields": {
+        "operator": None,
+        "parameters": ["fields"],
+    },
+    "frame_alignment": {
+        "operator": None,
+        "parameters": ["after_frame_field", "before_frame_field"],
+    },
+    "relation_on_anchor": {
+        "operator": None,
+        "parameters": [
+            "anchor_frame_field",
+            "anchor_status_field",
+            "anchor_status_value",
+            "candidate_scope",
+            "maximum_arrival_seconds",
+            "maximum_support_distance_m",
+            "minimum_duration_seconds",
+            "minimum_supporting_players",
+            "relation_status_field",
+            "support_region_mode",
+        ],
+    },
+    "same_anchor_identity": {
+        "operator": None,
+        "parameters": ["left_key_field", "right_key_field"],
+    },
+    "same_player_return": {
+        "operator": None,
+        "parameters": ["first_player_field", "return_player_field"],
+    },
+    "temporal_order": {
+        "operator": None,
+        "parameters": ["after_frame_field", "before_frame_field", "maximum_gap_seconds"],
+    },
+}
 OPERATOR_IMPLEMENTATION_NAMES: tuple[tuple[str, str, str], ...] = (
     ("project_onto_axis", "0.1.0", "execute_project_onto_axis"),
     ("delta_across_anchor", "0.1.0", "execute_delta_across_anchor"),
@@ -61,6 +119,67 @@ def declared_operator_signatures() -> dict[OperatorKey, CompositionOperatorSigna
             raise RuntimeError(f"Duplicate operator signature {signature.name}@{signature.version}")
         signatures[key] = signature
     return signatures
+
+
+def composition_constraint_kind_schemas() -> dict[str, dict[str, Any]]:
+    schemas: dict[str, dict[str, Any]] = {
+        key: {"operator": value["operator"], "parameters": list(value["parameters"])}
+        for key, value in LEGACY_COMPOSITION_CONSTRAINT_KIND_SCHEMAS.items()
+    }
+    for kind, signature in OPERATOR_SIGNATURES_BY_CONSTRAINT_KIND.items():
+        parameters = {parameter.name for parameter in signature.parameters}
+        if kind == "typed_join":
+            parameters.update(
+                {
+                    "left_composition_constraints",
+                    "left_input_context",
+                    "left_required_fields",
+                    "right_composition_constraints",
+                    "right_input_context",
+                    "right_required_fields",
+                }
+            )
+        if kind == "aggregate_over":
+            parameters.update(
+                {
+                    "population_composition_constraints",
+                    "population_required_fields",
+                }
+            )
+        if kind == "rate":
+            parameters.update(
+                {
+                    "denominator_composition_constraints",
+                    "denominator_required_fields",
+                    "numerator_composition_constraints",
+                    "numerator_required_fields",
+                }
+            )
+        schemas[kind] = {
+            "operator": signature.name,
+            "operator_version": signature.version,
+            "parameters": sorted(parameters),
+        }
+    return dict(sorted(schemas.items()))
+
+
+SUPPORTED_COMPOSITION_CONSTRAINT_KINDS: frozenset[str] = frozenset(
+    composition_constraint_kind_schemas()
+)
+
+
+def declared_composition_grammar() -> dict[str, Any]:
+    return {
+        "operator_count": len(OPERATOR_SIGNATURES),
+        "operators": [
+            signature.model_dump(mode="json", exclude_none=True)
+            for signature in OPERATOR_SIGNATURES
+        ],
+        "constraint_kinds": [
+            {"kind": kind, **schema}
+            for kind, schema in composition_constraint_kind_schemas().items()
+        ],
+    }
 
 
 def build_operator_registry(namespace: Mapping[str, Any]) -> dict[OperatorKey, OperatorImplementation]:

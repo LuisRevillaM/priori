@@ -17,15 +17,11 @@ if str(ROOT) not in sys.path:
 from scripts.coverage_map import compiler_search_reachability as search
 from tqe.runtime.binder import bind_document
 from tqe.runtime.ir import TacticalQueryDocument, stable_hash
-from tqe.semantic_compiler.meaning_expression import MeaningExpressionV0
-
-
-class LedgerWriteForbiddenError(RuntimeError):
-    """Bridge code answers questions but never mutates coverage rows."""
-
-
-def update_coverage_rows(*_args: Any, **_kwargs: Any) -> None:
-    raise LedgerWriteForbiddenError("SCP2 bridge code has no reachable ledger write path.")
+from tqe.semantic_compiler.meaning_expression import (
+    MeaningExpressionV0,
+    render_meaning_sentence,
+    search_constraint_payload,
+)
 
 
 def synthesize_search_target(expression: MeaningExpressionV0) -> dict[str, Any]:
@@ -36,18 +32,18 @@ def synthesize_search_target(expression: MeaningExpressionV0) -> dict[str, Any]:
         "held_out": expression.target.held_out,
         "multi_step": expression.target.multi_step,
         "semantic_correspondence": declaration,
-        "target_contract": expression.target_contract.model_dump(mode="json", exclude_none=True),
+        "target_contract": target_contract_payload(expression),
     }
 
 
 def derived_semantic_correspondence(expression: MeaningExpressionV0) -> dict[str, Any]:
     payload = {
-        key: _json_ready(value)
-        for key, value in sorted(expression.correspondence.items())
-        if key != "coverage_row"
+        clause.name: _json_ready(clause.value)
+        for clause in sorted(expression.correspondence_clauses, key=lambda item: item.name)
+        if clause.name != "coverage_row"
     }
     payload["coverage_row"] = expression.concept_identity
-    payload["meaning"] = expression.meaning
+    payload["meaning"] = render_meaning_sentence(expression)
     if expression.concept_refs:
         payload["concept_refs"] = list(expression.concept_refs)
     if expression.operator_applications:
@@ -56,6 +52,23 @@ def derived_semantic_correspondence(expression: MeaningExpressionV0) -> dict[str
             for item in expression.operator_applications
         ]
     return payload
+
+
+def target_contract_payload(expression: MeaningExpressionV0) -> dict[str, Any]:
+    contract = expression.target_contract
+    return {
+        "desired_output": contract.desired_output,
+        "required_evidence": list(contract.required_evidence),
+        "required_modalities": list(contract.required_modalities),
+        "status_semantics": [
+            item.model_dump(mode="json", exclude_none=True)
+            for item in contract.status_semantics
+        ],
+        "composition_constraints": [
+            search_constraint_payload(item) for item in contract.composition_constraints
+        ],
+        "claim_boundary": contract.claim_boundary,
+    }
 
 
 def validate_correspondence_with_r1c_guard(target: dict[str, Any]) -> dict[str, Any]:
@@ -77,6 +90,13 @@ def synthesize_and_bind(
     target = synthesize_search_target(expression)
     validate_correspondence_with_r1c_guard(target)
     row = _coverage_row_or_synthetic(target["concept"], coverage_rows)
+    failed_gate = search.target_certification_gate_result(target=target, row=row)
+    if failed_gate is not None:
+        raise search.SynthesisError(
+            str(failed_gate.get("failure_taxonomy") or "certification_gate"),
+            str(failed_gate.get("message") or "target failed certification gate"),
+            dict(failed_gate.get("failure_details") or {}),
+        )
     build = search.synthesize_by_search(
         target=target,
         row=row,

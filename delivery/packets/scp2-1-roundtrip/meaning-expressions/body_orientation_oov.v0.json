@@ -1,12 +1,24 @@
 {
-  "schema_version": "meaning_expression.v0",
-  "expression_id": "scp2_1_body_orientation_oov",
-  "expression_version": "0.1.0",
   "concept_identity": "scp2_1_body_orientation_gap",
-  "display_name": "Body Orientation Out Of Vocabulary Refusal",
-  "meaning": "A player body-orientation claim asks for a primitive that the generated knowledge pack does not expose.",
   "concept_refs": [
     "body_orientation"
+  ],
+  "correspondence_clauses": [],
+  "display_name": "Body Orientation Out Of Vocabulary Refusal",
+  "expression_id": "scp2_1_body_orientation_oov",
+  "expression_version": "0.2.0",
+  "fixture_notes": [
+    "Expected refusal outcome: understood_but_not_expressible with gap_code BODY_ORIENTATION."
+  ],
+  "group_by": [],
+  "meaning_clauses": [
+    {
+      "action": "requires",
+      "field": "body_orientation",
+      "operator": "missing",
+      "subject": "body_orientation",
+      "value": "primitive"
+    }
   ],
   "operator_applications": [],
   "population": {
@@ -21,25 +33,23 @@
       "home"
     ]
   },
-  "group_by": [],
+  "schema_version": "meaning_expression.v0",
+  "target": {
+    "held_out": true,
+    "multi_step": false,
+    "target_id": "scp2_1_body_orientation_oov_v0"
+  },
+  "target_contract": {
+    "claim_boundary": "No body-orientation target is constructible from the generated knowledge pack.",
+    "composition_constraints": [],
+    "desired_output": "classification",
+    "required_evidence": [],
+    "required_modalities": [],
+    "status_semantics": []
+  },
   "team_perspective": {
     "required": false,
     "same_team_enforced": false,
     "statement": "No executable team-perspective claim exists because the primitive is out of vocabulary."
-  },
-  "target": {
-    "target_id": "scp2_1_body_orientation_oov_v0",
-    "held_out": true,
-    "multi_step": false
-  },
-  "target_contract": {
-    "desired_output": "classification",
-    "required_evidence": [],
-    "status_semantics": [],
-    "claim_boundary": "No body-orientation target is constructible from the generated knowledge pack."
-  },
-  "correspondence": {},
-  "fixture_notes": [
-    "Expected refusal outcome: understood_but_not_expressible with gap_code BODY_ORIENTATION."
-  ]
+  }
 }

@@ -8,6 +8,7 @@ from tqe.semantic_compiler.lowering import compile_semantic_expression, load_exp
 from tqe.semantic_compiler.meaning_expression import (
     BridgeRefusal,
     BridgeRefusalKind,
+    MissingGapCodeError,
     MeaningExpressionV0,
     VocabularyGateError,
     load_meaning_expression_from_path,
@@ -26,14 +27,12 @@ from tqe.semantic_compiler.models import (
     SupportFacts,
 )
 from tqe.semantic_compiler.target_synthesis import (
-    LedgerWriteForbiddenError,
     bind_payload_for_document,
     derived_semantic_correspondence,
     document_payload_for_expression,
     synthesize_and_bind,
     synthesize_search_target,
     target_file_payload,
-    update_coverage_rows,
     validate_correspondence_with_r1c_guard,
 )
 
@@ -42,7 +41,7 @@ __all__ = [
     "BridgeRefusalKind",
     "CompilerOutcome",
     "FootballQueryNormalForm",
-    "LedgerWriteForbiddenError",
+    "MissingGapCodeError",
     "MeaningExpressionV0",
     "SemanticCompilerResult",
     "SemanticExpression",
@@ -65,6 +64,5 @@ __all__ = [
     "synthesize_and_bind",
     "synthesize_search_target",
     "target_file_payload",
-    "update_coverage_rows",
     "validate_correspondence_with_r1c_guard",
 ]
