@@ -35,6 +35,19 @@ CERTIFIED_FEW_SHOT_PATHS = (
     Path("delivery/packets/scp2-1-roundtrip/meaning-expressions/fragile_window_join_count_novel.v0.json"),
     Path("delivery/packets/r2-4-flagship/meaning-expressions/counterattack_initiation_sequence_rate.v0.json"),
 )
+NUMBER_WORDS = {
+    "zero": "0",
+    "one": "1",
+    "two": "2",
+    "three": "3",
+    "four": "4",
+    "five": "5",
+    "six": "6",
+    "seven": "7",
+    "eight": "8",
+    "nine": "9",
+    "ten": "10",
+}
 
 
 class StrictModel(BaseModel):
@@ -820,39 +833,38 @@ def validated_expression(
 
 
 def resume_from_clarification(state: ClarificationState, answer: str) -> HermesOutcome:
-    for reading in state.readings:
-        if reading.matches(answer):
-            transcript = TranscriptEvidence(
-                prompt_hash=state.prompt_hash,
-                pack_sha256=state.pack_sha256,
-                raw_completion="",
-                completion_hash=stable_hash({"typed_resume": state.state_id, "answer": answer}),
-                model_provider=None,
-                model_name=None,
-                invocation={
-                    "source": "typed_clarification_state",
-                    "state_id": state.state_id,
-                    "answer": answer,
-                    "selected_reading_id": reading.reading_id,
-                },
-            )
-            return ExpressionOutcome(
-                outcome="expression",
-                expression=reading.expression,
-                expression_json=json.loads(stable_expression_json(reading.expression)),
-                document_hash=reading.expression.document_hash(),
-                transcript=transcript,
-            )
+    reading = select_clarification_reading(state.readings, answer)
+    if reading is not None:
+        transcript = TranscriptEvidence(
+            prompt_hash=state.prompt_hash,
+            pack_sha256=state.pack_sha256,
+            raw_completion="",
+            completion_hash=stable_hash({"typed_resume": state.state_id, "answer": answer}),
+            model_provider=None,
+            model_name=None,
+            invocation={
+                "source": "typed_clarification_state",
+                "state_id": state.state_id,
+                "answer": answer,
+                "selected_reading_id": reading.reading_id,
+            },
+        )
+        return ExpressionOutcome(
+            outcome="expression",
+            expression=reading.expression,
+            expression_json=json.loads(stable_expression_json(reading.expression)),
+            document_hash=reading.expression.document_hash(),
+            transcript=transcript,
+        )
     raise HermesNLModelOutputError(f"clarification answer did not select a typed reading: {answer}")
 
 
 def resolve_preanswered_clarification(outcome: HermesOutcome, *, answer: str) -> HermesOutcome:
     if not isinstance(outcome, ClarificationRequiredOutcome):
         return outcome
-    matches = [reading for reading in outcome.readings if reading.matches(answer)]
-    if len(matches) != 1:
+    selected = select_clarification_reading(outcome.readings, answer)
+    if selected is None:
         return outcome
-    selected = matches[0]
     transcript = TranscriptEvidence(
         prompt_hash=outcome.transcript.prompt_hash,
         pack_sha256=outcome.transcript.pack_sha256,
@@ -913,6 +925,42 @@ def strip_json_fence(text: str) -> str:
 
 def normalize_text(text: str) -> str:
     return " ".join(re.sub(r"[^a-z0-9_]+", " ", text.lower()).split())
+
+
+def normalized_tokens(text: str) -> set[str]:
+    tokens: set[str] = set()
+    for token in normalize_text(text).replace("_", " ").split():
+        tokens.add(NUMBER_WORDS.get(token, token))
+    return tokens
+
+
+def select_clarification_reading(
+    readings: list[ClarificationReading],
+    answer: str,
+) -> ClarificationReading | None:
+    exact = [reading for reading in readings if reading.matches(answer)]
+    if len(exact) == 1:
+        return exact[0]
+    answer_tokens = normalized_tokens(answer)
+    if not answer_tokens:
+        return None
+    scored: list[tuple[int, str, ClarificationReading]] = []
+    for reading in readings:
+        candidates = [reading.reading_id, reading.label, *reading.answer_aliases]
+        candidate_tokens: set[str] = set()
+        for candidate in candidates:
+            candidate_tokens.update(normalized_tokens(candidate))
+        score = len(answer_tokens & candidate_tokens)
+        if score:
+            scored.append((score, reading.reading_id, reading))
+    if not scored:
+        return None
+    scored.sort(key=lambda item: (-item[0], item[1]))
+    if scored[0][0] < 2:
+        return None
+    if len(scored) > 1 and scored[0][0] == scored[1][0]:
+        return None
+    return scored[0][2]
 
 
 def canonical_ambiguity_dimension(dimension: str, *, pack_path: Path) -> str:
