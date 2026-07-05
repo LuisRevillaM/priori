@@ -2,11 +2,32 @@ from __future__ import annotations
 
 import copy
 import json
+import os
 import unittest
 from pathlib import Path
 
 from scripts.audits import r1_5_population_audit
 from scripts.coverage_map import compiler_search_reachability as search
+
+R2_0_PREERA_TARGET_IDS = {
+    "search_heldout_carry_displacement_v0",
+    "search_heldout_support_arrival_v0",
+    "search_carry_progression_v0",
+    "search_direct_pressure_candidate_v0",
+    "search_post_regain_retention_v0",
+    "search_heldout_shape_expansion_v0",
+    "search_carry_out_of_pressure_v0",
+}
+
+DECLARATION_TARGET_FILES = [
+    Path("config/compiler-reachability/search-targets.v0.json"),
+    Path("config/compiler-reachability/r1-1-project-onto-axis-targets.v0.json"),
+    Path("config/compiler-reachability/r1-2-delta-across-anchor-targets.v0.json"),
+    Path("config/compiler-reachability/r1-3-extremum-over-set-targets.v0.json"),
+    Path("config/compiler-reachability/r1-4-window-targets.v0.json"),
+    Path("config/compiler-reachability/r1-5-typed-join-targets.v0.json"),
+    Path("delivery/packets/r1-c-sweep/targets.v0.json"),
+]
 
 
 def coverage_row() -> dict[str, object]:
@@ -33,6 +54,36 @@ def reachable_result() -> dict[str, object]:
             "meaning": "Longitudinal support depth.",
         },
     }
+
+
+def declaration_target_files() -> list[Path]:
+    override = os.environ.get("R2_0_DECLARATION_TARGET_FILE")
+    if override:
+        return [Path(override)]
+    return DECLARATION_TARGET_FILES
+
+
+def declared_targets_from_files(target_files: list[Path]) -> set[str]:
+    declared_target_ids: set[str] = set()
+    for target_file in target_files:
+        payload = json.loads(target_file.read_text(encoding="utf-8"))
+        for target in payload.get("targets", []):
+            declaration = target.get("semantic_correspondence")
+            if declaration is None:
+                continue
+            result = {
+                "target_id": target.get("target_id"),
+                "concept": target.get("concept"),
+                "semantic_correspondence": declaration,
+            }
+            validated = search.validated_semantic_correspondence(
+                row={"concept": target.get("concept")},
+                result=result,
+            )
+            if not validated.get("meaning"):
+                raise AssertionError(f"semantic_correspondence is missing meaning in {target_file}")
+            declared_target_ids.add(str(target.get("target_id")))
+    return declared_target_ids
 
 
 class R1CCheckpointTests(unittest.TestCase):
@@ -127,6 +178,14 @@ class R1CCheckpointTests(unittest.TestCase):
 
         self.assertEqual(7, len(set(sealed_signature["match_ids"])))
         self.assertEqual(sealed_signature, regenerated_signature)
+
+    def test_committed_target_declarations_are_well_formed(self) -> None:
+        declared_target_ids = declared_targets_from_files(declaration_target_files())
+
+        self.assertTrue(
+            R2_0_PREERA_TARGET_IDS.issubset(declared_target_ids),
+            R2_0_PREERA_TARGET_IDS - declared_target_ids,
+        )
 
 
 if __name__ == "__main__":
