@@ -79,23 +79,31 @@ above with shared node cache disabled.
 
 ## C2 KPI Semantic-Correspondence Hardening
 
-`update_coverage_rows` now raises for any `compiler_reachable` result that
-lacks either:
+Round-2 R-Q update: `update_coverage_rows` now treats
+`semantic_correspondence` as a declaration payload, not as a machine verdict.
+For every `compiler_reachable` result, the guard requires a dict-shaped
+declaration with at least:
 
-- `semantic_correspondence`
+- `coverage_row`, equal to the coverage row concept being flipped
+- `meaning`
 - certified plan reference fields: `plan_path` and `document_hash`
+
+Non-conforming values raise, including literal `"FAIL"` and `"PASS"` strings,
+missing required keys, and declarations whose `coverage_row` names a different
+coverage row. No machine verdict field was added.
 
 The positive ledger evidence now records `plan_path` alongside
 `document_hash`, so a compiler-reachable flip points to the certified plan
-that earned it.
+that earned it, and it preserves the declaration payload that matched the row.
 
 Verification:
 
 | Command | Result | Notes |
 | --- | --- | --- |
-| `UV_CACHE_DIR=/private/tmp/uv-cache uv run --no-sync python -m unittest tests.test_r1_c_checkpoint -v` | PASS | 5 tests; positive ledger update plus missing-correspondence, missing-plan, missing-hash, and non-reachable paths. |
-| Mutation: break semantic-correspondence guard, then run `tests.test_r1_c_checkpoint.R1CCheckpointTests.test_update_coverage_rows_rejects_missing_semantic_correspondence` | FAIL as expected | Test errored after the guard was disabled, proving the named rejection path is load-bearing. Guard restored. |
-| Mutation: break certified-plan-reference guard, then run `tests.test_r1_c_checkpoint.R1CCheckpointTests.test_update_coverage_rows_rejects_missing_certified_plan_reference` | FAIL as expected | Test errored after the guard was disabled, proving the named rejection path is load-bearing. Guard restored. |
+| `UV_CACHE_DIR=/private/tmp/uv-cache uv run --no-sync python -m unittest tests.test_r1_c_checkpoint -v` | PASS | 10 tests; positive ledger update plus declaration-shape, row-identity, certified-plan, missing-hash, non-reachable, audit markdown, and manifest smoke paths. |
+| Mutation: disable dict-shape guard, then run the FAIL-string and PASS-string rejection tests | FAIL as expected | Both tests errored on the broken guard path; guard restored. |
+| Mutation: disable required-key guard, then run `test_update_coverage_rows_rejects_semantic_correspondence_missing_required_keys` | FAIL as expected | Test failed with `ValueError` not raised; guard restored. |
+| Mutation: disable row-identity guard, then run `test_update_coverage_rows_rejects_wrong_semantic_correspondence_row` | FAIL as expected | Test failed with `ValueError` not raised; guard restored. |
 
 ## C3 R1-5 Riders
 

@@ -54,6 +54,37 @@ class R1CCheckpointTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "semantic_correspondence"):
             search.update_coverage_rows([coverage_row()], [result])
 
+    def test_update_coverage_rows_rejects_fail_string_semantic_correspondence(self) -> None:
+        result = reachable_result()
+        result["semantic_correspondence"] = "FAIL"
+
+        with self.assertRaisesRegex(ValueError, "non-conforming semantic_correspondence"):
+            search.update_coverage_rows([coverage_row()], [result])
+
+    def test_update_coverage_rows_rejects_pass_string_semantic_correspondence(self) -> None:
+        result = reachable_result()
+        result["semantic_correspondence"] = "PASS"
+
+        with self.assertRaisesRegex(ValueError, "non-conforming semantic_correspondence"):
+            search.update_coverage_rows([coverage_row()], [result])
+
+    def test_update_coverage_rows_rejects_semantic_correspondence_missing_required_keys(self) -> None:
+        result = reachable_result()
+        result["semantic_correspondence"] = {"coverage_row": "support_depth"}
+
+        with self.assertRaisesRegex(ValueError, "missing required keys"):
+            search.update_coverage_rows([coverage_row()], [result])
+
+    def test_update_coverage_rows_rejects_wrong_semantic_correspondence_row(self) -> None:
+        result = reachable_result()
+        result["semantic_correspondence"] = {
+            "coverage_row": "fragile_possession_state",
+            "meaning": "A different row.",
+        }
+
+        with self.assertRaisesRegex(ValueError, "coverage_row does not match"):
+            search.update_coverage_rows([coverage_row()], [result])
+
     def test_update_coverage_rows_rejects_missing_certified_plan_reference(self) -> None:
         result = reachable_result()
         result.pop("plan_path")

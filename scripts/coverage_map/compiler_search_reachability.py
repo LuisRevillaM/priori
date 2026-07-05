@@ -3869,11 +3869,7 @@ def update_coverage_rows(rows: list[dict[str, Any]], results: list[dict[str, Any
         result = by_concept.get(row.get("concept"))
         if result is None or result["result"] != "compiler_reachable":
             continue
-        if not result.get("semantic_correspondence"):
-            raise ValueError(
-                "compiler_reachable result is missing semantic_correspondence; "
-                f"concept={result.get('concept')} target_id={result.get('target_id')}"
-            )
+        semantic_correspondence = validated_semantic_correspondence(row=row, result=result)
         if not result.get("plan_path") or not result.get("document_hash"):
             raise ValueError(
                 "compiler_reachable result is missing certified plan reference; "
@@ -3892,8 +3888,31 @@ def update_coverage_rows(rows: list[dict[str, Any]], results: list[dict[str, Any
             "held_out": result["held_out"],
             "result_count": result["result_count"],
             "honest_zero": result["honest_zero"],
-            "semantic_correspondence": result["semantic_correspondence"],
+            "semantic_correspondence": semantic_correspondence,
         }
+
+
+def validated_semantic_correspondence(*, row: dict[str, Any], result: dict[str, Any]) -> dict[str, Any]:
+    declaration = result.get("semantic_correspondence")
+    if not isinstance(declaration, dict):
+        raise ValueError(
+            "compiler_reachable result has non-conforming semantic_correspondence declaration; "
+            f"concept={result.get('concept')} target_id={result.get('target_id')}"
+        )
+    missing = sorted(key for key in ("coverage_row", "meaning") if not declaration.get(key))
+    if missing:
+        raise ValueError(
+            "compiler_reachable result semantic_correspondence declaration is missing required keys; "
+            f"missing={missing} concept={result.get('concept')} target_id={result.get('target_id')}"
+        )
+    row_concept = str(row.get("concept") or "")
+    if str(declaration["coverage_row"]) != row_concept:
+        raise ValueError(
+            "compiler_reachable result semantic_correspondence coverage_row does not match coverage row; "
+            f"coverage_row={declaration['coverage_row']} row_concept={row_concept} "
+            f"target_id={result.get('target_id')}"
+        )
+    return declaration
 
 
 def build_report(
