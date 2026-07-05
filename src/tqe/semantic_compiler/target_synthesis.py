@@ -216,8 +216,19 @@ def synthesize_single_provider_without_model_composition(
     if not providers:
         return None
     provider = next((entry for entry in providers if entry.name in concept_refs), providers[0])
+    if has_provider_family_variant:
+        stripped_contract = {
+            **stripped_contract,
+            "required_evidence": sorted(provider_requested_evidence_fields(provider)),
+            "claim_boundary": f"Observed {provider.name} evidence only.",
+        }
     canonical_target_id = f"{provider.name}_v0"
-    stripped_target = {**target, "target_id": canonical_target_id, "target_contract": stripped_contract}
+    stripped_target = {
+        **target,
+        "target_id": canonical_target_id,
+        "concept": provider.name,
+        "target_contract": stripped_contract,
+    }
     stripped_context = search.SearchContext(
         catalog=context.catalog,
         target_contract=stripped_contract,
@@ -229,6 +240,13 @@ def synthesize_single_provider_without_model_composition(
     build["target_contract"] = stripped_contract
     build["canonical_target_id"] = canonical_target_id
     return build
+
+
+def provider_requested_evidence_fields(provider: Any) -> set[str]:
+    fields = set(provider.evidence_fields)
+    for output in provider.outputs:
+        fields.update(output.evidence_fields)
+    return fields
 
 
 def exact_recipe_plan_for_expression(

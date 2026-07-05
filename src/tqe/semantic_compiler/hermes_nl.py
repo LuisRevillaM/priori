@@ -862,9 +862,10 @@ def resume_from_clarification(state: ClarificationState, answer: str) -> HermesO
 def resolve_preanswered_clarification(outcome: HermesOutcome, *, answer: str) -> HermesOutcome:
     if not isinstance(outcome, ClarificationRequiredOutcome):
         return outcome
-    selected = select_clarification_reading(outcome.readings, answer)
-    if selected is None:
+    matches = [reading for reading in outcome.readings if reading.matches(answer)]
+    if len(matches) != 1:
         return outcome
+    selected = matches[0]
     transcript = TranscriptEvidence(
         prompt_hash=outcome.transcript.prompt_hash,
         pack_sha256=outcome.transcript.pack_sha256,
