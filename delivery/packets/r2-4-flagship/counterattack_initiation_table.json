@@ -1,0 +1,3441 @@
+{
+  "aggregate_node_id": "aggregate_over",
+  "denominator_reconciliation": {
+    "all_14_chain_populations_match_rate_denominators": true,
+    "all_14_completed_chain_counts_match_rate_a": true
+  },
+  "match_order": [
+    "J03WOH",
+    "J03WOY",
+    "J03WPY",
+    "J03WQQ",
+    "J03WR9",
+    "J03WMX",
+    "J03WN1"
+  ],
+  "meaning_expression": "delivery/packets/r2-4-flagship/meaning-expressions/counterattack_initiation_chain_count.v0.json",
+  "meaning_expression_hash": "757b0bc7d9b1835dab8c8da553fc98127ef54dc2ce85f04bbf8df67b0fa4522d",
+  "period_record_count": 28,
+  "period_records_hash": "3fb270eda29fc14f57746491881afacaee388f7799284ee9f6caf2bf74416afd",
+  "plan": "delivery/packets/r2-4-flagship/counterattack_initiation_v0.json",
+  "plan_hash": "65654d53e23bb8757d454a34e9657f325db3acf9ab0dd53842ab741f5d956a10",
+  "question": "After a regain, does the team progress the ball by carry and keep it with a controlled pass?",
+  "rate_node_id": "counterattack_initiation_rate",
+  "role_order": [
+    "home",
+    "away"
+  ],
+  "rows": [
+    {
+      "a_count": 0,
+      "audit_role": "home",
+      "b_count": 0,
+      "c_count": 142,
+      "chain_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 0,
+        "observed": 0,
+        "pass_count": 0,
+        "population_count": 181,
+        "unknown_count": 181,
+        "upper_bound": 181
+      },
+      "d1_count": 0,
+      "d2_count": 39,
+      "denominator_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 142,
+        "observed": 142,
+        "pass_count": 142,
+        "population_count": 181,
+        "unknown_count": 39,
+        "upper_bound": 181
+      },
+      "denominator_reconciliation": {
+        "chain_population_matches_rate_denominator": true,
+        "completed_chain_count_matches_rate_a": true
+      },
+      "denominator_status_field": "stage_1_status",
+      "e_count": 0,
+      "fail_count": 0,
+      "group_by_fields": [
+        "team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WOH",
+        "team_role": "home"
+      },
+      "lower_bound": 0,
+      "match_id": "J03WOH",
+      "numerator_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 0,
+        "observed": 0,
+        "pass_count": 0,
+        "population_count": 181,
+        "unknown_count": 181,
+        "upper_bound": 181
+      },
+      "numerator_status_field": "chain_status",
+      "observed": null,
+      "observed_denominator_count": 0,
+      "pass_count": 0,
+      "period": "all",
+      "periods": [
+        {
+          "aggregate": {
+            "aggregation_kind": "count",
+            "close_frame_id": 78575,
+            "constraint_opt_out_reason": "entity identity is not part of this team-level chain count",
+            "fail_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WOH",
+              "team_role": "home"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WOH",
+            "observed": 0,
+            "open_frame_id": 10280,
+            "pass_count": 0,
+            "period": "firstHalf",
+            "population_count": 104,
+            "population_expression": "counterattack initiation chains by team and match",
+            "relation_id": "59b539d06e5c74fa",
+            "source_node_id": "sequence_pattern",
+            "source_output_name": "chain_records",
+            "source_record_count": 104,
+            "status_field": "chain_status",
+            "unknown_count": 104,
+            "upper_bound": 104
+          },
+          "period": "firstHalf",
+          "rate": {
+            "a_count": 0,
+            "b_count": 0,
+            "c_count": 84,
+            "close_frame_id": 78575,
+            "constraint_opt_out_reason": "entity identity and frame alignment are not part of this sequence rate denominator",
+            "d1_count": 0,
+            "d2_count": 20,
+            "denominator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 84,
+              "observed": 84,
+              "pass_count": 84,
+              "population_count": 104,
+              "unknown_count": 20,
+              "upper_bound": 104
+            },
+            "denominator_source_node_id": "sequence_pattern",
+            "denominator_source_output_name": "chain_records",
+            "denominator_status_field": "stage_1_status",
+            "e_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WOH",
+              "team_role": "home"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WOH",
+            "numerator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 0,
+              "observed": 0,
+              "pass_count": 0,
+              "population_count": 104,
+              "unknown_count": 104,
+              "upper_bound": 104
+            },
+            "numerator_source_node_id": "sequence_pattern",
+            "numerator_source_output_name": "chain_records",
+            "numerator_status_field": "chain_status",
+            "observed": null,
+            "observed_denominator_count": 0,
+            "open_frame_id": 10280,
+            "period": "firstHalf",
+            "population_expression": "counterattack initiation completed chains over regain starts",
+            "rate_kind": "rate",
+            "rate_status": "PASS",
+            "relation_id": "18b60807f5b96a90",
+            "source_record_count": 104,
+            "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+            "upper_bound": 1
+          },
+          "sequence_record_count": 104
+        },
+        {
+          "aggregate": {
+            "aggregation_kind": "count",
+            "close_frame_id": 164920,
+            "constraint_opt_out_reason": "entity identity is not part of this team-level chain count",
+            "fail_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WOH",
+              "team_role": "home"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WOH",
+            "observed": 0,
+            "open_frame_id": 100340,
+            "pass_count": 0,
+            "period": "secondHalf",
+            "population_count": 77,
+            "population_expression": "counterattack initiation chains by team and match",
+            "relation_id": "681f12a8dca251db",
+            "source_node_id": "sequence_pattern",
+            "source_output_name": "chain_records",
+            "source_record_count": 77,
+            "status_field": "chain_status",
+            "unknown_count": 77,
+            "upper_bound": 77
+          },
+          "period": "secondHalf",
+          "rate": {
+            "a_count": 0,
+            "b_count": 0,
+            "c_count": 58,
+            "close_frame_id": 164920,
+            "constraint_opt_out_reason": "entity identity and frame alignment are not part of this sequence rate denominator",
+            "d1_count": 0,
+            "d2_count": 19,
+            "denominator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 58,
+              "observed": 58,
+              "pass_count": 58,
+              "population_count": 77,
+              "unknown_count": 19,
+              "upper_bound": 77
+            },
+            "denominator_source_node_id": "sequence_pattern",
+            "denominator_source_output_name": "chain_records",
+            "denominator_status_field": "stage_1_status",
+            "e_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WOH",
+              "team_role": "home"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WOH",
+            "numerator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 0,
+              "observed": 0,
+              "pass_count": 0,
+              "population_count": 77,
+              "unknown_count": 77,
+              "upper_bound": 77
+            },
+            "numerator_source_node_id": "sequence_pattern",
+            "numerator_source_output_name": "chain_records",
+            "numerator_status_field": "chain_status",
+            "observed": null,
+            "observed_denominator_count": 0,
+            "open_frame_id": 100340,
+            "period": "secondHalf",
+            "population_expression": "counterattack initiation completed chains over regain starts",
+            "rate_kind": "rate",
+            "rate_status": "PASS",
+            "relation_id": "156ce99b2bef69de",
+            "source_record_count": 77,
+            "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+            "upper_bound": 1
+          },
+          "sequence_record_count": 77
+        }
+      ],
+      "population_count": 181,
+      "population_expression": "counterattack initiation completed chains over regain starts",
+      "rate_kind": "rate",
+      "rate_status": "PASS",
+      "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+      "unknown_count": 181,
+      "upper_bound": 1
+    },
+    {
+      "a_count": 0,
+      "audit_role": "home",
+      "b_count": 0,
+      "c_count": 174,
+      "chain_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 0,
+        "observed": 0,
+        "pass_count": 0,
+        "population_count": 207,
+        "unknown_count": 207,
+        "upper_bound": 207
+      },
+      "d1_count": 0,
+      "d2_count": 33,
+      "denominator_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 174,
+        "observed": 174,
+        "pass_count": 174,
+        "population_count": 207,
+        "unknown_count": 33,
+        "upper_bound": 207
+      },
+      "denominator_reconciliation": {
+        "chain_population_matches_rate_denominator": true,
+        "completed_chain_count_matches_rate_a": true
+      },
+      "denominator_status_field": "stage_1_status",
+      "e_count": 0,
+      "fail_count": 0,
+      "group_by_fields": [
+        "team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WOY",
+        "team_role": "home"
+      },
+      "lower_bound": 0,
+      "match_id": "J03WOY",
+      "numerator_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 0,
+        "observed": 0,
+        "pass_count": 0,
+        "population_count": 207,
+        "unknown_count": 207,
+        "upper_bound": 207
+      },
+      "numerator_status_field": "chain_status",
+      "observed": null,
+      "observed_denominator_count": 0,
+      "pass_count": 0,
+      "period": "all",
+      "periods": [
+        {
+          "aggregate": {
+            "aggregation_kind": "count",
+            "close_frame_id": 78380,
+            "constraint_opt_out_reason": "entity identity is not part of this team-level chain count",
+            "fail_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WOY",
+              "team_role": "home"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WOY",
+            "observed": 0,
+            "open_frame_id": 10145,
+            "pass_count": 0,
+            "period": "firstHalf",
+            "population_count": 93,
+            "population_expression": "counterattack initiation chains by team and match",
+            "relation_id": "164528d83705cd99",
+            "source_node_id": "sequence_pattern",
+            "source_output_name": "chain_records",
+            "source_record_count": 93,
+            "status_field": "chain_status",
+            "unknown_count": 93,
+            "upper_bound": 93
+          },
+          "period": "firstHalf",
+          "rate": {
+            "a_count": 0,
+            "b_count": 0,
+            "c_count": 78,
+            "close_frame_id": 78380,
+            "constraint_opt_out_reason": "entity identity and frame alignment are not part of this sequence rate denominator",
+            "d1_count": 0,
+            "d2_count": 15,
+            "denominator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 78,
+              "observed": 78,
+              "pass_count": 78,
+              "population_count": 93,
+              "unknown_count": 15,
+              "upper_bound": 93
+            },
+            "denominator_source_node_id": "sequence_pattern",
+            "denominator_source_output_name": "chain_records",
+            "denominator_status_field": "stage_1_status",
+            "e_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WOY",
+              "team_role": "home"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WOY",
+            "numerator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 0,
+              "observed": 0,
+              "pass_count": 0,
+              "population_count": 93,
+              "unknown_count": 93,
+              "upper_bound": 93
+            },
+            "numerator_source_node_id": "sequence_pattern",
+            "numerator_source_output_name": "chain_records",
+            "numerator_status_field": "chain_status",
+            "observed": null,
+            "observed_denominator_count": 0,
+            "open_frame_id": 10145,
+            "period": "firstHalf",
+            "population_expression": "counterattack initiation completed chains over regain starts",
+            "rate_kind": "rate",
+            "rate_status": "PASS",
+            "relation_id": "8ed79e785959fd6e",
+            "source_record_count": 93,
+            "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+            "upper_bound": 1
+          },
+          "sequence_record_count": 93
+        },
+        {
+          "aggregate": {
+            "aggregation_kind": "count",
+            "close_frame_id": 173170,
+            "constraint_opt_out_reason": "entity identity is not part of this team-level chain count",
+            "fail_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WOY",
+              "team_role": "home"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WOY",
+            "observed": 0,
+            "open_frame_id": 100925,
+            "pass_count": 0,
+            "period": "secondHalf",
+            "population_count": 114,
+            "population_expression": "counterattack initiation chains by team and match",
+            "relation_id": "a0677a2ab383534c",
+            "source_node_id": "sequence_pattern",
+            "source_output_name": "chain_records",
+            "source_record_count": 114,
+            "status_field": "chain_status",
+            "unknown_count": 114,
+            "upper_bound": 114
+          },
+          "period": "secondHalf",
+          "rate": {
+            "a_count": 0,
+            "b_count": 0,
+            "c_count": 96,
+            "close_frame_id": 173170,
+            "constraint_opt_out_reason": "entity identity and frame alignment are not part of this sequence rate denominator",
+            "d1_count": 0,
+            "d2_count": 18,
+            "denominator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 96,
+              "observed": 96,
+              "pass_count": 96,
+              "population_count": 114,
+              "unknown_count": 18,
+              "upper_bound": 114
+            },
+            "denominator_source_node_id": "sequence_pattern",
+            "denominator_source_output_name": "chain_records",
+            "denominator_status_field": "stage_1_status",
+            "e_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WOY",
+              "team_role": "home"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WOY",
+            "numerator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 0,
+              "observed": 0,
+              "pass_count": 0,
+              "population_count": 114,
+              "unknown_count": 114,
+              "upper_bound": 114
+            },
+            "numerator_source_node_id": "sequence_pattern",
+            "numerator_source_output_name": "chain_records",
+            "numerator_status_field": "chain_status",
+            "observed": null,
+            "observed_denominator_count": 0,
+            "open_frame_id": 100925,
+            "period": "secondHalf",
+            "population_expression": "counterattack initiation completed chains over regain starts",
+            "rate_kind": "rate",
+            "rate_status": "PASS",
+            "relation_id": "d9efd3b4459d5e88",
+            "source_record_count": 114,
+            "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+            "upper_bound": 1
+          },
+          "sequence_record_count": 114
+        }
+      ],
+      "population_count": 207,
+      "population_expression": "counterattack initiation completed chains over regain starts",
+      "rate_kind": "rate",
+      "rate_status": "PASS",
+      "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+      "unknown_count": 207,
+      "upper_bound": 1
+    },
+    {
+      "a_count": 0,
+      "audit_role": "home",
+      "b_count": 0,
+      "c_count": 157,
+      "chain_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 0,
+        "observed": 0,
+        "pass_count": 0,
+        "population_count": 191,
+        "unknown_count": 191,
+        "upper_bound": 191
+      },
+      "d1_count": 0,
+      "d2_count": 34,
+      "denominator_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 157,
+        "observed": 157,
+        "pass_count": 157,
+        "population_count": 191,
+        "unknown_count": 34,
+        "upper_bound": 191
+      },
+      "denominator_reconciliation": {
+        "chain_population_matches_rate_denominator": true,
+        "completed_chain_count_matches_rate_a": true
+      },
+      "denominator_status_field": "stage_1_status",
+      "e_count": 0,
+      "fail_count": 0,
+      "group_by_fields": [
+        "team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WPY",
+        "team_role": "home"
+      },
+      "lower_bound": 0,
+      "match_id": "J03WPY",
+      "numerator_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 0,
+        "observed": 0,
+        "pass_count": 0,
+        "population_count": 191,
+        "unknown_count": 191,
+        "upper_bound": 191
+      },
+      "numerator_status_field": "chain_status",
+      "observed": null,
+      "observed_denominator_count": 0,
+      "pass_count": 0,
+      "period": "all",
+      "periods": [
+        {
+          "aggregate": {
+            "aggregation_kind": "count",
+            "close_frame_id": 77545,
+            "constraint_opt_out_reason": "entity identity is not part of this team-level chain count",
+            "fail_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WPY",
+              "team_role": "home"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WPY",
+            "observed": 0,
+            "open_frame_id": 10610,
+            "pass_count": 0,
+            "period": "firstHalf",
+            "population_count": 95,
+            "population_expression": "counterattack initiation chains by team and match",
+            "relation_id": "5b71bd98eded29c6",
+            "source_node_id": "sequence_pattern",
+            "source_output_name": "chain_records",
+            "source_record_count": 95,
+            "status_field": "chain_status",
+            "unknown_count": 95,
+            "upper_bound": 95
+          },
+          "period": "firstHalf",
+          "rate": {
+            "a_count": 0,
+            "b_count": 0,
+            "c_count": 74,
+            "close_frame_id": 77545,
+            "constraint_opt_out_reason": "entity identity and frame alignment are not part of this sequence rate denominator",
+            "d1_count": 0,
+            "d2_count": 21,
+            "denominator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 74,
+              "observed": 74,
+              "pass_count": 74,
+              "population_count": 95,
+              "unknown_count": 21,
+              "upper_bound": 95
+            },
+            "denominator_source_node_id": "sequence_pattern",
+            "denominator_source_output_name": "chain_records",
+            "denominator_status_field": "stage_1_status",
+            "e_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WPY",
+              "team_role": "home"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WPY",
+            "numerator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 0,
+              "observed": 0,
+              "pass_count": 0,
+              "population_count": 95,
+              "unknown_count": 95,
+              "upper_bound": 95
+            },
+            "numerator_source_node_id": "sequence_pattern",
+            "numerator_source_output_name": "chain_records",
+            "numerator_status_field": "chain_status",
+            "observed": null,
+            "observed_denominator_count": 0,
+            "open_frame_id": 10610,
+            "period": "firstHalf",
+            "population_expression": "counterattack initiation completed chains over regain starts",
+            "rate_kind": "rate",
+            "rate_status": "PASS",
+            "relation_id": "a576db4ab44d4d94",
+            "source_record_count": 95,
+            "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+            "upper_bound": 1
+          },
+          "sequence_record_count": 95
+        },
+        {
+          "aggregate": {
+            "aggregation_kind": "count",
+            "close_frame_id": 176765,
+            "constraint_opt_out_reason": "entity identity is not part of this team-level chain count",
+            "fail_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WPY",
+              "team_role": "home"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WPY",
+            "observed": 0,
+            "open_frame_id": 100130,
+            "pass_count": 0,
+            "period": "secondHalf",
+            "population_count": 96,
+            "population_expression": "counterattack initiation chains by team and match",
+            "relation_id": "f03aee147817d1ac",
+            "source_node_id": "sequence_pattern",
+            "source_output_name": "chain_records",
+            "source_record_count": 96,
+            "status_field": "chain_status",
+            "unknown_count": 96,
+            "upper_bound": 96
+          },
+          "period": "secondHalf",
+          "rate": {
+            "a_count": 0,
+            "b_count": 0,
+            "c_count": 83,
+            "close_frame_id": 176765,
+            "constraint_opt_out_reason": "entity identity and frame alignment are not part of this sequence rate denominator",
+            "d1_count": 0,
+            "d2_count": 13,
+            "denominator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 83,
+              "observed": 83,
+              "pass_count": 83,
+              "population_count": 96,
+              "unknown_count": 13,
+              "upper_bound": 96
+            },
+            "denominator_source_node_id": "sequence_pattern",
+            "denominator_source_output_name": "chain_records",
+            "denominator_status_field": "stage_1_status",
+            "e_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WPY",
+              "team_role": "home"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WPY",
+            "numerator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 0,
+              "observed": 0,
+              "pass_count": 0,
+              "population_count": 96,
+              "unknown_count": 96,
+              "upper_bound": 96
+            },
+            "numerator_source_node_id": "sequence_pattern",
+            "numerator_source_output_name": "chain_records",
+            "numerator_status_field": "chain_status",
+            "observed": null,
+            "observed_denominator_count": 0,
+            "open_frame_id": 100130,
+            "period": "secondHalf",
+            "population_expression": "counterattack initiation completed chains over regain starts",
+            "rate_kind": "rate",
+            "rate_status": "PASS",
+            "relation_id": "3e75f1402fd0baf4",
+            "source_record_count": 96,
+            "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+            "upper_bound": 1
+          },
+          "sequence_record_count": 96
+        }
+      ],
+      "population_count": 191,
+      "population_expression": "counterattack initiation completed chains over regain starts",
+      "rate_kind": "rate",
+      "rate_status": "PASS",
+      "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+      "unknown_count": 191,
+      "upper_bound": 1
+    },
+    {
+      "a_count": 0,
+      "audit_role": "home",
+      "b_count": 0,
+      "c_count": 149,
+      "chain_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 0,
+        "observed": 0,
+        "pass_count": 0,
+        "population_count": 180,
+        "unknown_count": 180,
+        "upper_bound": 180
+      },
+      "d1_count": 0,
+      "d2_count": 31,
+      "denominator_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 149,
+        "observed": 149,
+        "pass_count": 149,
+        "population_count": 180,
+        "unknown_count": 31,
+        "upper_bound": 180
+      },
+      "denominator_reconciliation": {
+        "chain_population_matches_rate_denominator": true,
+        "completed_chain_count_matches_rate_a": true
+      },
+      "denominator_status_field": "stage_1_status",
+      "e_count": 0,
+      "fail_count": 0,
+      "group_by_fields": [
+        "team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WQQ",
+        "team_role": "home"
+      },
+      "lower_bound": 0,
+      "match_id": "J03WQQ",
+      "numerator_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 0,
+        "observed": 0,
+        "pass_count": 0,
+        "population_count": 180,
+        "unknown_count": 180,
+        "upper_bound": 180
+      },
+      "numerator_status_field": "chain_status",
+      "observed": null,
+      "observed_denominator_count": 0,
+      "pass_count": 0,
+      "period": "all",
+      "periods": [
+        {
+          "aggregate": {
+            "aggregation_kind": "count",
+            "close_frame_id": 78930,
+            "constraint_opt_out_reason": "entity identity is not part of this team-level chain count",
+            "fail_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WQQ",
+              "team_role": "home"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WQQ",
+            "observed": 0,
+            "open_frame_id": 10135,
+            "pass_count": 0,
+            "period": "firstHalf",
+            "population_count": 91,
+            "population_expression": "counterattack initiation chains by team and match",
+            "relation_id": "c41600e2f16193a8",
+            "source_node_id": "sequence_pattern",
+            "source_output_name": "chain_records",
+            "source_record_count": 91,
+            "status_field": "chain_status",
+            "unknown_count": 91,
+            "upper_bound": 91
+          },
+          "period": "firstHalf",
+          "rate": {
+            "a_count": 0,
+            "b_count": 0,
+            "c_count": 76,
+            "close_frame_id": 78930,
+            "constraint_opt_out_reason": "entity identity and frame alignment are not part of this sequence rate denominator",
+            "d1_count": 0,
+            "d2_count": 15,
+            "denominator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 76,
+              "observed": 76,
+              "pass_count": 76,
+              "population_count": 91,
+              "unknown_count": 15,
+              "upper_bound": 91
+            },
+            "denominator_source_node_id": "sequence_pattern",
+            "denominator_source_output_name": "chain_records",
+            "denominator_status_field": "stage_1_status",
+            "e_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WQQ",
+              "team_role": "home"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WQQ",
+            "numerator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 0,
+              "observed": 0,
+              "pass_count": 0,
+              "population_count": 91,
+              "unknown_count": 91,
+              "upper_bound": 91
+            },
+            "numerator_source_node_id": "sequence_pattern",
+            "numerator_source_output_name": "chain_records",
+            "numerator_status_field": "chain_status",
+            "observed": null,
+            "observed_denominator_count": 0,
+            "open_frame_id": 10135,
+            "period": "firstHalf",
+            "population_expression": "counterattack initiation completed chains over regain starts",
+            "rate_kind": "rate",
+            "rate_status": "PASS",
+            "relation_id": "1d055fe9614593e1",
+            "source_record_count": 91,
+            "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+            "upper_bound": 1
+          },
+          "sequence_record_count": 91
+        },
+        {
+          "aggregate": {
+            "aggregation_kind": "count",
+            "close_frame_id": 171955,
+            "constraint_opt_out_reason": "entity identity is not part of this team-level chain count",
+            "fail_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WQQ",
+              "team_role": "home"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WQQ",
+            "observed": 0,
+            "open_frame_id": 100610,
+            "pass_count": 0,
+            "period": "secondHalf",
+            "population_count": 89,
+            "population_expression": "counterattack initiation chains by team and match",
+            "relation_id": "a62f98434b226559",
+            "source_node_id": "sequence_pattern",
+            "source_output_name": "chain_records",
+            "source_record_count": 89,
+            "status_field": "chain_status",
+            "unknown_count": 89,
+            "upper_bound": 89
+          },
+          "period": "secondHalf",
+          "rate": {
+            "a_count": 0,
+            "b_count": 0,
+            "c_count": 73,
+            "close_frame_id": 171955,
+            "constraint_opt_out_reason": "entity identity and frame alignment are not part of this sequence rate denominator",
+            "d1_count": 0,
+            "d2_count": 16,
+            "denominator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 73,
+              "observed": 73,
+              "pass_count": 73,
+              "population_count": 89,
+              "unknown_count": 16,
+              "upper_bound": 89
+            },
+            "denominator_source_node_id": "sequence_pattern",
+            "denominator_source_output_name": "chain_records",
+            "denominator_status_field": "stage_1_status",
+            "e_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WQQ",
+              "team_role": "home"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WQQ",
+            "numerator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 0,
+              "observed": 0,
+              "pass_count": 0,
+              "population_count": 89,
+              "unknown_count": 89,
+              "upper_bound": 89
+            },
+            "numerator_source_node_id": "sequence_pattern",
+            "numerator_source_output_name": "chain_records",
+            "numerator_status_field": "chain_status",
+            "observed": null,
+            "observed_denominator_count": 0,
+            "open_frame_id": 100610,
+            "period": "secondHalf",
+            "population_expression": "counterattack initiation completed chains over regain starts",
+            "rate_kind": "rate",
+            "rate_status": "PASS",
+            "relation_id": "e25247f7b3fd5014",
+            "source_record_count": 89,
+            "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+            "upper_bound": 1
+          },
+          "sequence_record_count": 89
+        }
+      ],
+      "population_count": 180,
+      "population_expression": "counterattack initiation completed chains over regain starts",
+      "rate_kind": "rate",
+      "rate_status": "PASS",
+      "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+      "unknown_count": 180,
+      "upper_bound": 1
+    },
+    {
+      "a_count": 0,
+      "audit_role": "home",
+      "b_count": 0,
+      "c_count": 134,
+      "chain_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 0,
+        "observed": 0,
+        "pass_count": 0,
+        "population_count": 171,
+        "unknown_count": 171,
+        "upper_bound": 171
+      },
+      "d1_count": 0,
+      "d2_count": 37,
+      "denominator_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 134,
+        "observed": 134,
+        "pass_count": 134,
+        "population_count": 171,
+        "unknown_count": 37,
+        "upper_bound": 171
+      },
+      "denominator_reconciliation": {
+        "chain_population_matches_rate_denominator": true,
+        "completed_chain_count_matches_rate_a": true
+      },
+      "denominator_status_field": "stage_1_status",
+      "e_count": 0,
+      "fail_count": 0,
+      "group_by_fields": [
+        "team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WR9",
+        "team_role": "home"
+      },
+      "lower_bound": 0,
+      "match_id": "J03WR9",
+      "numerator_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 0,
+        "observed": 0,
+        "pass_count": 0,
+        "population_count": 171,
+        "unknown_count": 171,
+        "upper_bound": 171
+      },
+      "numerator_status_field": "chain_status",
+      "observed": null,
+      "observed_denominator_count": 0,
+      "pass_count": 0,
+      "period": "all",
+      "periods": [
+        {
+          "aggregate": {
+            "aggregation_kind": "count",
+            "close_frame_id": 78030,
+            "constraint_opt_out_reason": "entity identity is not part of this team-level chain count",
+            "fail_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WR9",
+              "team_role": "home"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WR9",
+            "observed": 0,
+            "open_frame_id": 10165,
+            "pass_count": 0,
+            "period": "firstHalf",
+            "population_count": 85,
+            "population_expression": "counterattack initiation chains by team and match",
+            "relation_id": "091fb77e6de32f83",
+            "source_node_id": "sequence_pattern",
+            "source_output_name": "chain_records",
+            "source_record_count": 85,
+            "status_field": "chain_status",
+            "unknown_count": 85,
+            "upper_bound": 85
+          },
+          "period": "firstHalf",
+          "rate": {
+            "a_count": 0,
+            "b_count": 0,
+            "c_count": 69,
+            "close_frame_id": 78030,
+            "constraint_opt_out_reason": "entity identity and frame alignment are not part of this sequence rate denominator",
+            "d1_count": 0,
+            "d2_count": 16,
+            "denominator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 69,
+              "observed": 69,
+              "pass_count": 69,
+              "population_count": 85,
+              "unknown_count": 16,
+              "upper_bound": 85
+            },
+            "denominator_source_node_id": "sequence_pattern",
+            "denominator_source_output_name": "chain_records",
+            "denominator_status_field": "stage_1_status",
+            "e_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WR9",
+              "team_role": "home"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WR9",
+            "numerator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 0,
+              "observed": 0,
+              "pass_count": 0,
+              "population_count": 85,
+              "unknown_count": 85,
+              "upper_bound": 85
+            },
+            "numerator_source_node_id": "sequence_pattern",
+            "numerator_source_output_name": "chain_records",
+            "numerator_status_field": "chain_status",
+            "observed": null,
+            "observed_denominator_count": 0,
+            "open_frame_id": 10165,
+            "period": "firstHalf",
+            "population_expression": "counterattack initiation completed chains over regain starts",
+            "rate_kind": "rate",
+            "rate_status": "PASS",
+            "relation_id": "953168a0b068d019",
+            "source_record_count": 85,
+            "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+            "upper_bound": 1
+          },
+          "sequence_record_count": 85
+        },
+        {
+          "aggregate": {
+            "aggregation_kind": "count",
+            "close_frame_id": 173895,
+            "constraint_opt_out_reason": "entity identity is not part of this team-level chain count",
+            "fail_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WR9",
+              "team_role": "home"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WR9",
+            "observed": 0,
+            "open_frame_id": 100230,
+            "pass_count": 0,
+            "period": "secondHalf",
+            "population_count": 86,
+            "population_expression": "counterattack initiation chains by team and match",
+            "relation_id": "125c49f19fc7a19c",
+            "source_node_id": "sequence_pattern",
+            "source_output_name": "chain_records",
+            "source_record_count": 86,
+            "status_field": "chain_status",
+            "unknown_count": 86,
+            "upper_bound": 86
+          },
+          "period": "secondHalf",
+          "rate": {
+            "a_count": 0,
+            "b_count": 0,
+            "c_count": 65,
+            "close_frame_id": 173895,
+            "constraint_opt_out_reason": "entity identity and frame alignment are not part of this sequence rate denominator",
+            "d1_count": 0,
+            "d2_count": 21,
+            "denominator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 65,
+              "observed": 65,
+              "pass_count": 65,
+              "population_count": 86,
+              "unknown_count": 21,
+              "upper_bound": 86
+            },
+            "denominator_source_node_id": "sequence_pattern",
+            "denominator_source_output_name": "chain_records",
+            "denominator_status_field": "stage_1_status",
+            "e_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WR9",
+              "team_role": "home"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WR9",
+            "numerator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 0,
+              "observed": 0,
+              "pass_count": 0,
+              "population_count": 86,
+              "unknown_count": 86,
+              "upper_bound": 86
+            },
+            "numerator_source_node_id": "sequence_pattern",
+            "numerator_source_output_name": "chain_records",
+            "numerator_status_field": "chain_status",
+            "observed": null,
+            "observed_denominator_count": 0,
+            "open_frame_id": 100230,
+            "period": "secondHalf",
+            "population_expression": "counterattack initiation completed chains over regain starts",
+            "rate_kind": "rate",
+            "rate_status": "PASS",
+            "relation_id": "1abf62debcc41795",
+            "source_record_count": 86,
+            "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+            "upper_bound": 1
+          },
+          "sequence_record_count": 86
+        }
+      ],
+      "population_count": 171,
+      "population_expression": "counterattack initiation completed chains over regain starts",
+      "rate_kind": "rate",
+      "rate_status": "PASS",
+      "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+      "unknown_count": 171,
+      "upper_bound": 1
+    },
+    {
+      "a_count": 0,
+      "audit_role": "home",
+      "b_count": 0,
+      "c_count": 187,
+      "chain_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 0,
+        "observed": 0,
+        "pass_count": 0,
+        "population_count": 244,
+        "unknown_count": 244,
+        "upper_bound": 244
+      },
+      "d1_count": 0,
+      "d2_count": 57,
+      "denominator_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 187,
+        "observed": 187,
+        "pass_count": 187,
+        "population_count": 244,
+        "unknown_count": 57,
+        "upper_bound": 244
+      },
+      "denominator_reconciliation": {
+        "chain_population_matches_rate_denominator": true,
+        "completed_chain_count_matches_rate_a": true
+      },
+      "denominator_status_field": "stage_1_status",
+      "e_count": 0,
+      "fail_count": 0,
+      "group_by_fields": [
+        "team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WMX",
+        "team_role": "home"
+      },
+      "lower_bound": 0,
+      "match_id": "J03WMX",
+      "numerator_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 0,
+        "observed": 0,
+        "pass_count": 0,
+        "population_count": 244,
+        "unknown_count": 244,
+        "upper_bound": 244
+      },
+      "numerator_status_field": "chain_status",
+      "observed": null,
+      "observed_denominator_count": 0,
+      "pass_count": 0,
+      "period": "all",
+      "periods": [
+        {
+          "aggregate": {
+            "aggregation_kind": "count",
+            "close_frame_id": 80390,
+            "constraint_opt_out_reason": "entity identity is not part of this team-level chain count",
+            "fail_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WMX",
+              "team_role": "home"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WMX",
+            "observed": 0,
+            "open_frame_id": 10135,
+            "pass_count": 0,
+            "period": "firstHalf",
+            "population_count": 121,
+            "population_expression": "counterattack initiation chains by team and match",
+            "relation_id": "3cc02d62ff496912",
+            "source_node_id": "sequence_pattern",
+            "source_output_name": "chain_records",
+            "source_record_count": 121,
+            "status_field": "chain_status",
+            "unknown_count": 121,
+            "upper_bound": 121
+          },
+          "period": "firstHalf",
+          "rate": {
+            "a_count": 0,
+            "b_count": 0,
+            "c_count": 99,
+            "close_frame_id": 80390,
+            "constraint_opt_out_reason": "entity identity and frame alignment are not part of this sequence rate denominator",
+            "d1_count": 0,
+            "d2_count": 22,
+            "denominator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 99,
+              "observed": 99,
+              "pass_count": 99,
+              "population_count": 121,
+              "unknown_count": 22,
+              "upper_bound": 121
+            },
+            "denominator_source_node_id": "sequence_pattern",
+            "denominator_source_output_name": "chain_records",
+            "denominator_status_field": "stage_1_status",
+            "e_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WMX",
+              "team_role": "home"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WMX",
+            "numerator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 0,
+              "observed": 0,
+              "pass_count": 0,
+              "population_count": 121,
+              "unknown_count": 121,
+              "upper_bound": 121
+            },
+            "numerator_source_node_id": "sequence_pattern",
+            "numerator_source_output_name": "chain_records",
+            "numerator_status_field": "chain_status",
+            "observed": null,
+            "observed_denominator_count": 0,
+            "open_frame_id": 10135,
+            "period": "firstHalf",
+            "population_expression": "counterattack initiation completed chains over regain starts",
+            "rate_kind": "rate",
+            "rate_status": "PASS",
+            "relation_id": "a25c66ba3418b5f5",
+            "source_record_count": 121,
+            "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+            "upper_bound": 1
+          },
+          "sequence_record_count": 121
+        },
+        {
+          "aggregate": {
+            "aggregation_kind": "count",
+            "close_frame_id": 174880,
+            "constraint_opt_out_reason": "entity identity is not part of this team-level chain count",
+            "fail_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WMX",
+              "team_role": "home"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WMX",
+            "observed": 0,
+            "open_frame_id": 100280,
+            "pass_count": 0,
+            "period": "secondHalf",
+            "population_count": 123,
+            "population_expression": "counterattack initiation chains by team and match",
+            "relation_id": "8a730172928ccb13",
+            "source_node_id": "sequence_pattern",
+            "source_output_name": "chain_records",
+            "source_record_count": 123,
+            "status_field": "chain_status",
+            "unknown_count": 123,
+            "upper_bound": 123
+          },
+          "period": "secondHalf",
+          "rate": {
+            "a_count": 0,
+            "b_count": 0,
+            "c_count": 88,
+            "close_frame_id": 174880,
+            "constraint_opt_out_reason": "entity identity and frame alignment are not part of this sequence rate denominator",
+            "d1_count": 0,
+            "d2_count": 35,
+            "denominator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 88,
+              "observed": 88,
+              "pass_count": 88,
+              "population_count": 123,
+              "unknown_count": 35,
+              "upper_bound": 123
+            },
+            "denominator_source_node_id": "sequence_pattern",
+            "denominator_source_output_name": "chain_records",
+            "denominator_status_field": "stage_1_status",
+            "e_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WMX",
+              "team_role": "home"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WMX",
+            "numerator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 0,
+              "observed": 0,
+              "pass_count": 0,
+              "population_count": 123,
+              "unknown_count": 123,
+              "upper_bound": 123
+            },
+            "numerator_source_node_id": "sequence_pattern",
+            "numerator_source_output_name": "chain_records",
+            "numerator_status_field": "chain_status",
+            "observed": null,
+            "observed_denominator_count": 0,
+            "open_frame_id": 100280,
+            "period": "secondHalf",
+            "population_expression": "counterattack initiation completed chains over regain starts",
+            "rate_kind": "rate",
+            "rate_status": "PASS",
+            "relation_id": "5aa4247dc09194fe",
+            "source_record_count": 123,
+            "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+            "upper_bound": 1
+          },
+          "sequence_record_count": 123
+        }
+      ],
+      "population_count": 244,
+      "population_expression": "counterattack initiation completed chains over regain starts",
+      "rate_kind": "rate",
+      "rate_status": "PASS",
+      "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+      "unknown_count": 244,
+      "upper_bound": 1
+    },
+    {
+      "a_count": 0,
+      "audit_role": "home",
+      "b_count": 0,
+      "c_count": 203,
+      "chain_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 0,
+        "observed": 0,
+        "pass_count": 0,
+        "population_count": 230,
+        "unknown_count": 230,
+        "upper_bound": 230
+      },
+      "d1_count": 0,
+      "d2_count": 27,
+      "denominator_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 203,
+        "observed": 203,
+        "pass_count": 203,
+        "population_count": 230,
+        "unknown_count": 27,
+        "upper_bound": 230
+      },
+      "denominator_reconciliation": {
+        "chain_population_matches_rate_denominator": true,
+        "completed_chain_count_matches_rate_a": true
+      },
+      "denominator_status_field": "stage_1_status",
+      "e_count": 0,
+      "fail_count": 0,
+      "group_by_fields": [
+        "team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WN1",
+        "team_role": "home"
+      },
+      "lower_bound": 0,
+      "match_id": "J03WN1",
+      "numerator_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 0,
+        "observed": 0,
+        "pass_count": 0,
+        "population_count": 230,
+        "unknown_count": 230,
+        "upper_bound": 230
+      },
+      "numerator_status_field": "chain_status",
+      "observed": null,
+      "observed_denominator_count": 0,
+      "pass_count": 0,
+      "period": "all",
+      "periods": [
+        {
+          "aggregate": {
+            "aggregation_kind": "count",
+            "close_frame_id": 78675,
+            "constraint_opt_out_reason": "entity identity is not part of this team-level chain count",
+            "fail_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WN1",
+              "team_role": "home"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WN1",
+            "observed": 0,
+            "open_frame_id": 10930,
+            "pass_count": 0,
+            "period": "firstHalf",
+            "population_count": 105,
+            "population_expression": "counterattack initiation chains by team and match",
+            "relation_id": "5186e863b1390c9e",
+            "source_node_id": "sequence_pattern",
+            "source_output_name": "chain_records",
+            "source_record_count": 105,
+            "status_field": "chain_status",
+            "unknown_count": 105,
+            "upper_bound": 105
+          },
+          "period": "firstHalf",
+          "rate": {
+            "a_count": 0,
+            "b_count": 0,
+            "c_count": 97,
+            "close_frame_id": 78675,
+            "constraint_opt_out_reason": "entity identity and frame alignment are not part of this sequence rate denominator",
+            "d1_count": 0,
+            "d2_count": 8,
+            "denominator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 97,
+              "observed": 97,
+              "pass_count": 97,
+              "population_count": 105,
+              "unknown_count": 8,
+              "upper_bound": 105
+            },
+            "denominator_source_node_id": "sequence_pattern",
+            "denominator_source_output_name": "chain_records",
+            "denominator_status_field": "stage_1_status",
+            "e_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WN1",
+              "team_role": "home"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WN1",
+            "numerator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 0,
+              "observed": 0,
+              "pass_count": 0,
+              "population_count": 105,
+              "unknown_count": 105,
+              "upper_bound": 105
+            },
+            "numerator_source_node_id": "sequence_pattern",
+            "numerator_source_output_name": "chain_records",
+            "numerator_status_field": "chain_status",
+            "observed": null,
+            "observed_denominator_count": 0,
+            "open_frame_id": 10930,
+            "period": "firstHalf",
+            "population_expression": "counterattack initiation completed chains over regain starts",
+            "rate_kind": "rate",
+            "rate_status": "PASS",
+            "relation_id": "12d998d9b97d14cd",
+            "source_record_count": 105,
+            "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+            "upper_bound": 1
+          },
+          "sequence_record_count": 105
+        },
+        {
+          "aggregate": {
+            "aggregation_kind": "count",
+            "close_frame_id": 170960,
+            "constraint_opt_out_reason": "entity identity is not part of this team-level chain count",
+            "fail_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WN1",
+              "team_role": "home"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WN1",
+            "observed": 0,
+            "open_frame_id": 100140,
+            "pass_count": 0,
+            "period": "secondHalf",
+            "population_count": 125,
+            "population_expression": "counterattack initiation chains by team and match",
+            "relation_id": "7a53487e3e6158b0",
+            "source_node_id": "sequence_pattern",
+            "source_output_name": "chain_records",
+            "source_record_count": 125,
+            "status_field": "chain_status",
+            "unknown_count": 125,
+            "upper_bound": 125
+          },
+          "period": "secondHalf",
+          "rate": {
+            "a_count": 0,
+            "b_count": 0,
+            "c_count": 106,
+            "close_frame_id": 170960,
+            "constraint_opt_out_reason": "entity identity and frame alignment are not part of this sequence rate denominator",
+            "d1_count": 0,
+            "d2_count": 19,
+            "denominator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 106,
+              "observed": 106,
+              "pass_count": 106,
+              "population_count": 125,
+              "unknown_count": 19,
+              "upper_bound": 125
+            },
+            "denominator_source_node_id": "sequence_pattern",
+            "denominator_source_output_name": "chain_records",
+            "denominator_status_field": "stage_1_status",
+            "e_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WN1",
+              "team_role": "home"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WN1",
+            "numerator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 0,
+              "observed": 0,
+              "pass_count": 0,
+              "population_count": 125,
+              "unknown_count": 125,
+              "upper_bound": 125
+            },
+            "numerator_source_node_id": "sequence_pattern",
+            "numerator_source_output_name": "chain_records",
+            "numerator_status_field": "chain_status",
+            "observed": null,
+            "observed_denominator_count": 0,
+            "open_frame_id": 100140,
+            "period": "secondHalf",
+            "population_expression": "counterattack initiation completed chains over regain starts",
+            "rate_kind": "rate",
+            "rate_status": "PASS",
+            "relation_id": "9cd6d7b71957a678",
+            "source_record_count": 125,
+            "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+            "upper_bound": 1
+          },
+          "sequence_record_count": 125
+        }
+      ],
+      "population_count": 230,
+      "population_expression": "counterattack initiation completed chains over regain starts",
+      "rate_kind": "rate",
+      "rate_status": "PASS",
+      "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+      "unknown_count": 230,
+      "upper_bound": 1
+    },
+    {
+      "a_count": 0,
+      "audit_role": "away",
+      "b_count": 0,
+      "c_count": 151,
+      "chain_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 0,
+        "observed": 0,
+        "pass_count": 0,
+        "population_count": 181,
+        "unknown_count": 181,
+        "upper_bound": 181
+      },
+      "d1_count": 0,
+      "d2_count": 30,
+      "denominator_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 151,
+        "observed": 151,
+        "pass_count": 151,
+        "population_count": 181,
+        "unknown_count": 30,
+        "upper_bound": 181
+      },
+      "denominator_reconciliation": {
+        "chain_population_matches_rate_denominator": true,
+        "completed_chain_count_matches_rate_a": true
+      },
+      "denominator_status_field": "stage_1_status",
+      "e_count": 0,
+      "fail_count": 0,
+      "group_by_fields": [
+        "team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WOH",
+        "team_role": "away"
+      },
+      "lower_bound": 0,
+      "match_id": "J03WOH",
+      "numerator_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 0,
+        "observed": 0,
+        "pass_count": 0,
+        "population_count": 181,
+        "unknown_count": 181,
+        "upper_bound": 181
+      },
+      "numerator_status_field": "chain_status",
+      "observed": null,
+      "observed_denominator_count": 0,
+      "pass_count": 0,
+      "period": "all",
+      "periods": [
+        {
+          "aggregate": {
+            "aggregation_kind": "count",
+            "close_frame_id": 78465,
+            "constraint_opt_out_reason": "entity identity is not part of this team-level chain count",
+            "fail_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WOH",
+              "team_role": "away"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WOH",
+            "observed": 0,
+            "open_frame_id": 10300,
+            "pass_count": 0,
+            "period": "firstHalf",
+            "population_count": 103,
+            "population_expression": "counterattack initiation chains by team and match",
+            "relation_id": "3c244b65f6b736ba",
+            "source_node_id": "sequence_pattern",
+            "source_output_name": "chain_records",
+            "source_record_count": 103,
+            "status_field": "chain_status",
+            "unknown_count": 103,
+            "upper_bound": 103
+          },
+          "period": "firstHalf",
+          "rate": {
+            "a_count": 0,
+            "b_count": 0,
+            "c_count": 83,
+            "close_frame_id": 78465,
+            "constraint_opt_out_reason": "entity identity and frame alignment are not part of this sequence rate denominator",
+            "d1_count": 0,
+            "d2_count": 20,
+            "denominator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 83,
+              "observed": 83,
+              "pass_count": 83,
+              "population_count": 103,
+              "unknown_count": 20,
+              "upper_bound": 103
+            },
+            "denominator_source_node_id": "sequence_pattern",
+            "denominator_source_output_name": "chain_records",
+            "denominator_status_field": "stage_1_status",
+            "e_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WOH",
+              "team_role": "away"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WOH",
+            "numerator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 0,
+              "observed": 0,
+              "pass_count": 0,
+              "population_count": 103,
+              "unknown_count": 103,
+              "upper_bound": 103
+            },
+            "numerator_source_node_id": "sequence_pattern",
+            "numerator_source_output_name": "chain_records",
+            "numerator_status_field": "chain_status",
+            "observed": null,
+            "observed_denominator_count": 0,
+            "open_frame_id": 10300,
+            "period": "firstHalf",
+            "population_expression": "counterattack initiation completed chains over regain starts",
+            "rate_kind": "rate",
+            "rate_status": "PASS",
+            "relation_id": "fb2a4d590a1558e0",
+            "source_record_count": 103,
+            "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+            "upper_bound": 1
+          },
+          "sequence_record_count": 103
+        },
+        {
+          "aggregate": {
+            "aggregation_kind": "count",
+            "close_frame_id": 166935,
+            "constraint_opt_out_reason": "entity identity is not part of this team-level chain count",
+            "fail_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WOH",
+              "team_role": "away"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WOH",
+            "observed": 0,
+            "open_frame_id": 100275,
+            "pass_count": 0,
+            "period": "secondHalf",
+            "population_count": 78,
+            "population_expression": "counterattack initiation chains by team and match",
+            "relation_id": "4a837936bf6f43c2",
+            "source_node_id": "sequence_pattern",
+            "source_output_name": "chain_records",
+            "source_record_count": 78,
+            "status_field": "chain_status",
+            "unknown_count": 78,
+            "upper_bound": 78
+          },
+          "period": "secondHalf",
+          "rate": {
+            "a_count": 0,
+            "b_count": 0,
+            "c_count": 68,
+            "close_frame_id": 166935,
+            "constraint_opt_out_reason": "entity identity and frame alignment are not part of this sequence rate denominator",
+            "d1_count": 0,
+            "d2_count": 10,
+            "denominator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 68,
+              "observed": 68,
+              "pass_count": 68,
+              "population_count": 78,
+              "unknown_count": 10,
+              "upper_bound": 78
+            },
+            "denominator_source_node_id": "sequence_pattern",
+            "denominator_source_output_name": "chain_records",
+            "denominator_status_field": "stage_1_status",
+            "e_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WOH",
+              "team_role": "away"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WOH",
+            "numerator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 0,
+              "observed": 0,
+              "pass_count": 0,
+              "population_count": 78,
+              "unknown_count": 78,
+              "upper_bound": 78
+            },
+            "numerator_source_node_id": "sequence_pattern",
+            "numerator_source_output_name": "chain_records",
+            "numerator_status_field": "chain_status",
+            "observed": null,
+            "observed_denominator_count": 0,
+            "open_frame_id": 100275,
+            "period": "secondHalf",
+            "population_expression": "counterattack initiation completed chains over regain starts",
+            "rate_kind": "rate",
+            "rate_status": "PASS",
+            "relation_id": "858033637abc0575",
+            "source_record_count": 78,
+            "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+            "upper_bound": 1
+          },
+          "sequence_record_count": 78
+        }
+      ],
+      "population_count": 181,
+      "population_expression": "counterattack initiation completed chains over regain starts",
+      "rate_kind": "rate",
+      "rate_status": "PASS",
+      "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+      "unknown_count": 181,
+      "upper_bound": 1
+    },
+    {
+      "a_count": 1,
+      "audit_role": "away",
+      "b_count": 0,
+      "c_count": 162,
+      "chain_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 1,
+        "observed": 1,
+        "pass_count": 1,
+        "population_count": 207,
+        "unknown_count": 206,
+        "upper_bound": 207
+      },
+      "d1_count": 0,
+      "d2_count": 44,
+      "denominator_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 163,
+        "observed": 163,
+        "pass_count": 163,
+        "population_count": 207,
+        "unknown_count": 44,
+        "upper_bound": 207
+      },
+      "denominator_reconciliation": {
+        "chain_population_matches_rate_denominator": true,
+        "completed_chain_count_matches_rate_a": true
+      },
+      "denominator_status_field": "stage_1_status",
+      "e_count": 0,
+      "fail_count": 0,
+      "group_by_fields": [
+        "team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WOY",
+        "team_role": "away"
+      },
+      "lower_bound": 0.004830917874396135,
+      "match_id": "J03WOY",
+      "numerator_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 1,
+        "observed": 1,
+        "pass_count": 1,
+        "population_count": 207,
+        "unknown_count": 206,
+        "upper_bound": 207
+      },
+      "numerator_status_field": "chain_status",
+      "observed": 1,
+      "observed_denominator_count": 1,
+      "pass_count": 1,
+      "period": "all",
+      "periods": [
+        {
+          "aggregate": {
+            "aggregation_kind": "count",
+            "close_frame_id": 77945,
+            "constraint_opt_out_reason": "entity identity is not part of this team-level chain count",
+            "fail_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WOY",
+              "team_role": "away"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WOY",
+            "observed": 0,
+            "open_frame_id": 10160,
+            "pass_count": 0,
+            "period": "firstHalf",
+            "population_count": 92,
+            "population_expression": "counterattack initiation chains by team and match",
+            "relation_id": "6339c5108d0983d1",
+            "source_node_id": "sequence_pattern",
+            "source_output_name": "chain_records",
+            "source_record_count": 92,
+            "status_field": "chain_status",
+            "unknown_count": 92,
+            "upper_bound": 92
+          },
+          "period": "firstHalf",
+          "rate": {
+            "a_count": 0,
+            "b_count": 0,
+            "c_count": 72,
+            "close_frame_id": 77945,
+            "constraint_opt_out_reason": "entity identity and frame alignment are not part of this sequence rate denominator",
+            "d1_count": 0,
+            "d2_count": 20,
+            "denominator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 72,
+              "observed": 72,
+              "pass_count": 72,
+              "population_count": 92,
+              "unknown_count": 20,
+              "upper_bound": 92
+            },
+            "denominator_source_node_id": "sequence_pattern",
+            "denominator_source_output_name": "chain_records",
+            "denominator_status_field": "stage_1_status",
+            "e_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WOY",
+              "team_role": "away"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WOY",
+            "numerator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 0,
+              "observed": 0,
+              "pass_count": 0,
+              "population_count": 92,
+              "unknown_count": 92,
+              "upper_bound": 92
+            },
+            "numerator_source_node_id": "sequence_pattern",
+            "numerator_source_output_name": "chain_records",
+            "numerator_status_field": "chain_status",
+            "observed": null,
+            "observed_denominator_count": 0,
+            "open_frame_id": 10160,
+            "period": "firstHalf",
+            "population_expression": "counterattack initiation completed chains over regain starts",
+            "rate_kind": "rate",
+            "rate_status": "PASS",
+            "relation_id": "14988d9039519207",
+            "source_record_count": 92,
+            "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+            "upper_bound": 1
+          },
+          "sequence_record_count": 92
+        },
+        {
+          "aggregate": {
+            "aggregation_kind": "count",
+            "close_frame_id": 173235,
+            "constraint_opt_out_reason": "entity identity is not part of this team-level chain count",
+            "fail_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WOY",
+              "team_role": "away"
+            },
+            "lower_bound": 1,
+            "match_id": "J03WOY",
+            "observed": 1,
+            "open_frame_id": 100250,
+            "pass_count": 1,
+            "period": "secondHalf",
+            "population_count": 115,
+            "population_expression": "counterattack initiation chains by team and match",
+            "relation_id": "4b46df85421a60b4",
+            "source_node_id": "sequence_pattern",
+            "source_output_name": "chain_records",
+            "source_record_count": 115,
+            "status_field": "chain_status",
+            "unknown_count": 114,
+            "upper_bound": 115
+          },
+          "period": "secondHalf",
+          "rate": {
+            "a_count": 1,
+            "b_count": 0,
+            "c_count": 90,
+            "close_frame_id": 173235,
+            "constraint_opt_out_reason": "entity identity and frame alignment are not part of this sequence rate denominator",
+            "d1_count": 0,
+            "d2_count": 24,
+            "denominator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 91,
+              "observed": 91,
+              "pass_count": 91,
+              "population_count": 115,
+              "unknown_count": 24,
+              "upper_bound": 115
+            },
+            "denominator_source_node_id": "sequence_pattern",
+            "denominator_source_output_name": "chain_records",
+            "denominator_status_field": "stage_1_status",
+            "e_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WOY",
+              "team_role": "away"
+            },
+            "lower_bound": 0.008695652173913044,
+            "match_id": "J03WOY",
+            "numerator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 1,
+              "observed": 1,
+              "pass_count": 1,
+              "population_count": 115,
+              "unknown_count": 114,
+              "upper_bound": 115
+            },
+            "numerator_source_node_id": "sequence_pattern",
+            "numerator_source_output_name": "chain_records",
+            "numerator_status_field": "chain_status",
+            "observed": 1,
+            "observed_denominator_count": 1,
+            "open_frame_id": 100250,
+            "period": "secondHalf",
+            "population_expression": "counterattack initiation completed chains over regain starts",
+            "rate_kind": "rate",
+            "rate_status": "PASS",
+            "relation_id": "4833d5707f749c38",
+            "source_record_count": 115,
+            "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+            "upper_bound": 1
+          },
+          "sequence_record_count": 115
+        }
+      ],
+      "population_count": 207,
+      "population_expression": "counterattack initiation completed chains over regain starts",
+      "rate_kind": "rate",
+      "rate_status": "PASS",
+      "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+      "unknown_count": 206,
+      "upper_bound": 1
+    },
+    {
+      "a_count": 0,
+      "audit_role": "away",
+      "b_count": 0,
+      "c_count": 150,
+      "chain_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 0,
+        "observed": 0,
+        "pass_count": 0,
+        "population_count": 193,
+        "unknown_count": 193,
+        "upper_bound": 193
+      },
+      "d1_count": 0,
+      "d2_count": 43,
+      "denominator_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 150,
+        "observed": 150,
+        "pass_count": 150,
+        "population_count": 193,
+        "unknown_count": 43,
+        "upper_bound": 193
+      },
+      "denominator_reconciliation": {
+        "chain_population_matches_rate_denominator": true,
+        "completed_chain_count_matches_rate_a": true
+      },
+      "denominator_status_field": "stage_1_status",
+      "e_count": 0,
+      "fail_count": 0,
+      "group_by_fields": [
+        "team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WPY",
+        "team_role": "away"
+      },
+      "lower_bound": 0,
+      "match_id": "J03WPY",
+      "numerator_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 0,
+        "observed": 0,
+        "pass_count": 0,
+        "population_count": 193,
+        "unknown_count": 193,
+        "upper_bound": 193
+      },
+      "numerator_status_field": "chain_status",
+      "observed": null,
+      "observed_denominator_count": 0,
+      "pass_count": 0,
+      "period": "all",
+      "periods": [
+        {
+          "aggregate": {
+            "aggregation_kind": "count",
+            "close_frame_id": 78090,
+            "constraint_opt_out_reason": "entity identity is not part of this team-level chain count",
+            "fail_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WPY",
+              "team_role": "away"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WPY",
+            "observed": 0,
+            "open_frame_id": 10255,
+            "pass_count": 0,
+            "period": "firstHalf",
+            "population_count": 96,
+            "population_expression": "counterattack initiation chains by team and match",
+            "relation_id": "e4fe2a004bf89df4",
+            "source_node_id": "sequence_pattern",
+            "source_output_name": "chain_records",
+            "source_record_count": 96,
+            "status_field": "chain_status",
+            "unknown_count": 96,
+            "upper_bound": 96
+          },
+          "period": "firstHalf",
+          "rate": {
+            "a_count": 0,
+            "b_count": 0,
+            "c_count": 84,
+            "close_frame_id": 78090,
+            "constraint_opt_out_reason": "entity identity and frame alignment are not part of this sequence rate denominator",
+            "d1_count": 0,
+            "d2_count": 12,
+            "denominator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 84,
+              "observed": 84,
+              "pass_count": 84,
+              "population_count": 96,
+              "unknown_count": 12,
+              "upper_bound": 96
+            },
+            "denominator_source_node_id": "sequence_pattern",
+            "denominator_source_output_name": "chain_records",
+            "denominator_status_field": "stage_1_status",
+            "e_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WPY",
+              "team_role": "away"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WPY",
+            "numerator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 0,
+              "observed": 0,
+              "pass_count": 0,
+              "population_count": 96,
+              "unknown_count": 96,
+              "upper_bound": 96
+            },
+            "numerator_source_node_id": "sequence_pattern",
+            "numerator_source_output_name": "chain_records",
+            "numerator_status_field": "chain_status",
+            "observed": null,
+            "observed_denominator_count": 0,
+            "open_frame_id": 10255,
+            "period": "firstHalf",
+            "population_expression": "counterattack initiation completed chains over regain starts",
+            "rate_kind": "rate",
+            "rate_status": "PASS",
+            "relation_id": "ac408d3903ccbf00",
+            "source_record_count": 96,
+            "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+            "upper_bound": 1
+          },
+          "sequence_record_count": 96
+        },
+        {
+          "aggregate": {
+            "aggregation_kind": "count",
+            "close_frame_id": 176800,
+            "constraint_opt_out_reason": "entity identity is not part of this team-level chain count",
+            "fail_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WPY",
+              "team_role": "away"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WPY",
+            "observed": 0,
+            "open_frame_id": 100025,
+            "pass_count": 0,
+            "period": "secondHalf",
+            "population_count": 97,
+            "population_expression": "counterattack initiation chains by team and match",
+            "relation_id": "dd8e06ee6db76bdb",
+            "source_node_id": "sequence_pattern",
+            "source_output_name": "chain_records",
+            "source_record_count": 97,
+            "status_field": "chain_status",
+            "unknown_count": 97,
+            "upper_bound": 97
+          },
+          "period": "secondHalf",
+          "rate": {
+            "a_count": 0,
+            "b_count": 0,
+            "c_count": 66,
+            "close_frame_id": 176800,
+            "constraint_opt_out_reason": "entity identity and frame alignment are not part of this sequence rate denominator",
+            "d1_count": 0,
+            "d2_count": 31,
+            "denominator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 66,
+              "observed": 66,
+              "pass_count": 66,
+              "population_count": 97,
+              "unknown_count": 31,
+              "upper_bound": 97
+            },
+            "denominator_source_node_id": "sequence_pattern",
+            "denominator_source_output_name": "chain_records",
+            "denominator_status_field": "stage_1_status",
+            "e_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WPY",
+              "team_role": "away"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WPY",
+            "numerator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 0,
+              "observed": 0,
+              "pass_count": 0,
+              "population_count": 97,
+              "unknown_count": 97,
+              "upper_bound": 97
+            },
+            "numerator_source_node_id": "sequence_pattern",
+            "numerator_source_output_name": "chain_records",
+            "numerator_status_field": "chain_status",
+            "observed": null,
+            "observed_denominator_count": 0,
+            "open_frame_id": 100025,
+            "period": "secondHalf",
+            "population_expression": "counterattack initiation completed chains over regain starts",
+            "rate_kind": "rate",
+            "rate_status": "PASS",
+            "relation_id": "9c387c524fef841f",
+            "source_record_count": 97,
+            "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+            "upper_bound": 1
+          },
+          "sequence_record_count": 97
+        }
+      ],
+      "population_count": 193,
+      "population_expression": "counterattack initiation completed chains over regain starts",
+      "rate_kind": "rate",
+      "rate_status": "PASS",
+      "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+      "unknown_count": 193,
+      "upper_bound": 1
+    },
+    {
+      "a_count": 0,
+      "audit_role": "away",
+      "b_count": 0,
+      "c_count": 146,
+      "chain_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 0,
+        "observed": 0,
+        "pass_count": 0,
+        "population_count": 180,
+        "unknown_count": 180,
+        "upper_bound": 180
+      },
+      "d1_count": 0,
+      "d2_count": 34,
+      "denominator_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 146,
+        "observed": 146,
+        "pass_count": 146,
+        "population_count": 180,
+        "unknown_count": 34,
+        "upper_bound": 180
+      },
+      "denominator_reconciliation": {
+        "chain_population_matches_rate_denominator": true,
+        "completed_chain_count_matches_rate_a": true
+      },
+      "denominator_status_field": "stage_1_status",
+      "e_count": 0,
+      "fail_count": 0,
+      "group_by_fields": [
+        "team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WQQ",
+        "team_role": "away"
+      },
+      "lower_bound": 0,
+      "match_id": "J03WQQ",
+      "numerator_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 0,
+        "observed": 0,
+        "pass_count": 0,
+        "population_count": 180,
+        "unknown_count": 180,
+        "upper_bound": 180
+      },
+      "numerator_status_field": "chain_status",
+      "observed": null,
+      "observed_denominator_count": 0,
+      "pass_count": 0,
+      "period": "all",
+      "periods": [
+        {
+          "aggregate": {
+            "aggregation_kind": "count",
+            "close_frame_id": 77655,
+            "constraint_opt_out_reason": "entity identity is not part of this team-level chain count",
+            "fail_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WQQ",
+              "team_role": "away"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WQQ",
+            "observed": 0,
+            "open_frame_id": 10175,
+            "pass_count": 0,
+            "period": "firstHalf",
+            "population_count": 90,
+            "population_expression": "counterattack initiation chains by team and match",
+            "relation_id": "acd0345d44a3b652",
+            "source_node_id": "sequence_pattern",
+            "source_output_name": "chain_records",
+            "source_record_count": 90,
+            "status_field": "chain_status",
+            "unknown_count": 90,
+            "upper_bound": 90
+          },
+          "period": "firstHalf",
+          "rate": {
+            "a_count": 0,
+            "b_count": 0,
+            "c_count": 75,
+            "close_frame_id": 77655,
+            "constraint_opt_out_reason": "entity identity and frame alignment are not part of this sequence rate denominator",
+            "d1_count": 0,
+            "d2_count": 15,
+            "denominator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 75,
+              "observed": 75,
+              "pass_count": 75,
+              "population_count": 90,
+              "unknown_count": 15,
+              "upper_bound": 90
+            },
+            "denominator_source_node_id": "sequence_pattern",
+            "denominator_source_output_name": "chain_records",
+            "denominator_status_field": "stage_1_status",
+            "e_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WQQ",
+              "team_role": "away"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WQQ",
+            "numerator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 0,
+              "observed": 0,
+              "pass_count": 0,
+              "population_count": 90,
+              "unknown_count": 90,
+              "upper_bound": 90
+            },
+            "numerator_source_node_id": "sequence_pattern",
+            "numerator_source_output_name": "chain_records",
+            "numerator_status_field": "chain_status",
+            "observed": null,
+            "observed_denominator_count": 0,
+            "open_frame_id": 10175,
+            "period": "firstHalf",
+            "population_expression": "counterattack initiation completed chains over regain starts",
+            "rate_kind": "rate",
+            "rate_status": "PASS",
+            "relation_id": "af3dd6377e820786",
+            "source_record_count": 90,
+            "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+            "upper_bound": 1
+          },
+          "sequence_record_count": 90
+        },
+        {
+          "aggregate": {
+            "aggregation_kind": "count",
+            "close_frame_id": 172935,
+            "constraint_opt_out_reason": "entity identity is not part of this team-level chain count",
+            "fail_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WQQ",
+              "team_role": "away"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WQQ",
+            "observed": 0,
+            "open_frame_id": 100255,
+            "pass_count": 0,
+            "period": "secondHalf",
+            "population_count": 90,
+            "population_expression": "counterattack initiation chains by team and match",
+            "relation_id": "2c4ea3f114e01dd5",
+            "source_node_id": "sequence_pattern",
+            "source_output_name": "chain_records",
+            "source_record_count": 90,
+            "status_field": "chain_status",
+            "unknown_count": 90,
+            "upper_bound": 90
+          },
+          "period": "secondHalf",
+          "rate": {
+            "a_count": 0,
+            "b_count": 0,
+            "c_count": 71,
+            "close_frame_id": 172935,
+            "constraint_opt_out_reason": "entity identity and frame alignment are not part of this sequence rate denominator",
+            "d1_count": 0,
+            "d2_count": 19,
+            "denominator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 71,
+              "observed": 71,
+              "pass_count": 71,
+              "population_count": 90,
+              "unknown_count": 19,
+              "upper_bound": 90
+            },
+            "denominator_source_node_id": "sequence_pattern",
+            "denominator_source_output_name": "chain_records",
+            "denominator_status_field": "stage_1_status",
+            "e_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WQQ",
+              "team_role": "away"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WQQ",
+            "numerator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 0,
+              "observed": 0,
+              "pass_count": 0,
+              "population_count": 90,
+              "unknown_count": 90,
+              "upper_bound": 90
+            },
+            "numerator_source_node_id": "sequence_pattern",
+            "numerator_source_output_name": "chain_records",
+            "numerator_status_field": "chain_status",
+            "observed": null,
+            "observed_denominator_count": 0,
+            "open_frame_id": 100255,
+            "period": "secondHalf",
+            "population_expression": "counterattack initiation completed chains over regain starts",
+            "rate_kind": "rate",
+            "rate_status": "PASS",
+            "relation_id": "767952fa0ab43aa7",
+            "source_record_count": 90,
+            "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+            "upper_bound": 1
+          },
+          "sequence_record_count": 90
+        }
+      ],
+      "population_count": 180,
+      "population_expression": "counterattack initiation completed chains over regain starts",
+      "rate_kind": "rate",
+      "rate_status": "PASS",
+      "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+      "unknown_count": 180,
+      "upper_bound": 1
+    },
+    {
+      "a_count": 0,
+      "audit_role": "away",
+      "b_count": 0,
+      "c_count": 133,
+      "chain_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 0,
+        "observed": 0,
+        "pass_count": 0,
+        "population_count": 171,
+        "unknown_count": 171,
+        "upper_bound": 171
+      },
+      "d1_count": 0,
+      "d2_count": 38,
+      "denominator_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 133,
+        "observed": 133,
+        "pass_count": 133,
+        "population_count": 171,
+        "unknown_count": 38,
+        "upper_bound": 171
+      },
+      "denominator_reconciliation": {
+        "chain_population_matches_rate_denominator": true,
+        "completed_chain_count_matches_rate_a": true
+      },
+      "denominator_status_field": "stage_1_status",
+      "e_count": 0,
+      "fail_count": 0,
+      "group_by_fields": [
+        "team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WR9",
+        "team_role": "away"
+      },
+      "lower_bound": 0,
+      "match_id": "J03WR9",
+      "numerator_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 0,
+        "observed": 0,
+        "pass_count": 0,
+        "population_count": 171,
+        "unknown_count": 171,
+        "upper_bound": 171
+      },
+      "numerator_status_field": "chain_status",
+      "observed": null,
+      "observed_denominator_count": 0,
+      "pass_count": 0,
+      "period": "all",
+      "periods": [
+        {
+          "aggregate": {
+            "aggregation_kind": "count",
+            "close_frame_id": 77980,
+            "constraint_opt_out_reason": "entity identity is not part of this team-level chain count",
+            "fail_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WR9",
+              "team_role": "away"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WR9",
+            "observed": 0,
+            "open_frame_id": 10090,
+            "pass_count": 0,
+            "period": "firstHalf",
+            "population_count": 85,
+            "population_expression": "counterattack initiation chains by team and match",
+            "relation_id": "5a8dc8c3bc939d26",
+            "source_node_id": "sequence_pattern",
+            "source_output_name": "chain_records",
+            "source_record_count": 85,
+            "status_field": "chain_status",
+            "unknown_count": 85,
+            "upper_bound": 85
+          },
+          "period": "firstHalf",
+          "rate": {
+            "a_count": 0,
+            "b_count": 0,
+            "c_count": 61,
+            "close_frame_id": 77980,
+            "constraint_opt_out_reason": "entity identity and frame alignment are not part of this sequence rate denominator",
+            "d1_count": 0,
+            "d2_count": 24,
+            "denominator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 61,
+              "observed": 61,
+              "pass_count": 61,
+              "population_count": 85,
+              "unknown_count": 24,
+              "upper_bound": 85
+            },
+            "denominator_source_node_id": "sequence_pattern",
+            "denominator_source_output_name": "chain_records",
+            "denominator_status_field": "stage_1_status",
+            "e_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WR9",
+              "team_role": "away"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WR9",
+            "numerator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 0,
+              "observed": 0,
+              "pass_count": 0,
+              "population_count": 85,
+              "unknown_count": 85,
+              "upper_bound": 85
+            },
+            "numerator_source_node_id": "sequence_pattern",
+            "numerator_source_output_name": "chain_records",
+            "numerator_status_field": "chain_status",
+            "observed": null,
+            "observed_denominator_count": 0,
+            "open_frame_id": 10090,
+            "period": "firstHalf",
+            "population_expression": "counterattack initiation completed chains over regain starts",
+            "rate_kind": "rate",
+            "rate_status": "PASS",
+            "relation_id": "aa41cff2dba71bc7",
+            "source_record_count": 85,
+            "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+            "upper_bound": 1
+          },
+          "sequence_record_count": 85
+        },
+        {
+          "aggregate": {
+            "aggregation_kind": "count",
+            "close_frame_id": 173970,
+            "constraint_opt_out_reason": "entity identity is not part of this team-level chain count",
+            "fail_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WR9",
+              "team_role": "away"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WR9",
+            "observed": 0,
+            "open_frame_id": 100450,
+            "pass_count": 0,
+            "period": "secondHalf",
+            "population_count": 86,
+            "population_expression": "counterattack initiation chains by team and match",
+            "relation_id": "4e6044b59c5075a3",
+            "source_node_id": "sequence_pattern",
+            "source_output_name": "chain_records",
+            "source_record_count": 86,
+            "status_field": "chain_status",
+            "unknown_count": 86,
+            "upper_bound": 86
+          },
+          "period": "secondHalf",
+          "rate": {
+            "a_count": 0,
+            "b_count": 0,
+            "c_count": 72,
+            "close_frame_id": 173970,
+            "constraint_opt_out_reason": "entity identity and frame alignment are not part of this sequence rate denominator",
+            "d1_count": 0,
+            "d2_count": 14,
+            "denominator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 72,
+              "observed": 72,
+              "pass_count": 72,
+              "population_count": 86,
+              "unknown_count": 14,
+              "upper_bound": 86
+            },
+            "denominator_source_node_id": "sequence_pattern",
+            "denominator_source_output_name": "chain_records",
+            "denominator_status_field": "stage_1_status",
+            "e_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WR9",
+              "team_role": "away"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WR9",
+            "numerator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 0,
+              "observed": 0,
+              "pass_count": 0,
+              "population_count": 86,
+              "unknown_count": 86,
+              "upper_bound": 86
+            },
+            "numerator_source_node_id": "sequence_pattern",
+            "numerator_source_output_name": "chain_records",
+            "numerator_status_field": "chain_status",
+            "observed": null,
+            "observed_denominator_count": 0,
+            "open_frame_id": 100450,
+            "period": "secondHalf",
+            "population_expression": "counterattack initiation completed chains over regain starts",
+            "rate_kind": "rate",
+            "rate_status": "PASS",
+            "relation_id": "132cdd8a14624e8c",
+            "source_record_count": 86,
+            "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+            "upper_bound": 1
+          },
+          "sequence_record_count": 86
+        }
+      ],
+      "population_count": 171,
+      "population_expression": "counterattack initiation completed chains over regain starts",
+      "rate_kind": "rate",
+      "rate_status": "PASS",
+      "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+      "unknown_count": 171,
+      "upper_bound": 1
+    },
+    {
+      "a_count": 0,
+      "audit_role": "away",
+      "b_count": 0,
+      "c_count": 200,
+      "chain_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 0,
+        "observed": 0,
+        "pass_count": 0,
+        "population_count": 244,
+        "unknown_count": 244,
+        "upper_bound": 244
+      },
+      "d1_count": 0,
+      "d2_count": 44,
+      "denominator_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 200,
+        "observed": 200,
+        "pass_count": 200,
+        "population_count": 244,
+        "unknown_count": 44,
+        "upper_bound": 244
+      },
+      "denominator_reconciliation": {
+        "chain_population_matches_rate_denominator": true,
+        "completed_chain_count_matches_rate_a": true
+      },
+      "denominator_status_field": "stage_1_status",
+      "e_count": 0,
+      "fail_count": 0,
+      "group_by_fields": [
+        "team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WMX",
+        "team_role": "away"
+      },
+      "lower_bound": 0,
+      "match_id": "J03WMX",
+      "numerator_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 0,
+        "observed": 0,
+        "pass_count": 0,
+        "population_count": 244,
+        "unknown_count": 244,
+        "upper_bound": 244
+      },
+      "numerator_status_field": "chain_status",
+      "observed": null,
+      "observed_denominator_count": 0,
+      "pass_count": 0,
+      "period": "all",
+      "periods": [
+        {
+          "aggregate": {
+            "aggregation_kind": "count",
+            "close_frame_id": 80360,
+            "constraint_opt_out_reason": "entity identity is not part of this team-level chain count",
+            "fail_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WMX",
+              "team_role": "away"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WMX",
+            "observed": 0,
+            "open_frame_id": 10590,
+            "pass_count": 0,
+            "period": "firstHalf",
+            "population_count": 120,
+            "population_expression": "counterattack initiation chains by team and match",
+            "relation_id": "e79ff0198442401a",
+            "source_node_id": "sequence_pattern",
+            "source_output_name": "chain_records",
+            "source_record_count": 120,
+            "status_field": "chain_status",
+            "unknown_count": 120,
+            "upper_bound": 120
+          },
+          "period": "firstHalf",
+          "rate": {
+            "a_count": 0,
+            "b_count": 0,
+            "c_count": 102,
+            "close_frame_id": 80360,
+            "constraint_opt_out_reason": "entity identity and frame alignment are not part of this sequence rate denominator",
+            "d1_count": 0,
+            "d2_count": 18,
+            "denominator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 102,
+              "observed": 102,
+              "pass_count": 102,
+              "population_count": 120,
+              "unknown_count": 18,
+              "upper_bound": 120
+            },
+            "denominator_source_node_id": "sequence_pattern",
+            "denominator_source_output_name": "chain_records",
+            "denominator_status_field": "stage_1_status",
+            "e_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WMX",
+              "team_role": "away"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WMX",
+            "numerator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 0,
+              "observed": 0,
+              "pass_count": 0,
+              "population_count": 120,
+              "unknown_count": 120,
+              "upper_bound": 120
+            },
+            "numerator_source_node_id": "sequence_pattern",
+            "numerator_source_output_name": "chain_records",
+            "numerator_status_field": "chain_status",
+            "observed": null,
+            "observed_denominator_count": 0,
+            "open_frame_id": 10590,
+            "period": "firstHalf",
+            "population_expression": "counterattack initiation completed chains over regain starts",
+            "rate_kind": "rate",
+            "rate_status": "PASS",
+            "relation_id": "364abff2ca235d5a",
+            "source_record_count": 120,
+            "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+            "upper_bound": 1
+          },
+          "sequence_record_count": 120
+        },
+        {
+          "aggregate": {
+            "aggregation_kind": "count",
+            "close_frame_id": 175130,
+            "constraint_opt_out_reason": "entity identity is not part of this team-level chain count",
+            "fail_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WMX",
+              "team_role": "away"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WMX",
+            "observed": 0,
+            "open_frame_id": 100260,
+            "pass_count": 0,
+            "period": "secondHalf",
+            "population_count": 124,
+            "population_expression": "counterattack initiation chains by team and match",
+            "relation_id": "9d50a35dc3c66999",
+            "source_node_id": "sequence_pattern",
+            "source_output_name": "chain_records",
+            "source_record_count": 124,
+            "status_field": "chain_status",
+            "unknown_count": 124,
+            "upper_bound": 124
+          },
+          "period": "secondHalf",
+          "rate": {
+            "a_count": 0,
+            "b_count": 0,
+            "c_count": 98,
+            "close_frame_id": 175130,
+            "constraint_opt_out_reason": "entity identity and frame alignment are not part of this sequence rate denominator",
+            "d1_count": 0,
+            "d2_count": 26,
+            "denominator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 98,
+              "observed": 98,
+              "pass_count": 98,
+              "population_count": 124,
+              "unknown_count": 26,
+              "upper_bound": 124
+            },
+            "denominator_source_node_id": "sequence_pattern",
+            "denominator_source_output_name": "chain_records",
+            "denominator_status_field": "stage_1_status",
+            "e_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WMX",
+              "team_role": "away"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WMX",
+            "numerator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 0,
+              "observed": 0,
+              "pass_count": 0,
+              "population_count": 124,
+              "unknown_count": 124,
+              "upper_bound": 124
+            },
+            "numerator_source_node_id": "sequence_pattern",
+            "numerator_source_output_name": "chain_records",
+            "numerator_status_field": "chain_status",
+            "observed": null,
+            "observed_denominator_count": 0,
+            "open_frame_id": 100260,
+            "period": "secondHalf",
+            "population_expression": "counterattack initiation completed chains over regain starts",
+            "rate_kind": "rate",
+            "rate_status": "PASS",
+            "relation_id": "3d7ac062861d378c",
+            "source_record_count": 124,
+            "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+            "upper_bound": 1
+          },
+          "sequence_record_count": 124
+        }
+      ],
+      "population_count": 244,
+      "population_expression": "counterattack initiation completed chains over regain starts",
+      "rate_kind": "rate",
+      "rate_status": "PASS",
+      "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+      "unknown_count": 244,
+      "upper_bound": 1
+    },
+    {
+      "a_count": 0,
+      "audit_role": "away",
+      "b_count": 0,
+      "c_count": 173,
+      "chain_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 0,
+        "observed": 0,
+        "pass_count": 0,
+        "population_count": 231,
+        "unknown_count": 231,
+        "upper_bound": 231
+      },
+      "d1_count": 0,
+      "d2_count": 58,
+      "denominator_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 173,
+        "observed": 173,
+        "pass_count": 173,
+        "population_count": 231,
+        "unknown_count": 58,
+        "upper_bound": 231
+      },
+      "denominator_reconciliation": {
+        "chain_population_matches_rate_denominator": true,
+        "completed_chain_count_matches_rate_a": true
+      },
+      "denominator_status_field": "stage_1_status",
+      "e_count": 0,
+      "fail_count": 0,
+      "group_by_fields": [
+        "team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WN1",
+        "team_role": "away"
+      },
+      "lower_bound": 0,
+      "match_id": "J03WN1",
+      "numerator_count_interval": {
+        "fail_count": 0,
+        "lower_bound": 0,
+        "observed": 0,
+        "pass_count": 0,
+        "population_count": 231,
+        "unknown_count": 231,
+        "upper_bound": 231
+      },
+      "numerator_status_field": "chain_status",
+      "observed": null,
+      "observed_denominator_count": 0,
+      "pass_count": 0,
+      "period": "all",
+      "periods": [
+        {
+          "aggregate": {
+            "aggregation_kind": "count",
+            "close_frame_id": 78985,
+            "constraint_opt_out_reason": "entity identity is not part of this team-level chain count",
+            "fail_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WN1",
+              "team_role": "away"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WN1",
+            "observed": 0,
+            "open_frame_id": 10820,
+            "pass_count": 0,
+            "period": "firstHalf",
+            "population_count": 106,
+            "population_expression": "counterattack initiation chains by team and match",
+            "relation_id": "802062e60d8b8bf8",
+            "source_node_id": "sequence_pattern",
+            "source_output_name": "chain_records",
+            "source_record_count": 106,
+            "status_field": "chain_status",
+            "unknown_count": 106,
+            "upper_bound": 106
+          },
+          "period": "firstHalf",
+          "rate": {
+            "a_count": 0,
+            "b_count": 0,
+            "c_count": 78,
+            "close_frame_id": 78985,
+            "constraint_opt_out_reason": "entity identity and frame alignment are not part of this sequence rate denominator",
+            "d1_count": 0,
+            "d2_count": 28,
+            "denominator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 78,
+              "observed": 78,
+              "pass_count": 78,
+              "population_count": 106,
+              "unknown_count": 28,
+              "upper_bound": 106
+            },
+            "denominator_source_node_id": "sequence_pattern",
+            "denominator_source_output_name": "chain_records",
+            "denominator_status_field": "stage_1_status",
+            "e_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WN1",
+              "team_role": "away"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WN1",
+            "numerator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 0,
+              "observed": 0,
+              "pass_count": 0,
+              "population_count": 106,
+              "unknown_count": 106,
+              "upper_bound": 106
+            },
+            "numerator_source_node_id": "sequence_pattern",
+            "numerator_source_output_name": "chain_records",
+            "numerator_status_field": "chain_status",
+            "observed": null,
+            "observed_denominator_count": 0,
+            "open_frame_id": 10820,
+            "period": "firstHalf",
+            "population_expression": "counterattack initiation completed chains over regain starts",
+            "rate_kind": "rate",
+            "rate_status": "PASS",
+            "relation_id": "928664cd40370275",
+            "source_record_count": 106,
+            "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+            "upper_bound": 1
+          },
+          "sequence_record_count": 106
+        },
+        {
+          "aggregate": {
+            "aggregation_kind": "count",
+            "close_frame_id": 172130,
+            "constraint_opt_out_reason": "entity identity is not part of this team-level chain count",
+            "fail_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WN1",
+              "team_role": "away"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WN1",
+            "observed": 0,
+            "open_frame_id": 100670,
+            "pass_count": 0,
+            "period": "secondHalf",
+            "population_count": 125,
+            "population_expression": "counterattack initiation chains by team and match",
+            "relation_id": "002cab335f61e879",
+            "source_node_id": "sequence_pattern",
+            "source_output_name": "chain_records",
+            "source_record_count": 125,
+            "status_field": "chain_status",
+            "unknown_count": 125,
+            "upper_bound": 125
+          },
+          "period": "secondHalf",
+          "rate": {
+            "a_count": 0,
+            "b_count": 0,
+            "c_count": 95,
+            "close_frame_id": 172130,
+            "constraint_opt_out_reason": "entity identity and frame alignment are not part of this sequence rate denominator",
+            "d1_count": 0,
+            "d2_count": 30,
+            "denominator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 95,
+              "observed": 95,
+              "pass_count": 95,
+              "population_count": 125,
+              "unknown_count": 30,
+              "upper_bound": 125
+            },
+            "denominator_source_node_id": "sequence_pattern",
+            "denominator_source_output_name": "chain_records",
+            "denominator_status_field": "stage_1_status",
+            "e_count": 0,
+            "group_by_fields": [
+              "team_role",
+              "match_id"
+            ],
+            "group_key": {
+              "match_id": "J03WN1",
+              "team_role": "away"
+            },
+            "lower_bound": 0,
+            "match_id": "J03WN1",
+            "numerator_count_interval": {
+              "fail_count": 0,
+              "lower_bound": 0,
+              "observed": 0,
+              "pass_count": 0,
+              "population_count": 125,
+              "unknown_count": 125,
+              "upper_bound": 125
+            },
+            "numerator_source_node_id": "sequence_pattern",
+            "numerator_source_output_name": "chain_records",
+            "numerator_status_field": "chain_status",
+            "observed": null,
+            "observed_denominator_count": 0,
+            "open_frame_id": 100670,
+            "period": "secondHalf",
+            "population_expression": "counterattack initiation completed chains over regain starts",
+            "rate_kind": "rate",
+            "rate_status": "PASS",
+            "relation_id": "2b08132aa3d249cd",
+            "source_record_count": 125,
+            "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+            "upper_bound": 1
+          },
+          "sequence_record_count": 125
+        }
+      ],
+      "population_count": 231,
+      "population_expression": "counterattack initiation completed chains over regain starts",
+      "rate_kind": "rate",
+      "rate_status": "PASS",
+      "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+      "unknown_count": 231,
+      "upper_bound": 1
+    }
+  ],
+  "schema_version": "r2_4_counterattack_initiation_table.v1",
+  "sequence_node_id": "sequence_pattern",
+  "synthesized_chain_count_document_hash": "7e876649b73fd502e79291389b76ef028a229e8fa83bd3b39a4d224c10489dc7",
+  "totals": {
+    "a_count": 1,
+    "b_count": 0,
+    "c_count": 2261,
+    "d1_count": 0,
+    "d2_count": 549,
+    "e_count": 0,
+    "fail_count": 0,
+    "lower_bound": 1,
+    "observed": 1,
+    "observed_denominator_count": 1,
+    "pass_count": 1,
+    "population_count": 2811,
+    "rate_lower_bound": 0.0003557452863749555,
+    "rate_observed": 1,
+    "rate_status": "PASS",
+    "rate_upper_bound": 1,
+    "unknown_count": 2810,
+    "upper_bound": 2811
+  }
+}

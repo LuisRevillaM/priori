@@ -27,7 +27,8 @@ use this clone's commit SHAs via `format-patch`.
 | --- | --- |
 | `198e0d7` | Report scaffold and clone-route provenance. |
 | `93bf39a` | sequence_pattern operator, registry, pack delta, focused tests. |
-| `PENDING` | Possession-continuity evidence, compiler-search sequence builder, R2-4 meaning-expression fixture, bridge regression test. |
+| `c40a008` | Possession-continuity evidence, compiler-search sequence builder, R2-4 meaning-expression fixture, bridge regression test. |
+| `PENDING` | Byte-reproducing flagship generator, synthesized sequence+rate plan, counterattack initiation table, provenance. |
 
 ## Pack Delta
 
@@ -53,6 +54,20 @@ The bridge schema was not extended. The meaning-expression vocabulary now sees `
 | Synthesis path | `synthesize_and_bind` returns `operator:aggregate_over` with `population_terminal=operator:sequence_pattern`. |
 | Document hash | `7e876649b73fd502e79291389b76ef028a229e8fa83bd3b39a4d224c10489dc7` |
 | Schema change | No bridge schema extension; `stage_N_required_fields` and `possession_continuity_source` are registry-derived composition/operator parameters. |
+
+## Flagship Evidence
+
+| Item | Evidence |
+| --- | --- |
+| Generator | `scripts/packets/r2_4_flagship_generator.py` |
+| Command | `TQE_DATA_ROOT=/Users/luisrevilla/code/priori/data/canonical/v1 TQE_RAW_ROOT=/Users/luisrevilla/code/priori/data/raw/idsse/figshare-28196177-v1 PYTHONPATH=/private/tmp/priori-r2-4-single-20260705095024/src UV_CACHE_DIR=/private/tmp/uv-cache-priori /Users/luisrevilla/code/priori/.venv/bin/python scripts/packets/r2_4_flagship_generator.py --canonical-root /Users/luisrevilla/code/priori/data/canonical/v1 --raw-root /Users/luisrevilla/code/priori/data/raw/idsse/figshare-28196177-v1 --long-threshold-seconds 300` |
+| Result | PASS; 14 role-match rows; 28 period records. |
+| Long execution | TRUE; elapsed `344.786s` recorded only in uncommitted `delivery/packets/r2-4-flagship/run-sidecar.local.json`. |
+| Plan | `delivery/packets/r2-4-flagship/counterattack_initiation_v0.json` (`65654d53e23bb8757d454a34e9657f325db3acf9ab0dd53842ab741f5d956a10`) |
+| Table | `delivery/packets/r2-4-flagship/counterattack_initiation_table.json` (`64ddb4ed5c1a4d923e5f2385b8b536485206cf762535afdec85dee2ecbc32fee`) |
+| Totals | Completed chains `1`; population rows `2811`; unknown chain rows `2810`; rate interval `1.000 [0.0003557452863749555, 1.000]`. |
+| Denominator reconciliation | All 14 chain populations match rate denominators; all 14 completed-chain counts match rate A counts. |
+| Timestamp fence | Committed plan/table/provenance contain no run timestamp; timing data is in the uncommitted local sidecar. |
 
 ## Verification
 
