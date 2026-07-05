@@ -122,7 +122,55 @@ Targeted verification:
 | --- | --- |
 | `PYTHON=/Users/luisrevilla/code/priori/.venv/bin/python PYTHONPATH=/private/tmp/priori-r2-1-work/src /Users/luisrevilla/code/priori/.venv/bin/python -m unittest tests.test_r1_0_operator_scaffolding.R10OperatorScaffoldingTests.test_operator_registry_is_explicit_and_complete tests.test_r1_0_operator_scaffolding.R10OperatorScaffoldingTests.test_r1_operator_names_do_not_leak_into_shared_runtime_code tests.test_r2_1_aggregate_over -v` | PASS, 12 tests |
 
+## Round 2 Item 1: R-U/R-Z Runtime And Binder Guards
+
+Status: implemented, targeted tests passing.
+
+Files:
+
+- `src/tqe/runtime/operators/aggregate_over.py`
+- `src/tqe/runtime/operators/typed_join.py`
+- `src/tqe/runtime/binder.py`
+- `tests/test_r2_1_aggregate_over.py`
+- `tests/test_r1_0_operator_scaffolding.py`
+
+Implemented:
+
+- Amputated `sum` and `mean`; `aggregation_kind` is now count-only.
+- Removed numeric aggregate parameters and evidence fields from the operator surface.
+- Added the permanent constructor interval ordering invariant: `lower_bound <= observed <= upper_bound`.
+- Added the declared limitation for future numeric aggregates: UNKNOWN numeric bounds require a declared field-domain mechanism.
+- Removed binder ambient field injection; grouping fields now validate only against bound input output declarations.
+- Declared and materialized `match_id`, `period`, and `perspective_team_role` on `typed_join` output rows.
+- Converted aggregate binder validation to structural dispatch and extended the shared-runtime ratchet to include `aggregate_over`.
+- Added the perspective grouping gate: `perspective_team_role` grouping binds only when the upstream chain enforces same-team perspective.
+- Flipped aggregate constraint defaults to true and required `constraint_opt_out_reason` when any constraint is false.
+- Made malformed populations fail closed.
+- Rewrote the both-team test to compare operator output groups against independently counted fixture truth.
+
+Targeted verification:
+
+| Command | Result |
+| --- | --- |
+| `PYTHONPATH=src UV_CACHE_DIR=/private/tmp/uv-cache uv run --no-sync python -m unittest tests.test_r2_1_aggregate_over tests.test_r1_0_operator_scaffolding.R10OperatorScaffoldingTests.test_operator_registry_is_explicit_and_complete tests.test_r1_0_operator_scaffolding.R10OperatorScaffoldingTests.test_r1_operator_names_do_not_leak_into_shared_runtime_code -v` | PASS, 19 tests |
+
+Round 2 mutation checks performed:
+
+| Guard broken | Expected failing test | Observed failure |
+| --- | --- | --- |
+| Constructor ordering invariant disabled | `test_constructor_enforces_interval_ordering_invariant` | FAIL, `ValueError` not raised |
+| `sum` admitted to aggregation enum | `test_signature_declares_count_as_only_aggregation_kind` | FAIL, allowed values included `sum` |
+| Ambient field injection restored | `test_bind_rejects_grouping_fields_missing_from_source_declaration` | FAIL, `BindError` not raised |
+| Perspective same-team lineage gate disabled | `test_bind_rejects_perspective_grouping_without_same_team_lineage` | FAIL, `BindError` not raised |
+| Constraint opt-out reason check disabled | `test_bind_rejects_constraint_opt_out_without_reason` | FAIL, `BindError` not raised |
+| Constraint default flipped false | `test_bind_defaults_constraints_to_true` | FAIL, wrong error code (`operator_aggregate_constraint_opt_out_reason_missing`) |
+| Aggregate upstream-missing error disabled | `test_bind_rejects_missing_population_upstream` | FAIL, aggregate-specific error code absent |
+| Malformed population fail-closed check disabled | `test_malformed_population_raises` | FAIL, `ValueError` not raised |
+| Shared-runtime ratchet literal reintroduced | `test_r1_operator_names_do_not_leak_into_shared_runtime_code` | FAIL, `aggregate_over` leaked into binder |
+
 ## Full-suite table on committed tree
+
+Status: stale from round 1; pending round 2 final committed tree.
 
 Committed tree tested: clone commit `d1b195d` in `/private/tmp/priori-r2-1-work`.
 

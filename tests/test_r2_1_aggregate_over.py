@@ -5,6 +5,7 @@ import json
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
+from unittest import mock
 
 from tqe.runtime.binder import BindError, bind_document, bind_error_codes
 from tqe.runtime.ir import CatalogOutput, MissingDataSemantics, TacticalQueryDocument, TypedValue
@@ -38,10 +39,12 @@ def aggregate_record(
     status: str,
     match_id: str = "TST",
     period: str = "firstHalf",
+    perspective_team_role: str | None = None,
 ) -> dict[str, object]:
     record: dict[str, object] = {
         "match_id": match_id,
         "period": period,
+        "perspective_team_role": perspective_team_role or team_role,
         "anchor_frame_id": frame_id,
         "start_frame_id": frame_id,
         "end_frame_id": frame_id,
@@ -71,6 +74,7 @@ def population_value(records: list[dict[str, object]]) -> RuntimeValue:
             evidence_fields=[
                 "match_id",
                 "period",
+                "perspective_team_role",
                 "left_team_role",
                 "right_team_role",
                 "anchor_team_role",
@@ -104,10 +108,10 @@ def run_count(records: list[dict[str, object]]) -> list[dict[str, object]]:
             "population_expression": typed_enum("fragile_possession_state rows"),
             "group_by_fields": typed_entity_set(["left_team_role", "match_id"]),
             "status_field": typed_enum("typed_join_status"),
-            "numeric_field": typed_enum("none"),
             "same_team_perspective_required": typed_bool(True),
-            "entity_identity_preserved_required": typed_bool(False),
+            "entity_identity_preserved_required": typed_bool(True),
             "frame_alignment_required": typed_bool(True),
+            "constraint_opt_out_reason": typed_enum("none"),
             "team_role_field": typed_enum("left_team_role"),
         },
     )
@@ -130,10 +134,10 @@ def run_count_by_perspective(records: list[dict[str, object]], *, perspective_te
             "population_expression": typed_enum("fragile_possession_state rows"),
             "group_by_fields": typed_entity_set(["perspective_team_role", "match_id"]),
             "status_field": typed_enum("typed_join_status"),
-            "numeric_field": typed_enum("none"),
             "same_team_perspective_required": typed_bool(True),
-            "entity_identity_preserved_required": typed_bool(False),
+            "entity_identity_preserved_required": typed_bool(True),
             "frame_alignment_required": typed_bool(True),
+            "constraint_opt_out_reason": typed_enum("none"),
             "team_role_field": typed_enum("perspective_team_role"),
         },
     )
@@ -143,11 +147,30 @@ def run_count_by_perspective(records: list[dict[str, object]], *, perspective_te
 def aggregate_node_payload(
     *,
     same_team_required: bool = True,
+    entity_required: bool = False,
+    frame_required: bool = True,
+    constraint_opt_out_reason: str = "entity identity is not part of the CAR-0 count denominator",
     group_by_fields: list[str] | None = None,
     aggregation_kind: str = "count",
-    numeric_field: str = "none",
+    include_constraint_parameters: bool = True,
 ) -> dict[str, object]:
     declared_group_by_fields = group_by_fields or ["perspective_team_role", "match_id"]
+    parameters = {
+        "aggregation_kind": {"payload_type": "enum", "value": aggregation_kind},
+        "population_expression": {"payload_type": "enum", "value": "fragile_possession_state rows"},
+        "group_by_fields": {"payload_type": "entity_set", "value": declared_group_by_fields},
+        "status_field": {"payload_type": "enum", "value": "typed_join_status"},
+        "team_role_field": {"payload_type": "enum", "value": "perspective_team_role"},
+    }
+    if include_constraint_parameters:
+        parameters.update(
+            {
+                "same_team_perspective_required": {"payload_type": "boolean", "value": same_team_required},
+                "entity_identity_preserved_required": {"payload_type": "boolean", "value": entity_required},
+                "frame_alignment_required": {"payload_type": "boolean", "value": frame_required},
+                "constraint_opt_out_reason": {"payload_type": "enum", "value": constraint_opt_out_reason},
+            }
+        )
     return {
         "kind": "operator",
         "node_id": "aggregate",
@@ -155,18 +178,28 @@ def aggregate_node_payload(
         "inputs": {
             "population": {"source_node_id": "typed_join_2", "output_name": "typed_join_records"},
         },
-        "parameters": {
-            "aggregation_kind": {"payload_type": "enum", "value": aggregation_kind},
-            "population_expression": {"payload_type": "enum", "value": "fragile_possession_state rows"},
-            "group_by_fields": {"payload_type": "entity_set", "value": declared_group_by_fields},
-            "status_field": {"payload_type": "enum", "value": "typed_join_status"},
-            "numeric_field": {"payload_type": "enum", "value": numeric_field},
-            "same_team_perspective_required": {"payload_type": "boolean", "value": same_team_required},
-            "frame_alignment_required": {"payload_type": "boolean", "value": True},
-            "team_role_field": {"payload_type": "enum", "value": "perspective_team_role"},
-        },
+        "parameters": parameters,
         "outputs": [output.model_dump(mode="json") for output in AGGREGATE_OVER_SIGNATURE.outputs],
     }
+
+
+def car_payload(role: str = "home") -> dict[str, object]:
+    payload = json.loads(CAR_BUNDLE_PATH.read_text(encoding="utf-8"))["documents"][role]
+    payload = copy.deepcopy(payload)
+    declare_typed_join_identity_fields(payload)
+    return payload
+
+
+def declare_typed_join_identity_fields(payload: dict[str, object]) -> None:
+    fields = ["match_id", "period", "perspective_team_role"]
+    for node in payload["draft_plan"]["nodes"]:
+        if not isinstance(node, dict) or node.get("node_id") != "typed_join_2":
+            continue
+        for output in node.get("outputs", []):
+            evidence_fields = output.setdefault("evidence_fields", [])
+            for field in fields:
+                if field not in evidence_fields:
+                    evidence_fields.insert(0, field)
 
 
 class AggregateOverOperatorTests(unittest.TestCase):
@@ -192,11 +225,26 @@ class AggregateOverOperatorTests(unittest.TestCase):
                 aggregation_kind="count",
                 population_expression="fixture",
                 group_key={"team": "home"},
-                pass_values=[1.0],
+                pass_count=1,
                 fail_count=0,
-                unknown_values=[],
+                unknown_count=0,
                 lower_bound=0,
             )
+
+    def test_constructor_enforces_interval_ordering_invariant(self) -> None:
+        with mock.patch(
+            "tqe.runtime.operators.aggregate_over._count_interval",
+            return_value=(2.0, 3.0, 4.0),
+        ):
+            with self.assertRaisesRegex(ValueError, "lower_bound <= observed <= upper_bound"):
+                AggregateIntervalResult(
+                    aggregation_kind="count",
+                    population_expression="fixture",
+                    group_key={"team": "home"},
+                    pass_count=2,
+                    fail_count=0,
+                    unknown_count=1,
+                )
 
     def test_group_by_keys_preserve_both_team_perspectives(self) -> None:
         records = [
@@ -208,17 +256,28 @@ class AggregateOverOperatorTests(unittest.TestCase):
 
         results = run_count(records)
         by_team = {record["group_key"]["left_team_role"]: record for record in results}
+        expected_population_by_team = {
+            role: sum(1 for record in records if record["left_team_role"] == role)
+            for role in {"home", "away"}
+        }
+        expected_unknown_by_team = {
+            role: sum(
+                1
+                for record in records
+                if record["left_team_role"] == role and record["typed_join_status"] == "UNKNOWN"
+            )
+            for role in {"home", "away"}
+        }
 
-        self.assertEqual({"home", "away"}, set(by_team))
-        self.assertEqual(1, by_team["home"]["unknown_count"])
-        self.assertEqual(0, by_team["away"]["unknown_count"])
-        for source in records:
-            self.assertEqual(source["anchor_team_role"], source["continuity_team_role"])
+        self.assertEqual(set(expected_population_by_team), set(by_team))
+        for team_role, expected_population in expected_population_by_team.items():
+            self.assertEqual(expected_population, by_team[team_role]["population_count"])
+            self.assertEqual(expected_unknown_by_team[team_role], by_team[team_role]["unknown_count"])
 
     def test_perspective_team_role_can_be_declared_group_key(self) -> None:
         records = [
-            aggregate_record(100, team_role="home", status="PASS"),
-            aggregate_record(110, team_role="away", status="UNKNOWN"),
+            aggregate_record(100, team_role="home", status="PASS", perspective_team_role="away"),
+            aggregate_record(110, team_role="away", status="UNKNOWN", perspective_team_role="away"),
         ]
 
         [result] = run_count_by_perspective(records, perspective_team_role="away")
@@ -233,17 +292,25 @@ class AggregateOverOperatorTests(unittest.TestCase):
             run_count([aggregate_record(100, team_role="home", status="MAYBE")])
 
     def test_bind_accepts_declared_flagship_grouping(self) -> None:
-        payload = json.loads(CAR_BUNDLE_PATH.read_text(encoding="utf-8"))["documents"]["home"]
-        payload = copy.deepcopy(payload)
+        payload = car_payload()
         payload["draft_plan"]["nodes"].append(aggregate_node_payload())
 
         bound = bind_document(TacticalQueryDocument.model_validate(payload))
 
         self.assertEqual("aggregate", bound.nodes[-1].node_id)
 
-    def test_bind_rejects_undeclared_group_by_field(self) -> None:
+    def test_bind_rejects_grouping_fields_missing_from_source_declaration(self) -> None:
         payload = json.loads(CAR_BUNDLE_PATH.read_text(encoding="utf-8"))["documents"]["home"]
         payload = copy.deepcopy(payload)
+        payload["draft_plan"]["nodes"].append(aggregate_node_payload())
+
+        with self.assertRaises(BindError) as raised:
+            bind_document(TacticalQueryDocument.model_validate(payload))
+
+        self.assertIn("operator_field_parameter_not_in_input", bind_error_codes(raised.exception))
+
+    def test_bind_rejects_undeclared_group_by_field(self) -> None:
+        payload = car_payload()
         payload["draft_plan"]["nodes"].append(
             aggregate_node_payload(group_by_fields=["left_team_role", "not_a_declared_field"])
         )
@@ -253,41 +320,113 @@ class AggregateOverOperatorTests(unittest.TestCase):
 
         self.assertIn("operator_field_parameter_not_in_input", bind_error_codes(raised.exception))
 
-    def test_bind_rejects_count_with_numeric_field(self) -> None:
-        payload = json.loads(CAR_BUNDLE_PATH.read_text(encoding="utf-8"))["documents"]["home"]
-        payload = copy.deepcopy(payload)
-        payload["draft_plan"]["nodes"].append(aggregate_node_payload(numeric_field="duration_seconds"))
+    def test_signature_declares_count_as_only_aggregation_kind(self) -> None:
+        [aggregation_kind] = [
+            parameter
+            for parameter in AGGREGATE_OVER_SIGNATURE.parameters
+            if parameter.name == "aggregation_kind"
+        ]
 
-        with self.assertRaises(BindError) as raised:
-            bind_document(TacticalQueryDocument.model_validate(payload))
+        self.assertEqual(["count"], aggregation_kind.allowed_values)
 
-        self.assertIn(
-            "operator_aggregate_count_numeric_field_forbidden",
-            bind_error_codes(raised.exception),
-        )
-
-    def test_bind_rejects_sum_without_numeric_field(self) -> None:
-        payload = json.loads(CAR_BUNDLE_PATH.read_text(encoding="utf-8"))["documents"]["home"]
-        payload = copy.deepcopy(payload)
+    def test_bind_rejects_sum_aggregation_kind(self) -> None:
+        payload = car_payload()
         payload["draft_plan"]["nodes"].append(aggregate_node_payload(aggregation_kind="sum"))
 
         with self.assertRaises(BindError) as raised:
             bind_document(TacticalQueryDocument.model_validate(payload))
 
-        self.assertIn("operator_aggregate_numeric_field_missing", bind_error_codes(raised.exception))
+        self.assertIn("parameter_value_not_allowed", bind_error_codes(raised.exception))
 
-    def test_bind_rejects_uninherited_same_team_constraint(self) -> None:
-        payload = json.loads(CAR_BUNDLE_PATH.read_text(encoding="utf-8"))["documents"]["home"]
-        payload = copy.deepcopy(payload)
-        for node in payload["draft_plan"]["nodes"]:
-            if node.get("node_id") == "typed_join_2":
-                node["parameters"]["same_team_perspective_required"]["value"] = False
-        payload["draft_plan"]["nodes"].append(aggregate_node_payload(same_team_required=True))
+    def test_bind_defaults_constraints_to_true(self) -> None:
+        payload = car_payload()
+        payload["draft_plan"]["nodes"].append(aggregate_node_payload(include_constraint_parameters=False))
 
         with self.assertRaises(BindError) as raised:
             bind_document(TacticalQueryDocument.model_validate(payload))
 
         self.assertIn("operator_aggregate_constraint_not_inherited", bind_error_codes(raised.exception))
+
+    def test_bind_rejects_constraint_opt_out_without_reason(self) -> None:
+        payload = car_payload()
+        payload["draft_plan"]["nodes"].append(aggregate_node_payload(constraint_opt_out_reason="none"))
+
+        with self.assertRaises(BindError) as raised:
+            bind_document(TacticalQueryDocument.model_validate(payload))
+
+        self.assertIn(
+            "operator_aggregate_constraint_opt_out_reason_missing",
+            bind_error_codes(raised.exception),
+        )
+
+    def test_bind_rejects_perspective_grouping_without_same_team_lineage(self) -> None:
+        payload = car_payload()
+        for node in payload["draft_plan"]["nodes"]:
+            if node.get("node_id") == "typed_join_2":
+                node["parameters"]["same_team_perspective_required"]["value"] = False
+        payload["draft_plan"]["nodes"].append(
+            aggregate_node_payload(
+                same_team_required=False,
+                entity_required=False,
+                frame_required=True,
+                constraint_opt_out_reason="diagnostic perspective grouping opt-out test",
+            )
+        )
+
+        with self.assertRaises(BindError) as raised:
+            bind_document(TacticalQueryDocument.model_validate(payload))
+
+        self.assertIn(
+            "operator_aggregate_perspective_group_requires_same_team",
+            bind_error_codes(raised.exception),
+        )
+
+    def test_bind_rejects_missing_population_upstream(self) -> None:
+        payload = car_payload()
+        node = aggregate_node_payload()
+        node["inputs"]["population"]["source_node_id"] = "missing_node"
+        payload["draft_plan"]["nodes"].append(node)
+
+        with self.assertRaises(BindError) as raised:
+            bind_document(TacticalQueryDocument.model_validate(payload))
+
+        self.assertIn("operator_aggregate_population_upstream_missing", bind_error_codes(raised.exception))
+
+    def test_bind_rejects_uninherited_same_team_constraint(self) -> None:
+        payload = car_payload()
+        for node in payload["draft_plan"]["nodes"]:
+            if node.get("node_id") == "typed_join_2":
+                node["parameters"]["same_team_perspective_required"]["value"] = False
+        payload["draft_plan"]["nodes"].append(
+            aggregate_node_payload(group_by_fields=["left_team_role", "match_id"], same_team_required=True)
+        )
+
+        with self.assertRaises(BindError) as raised:
+            bind_document(TacticalQueryDocument.model_validate(payload))
+
+        self.assertIn("operator_aggregate_constraint_not_inherited", bind_error_codes(raised.exception))
+
+    def test_malformed_population_raises(self) -> None:
+        empty_population = population_value([])
+        malformed = RuntimeValue(output=empty_population.output, value=[1], records=[])
+
+        with self.assertRaisesRegex(ValueError, "list of objects"):
+            execute_aggregate_over(
+                state=SimpleNamespace(match_id="TST", period="firstHalf", signals={}),
+                node=aggregate_node(),
+                inputs={"population": malformed},
+                parameters={
+                    "aggregation_kind": typed_enum("count"),
+                    "population_expression": typed_enum("fixture"),
+                    "group_by_fields": typed_entity_set(["left_team_role", "match_id"]),
+                    "status_field": typed_enum("typed_join_status"),
+                    "same_team_perspective_required": typed_bool(True),
+                    "entity_identity_preserved_required": typed_bool(True),
+                    "frame_alignment_required": typed_bool(True),
+                    "constraint_opt_out_reason": typed_enum("none"),
+                    "team_role_field": typed_enum("left_team_role"),
+                },
+            )
 
 
 if __name__ == "__main__":

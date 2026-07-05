@@ -40,6 +40,7 @@ R1_OPERATOR_NAMES = (
     "window",
 )
 R1_SHARED_CODE_RATCHET_NAMES = (
+    "aggregate_over",
     "typed_join",
     "extremum_over_set",
     "project_onto_axis",

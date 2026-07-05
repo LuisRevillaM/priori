@@ -31,6 +31,9 @@ JOIN_KEY_VALUES = ("same_anchor", "same_frame_window", "same_entity", "episode_o
 NO_MATCH_POLICY_VALUES = ("FAIL", "UNKNOWN", "drop_with_count")
 STATUS_VALUE_VALUES = ("PASS", "FAIL", "UNKNOWN")
 EVIDENCE_FIELDS = [
+    "match_id",
+    "period",
+    "perspective_team_role",
     "typed_join_status",
     "typed_join_reason",
     "join_key",
@@ -627,6 +630,7 @@ def _join_record(
         **joined_payload,
         "match_id": str(left.get("match_id") or getattr(state, "match_id", "")),
         "period": str(left.get("period") or getattr(state, "period", "")),
+        "perspective_team_role": str(getattr(state, "perspective_team_role", "")),
         "anchor_frame_id": int(anchor_frame_id),
         "typed_join_status": status,
         "typed_join_reason": reason,
