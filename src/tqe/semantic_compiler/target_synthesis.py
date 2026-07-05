@@ -110,6 +110,7 @@ def synthesize_and_bind(
         document_payload = document_payload_for_expression(
             expression=expression,
             document=document,
+            default_invocation=document.get("default_invocation") or {},
         )
         bind_payload = bind_payload_for_document(document_payload)
         return {
@@ -218,10 +219,12 @@ def document_payload_for_expression(
     *,
     expression: MeaningExpressionV0,
     document: dict[str, Any],
+    default_invocation: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    match_ids = expression.population.match_ids or list(search.MATCH_IDS)
-    periods = expression.population.periods or ["firstHalf", "secondHalf"]
-    roles = expression.population.perspective_team_roles or ["home"]
+    defaults = default_invocation or {}
+    match_ids = expression.population.match_ids or list(defaults.get("match_ids") or search.MATCH_IDS)
+    periods = expression.population.periods or list(defaults.get("periods") or ["firstHalf", "secondHalf"])
+    roles = expression.population.perspective_team_roles or [str(defaults.get("perspective_team_role") or "home")]
     role_documents: dict[str, dict[str, Any]] = {}
     for role in roles:
         role_doc = copy.deepcopy(document)

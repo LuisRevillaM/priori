@@ -305,6 +305,7 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
         payload["expression_id"] = "line_break_underneath_support_response"
         payload["concept_identity"] = "line_break_underneath_support_response"
         payload["target"]["target_id"] = "line_break_underneath_support_response_v0"
+        payload["population"]["match_ids"] = []
         payload["population"]["periods"] = []
         result = load_meaning_expression_result(payload, vocabulary=self.vocabulary)
         self.assertEqual("accepted", result.outcome)
@@ -313,6 +314,7 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
         synthesized = synthesize_and_bind(result.expression, coverage_rows=self.coverage_rows)
 
         self.assertEqual("recipe:line_break_support_response_v1", synthesized["build"]["terminal_provider"])
+        self.assertEqual(["J03WOY"], synthesized["document"]["default_invocation"]["match_ids"])
         self.assertEqual(["firstHalf", "secondHalf"], synthesized["document"]["default_invocation"]["periods"])
 
     def accepted_expression(self, name: str):
