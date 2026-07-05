@@ -1,0 +1,821 @@
+{
+  "aggregate_node_id": "aggregate_over_fragile_possession_state",
+  "denominator": "fragile_possession_state typed_join rows per team perspective per match",
+  "per_row_reconciliation": [
+    {
+      "aggregate_fail_count": 181,
+      "aggregate_pass_count": 13,
+      "aggregate_population_count": 503,
+      "aggregate_unknown_count": 309,
+      "audit_role": "home",
+      "match_id": "J03WOH",
+      "matches": true,
+      "sealed_fail_count": 181,
+      "sealed_pass_count": 13,
+      "sealed_population_count": 503,
+      "sealed_unknown_count": 309
+    },
+    {
+      "aggregate_fail_count": 180,
+      "aggregate_pass_count": 11,
+      "aggregate_population_count": 575,
+      "aggregate_unknown_count": 384,
+      "audit_role": "home",
+      "match_id": "J03WOY",
+      "matches": true,
+      "sealed_fail_count": 180,
+      "sealed_pass_count": 11,
+      "sealed_population_count": 575,
+      "sealed_unknown_count": 384
+    },
+    {
+      "aggregate_fail_count": 329,
+      "aggregate_pass_count": 15,
+      "aggregate_population_count": 654,
+      "aggregate_unknown_count": 310,
+      "audit_role": "home",
+      "match_id": "J03WPY",
+      "matches": true,
+      "sealed_fail_count": 329,
+      "sealed_pass_count": 15,
+      "sealed_population_count": 654,
+      "sealed_unknown_count": 310
+    },
+    {
+      "aggregate_fail_count": 187,
+      "aggregate_pass_count": 7,
+      "aggregate_population_count": 662,
+      "aggregate_unknown_count": 468,
+      "audit_role": "home",
+      "match_id": "J03WQQ",
+      "matches": true,
+      "sealed_fail_count": 187,
+      "sealed_pass_count": 7,
+      "sealed_population_count": 662,
+      "sealed_unknown_count": 468
+    },
+    {
+      "aggregate_fail_count": 309,
+      "aggregate_pass_count": 14,
+      "aggregate_population_count": 649,
+      "aggregate_unknown_count": 326,
+      "audit_role": "home",
+      "match_id": "J03WR9",
+      "matches": true,
+      "sealed_fail_count": 309,
+      "sealed_pass_count": 14,
+      "sealed_population_count": 649,
+      "sealed_unknown_count": 326
+    },
+    {
+      "aggregate_fail_count": 177,
+      "aggregate_pass_count": 10,
+      "aggregate_population_count": 714,
+      "aggregate_unknown_count": 527,
+      "audit_role": "home",
+      "match_id": "J03WMX",
+      "matches": true,
+      "sealed_fail_count": 177,
+      "sealed_pass_count": 10,
+      "sealed_population_count": 714,
+      "sealed_unknown_count": 527
+    },
+    {
+      "aggregate_fail_count": 89,
+      "aggregate_pass_count": 3,
+      "aggregate_population_count": 450,
+      "aggregate_unknown_count": 358,
+      "audit_role": "home",
+      "match_id": "J03WN1",
+      "matches": true,
+      "sealed_fail_count": 89,
+      "sealed_pass_count": 3,
+      "sealed_population_count": 450,
+      "sealed_unknown_count": 358
+    },
+    {
+      "aggregate_fail_count": 106,
+      "aggregate_pass_count": 11,
+      "aggregate_population_count": 503,
+      "aggregate_unknown_count": 386,
+      "audit_role": "away",
+      "match_id": "J03WOH",
+      "matches": true,
+      "sealed_fail_count": 106,
+      "sealed_pass_count": 11,
+      "sealed_population_count": 503,
+      "sealed_unknown_count": 386
+    },
+    {
+      "aggregate_fail_count": 187,
+      "aggregate_pass_count": 6,
+      "aggregate_population_count": 575,
+      "aggregate_unknown_count": 382,
+      "audit_role": "away",
+      "match_id": "J03WOY",
+      "matches": true,
+      "sealed_fail_count": 187,
+      "sealed_pass_count": 6,
+      "sealed_population_count": 575,
+      "sealed_unknown_count": 382
+    },
+    {
+      "aggregate_fail_count": 106,
+      "aggregate_pass_count": 4,
+      "aggregate_population_count": 654,
+      "aggregate_unknown_count": 544,
+      "audit_role": "away",
+      "match_id": "J03WPY",
+      "matches": true,
+      "sealed_fail_count": 106,
+      "sealed_pass_count": 4,
+      "sealed_population_count": 654,
+      "sealed_unknown_count": 544
+    },
+    {
+      "aggregate_fail_count": 312,
+      "aggregate_pass_count": 25,
+      "aggregate_population_count": 662,
+      "aggregate_unknown_count": 325,
+      "audit_role": "away",
+      "match_id": "J03WQQ",
+      "matches": true,
+      "sealed_fail_count": 312,
+      "sealed_pass_count": 25,
+      "sealed_population_count": 662,
+      "sealed_unknown_count": 325
+    },
+    {
+      "aggregate_fail_count": 132,
+      "aggregate_pass_count": 8,
+      "aggregate_population_count": 649,
+      "aggregate_unknown_count": 509,
+      "audit_role": "away",
+      "match_id": "J03WR9",
+      "matches": true,
+      "sealed_fail_count": 132,
+      "sealed_pass_count": 8,
+      "sealed_population_count": 649,
+      "sealed_unknown_count": 509
+    },
+    {
+      "aggregate_fail_count": 253,
+      "aggregate_pass_count": 12,
+      "aggregate_population_count": 714,
+      "aggregate_unknown_count": 449,
+      "audit_role": "away",
+      "match_id": "J03WMX",
+      "matches": true,
+      "sealed_fail_count": 253,
+      "sealed_pass_count": 12,
+      "sealed_population_count": 714,
+      "sealed_unknown_count": 449
+    },
+    {
+      "aggregate_fail_count": 67,
+      "aggregate_pass_count": 6,
+      "aggregate_population_count": 450,
+      "aggregate_unknown_count": 377,
+      "audit_role": "away",
+      "match_id": "J03WN1",
+      "matches": true,
+      "sealed_fail_count": 67,
+      "sealed_pass_count": 6,
+      "sealed_population_count": 450,
+      "sealed_unknown_count": 377
+    }
+  ],
+  "period_record_count": 28,
+  "period_records_hash": "030a52303d6938e27bdb9e99627cee0dc8905f88930f0e2b11516ea592461d81",
+  "plan": "delivery/packets/r2-1-flagship/aggregate_over_fragile_possession_state_v0.json",
+  "plan_hash": "f6e8310c02cf22d65f3faf85d4af3bdcc9cf6c47a057e655dd1915df0e2d6031",
+  "reconciliation": {
+    "aggregate_fail_rows": 2615,
+    "aggregate_lower_bound_sum": 145,
+    "aggregate_observed_pass_rows": 145,
+    "aggregate_total_rows": 8414,
+    "aggregate_unknown_rows": 5654,
+    "aggregate_upper_bound_sum": 5799,
+    "all_14_rows_match_sealed_status_counts": true,
+    "sealed_audit": "delivery/packets/r1-c-sweep/population-audit/audit.json",
+    "sealed_audit_hash": "7b99cabfc9d3c240b4f8eb7f1083c788e64219677c90e2e5228467167f4caa5d",
+    "sealed_fail_rows": 2615,
+    "sealed_pass_rows": 145,
+    "sealed_total_rows": 8414,
+    "sealed_unknown_rows": 5654
+  },
+  "rows": [
+    {
+      "aggregation_kind": "count",
+      "audit_role": "home",
+      "fail_count": 181,
+      "group_by_fields": [
+        "perspective_team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WOH",
+        "perspective_team_role": "home"
+      },
+      "lower_bound": 13,
+      "match_id": "J03WOH",
+      "observed": 13,
+      "pass_count": 13,
+      "periods": [
+        {
+          "fail_count": 92,
+          "lower_bound": 8,
+          "observed": 8,
+          "pass_count": 8,
+          "period": "firstHalf",
+          "population_count": 254,
+          "unknown_count": 154,
+          "upper_bound": 162
+        },
+        {
+          "fail_count": 89,
+          "lower_bound": 5,
+          "observed": 5,
+          "pass_count": 5,
+          "period": "secondHalf",
+          "population_count": 249,
+          "unknown_count": 155,
+          "upper_bound": 160
+        }
+      ],
+      "population_count": 503,
+      "population_expression": "fragile_possession_state typed_join rows per team perspective per match",
+      "unknown_count": 309,
+      "upper_bound": 322
+    },
+    {
+      "aggregation_kind": "count",
+      "audit_role": "home",
+      "fail_count": 180,
+      "group_by_fields": [
+        "perspective_team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WOY",
+        "perspective_team_role": "home"
+      },
+      "lower_bound": 11,
+      "match_id": "J03WOY",
+      "observed": 11,
+      "pass_count": 11,
+      "periods": [
+        {
+          "fail_count": 106,
+          "lower_bound": 9,
+          "observed": 9,
+          "pass_count": 9,
+          "period": "firstHalf",
+          "population_count": 283,
+          "unknown_count": 168,
+          "upper_bound": 177
+        },
+        {
+          "fail_count": 74,
+          "lower_bound": 2,
+          "observed": 2,
+          "pass_count": 2,
+          "period": "secondHalf",
+          "population_count": 292,
+          "unknown_count": 216,
+          "upper_bound": 218
+        }
+      ],
+      "population_count": 575,
+      "population_expression": "fragile_possession_state typed_join rows per team perspective per match",
+      "unknown_count": 384,
+      "upper_bound": 395
+    },
+    {
+      "aggregation_kind": "count",
+      "audit_role": "home",
+      "fail_count": 329,
+      "group_by_fields": [
+        "perspective_team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WPY",
+        "perspective_team_role": "home"
+      },
+      "lower_bound": 15,
+      "match_id": "J03WPY",
+      "observed": 15,
+      "pass_count": 15,
+      "periods": [
+        {
+          "fail_count": 217,
+          "lower_bound": 9,
+          "observed": 9,
+          "pass_count": 9,
+          "period": "firstHalf",
+          "population_count": 415,
+          "unknown_count": 189,
+          "upper_bound": 198
+        },
+        {
+          "fail_count": 112,
+          "lower_bound": 6,
+          "observed": 6,
+          "pass_count": 6,
+          "period": "secondHalf",
+          "population_count": 239,
+          "unknown_count": 121,
+          "upper_bound": 127
+        }
+      ],
+      "population_count": 654,
+      "population_expression": "fragile_possession_state typed_join rows per team perspective per match",
+      "unknown_count": 310,
+      "upper_bound": 325
+    },
+    {
+      "aggregation_kind": "count",
+      "audit_role": "home",
+      "fail_count": 187,
+      "group_by_fields": [
+        "perspective_team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WQQ",
+        "perspective_team_role": "home"
+      },
+      "lower_bound": 7,
+      "match_id": "J03WQQ",
+      "observed": 7,
+      "pass_count": 7,
+      "periods": [
+        {
+          "fail_count": 136,
+          "lower_bound": 6,
+          "observed": 6,
+          "pass_count": 6,
+          "period": "firstHalf",
+          "population_count": 389,
+          "unknown_count": 247,
+          "upper_bound": 253
+        },
+        {
+          "fail_count": 51,
+          "lower_bound": 1,
+          "observed": 1,
+          "pass_count": 1,
+          "period": "secondHalf",
+          "population_count": 273,
+          "unknown_count": 221,
+          "upper_bound": 222
+        }
+      ],
+      "population_count": 662,
+      "population_expression": "fragile_possession_state typed_join rows per team perspective per match",
+      "unknown_count": 468,
+      "upper_bound": 475
+    },
+    {
+      "aggregation_kind": "count",
+      "audit_role": "home",
+      "fail_count": 309,
+      "group_by_fields": [
+        "perspective_team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WR9",
+        "perspective_team_role": "home"
+      },
+      "lower_bound": 14,
+      "match_id": "J03WR9",
+      "observed": 14,
+      "pass_count": 14,
+      "periods": [
+        {
+          "fail_count": 158,
+          "lower_bound": 8,
+          "observed": 8,
+          "pass_count": 8,
+          "period": "firstHalf",
+          "population_count": 358,
+          "unknown_count": 192,
+          "upper_bound": 200
+        },
+        {
+          "fail_count": 151,
+          "lower_bound": 6,
+          "observed": 6,
+          "pass_count": 6,
+          "period": "secondHalf",
+          "population_count": 291,
+          "unknown_count": 134,
+          "upper_bound": 140
+        }
+      ],
+      "population_count": 649,
+      "population_expression": "fragile_possession_state typed_join rows per team perspective per match",
+      "unknown_count": 326,
+      "upper_bound": 340
+    },
+    {
+      "aggregation_kind": "count",
+      "audit_role": "home",
+      "fail_count": 177,
+      "group_by_fields": [
+        "perspective_team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WMX",
+        "perspective_team_role": "home"
+      },
+      "lower_bound": 10,
+      "match_id": "J03WMX",
+      "observed": 10,
+      "pass_count": 10,
+      "periods": [
+        {
+          "fail_count": 92,
+          "lower_bound": 2,
+          "observed": 2,
+          "pass_count": 2,
+          "period": "firstHalf",
+          "population_count": 439,
+          "unknown_count": 345,
+          "upper_bound": 347
+        },
+        {
+          "fail_count": 85,
+          "lower_bound": 8,
+          "observed": 8,
+          "pass_count": 8,
+          "period": "secondHalf",
+          "population_count": 275,
+          "unknown_count": 182,
+          "upper_bound": 190
+        }
+      ],
+      "population_count": 714,
+      "population_expression": "fragile_possession_state typed_join rows per team perspective per match",
+      "unknown_count": 527,
+      "upper_bound": 537
+    },
+    {
+      "aggregation_kind": "count",
+      "audit_role": "home",
+      "fail_count": 89,
+      "group_by_fields": [
+        "perspective_team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WN1",
+        "perspective_team_role": "home"
+      },
+      "lower_bound": 3,
+      "match_id": "J03WN1",
+      "observed": 3,
+      "pass_count": 3,
+      "periods": [
+        {
+          "fail_count": 77,
+          "lower_bound": 3,
+          "observed": 3,
+          "pass_count": 3,
+          "period": "firstHalf",
+          "population_count": 292,
+          "unknown_count": 212,
+          "upper_bound": 215
+        },
+        {
+          "fail_count": 12,
+          "lower_bound": 0,
+          "observed": 0,
+          "pass_count": 0,
+          "period": "secondHalf",
+          "population_count": 158,
+          "unknown_count": 146,
+          "upper_bound": 146
+        }
+      ],
+      "population_count": 450,
+      "population_expression": "fragile_possession_state typed_join rows per team perspective per match",
+      "unknown_count": 358,
+      "upper_bound": 361
+    },
+    {
+      "aggregation_kind": "count",
+      "audit_role": "away",
+      "fail_count": 106,
+      "group_by_fields": [
+        "perspective_team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WOH",
+        "perspective_team_role": "away"
+      },
+      "lower_bound": 11,
+      "match_id": "J03WOH",
+      "observed": 11,
+      "pass_count": 11,
+      "periods": [
+        {
+          "fail_count": 44,
+          "lower_bound": 4,
+          "observed": 4,
+          "pass_count": 4,
+          "period": "firstHalf",
+          "population_count": 254,
+          "unknown_count": 206,
+          "upper_bound": 210
+        },
+        {
+          "fail_count": 62,
+          "lower_bound": 7,
+          "observed": 7,
+          "pass_count": 7,
+          "period": "secondHalf",
+          "population_count": 249,
+          "unknown_count": 180,
+          "upper_bound": 187
+        }
+      ],
+      "population_count": 503,
+      "population_expression": "fragile_possession_state typed_join rows per team perspective per match",
+      "unknown_count": 386,
+      "upper_bound": 397
+    },
+    {
+      "aggregation_kind": "count",
+      "audit_role": "away",
+      "fail_count": 187,
+      "group_by_fields": [
+        "perspective_team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WOY",
+        "perspective_team_role": "away"
+      },
+      "lower_bound": 6,
+      "match_id": "J03WOY",
+      "observed": 6,
+      "pass_count": 6,
+      "periods": [
+        {
+          "fail_count": 80,
+          "lower_bound": 2,
+          "observed": 2,
+          "pass_count": 2,
+          "period": "firstHalf",
+          "population_count": 283,
+          "unknown_count": 201,
+          "upper_bound": 203
+        },
+        {
+          "fail_count": 107,
+          "lower_bound": 4,
+          "observed": 4,
+          "pass_count": 4,
+          "period": "secondHalf",
+          "population_count": 292,
+          "unknown_count": 181,
+          "upper_bound": 185
+        }
+      ],
+      "population_count": 575,
+      "population_expression": "fragile_possession_state typed_join rows per team perspective per match",
+      "unknown_count": 382,
+      "upper_bound": 388
+    },
+    {
+      "aggregation_kind": "count",
+      "audit_role": "away",
+      "fail_count": 106,
+      "group_by_fields": [
+        "perspective_team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WPY",
+        "perspective_team_role": "away"
+      },
+      "lower_bound": 4,
+      "match_id": "J03WPY",
+      "observed": 4,
+      "pass_count": 4,
+      "periods": [
+        {
+          "fail_count": 76,
+          "lower_bound": 1,
+          "observed": 1,
+          "pass_count": 1,
+          "period": "firstHalf",
+          "population_count": 415,
+          "unknown_count": 338,
+          "upper_bound": 339
+        },
+        {
+          "fail_count": 30,
+          "lower_bound": 3,
+          "observed": 3,
+          "pass_count": 3,
+          "period": "secondHalf",
+          "population_count": 239,
+          "unknown_count": 206,
+          "upper_bound": 209
+        }
+      ],
+      "population_count": 654,
+      "population_expression": "fragile_possession_state typed_join rows per team perspective per match",
+      "unknown_count": 544,
+      "upper_bound": 548
+    },
+    {
+      "aggregation_kind": "count",
+      "audit_role": "away",
+      "fail_count": 312,
+      "group_by_fields": [
+        "perspective_team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WQQ",
+        "perspective_team_role": "away"
+      },
+      "lower_bound": 25,
+      "match_id": "J03WQQ",
+      "observed": 25,
+      "pass_count": 25,
+      "periods": [
+        {
+          "fail_count": 175,
+          "lower_bound": 8,
+          "observed": 8,
+          "pass_count": 8,
+          "period": "firstHalf",
+          "population_count": 389,
+          "unknown_count": 206,
+          "upper_bound": 214
+        },
+        {
+          "fail_count": 137,
+          "lower_bound": 17,
+          "observed": 17,
+          "pass_count": 17,
+          "period": "secondHalf",
+          "population_count": 273,
+          "unknown_count": 119,
+          "upper_bound": 136
+        }
+      ],
+      "population_count": 662,
+      "population_expression": "fragile_possession_state typed_join rows per team perspective per match",
+      "unknown_count": 325,
+      "upper_bound": 350
+    },
+    {
+      "aggregation_kind": "count",
+      "audit_role": "away",
+      "fail_count": 132,
+      "group_by_fields": [
+        "perspective_team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WR9",
+        "perspective_team_role": "away"
+      },
+      "lower_bound": 8,
+      "match_id": "J03WR9",
+      "observed": 8,
+      "pass_count": 8,
+      "periods": [
+        {
+          "fail_count": 92,
+          "lower_bound": 6,
+          "observed": 6,
+          "pass_count": 6,
+          "period": "firstHalf",
+          "population_count": 358,
+          "unknown_count": 260,
+          "upper_bound": 266
+        },
+        {
+          "fail_count": 40,
+          "lower_bound": 2,
+          "observed": 2,
+          "pass_count": 2,
+          "period": "secondHalf",
+          "population_count": 291,
+          "unknown_count": 249,
+          "upper_bound": 251
+        }
+      ],
+      "population_count": 649,
+      "population_expression": "fragile_possession_state typed_join rows per team perspective per match",
+      "unknown_count": 509,
+      "upper_bound": 517
+    },
+    {
+      "aggregation_kind": "count",
+      "audit_role": "away",
+      "fail_count": 253,
+      "group_by_fields": [
+        "perspective_team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WMX",
+        "perspective_team_role": "away"
+      },
+      "lower_bound": 12,
+      "match_id": "J03WMX",
+      "observed": 12,
+      "pass_count": 12,
+      "periods": [
+        {
+          "fail_count": 181,
+          "lower_bound": 6,
+          "observed": 6,
+          "pass_count": 6,
+          "period": "firstHalf",
+          "population_count": 439,
+          "unknown_count": 252,
+          "upper_bound": 258
+        },
+        {
+          "fail_count": 72,
+          "lower_bound": 6,
+          "observed": 6,
+          "pass_count": 6,
+          "period": "secondHalf",
+          "population_count": 275,
+          "unknown_count": 197,
+          "upper_bound": 203
+        }
+      ],
+      "population_count": 714,
+      "population_expression": "fragile_possession_state typed_join rows per team perspective per match",
+      "unknown_count": 449,
+      "upper_bound": 461
+    },
+    {
+      "aggregation_kind": "count",
+      "audit_role": "away",
+      "fail_count": 67,
+      "group_by_fields": [
+        "perspective_team_role",
+        "match_id"
+      ],
+      "group_key": {
+        "match_id": "J03WN1",
+        "perspective_team_role": "away"
+      },
+      "lower_bound": 6,
+      "match_id": "J03WN1",
+      "observed": 6,
+      "pass_count": 6,
+      "periods": [
+        {
+          "fail_count": 38,
+          "lower_bound": 3,
+          "observed": 3,
+          "pass_count": 3,
+          "period": "firstHalf",
+          "population_count": 292,
+          "unknown_count": 251,
+          "upper_bound": 254
+        },
+        {
+          "fail_count": 29,
+          "lower_bound": 3,
+          "observed": 3,
+          "pass_count": 3,
+          "period": "secondHalf",
+          "population_count": 158,
+          "unknown_count": 126,
+          "upper_bound": 129
+        }
+      ],
+      "population_count": 450,
+      "population_expression": "fragile_possession_state typed_join rows per team perspective per match",
+      "unknown_count": 377,
+      "upper_bound": 383
+    }
+  ],
+  "schema_version": "r2_1_flagship_denominator_table.v1",
+  "totals": {
+    "fail_count": 2615,
+    "lower_bound": 145,
+    "observed": 145,
+    "pass_count": 145,
+    "population_count": 8414,
+    "unknown_count": 5654,
+    "upper_bound": 5799
+  }
+}

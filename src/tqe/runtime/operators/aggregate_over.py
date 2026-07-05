@@ -229,6 +229,9 @@ def execute_aggregate_over(
             continue
         key_values = []
         for field in group_by_fields:
+            if field == "perspective_team_role":
+                key_values.append(str(state.perspective_team_role))
+                continue
             if field not in record:
                 raise ValueError(f"aggregate_over group_by field {field} missing from source record")
             key_values.append(str(record[field]))

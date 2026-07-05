@@ -94,7 +94,7 @@ def aggregate_node() -> SimpleNamespace:
 
 
 def run_count(records: list[dict[str, object]]) -> list[dict[str, object]]:
-    state = SimpleNamespace(match_id="TST", period="firstHalf", signals={})
+    state = SimpleNamespace(match_id="TST", period="firstHalf", perspective_team_role="home", signals={})
     execute_aggregate_over(
         state=state,
         node=aggregate_node(),
@@ -114,6 +114,32 @@ def run_count(records: list[dict[str, object]]) -> list[dict[str, object]]:
     return state.signals["aggregate"]["aggregate_records"]
 
 
+def run_count_by_perspective(records: list[dict[str, object]], *, perspective_team_role: str) -> list[dict[str, object]]:
+    state = SimpleNamespace(
+        match_id="TST",
+        period="firstHalf",
+        perspective_team_role=perspective_team_role,
+        signals={},
+    )
+    execute_aggregate_over(
+        state=state,
+        node=aggregate_node(),
+        inputs={"population": population_value(records)},
+        parameters={
+            "aggregation_kind": typed_enum("count"),
+            "population_expression": typed_enum("fragile_possession_state rows"),
+            "group_by_fields": typed_entity_set(["perspective_team_role", "match_id"]),
+            "status_field": typed_enum("typed_join_status"),
+            "numeric_field": typed_enum("none"),
+            "same_team_perspective_required": typed_bool(True),
+            "entity_identity_preserved_required": typed_bool(False),
+            "frame_alignment_required": typed_bool(True),
+            "team_role_field": typed_enum("perspective_team_role"),
+        },
+    )
+    return state.signals["aggregate"]["aggregate_records"]
+
+
 def aggregate_node_payload(
     *,
     same_team_required: bool = True,
@@ -121,7 +147,7 @@ def aggregate_node_payload(
     aggregation_kind: str = "count",
     numeric_field: str = "none",
 ) -> dict[str, object]:
-    declared_group_by_fields = group_by_fields or ["left_team_role", "match_id"]
+    declared_group_by_fields = group_by_fields or ["perspective_team_role", "match_id"]
     return {
         "kind": "operator",
         "node_id": "aggregate",
@@ -137,7 +163,7 @@ def aggregate_node_payload(
             "numeric_field": {"payload_type": "enum", "value": numeric_field},
             "same_team_perspective_required": {"payload_type": "boolean", "value": same_team_required},
             "frame_alignment_required": {"payload_type": "boolean", "value": True},
-            "team_role_field": {"payload_type": "enum", "value": "left_team_role"},
+            "team_role_field": {"payload_type": "enum", "value": "perspective_team_role"},
         },
         "outputs": [output.model_dump(mode="json") for output in AGGREGATE_OVER_SIGNATURE.outputs],
     }
@@ -188,6 +214,19 @@ class AggregateOverOperatorTests(unittest.TestCase):
         self.assertEqual(0, by_team["away"]["unknown_count"])
         for source in records:
             self.assertEqual(source["anchor_team_role"], source["continuity_team_role"])
+
+    def test_perspective_team_role_can_be_declared_group_key(self) -> None:
+        records = [
+            aggregate_record(100, team_role="home", status="PASS"),
+            aggregate_record(110, team_role="away", status="UNKNOWN"),
+        ]
+
+        [result] = run_count_by_perspective(records, perspective_team_role="away")
+
+        self.assertEqual({"perspective_team_role": "away", "match_id": "TST"}, result["group_key"])
+        self.assertEqual(1, result["observed"])
+        self.assertEqual(2, result["upper_bound"])
+        self.assertEqual(2, result["population_count"])
 
     def test_non_tri_state_status_raises(self) -> None:
         with self.assertRaisesRegex(ValueError, "PASS/FAIL/UNKNOWN"):

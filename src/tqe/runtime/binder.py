@@ -732,7 +732,7 @@ class Binder:
         for _, output in bound_inputs.values():
             declared_fields.add(output.name)
             declared_fields.update(output.evidence_fields)
-        declared_fields.update({"match_id", "period"})
+        declared_fields.update({"match_id", "period", "perspective_team_role"})
         for parameter in signature.parameters:
             if not parameter.name.endswith("_field"):
                 continue
