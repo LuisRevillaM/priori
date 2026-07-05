@@ -305,7 +305,7 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
         payload["expression_id"] = "line_break_underneath_support_response"
         payload["concept_identity"] = "line_break_underneath_support_response"
         payload["target"]["target_id"] = "line_break_underneath_support_response_v0"
-        payload["population"]["match_ids"] = []
+        payload["population"]["match_ids"] = ["J03WOH"]
         payload["population"]["periods"] = []
         result = load_meaning_expression_result(payload, vocabulary=self.vocabulary)
         self.assertEqual("accepted", result.outcome)

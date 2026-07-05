@@ -111,6 +111,7 @@ def synthesize_and_bind(
             expression=expression,
             document=document,
             default_invocation=document.get("default_invocation") or {},
+            preserve_default_invocation=True,
         )
         bind_payload = bind_payload_for_document(document_payload)
         return {
@@ -220,11 +221,17 @@ def document_payload_for_expression(
     expression: MeaningExpressionV0,
     document: dict[str, Any],
     default_invocation: dict[str, Any] | None = None,
+    preserve_default_invocation: bool = False,
 ) -> dict[str, Any]:
     defaults = default_invocation or {}
-    match_ids = expression.population.match_ids or list(defaults.get("match_ids") or search.MATCH_IDS)
-    periods = expression.population.periods or list(defaults.get("periods") or ["firstHalf", "secondHalf"])
-    roles = expression.population.perspective_team_roles or [str(defaults.get("perspective_team_role") or "home")]
+    if preserve_default_invocation:
+        match_ids = list(defaults.get("match_ids") or search.MATCH_IDS)
+        periods = list(defaults.get("periods") or ["firstHalf", "secondHalf"])
+        roles = [str(defaults.get("perspective_team_role") or "home")]
+    else:
+        match_ids = expression.population.match_ids or list(defaults.get("match_ids") or search.MATCH_IDS)
+        periods = expression.population.periods or list(defaults.get("periods") or ["firstHalf", "secondHalf"])
+        roles = expression.population.perspective_team_roles or [str(defaults.get("perspective_team_role") or "home")]
     role_documents: dict[str, dict[str, Any]] = {}
     for role in roles:
         role_doc = copy.deepcopy(document)
