@@ -22,7 +22,8 @@ Frontier base: `df622a7` (`codex/afl08-passport-loop`)
 | `8c5514c` | Meaning-expression schema, pack-derived vocabulary gate, target synthesizer, round-trip fixtures/evidence, generator, tests. |
 | `2c44dab` | Stage report update after round-1 implementation. |
 | `a1a8104` | Final round-1 report with full-suite table. |
-| `PENDING` | Round-2 REJECT fixes: composition grammar in pack, real writer guard, typed constraints, new fixtures, regenerated evidence, tests. |
+| `7e57c2e` | Round-2 REJECT fixes: composition grammar in pack, real writer guard, typed constraints, new fixtures, regenerated evidence, tests. |
+| `PENDING` | Generator-envelope unit test, mutation evidence report update, final full-suite report. |
 
 ## Round-2 Director Rulings
 
@@ -75,18 +76,23 @@ from the generated pack; bridge code does not write coverage rows.
 
 | Guard | Mutation | Named test result |
 | --- | --- | --- |
-| Concept vocabulary gate | PENDING | PENDING |
-| Constraint-kind gate | PENDING | PENDING |
-| Constraint-field gate | PENDING | PENDING |
-| Real ledger writer fence | PENDING | PENDING |
-| Requested-evidence envelope | PENDING | PENDING |
+| Concept vocabulary gate | Disabled `concept_refs` membership check | `test_out_of_pack_reference_returns_exact_typed_gap_payload` failed: expected `refused`, got `accepted`. |
+| Operator application gate | Disabled `operator_applications.operator` membership check | `test_out_of_pack_operator_without_truthful_gap_code_raises` failed: `MissingGapCodeError` not raised. |
+| Operator parameter gate | Disabled `operator_applications.parameters` membership check | `test_out_of_pack_parameter_without_truthful_gap_code_raises` failed: `MissingGapCodeError` not raised. |
+| Constraint-kind gate | Disabled `composition_constraints.kind` membership check | `test_out_of_pack_constraint_kind_without_truthful_gap_code_raises` failed through raw `KeyError` instead of the required `MissingGapCodeError`. |
+| Constraint-field gate | Disabled `_field` value validation | `test_out_of_pack_constraint_field_without_truthful_gap_code_raises` failed: `MissingGapCodeError` not raised. |
+| Free-form dict rejection | Changed `StrictModel` from `extra=forbid` to `extra=ignore` | `test_free_form_constraint_dict_is_rejected_by_schema` failed: `ValidationError` not raised. |
+| Real ledger writer fence | Disabled the `TQE_WRITE`/`TQE_SEARCH_UPDATE_LEDGER` check in real `update_coverage_rows` | `test_ledger_write_path_is_unreachable_from_bridge_code` failed: `PermissionError` not raised. |
+| Requested-evidence envelope | Disabled the generator raise for nonzero `requested_evidence_failure_count` | `test_roundtrip_generator_rejects_requested_evidence_failures` failed: `RuntimeError` not raised. |
+
+All mutations were restored; the focused suite passed afterward.
 
 ## Verification
 
 | Command | Result | Notes |
 | --- | --- | --- |
 | `PYTHONPATH=src UV_CACHE_DIR=/private/tmp/uv-cache-priori ./.venv/bin/python -m unittest tests.test_scp2_1_meaning_to_target tests.test_r1_c_checkpoint` | PASS | 29 tests in `0.175s`. |
-| `PYTHONPATH=src UV_CACHE_DIR=/private/tmp/uv-cache-priori ./.venv/bin/python -m unittest tests.test_scp2_1_meaning_to_target tests.test_r1_c_checkpoint tests.test_r2_1_aggregate_over` | PASS | 46 tests in `0.218s`. |
+| `PYTHONPATH=src UV_CACHE_DIR=/private/tmp/uv-cache-priori ./.venv/bin/python -m unittest tests.test_scp2_1_meaning_to_target tests.test_r1_c_checkpoint tests.test_r2_1_aggregate_over` | PASS | 47 tests in `0.206s` after mutation restoration. |
 | `UV_CACHE_DIR=/private/tmp/uv-cache-priori ./.venv/bin/python scripts/packets/scp2_1_roundtrip_generator.py` | PASS | Wrote round-trip evidence; novel one-match execution status `pass`, result_count `13`, requested_evidence_failure_count `0`. |
 | `UV_CACHE_DIR=/private/tmp/uv-cache-priori make test` | PENDING | Will run on committed tree after staged implementation commits. |
 

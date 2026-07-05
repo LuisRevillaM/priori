@@ -6,10 +6,12 @@ import os
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from pydantic import ValidationError
 from scripts.coverage_map import compiler_search_reachability as search
+from scripts.packets import scp2_1_roundtrip_generator as roundtrip_generator
 from tqe.runtime.ir import stable_hash
 from tqe.semantic_compiler.meaning_expression import (
     BridgeRefusalKind,
@@ -172,6 +174,19 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
         with patch.dict(os.environ, {"TQE_WRITE": "0", "TQE_SEARCH_UPDATE_LEDGER": "0"}):
             with self.assertRaises(PermissionError):
                 search.update_coverage_rows([], [])
+
+    def test_roundtrip_generator_rejects_requested_evidence_failures(self) -> None:
+        execution = SimpleNamespace(
+            status=SimpleNamespace(value="incomplete"),
+            provenance={"requested_evidence_failure_count": 1},
+        )
+        executor = SimpleNamespace(execute=lambda _bound: execution)
+        with patch.object(roundtrip_generator, "TacticalQueryExecutor", return_value=executor):
+            with patch.object(roundtrip_generator.TacticalQueryDocument, "model_validate", return_value=object()):
+                with patch.object(roundtrip_generator, "bind_document", return_value=object()):
+                    with patch.object(roundtrip_generator, "execution_result_rows", return_value=[]):
+                        with self.assertRaisesRegex(RuntimeError, "requested evidence failures"):
+                            roundtrip_generator.execute_document({"schema_version": "1.0"})
 
     def test_binder_accepts_synthesized_known_target_and_matches_committed_hash(self) -> None:
         expression = self.accepted_expression("fragile_possession_state_known.v0.json")
