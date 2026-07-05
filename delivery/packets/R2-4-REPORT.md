@@ -30,7 +30,7 @@ use this clone's commit SHAs via `format-patch`.
 | `c40a008` | Possession-continuity evidence, compiler-search sequence builder, R2-4 meaning-expression fixture, bridge regression test. |
 | `4d74bd0` | Byte-reproducing flagship generator, synthesized sequence+rate plan, counterattack initiation table, provenance. |
 | `2d2a3e1` | Mutation evidence and restore check. |
-| `PENDING` | Generated contract refresh and final verification table. |
+| `44e69f0` | Generated contract refresh and SCP-0/M1.1 drift closure. |
 
 ## Pack Delta
 
@@ -95,5 +95,6 @@ The bridge schema was not extended. The meaning-expression vocabulary now sees `
 
 | Command | Result | Notes |
 | --- | --- | --- |
-| `UV_CACHE_DIR=/private/tmp/uv-cache-priori make test` | PENDING | Must run on committed tree. |
+| `UV_CACHE_DIR=/private/tmp/uv-cache-priori make PYTHON=/Users/luisrevilla/code/priori/.venv/bin/python test` | PASS | Committed tree at `44e69f0`; transient untracked symlinks `data/canonical` and `data/raw` pointed to `/Users/luisrevilla/code/priori/data/*` for legacy hardcoded corpus paths, then were removed. Raw log: `/private/tmp/r2-4-make-test-committed.log`. |
+| Full-suite summary | PASS | `Ran 526 tests in 450.969s`; attestation `VERIFIED`; no failures/errors. Long execution flagged (>5 min). |
 
