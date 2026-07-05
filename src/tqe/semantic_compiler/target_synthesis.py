@@ -167,7 +167,11 @@ def exact_recipe_plan_for_expression(
         recipe_id = str(recipe.get("recipe_id") or "")
         if not recipe_id:
             continue
-        if recipe_id not in candidates and recipe_base_id(recipe_id) not in candidates:
+        base_id = recipe_base_id(recipe_id)
+        if recipe_id not in candidates and not any(
+            candidate == base_id or candidate.startswith(f"{base_id}_")
+            for candidate in candidates
+        ):
             continue
         source = recipe.get("exact_typed_plan_ref") or recipe.get("source_path")
         if not source:

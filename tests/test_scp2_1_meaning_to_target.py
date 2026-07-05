@@ -279,6 +279,23 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
             synthesized["document"]["recipe"]["recipe_id"],
         )
 
+    def test_recipe_backed_expression_accepts_family_suffix_identity(self) -> None:
+        pack = json.loads(Path("generated/tactical-knowledge-pack.json").read_text(encoding="utf-8"))
+        recipe = next(
+            item for item in pack["recipes"] if item["recipe_id"] == "line_break_support_response_v1"
+        )
+        payload = self.recipe_expression_payload(recipe)
+        payload["expression_id"] = "line_break_support_response_underneath"
+        payload["concept_identity"] = "line_break_support_response_underneath"
+        payload["target"]["target_id"] = "line_break_support_response_underneath_v0"
+        result = load_meaning_expression_result(payload, vocabulary=self.vocabulary)
+        self.assertEqual("accepted", result.outcome)
+        self.assertIsNotNone(result.expression)
+
+        synthesized = synthesize_and_bind(result.expression, coverage_rows=self.coverage_rows)
+
+        self.assertEqual("recipe:line_break_support_response_v1", synthesized["build"]["terminal_provider"])
+
     def accepted_expression(self, name: str):
         result = load_meaning_expression_from_path(FIXTURE_DIR / name, vocabulary=self.vocabulary)
         self.assertEqual("accepted", result.outcome)
