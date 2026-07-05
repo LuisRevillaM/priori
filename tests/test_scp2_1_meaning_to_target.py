@@ -253,11 +253,100 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
             synthesized["target"]["semantic_correspondence"]["coverage_row"],
         )
 
+    def test_recipe_backed_expression_uses_generated_exact_plan_ref(self) -> None:
+        pack = json.loads(Path("generated/tactical-knowledge-pack.json").read_text(encoding="utf-8"))
+        recipe = next(
+            item for item in pack["recipes"] if item["recipe_id"] == "line_break_support_response_v1"
+        )
+        payload = self.recipe_expression_payload(recipe)
+        result = load_meaning_expression_result(payload, vocabulary=self.vocabulary)
+        self.assertEqual("accepted", result.outcome)
+        self.assertIsNotNone(result.expression)
+
+        synthesized = synthesize_and_bind(result.expression, coverage_rows=self.coverage_rows)
+
+        self.assertEqual("PASS", synthesized["bind"]["status"])
+        self.assertEqual(
+            "recipe:line_break_support_response_v1",
+            synthesized["build"]["terminal_provider"],
+        )
+        self.assertEqual(
+            "generated_exact_typed_plan_ref",
+            synthesized["build"]["rules_used"][0],
+        )
+        self.assertEqual(
+            "line_break_support_response_v1",
+            synthesized["document"]["recipe"]["recipe_id"],
+        )
+
     def accepted_expression(self, name: str):
         result = load_meaning_expression_from_path(FIXTURE_DIR / name, vocabulary=self.vocabulary)
         self.assertEqual("accepted", result.outcome)
         self.assertIsNotNone(result.expression)
         return result.expression
+
+    @staticmethod
+    def recipe_expression_payload(recipe: dict) -> dict:
+        fields = []
+        for evidence in recipe["authoring_contract"]["requested_evidence"]:
+            field = evidence["field"]
+            if field not in fields:
+                fields.append(field)
+        status_semantics = [
+            {
+                "field": predicate["input"]["output_name"],
+                "operator": predicate["operator"]["name"],
+                "required_value": predicate["compare"].get("value"),
+            }
+            for predicate in recipe["authoring_contract"]["required_predicates"]
+        ]
+        refs = []
+        for node in recipe["authoring_contract"]["authorable_nodes"]:
+            ref = node["catalog_ref"]
+            if ref not in refs:
+                refs.append(ref)
+        base_id = recipe["recipe_id"].removesuffix("_v1")
+        return {
+            "schema_version": "meaning_expression.v0",
+            "expression_id": base_id,
+            "expression_version": "0.1.0",
+            "concept_identity": base_id,
+            "display_name": recipe["display_name"],
+            "meaning_clauses": [
+                {
+                    "subject": "recipe",
+                    "action": "requires",
+                    "field": status_semantics[0]["field"],
+                    "operator": status_semantics[0]["operator"],
+                    "value": status_semantics[0]["required_value"],
+                }
+            ],
+            "concept_refs": refs,
+            "operator_applications": [],
+            "population": {
+                "match_ids": ["J03WOY"],
+                "periods": ["firstHalf", "secondHalf"],
+                "perspective_team_roles": ["home"],
+            },
+            "group_by": [],
+            "target": {
+                "target_id": f"{base_id}_v0",
+                "held_out": True,
+                "multi_step": True,
+            },
+            "target_contract": {
+                "desired_output": "classification",
+                "required_evidence": fields,
+                "required_modalities": ["events", "tracking"],
+                "status_semantics": status_semantics,
+                "composition_constraints": [],
+                "claim_boundary": "Observed recipe-backed evidence only.",
+            },
+            "correspondence_clauses": [
+                {"name": "recipe_id", "value": recipe["recipe_id"]},
+                {"name": "claim_boundary", "value": "generated exact typed plan reference"},
+            ],
+        }
 
     @staticmethod
     def fixture_payload(name: str) -> dict:

@@ -19,6 +19,7 @@ from scripts.coverage_map import compiler_search_reachability as search
 from tqe.runtime.binder import bind_document
 from tqe.runtime.ir import TacticalQueryDocument, stable_hash
 from tqe.semantic_compiler.meaning_expression import (
+    DEFAULT_KNOWLEDGE_PACK_PATH,
     MeaningExpressionV0,
     render_meaning_sentence,
     search_constraint_payload,
@@ -103,6 +104,30 @@ def synthesize_and_bind(
             str(failed_gate.get("message") or "target failed certification gate"),
             dict(failed_gate.get("failure_details") or {}),
         )
+    recipe_plan = exact_recipe_plan_for_expression(expression)
+    if recipe_plan is not None:
+        recipe_id, source_path, document = recipe_plan
+        document_payload = document_payload_for_expression(
+            expression=expression,
+            document=document,
+        )
+        bind_payload = bind_payload_for_document(document_payload)
+        return {
+            "target": target,
+            "build": {
+                "providers_used": [f"recipe:{recipe_id}"],
+                "rules_used": ["generated_exact_typed_plan_ref"],
+                "terminal_provider": f"recipe:{recipe_id}",
+                "build_metadata": {
+                    "recipe_id": recipe_id,
+                    "source_path": str(source_path),
+                },
+                "field_sources": {},
+            },
+            "document": document_payload,
+            "document_hash": stable_hash(document_payload),
+            "bind": bind_payload,
+        }
     build = search.synthesize_by_search(
         target=target,
         row=row,
@@ -127,6 +152,52 @@ def synthesize_and_bind(
         "document_hash": stable_hash(document_payload),
         "bind": bind_payload,
     }
+
+
+def exact_recipe_plan_for_expression(
+    expression: MeaningExpressionV0,
+    *,
+    pack_path: Path = DEFAULT_KNOWLEDGE_PACK_PATH,
+) -> tuple[str, Path, dict[str, Any]] | None:
+    if expression.operator_applications or expression.target_contract.composition_constraints:
+        return None
+    candidates = recipe_identity_candidates(expression)
+    if not candidates or not pack_path.exists():
+        return None
+    pack = json.loads(pack_path.read_text(encoding="utf-8"))
+    for recipe in pack.get("recipes") or []:
+        recipe_id = str(recipe.get("recipe_id") or "")
+        if not recipe_id:
+            continue
+        if recipe_id not in candidates and recipe_base_id(recipe_id) not in candidates:
+            continue
+        source = recipe.get("exact_typed_plan_ref") or recipe.get("source_path")
+        if not source:
+            continue
+        source_path = Path(str(source))
+        if not source_path.exists():
+            continue
+        return recipe_id, source_path, json.loads(source_path.read_text(encoding="utf-8"))
+    return None
+
+
+def recipe_identity_candidates(expression: MeaningExpressionV0) -> set[str]:
+    raw: set[str] = {expression.concept_identity, expression.target.target_id}
+    for clause in expression.correspondence_clauses:
+        if clause.name in {"recipe_id", "recipe"} and isinstance(clause.value, str):
+            raw.add(clause.value)
+    candidates: set[str] = set()
+    for value in raw:
+        normalized = value.strip()
+        if not normalized:
+            continue
+        base = recipe_base_id(normalized)
+        candidates.update({normalized, base, f"{base}_v1"})
+    return candidates
+
+
+def recipe_base_id(value: str) -> str:
+    return re.sub(r"_v\d+$", "", re.sub(r"_v\d+_\d+$", "", value))
 
 
 def document_payload_for_expression(
