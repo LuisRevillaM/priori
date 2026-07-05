@@ -71,7 +71,21 @@ All mutations were restored; the focused suite passed afterward.
 | --- | --- | --- |
 | `PYTHONPATH=src UV_CACHE_DIR=/private/tmp/uv-cache-priori ./.venv/bin/python -m unittest tests.test_scp2_1_meaning_to_target -v` | PASS | 12 tests in `0.027s` after mutation restoration. |
 | `UV_CACHE_DIR=/private/tmp/uv-cache-priori ./.venv/bin/python scripts/packets/scp2_1_roundtrip_generator.py` | PASS | Wrote round-trip evidence; novel one-match execution passed in `23.861s`. |
+| `UV_CACHE_DIR=/private/tmp/uv-cache-priori make test` | PASS | 511 tests in `442.096s`; long execution flagged (>300s). |
 
 ## Full-Suite Table
 
-Pending committed-tree run.
+Run on committed tree `2c44dab` before this report-only update.
+
+| Command | Result | Tests | Duration | Failures |
+| --- | --- | ---: | ---: | --- |
+| `UV_CACHE_DIR=/private/tmp/uv-cache-priori make test` | PASS | 511 | `442.096s` | None |
+
+Full output summary:
+
+```text
+Ran 511 tests in 442.096s
+
+OK
+{"attestation_status": "VERIFIED", "blocking_reasons": []}
+```
