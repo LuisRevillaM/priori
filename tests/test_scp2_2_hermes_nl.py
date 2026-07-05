@@ -204,6 +204,39 @@ class SCP2HermesNLTests(unittest.TestCase):
         self.assertEqual(sequence["expression_id"], second.expression.expression_id)
         self.assertEqual(1, len(invoker.prompts))
 
+    def test_clarification_with_reading_already_in_request_resolves_without_reasking(self) -> None:
+        controlled = self.fixture_payload("fragile_possession_state_known.v0.json")
+        sequence = self.fixture_payload("fragile_window_join_count_novel.v0.json")
+        raw = json.dumps(
+            {
+                "outcome": "clarification_required",
+                "dimension": "SUPPORT_DEFINITION",
+                "question": "Which support reading should be used?",
+                "readings": [
+                    {
+                        "reading_id": "within_distance",
+                        "label": "within distance support",
+                        "answer_aliases": ["nearby"],
+                        "expression": controlled,
+                    },
+                    {
+                        "reading_id": "underneath_option",
+                        "label": "underneath support option",
+                        "answer_aliases": ["underneath"],
+                        "expression": sequence,
+                    },
+                ],
+            }
+        )
+        invoker = FakeInvoker(raw)
+
+        outcome = compile_nl_request("find underneath support", invoker=invoker)
+
+        self.assertEqual("expression", outcome.outcome)
+        self.assertEqual(sequence["expression_id"], outcome.expression.expression_id)
+        self.assertEqual("preanswered_clarification_state", outcome.transcript.invocation["source"])
+        self.assertEqual(1, len(invoker.prompts))
+
     def test_harness_verdict_correctness_on_tiny_fixture_set(self) -> None:
         fragile = self.expression_for("fragile_possession_state_known.v0.json")
         sequence = self.expression_for_r2_4("counterattack_initiation_sequence_rate.v0.json")

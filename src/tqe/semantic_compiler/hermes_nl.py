@@ -263,7 +263,8 @@ def compile_nl_request(
             },
         )
         try:
-            return parse_hermes_completion(raw_completion, transcript=transcript, vocabulary=vocabulary)
+            outcome = parse_hermes_completion(raw_completion, transcript=transcript, vocabulary=vocabulary)
+            return resolve_preanswered_clarification(outcome, answer=text)
         except HermesNLModelOutputError as exc:
             if attempt_index >= MAX_MODEL_REPAIR_ATTEMPTS:
                 raise
@@ -841,6 +842,44 @@ def resume_from_clarification(state: ClarificationState, answer: str) -> HermesO
                 transcript=transcript,
             )
     raise HermesNLModelOutputError(f"clarification answer did not select a typed reading: {answer}")
+
+
+def resolve_preanswered_clarification(outcome: HermesOutcome, *, answer: str) -> HermesOutcome:
+    if not isinstance(outcome, ClarificationRequiredOutcome):
+        return outcome
+    matches = [reading for reading in outcome.readings if reading.matches(answer)]
+    if len(matches) != 1:
+        return outcome
+    selected = matches[0]
+    transcript = TranscriptEvidence(
+        prompt_hash=outcome.transcript.prompt_hash,
+        pack_sha256=outcome.transcript.pack_sha256,
+        raw_completion=outcome.transcript.raw_completion,
+        completion_hash=stable_hash(
+            {
+                "preanswered_clarification": outcome.transcript.completion_hash,
+                "state_id": outcome.state.state_id,
+                "answer": answer,
+                "selected_reading_id": selected.reading_id,
+            }
+        ),
+        model_provider=outcome.transcript.model_provider,
+        model_name=outcome.transcript.model_name,
+        invocation={
+            **outcome.transcript.invocation,
+            "source": "preanswered_clarification_state",
+            "state_id": outcome.state.state_id,
+            "answer": answer,
+            "selected_reading_id": selected.reading_id,
+        },
+    )
+    return ExpressionOutcome(
+        outcome="expression",
+        expression=selected.expression,
+        expression_json=json.loads(stable_expression_json(selected.expression)),
+        document_hash=selected.expression.document_hash(),
+        transcript=transcript,
+    )
 
 
 def transcript_for(
