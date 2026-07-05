@@ -2,70 +2,119 @@
 
 Branch: `packet/r2-2`
 
-## Item 1: `rate_and_share` operator and bind guards
+## Clone Provenance
 
-Status: implemented and focused-test verified.
+Round 2 is being executed in clone `/private/tmp/priori-r2-2-round2-single` because the main workspace git index returned `index.lock` EPERM before edits. The director should recover round 2 via `format-patch` from the clone SHAs listed in the final section. Nothing is pushed.
 
-Commit: `c742920`.
+## Round 1 Baseline
+
+Round 1 commits on this branch:
+
+| Commit | Purpose |
+| --- | --- |
+| `c742920` | Implemented the original `rate_and_share` core. |
+| `0b35f6f` | Added the first flagship artifact under CAR-named surfaces. |
+| `25d3b66` | Finalized the round 1 report. |
+| `7787de8` | Director review: R2-2 round 1 REVISE. |
+
+## Round 2 Item 1: Deviation And Ratification (R-AA)
+
+Status: implemented in report and regenerated artifacts.
+
+Process law restated: when a spec cannot be implemented as written, the executor must flag the deviation and request ratification before substituting a different question. Correctness does not transfer authority.
+
+Degeneracy found in round 1: the literal spec population `window_status PASS / typed_join_status PASS` could not be bound honestly under the packet subset law. In the R1-5 terminal join, `typed_join_status PASS` already requires the left-side retention window (`left_status_field=window_status`, required `PASS`). Therefore all 145 final fragile PASS rows already have retention baked in. Using raw `window_status` as numerator over final `typed_join_status` also produces numerator PASS rows with denominator FAIL, which the runtime correctly raises as a subset-law violation.
+
+Ratified populations per R-AA:
+
+| Role | Field | Meaning |
+| --- | --- | --- |
+| Numerator | `typed_join_status` | Retained final fragile-condition subset. |
+| Denominator | `right_status` | The right-side pressure-without-support fragile condition. |
+| Added predicate | `window_status` | Same-team retention window added by the terminal join. |
+
+Era note carried from R-AA: the condition-side concept behind `right_status` deserves a named registration in a later packet instead of remaining implicit in the terminal join.
+
+## Honest R2-1 Source-Population And PASS-Count Reconciliation
+
+This packet claims the correspondence that is true under the ratified recomposition:
+
+| Check | Result |
+| --- | --- |
+| Same 14 role-match rows as R2-1 flagship table | TRUE |
+| Source population count matches R2-1 | `8414 == 8414` |
+| A count matches R2-1 `typed_join_status` PASS count | `145 == 145` |
+| All 14 source populations match R2-1 row-for-row | TRUE |
+| All 14 retained fragile PASS counts match R2-1 row-for-row | TRUE |
+
+It does not claim that the ratified rate denominator interval is identical to the R2-1 denominator status interval. That would be false after changing the denominator from final `typed_join_status` to the condition-side `right_status`; the spec's original reconciliation wording was unsatisfiable under the subset law.
+
+## Round 2 Item 2: Rename Off CAR Surfaces (R-AB)
+
+Status: implemented.
+
+Renamed surfaces:
+
+| Old | New |
+| --- | --- |
+| `delivery/packets/r2-2-flagship/car0_retention_rate_table.json` | `delivery/packets/r2-2-flagship/fragile_retention_rate_table.json` |
+| `delivery/packets/r2-2-flagship/car0_retention_rate_table.md` | `delivery/packets/r2-2-flagship/fragile_retention_rate_table.md` |
+| `delivery/packets/r2-2-flagship/rate_and_share_car0_retention_v0.json` | `delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json` |
+| node id `rate_and_share_car0_retention` | `fragile_retention_rate` |
+| target/invocation id `r2_2_rate_and_share_car0_retention_v0*` | `r2_2_fragile_retention_rate_v0*` |
+| population expression `CAR-0 retained fragile-condition rate...` | `fragile-condition retention rate...` |
+
+The original round 1 commit title remains in history; round 2 renames the live surfaces and records the correction here. Standing law restated: CAR is a player metric, and this packet is a team-level baseline.
+
+## Round 2 Item 3: Share Amputation And Operator Rename (R-AC)
+
+Status: implemented.
 
 Files:
 
-- `src/tqe/runtime/operators/rate_and_share.py`
+- `src/tqe/runtime/operators/rate.py`
 - `src/tqe/runtime/operators/__init__.py`
 - `src/tqe/runtime/binder.py`
-- `tests/test_r2_2_rate_and_share.py`
+- `tests/test_r2_2_rate.py`
 - `tests/test_r1_0_operator_scaffolding.py`
 
 Implemented:
 
-- Added `rate_and_share@0.1.0` as a registry citizen with `rate_records` output and evidence fields carrying A/B/C/D1/D2/E, the rate interval, and numerator/denominator count intervals.
-- `RateIntervalResult` computes bounds internally from the exact joint partition and refuses caller-supplied `observed`, `lower_bound`, or `upper_bound`.
-- Runtime subset invariant raises on `num PASS` with denominator `FAIL` or `UNKNOWN`.
-- Degenerate denominators (`A+B+C+D1+D2 == 0`) emit typed `UNKNOWN` with no NaN/zero point estimate.
-- Binder structural dispatch accepts only same-source numerator/denominator declarations, rejects removed denominator predicates, inherits R2-1 constraint gates, and keeps perspective grouping tied to same-team lineage.
-- Registry ratchet now includes `rate_and_share` and extends the shared-runtime literal leak check.
+- Renamed the registered composition operator from `rate_and_share@0.1.0` to `rate@0.1.0`.
+- Renamed the implementation callable to `execute_rate` and the signature to `RATE_SIGNATURE`.
+- Removed `share_key_field` and all runtime share assertion code.
+- Constrained `rate_kind` to `['rate']` only.
+- Added limitations text declaring correct future share semantics: key-partition counts over one common denominator, observed shares summing to 1 over known rows, interval-typed.
+
+## Round 2 Item 4: R-AD Edge Behavior
+
+Status: implemented.
+
+Behavior:
+
+| Case | Result |
+| --- | --- |
+| D1-only population | Emits one row with `rate_status=UNKNOWN`, `observed=None`, `lower_bound=0`, `upper_bound=0`. |
+| Empty population | Emits one typed UNKNOWN row instead of zero rows. |
 
 Focused verification:
 
 | Command | Result |
 | --- | --- |
-| `PYTHONPATH=src UV_CACHE_DIR=/private/tmp/uv-cache uv run --no-sync python -m unittest tests.test_r2_2_rate_and_share tests.test_r1_0_operator_scaffolding` | PASS, 22 tests |
+| `PYTHONPATH=src /Users/luisrevilla/code/priori/.venv/bin/python -m unittest tests.test_r2_2_rate tests.test_r1_0_operator_scaffolding` | PASS, 25 tests |
 
-Mutation checks:
+Round 2 mutation checks:
 
 | Mutation | Named test | Result |
 | --- | --- | --- |
-| Add C to observed denominator | `test_c_partition_is_not_in_observed_denominator` | FAIL as expected, observed changed from `0.5` to `0.3333333333333333`; restored |
-| Drop D1 from lower-bound denominator | `test_d1_partition_remains_in_lower_bound_denominator` | FAIL as expected, lower bound changed from `0.3333333333333333` to `0.5`; restored |
-| Allow numerator PASS with denominator FAIL | `test_num_pass_with_den_fail_raises` | FAIL as expected, `ValueError` not raised; restored |
-| Allow numerator PASS with denominator UNKNOWN | `test_num_pass_with_den_unknown_raises` | FAIL as expected, `ValueError` not raised; restored |
-| Allow external constructor bounds | `test_constructor_refuses_external_bounds` | FAIL as expected, `ValueError` not raised; restored |
-| Bypass constructor ordering invariant | `test_constructor_enforces_interval_ordering_invariant` | FAIL as expected, `ValueError` not raised; restored |
-| Disable same-source binder gate | `test_bind_rejects_different_source_relations` | FAIL as expected, subset-specific error disappeared; restored |
-| Disable removed-predicate binder gate | `test_bind_rejects_removed_denominator_predicates` | FAIL as expected, `BindError` not raised; restored |
+| Re-admit `share` to `RATE_KINDS` | `test_signature_declares_rate_as_only_rate_kind` | FAIL as expected; restored |
+| Reintroduce `share_key_field` | `test_signature_does_not_advertise_share_key_field` | FAIL as expected; restored |
+| Disable D1-only UNKNOWN branch | `test_d1_only_population_is_unknown_with_zero_bounds` | FAIL as expected, status regressed to `PASS`; restored |
+| Disable empty-population fallback row | `test_empty_population_emits_typed_unknown_row` | FAIL as expected, zero rows emitted; restored |
 
-## Item 2: flagship CAR-0 v0 rate artifact
+## Round 2 Flagship Totals
 
-Status: implemented and byte-reproduction verified.
-
-Files:
-
-- `scripts/packets/r2_2_flagship_generator.py`
-- `delivery/packets/r2-2-flagship/rate_and_share_car0_retention_v0.json`
-- `delivery/packets/r2-2-flagship/provenance.json`
-- `delivery/packets/r2-2-flagship/car0_retention_rate_table.json`
-- `delivery/packets/r2-2-flagship/car0_retention_rate_table.md`
-
-Implemented:
-
-- Added a committed generator that derives the R2-2 rate plan from `delivery/packets/r1-c-sweep/plans/r1_5_fragile_possession_state_v0.json`.
-- The derived plan appends `rate_and_share_car0_retention` with same-source numerator and denominator inputs from `typed_join_2.typed_join_records`.
-- Numerator status: `typed_join_status` (`PASS` is retained final CAR-0 fragile state).
-- Denominator status: `right_status` (the right-side fragile condition in the terminal CAR-0 join).
-- The subset declaration states that `typed_join_status PASS` is the same-source retained subset of `right_status PASS`, with `window_status` as the added retention predicate; removed predicate fields are empty.
-- The generator binds the derived plan, then derives the table from the committed R1-C population audit rows and routes period and merged rows through `RateIntervalResult`.
-
-Flagship totals:
+Regenerated via `scripts/packets/r2_2_flagship_generator.py` using the committed R1-C population audit and the guarded `RateIntervalResult` constructor.
 
 | Partition/count | Total |
 | --- | ---: |
@@ -78,33 +127,12 @@ Flagship totals:
 | Observed denominator count `A+B` | 222 |
 | Source record count | 8414 |
 
-R2-1 denominator reconciliation:
-
-| Check | Result |
-| --- | --- |
-| Same 14 role-match rows as R2-1 flagship table | TRUE |
-| Source population count matches R2-1 | `8414 == 8414` |
-| A count matches R2-1 `typed_join_status` PASS count | `145 == 145` |
-| All 14 source populations match R2-1 row-for-row | TRUE |
-| All 14 retained fragile PASS counts match R2-1 row-for-row | TRUE |
-
 Generator verification:
 
 | Command | Result |
 | --- | --- |
-| `PYTHONPATH=src UV_CACHE_DIR=/private/tmp/uv-cache uv run --no-sync python scripts/packets/r2_2_flagship_generator.py` | PASS, 14 rows, reconciled source populations `true`, reconciled pass counts `true` |
-| Hash before/after rerun for all four generated artifacts | PASS, identical hashes: `3d50a189fd82ce80b02451a65c11e8c61f784149`, `a7688ce838f8154909a0e43827d2829fe7d2923d`, `27d7b6faa343c56fb43b19b0cfc5bc6b7ad5824b`, `4699bab7c31fe4c24f88a5363b9cf3ed2d8391fa` |
+| `PYTHONPATH=src /Users/luisrevilla/code/priori/.venv/bin/python scripts/packets/r2_2_flagship_generator.py` | PASS, 14 rows, reconciled source populations `true`, reconciled pass counts `true` |
 
 ## Full-suite table on committed tree
 
-Status: complete.
-
-Committed tree tested: `0b35f6f`.
-
-| Command | Result | Tests | Skipped | Failures | Errors | Duration |
-| --- | --- | ---: | ---: | ---: | ---: | ---: |
-| `make test` | PASS | 496 | 0 | 0 | 0 | 515.694s |
-
-Failure enumeration for the committed-tree run: none.
-
-Additional suite output: `{"attestation_status": "VERIFIED", "blocking_reasons": []}`.
+Status: pending round 2 final run.

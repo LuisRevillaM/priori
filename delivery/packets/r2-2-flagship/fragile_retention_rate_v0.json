@@ -3,7 +3,7 @@
     "away": {
       "default_invocation": {
         "execution_mode": "execute",
-        "invocation_id": "r2_2_rate_and_share_car0_retention_v0_away",
+        "invocation_id": "r2_2_fragile_retention_rate_v0_away",
         "match_ids": [
           "J03WOH",
           "J03WOY",
@@ -1450,9 +1450,9 @@
               }
             },
             "kind": "operator",
-            "node_id": "rate_and_share_car0_retention",
+            "node_id": "fragile_retention_rate",
             "operator": {
-              "name": "rate_and_share",
+              "name": "rate",
               "version": "0.1.0"
             },
             "outputs": [
@@ -1496,7 +1496,7 @@
             "parameters": {
               "constraint_opt_out_reason": {
                 "payload_type": "enum",
-                "value": "entity identity is not part of the CAR-0 retention-rate denominator"
+                "value": "entity identity is not part of the fragile-condition retention denominator"
               },
               "denominator_status_field": {
                 "payload_type": "enum",
@@ -1523,7 +1523,7 @@
               },
               "population_expression": {
                 "payload_type": "enum",
-                "value": "CAR-0 retained fragile-condition rate: final typed_join_status over right_status, per team perspective per match"
+                "value": "fragile-condition retention rate: final typed_join_status over right_status, per team perspective per match"
               },
               "rate_kind": {
                 "payload_type": "enum",
@@ -1537,13 +1537,9 @@
                 "payload_type": "boolean",
                 "value": true
               },
-              "share_key_field": {
-                "payload_type": "enum",
-                "value": "none"
-              },
               "subset_declaration": {
                 "payload_type": "enum",
-                "value": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal CAR-0 join"
+                "value": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal fragile-condition join"
               },
               "subset_predicate_fields": {
                 "payload_type": "entity_set",
@@ -1821,7 +1817,7 @@
     "home": {
       "default_invocation": {
         "execution_mode": "execute",
-        "invocation_id": "r2_2_rate_and_share_car0_retention_v0_home",
+        "invocation_id": "r2_2_fragile_retention_rate_v0_home",
         "match_ids": [
           "J03WOH",
           "J03WOY",
@@ -3268,9 +3264,9 @@
               }
             },
             "kind": "operator",
-            "node_id": "rate_and_share_car0_retention",
+            "node_id": "fragile_retention_rate",
             "operator": {
-              "name": "rate_and_share",
+              "name": "rate",
               "version": "0.1.0"
             },
             "outputs": [
@@ -3314,7 +3310,7 @@
             "parameters": {
               "constraint_opt_out_reason": {
                 "payload_type": "enum",
-                "value": "entity identity is not part of the CAR-0 retention-rate denominator"
+                "value": "entity identity is not part of the fragile-condition retention denominator"
               },
               "denominator_status_field": {
                 "payload_type": "enum",
@@ -3341,7 +3337,7 @@
               },
               "population_expression": {
                 "payload_type": "enum",
-                "value": "CAR-0 retained fragile-condition rate: final typed_join_status over right_status, per team perspective per match"
+                "value": "fragile-condition retention rate: final typed_join_status over right_status, per team perspective per match"
               },
               "rate_kind": {
                 "payload_type": "enum",
@@ -3355,13 +3351,9 @@
                 "payload_type": "boolean",
                 "value": true
               },
-              "share_key_field": {
-                "payload_type": "enum",
-                "value": "none"
-              },
               "subset_declaration": {
                 "payload_type": "enum",
-                "value": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal CAR-0 join"
+                "value": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal fragile-condition join"
               },
               "subset_predicate_fields": {
                 "payload_type": "entity_set",
@@ -3642,5 +3634,5 @@
     "away"
   ],
   "schema_version": "compiler_search_perspective_bundle.v1",
-  "target_id": "r2_2_rate_and_share_car0_retention_v0"
+  "target_id": "r2_2_fragile_retention_rate_v0"
 }

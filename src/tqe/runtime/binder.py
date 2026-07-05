@@ -964,7 +964,6 @@ class Binder:
             "subset_declaration",
             "subset_predicate_fields",
             "removed_denominator_predicate_fields",
-            "share_key_field",
             "same_team_perspective_required",
             "entity_identity_preserved_required",
             "frame_alignment_required",
@@ -975,17 +974,11 @@ class Binder:
         if not rate_parameter_names.issubset(parameter_names):
             return
         rate_kind = _resolved_text(resolved_parameters, "rate_kind")
-        if rate_kind not in {"rate", "share"}:
+        if rate_kind != "rate":
             self._issue(
                 "operator_rate_kind_unsupported",
-                "rate operator supports rate_kind=rate or rate_kind=share in this packet",
+                "rate operator supports rate_kind=rate only in this packet",
                 f"{path}.parameters.rate_kind",
-            )
-        if rate_kind == "share" and _resolved_text(resolved_parameters, "share_key_field", "none") == "none":
-            self._issue(
-                "operator_rate_share_key_missing",
-                "share outputs require a declared share_key_field",
-                f"{path}.parameters.share_key_field",
             )
         if _resolved_text(resolved_parameters, "subset_declaration", "none") == "none":
             self._issue(

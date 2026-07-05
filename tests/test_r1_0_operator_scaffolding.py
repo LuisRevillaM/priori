@@ -40,7 +40,6 @@ R1_OPERATOR_NAMES = (
     "window",
 )
 R1_SHARED_CODE_RATCHET_NAMES = (
-    "rate_and_share",
     "aggregate_over",
     "typed_join",
     "extremum_over_set",
@@ -131,7 +130,7 @@ class R10OperatorScaffoldingTests(unittest.TestCase):
                 "window",
                 "typed_join",
                 "aggregate_over",
-                "rate_and_share",
+                "rate",
             ),
             tuple(signature.name for signature in OPERATOR_SIGNATURES),
         )
@@ -143,7 +142,7 @@ class R10OperatorScaffoldingTests(unittest.TestCase):
                 ("window", "0.1.0"),
                 ("typed_join", "0.1.0"),
                 ("aggregate_over", "0.1.0"),
-                ("rate_and_share", "0.1.0"),
+                ("rate", "0.1.0"),
             },
             set(declared_operator_signatures()),
         )
@@ -155,7 +154,7 @@ class R10OperatorScaffoldingTests(unittest.TestCase):
                 ("window", "0.1.0"),
                 ("typed_join", "0.1.0"),
                 ("aggregate_over", "0.1.0"),
-                ("rate_and_share", "0.1.0"),
+                ("rate", "0.1.0"),
             },
             set(build_operator_registry({})),
         )
@@ -168,7 +167,7 @@ class R10OperatorScaffoldingTests(unittest.TestCase):
                 ("window", "0.1.0"),
                 ("typed_join", "0.1.0"),
                 ("aggregate_over", "0.1.0"),
-                ("rate_and_share", "0.1.0"),
+                ("rate", "0.1.0"),
             },
             set(executor_module.build_operator_registry(vars(executor_module))),
         )

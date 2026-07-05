@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the R2-2 CAR-0 retention-rate flagship artifacts."""
+"""Generate the R2-2 fragile-retention-rate flagship artifacts."""
 
 from __future__ import annotations
 
@@ -17,8 +17,8 @@ if str(SRC) not in sys.path:
 
 from tqe.runtime.binder import bind_document  # noqa: E402
 from tqe.runtime.ir import TacticalQueryDocument, stable_hash  # noqa: E402
-from tqe.runtime.operators.rate_and_share import (  # noqa: E402
-    RATE_AND_SHARE_SIGNATURE,
+from tqe.runtime.operators.rate import (  # noqa: E402
+    RATE_SIGNATURE,
     RateIntervalResult,
     _joint_partition_counts,
 )
@@ -28,22 +28,22 @@ SOURCE_PLAN = Path("delivery/packets/r1-c-sweep/plans/r1_5_fragile_possession_st
 SOURCE_AUDIT = Path("delivery/packets/r1-c-sweep/population-audit/audit.json")
 R2_1_TABLE = Path("delivery/packets/r2-1-flagship/fragile_possession_state_denominator_table.json")
 OUT_DIR = Path("delivery/packets/r2-2-flagship")
-PLAN_PATH = OUT_DIR / "rate_and_share_car0_retention_v0.json"
+PLAN_PATH = OUT_DIR / "fragile_retention_rate_v0.json"
 PROVENANCE_PATH = OUT_DIR / "provenance.json"
-TABLE_JSON = OUT_DIR / "car0_retention_rate_table.json"
-TABLE_MD = OUT_DIR / "car0_retention_rate_table.md"
-RATE_NODE_ID = "rate_and_share_car0_retention"
+TABLE_JSON = OUT_DIR / "fragile_retention_rate_table.json"
+TABLE_MD = OUT_DIR / "fragile_retention_rate_table.md"
+RATE_NODE_ID = "fragile_retention_rate"
 MATCH_ORDER = ["J03WOH", "J03WOY", "J03WPY", "J03WQQ", "J03WR9", "J03WMX", "J03WN1"]
 ROLE_ORDER = ["home", "away"]
 PERIOD_ORDER = {"firstHalf": 0, "secondHalf": 1}
 IDENTITY_FIELDS = ["match_id", "period", "perspective_team_role"]
 POPULATION_EXPRESSION = (
-    "CAR-0 retained fragile-condition rate: final typed_join_status over right_status, "
+    "fragile-condition retention rate: final typed_join_status over right_status, "
     "per team perspective per match"
 )
 SUBSET_DECLARATION = (
     "typed_join_status PASS is the same-source retained subset of right_status PASS; "
-    "the added predicate is the same-team retention window from the terminal CAR-0 join"
+    "the added predicate is the same-team retention window from the terminal fragile-condition join"
 )
 
 
@@ -71,7 +71,7 @@ def rate_node_payload() -> dict[str, Any]:
     return {
         "kind": "operator",
         "node_id": RATE_NODE_ID,
-        "operator": {"name": "rate_and_share", "version": "0.1.0"},
+        "operator": {"name": "rate", "version": "0.1.0"},
         "inputs": {
             "numerator": {"source_node_id": "typed_join_2", "output_name": "typed_join_records"},
             "denominator": {"source_node_id": "typed_join_2", "output_name": "typed_join_records"},
@@ -85,27 +85,26 @@ def rate_node_payload() -> dict[str, Any]:
             "subset_declaration": {"payload_type": "enum", "value": SUBSET_DECLARATION},
             "subset_predicate_fields": {"payload_type": "entity_set", "value": ["window_status"]},
             "removed_denominator_predicate_fields": {"payload_type": "entity_set", "value": []},
-            "share_key_field": {"payload_type": "enum", "value": "none"},
             "same_team_perspective_required": {"payload_type": "boolean", "value": True},
             "entity_identity_preserved_required": {"payload_type": "boolean", "value": False},
             "frame_alignment_required": {"payload_type": "boolean", "value": True},
             "constraint_opt_out_reason": {
                 "payload_type": "enum",
-                "value": "entity identity is not part of the CAR-0 retention-rate denominator",
+                "value": "entity identity is not part of the fragile-condition retention denominator",
             },
             "team_role_field": {"payload_type": "enum", "value": "perspective_team_role"},
         },
-        "outputs": [output.model_dump(mode="json") for output in RATE_AND_SHARE_SIGNATURE.outputs],
+        "outputs": [output.model_dump(mode="json") for output in RATE_SIGNATURE.outputs],
     }
 
 
 def generate_plan_bundle(source_bundle: dict[str, Any]) -> dict[str, Any]:
     bundle = copy.deepcopy(source_bundle)
-    bundle["target_id"] = "r2_2_rate_and_share_car0_retention_v0"
+    bundle["target_id"] = "r2_2_fragile_retention_rate_v0"
     for role, document in sorted(bundle["documents"].items()):
         declare_typed_join_identity_fields(document)
         document["draft_plan"]["nodes"].append(copy.deepcopy(rate_node_payload()))
-        document["default_invocation"]["invocation_id"] = f"r2_2_rate_and_share_car0_retention_v0_{role}"
+        document["default_invocation"]["invocation_id"] = f"r2_2_fragile_retention_rate_v0_{role}"
         document["default_invocation"]["max_results"] = 20
     return bundle
 
@@ -298,12 +297,12 @@ def table_payload(
     rows = merged_rows(period_records)
     reconciliation, per_row = r2_1_reconciliation(rows, r2_1_table)
     return {
-        "schema_version": "r2_2_flagship_car0_retention_rate_table.v1",
+        "schema_version": "r2_2_flagship_fragile_retention_rate_table.v1",
         "plan": str(PLAN_PATH),
         "plan_hash": stable_hash(plan_bundle),
         "rate_node_id": RATE_NODE_ID,
-        "question": "When a team's possession turns fragile, how often do they keep the ball anyway?",
-        "numerator": "typed_join_status PASS: retained final CAR-0 fragile state",
+        "question": "When a team faces the fragile condition, how often is possession retained?",
+        "numerator": "typed_join_status PASS: retained fragile-condition state",
         "denominator": "right_status PASS/UNKNOWN over the same typed_join_2 source relation",
         "rows": rows,
         "totals": table_totals(rows),
@@ -324,11 +323,11 @@ def render_markdown(table: dict[str, Any]) -> str:
     totals = table["totals"]
     reconciliation = table["r2_1_reconciliation"]
     lines = [
-        "# R2-2 Flagship CAR-0 Retention Rate Table",
+        "# R2-2 Flagship Fragile Retention Rate Table",
         "",
         f"Plan: `{PLAN_PATH}`",
         f"Plan hash: `{table['plan_hash']}`",
-        f"R2-1 denominator table: `{R2_1_TABLE}`",
+        f"R2-1 source-population table: `{R2_1_TABLE}`",
         "",
         "| Role | Match | Rate | Lower | Upper | A | B | C | D1 | D2 | E | Known Den | Source Rows |",
         "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
@@ -354,7 +353,7 @@ def render_markdown(table: dict[str, Any]) -> str:
             f"- E denominator-FAIL rows excluded from the rate: {totals['e_count']}",
             f"- Source rows: {totals['source_record_count']}",
             "",
-            "## R2-1 Denominator Reconciliation",
+            "## R2-1 Source-Population And PASS-Count Reconciliation",
             "",
             f"- Same 14 role-match rows: {reconciliation['same_14_role_match_rows']}",
             (

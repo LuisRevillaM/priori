@@ -22,7 +22,7 @@ from tqe.runtime.ir import (
 from tqe.runtime.values import RuntimeValue
 
 
-RATE_KINDS = ("rate", "share")
+RATE_KINDS = ("rate",)
 TRI_STATE_VALUES = ("PASS", "FAIL", "UNKNOWN")
 RATE_EVIDENCE_FIELDS = [
     "rate_kind",
@@ -54,8 +54,8 @@ RATE_EVIDENCE_FIELDS = [
 _BOUND_NOT_SUPPLIED = object()
 
 
-RATE_AND_SHARE_SIGNATURE = CompositionOperatorSignature(
-    name="rate_and_share",
+RATE_SIGNATURE = CompositionOperatorSignature(
+    name="rate",
     version="0.1.0",
     purpose=(
         "Compute interval-typed count rates from a joint numerator/denominator "
@@ -97,7 +97,7 @@ RATE_AND_SHARE_SIGNATURE = CompositionOperatorSignature(
             payload_type=PayloadType.ENUM,
             required=True,
             allowed_values=list(RATE_KINDS),
-            description="R2-2 supports count rate and share only.",
+            description="R2-2 supports count rate only.",
         ),
         ParameterDefinition(
             name="population_expression",
@@ -144,13 +144,6 @@ RATE_AND_SHARE_SIGNATURE = CompositionOperatorSignature(
             description="Must remain empty; non-empty values mean the numerator removed denominator predicates.",
         ),
         ParameterDefinition(
-            name="share_key_field",
-            payload_type=PayloadType.ENUM,
-            required=False,
-            default=TypedValue(payload_type=PayloadType.ENUM, value="none"),
-            description="Declared partition key for share outputs.",
-        ),
-        ParameterDefinition(
             name="same_team_perspective_required",
             payload_type=PayloadType.BOOLEAN,
             required=False,
@@ -189,8 +182,12 @@ RATE_AND_SHARE_SIGNATURE = CompositionOperatorSignature(
     coverage_propagation_rule_id="rate_unknown_rows_to_joint_interval_bounds",
     witness_rule_id="rate_group_population_witnesses",
     limitations=[
-        "rate_and_share never divides independent intervals; bounds come from the joint row partition.",
+        "rate never divides independent intervals; bounds come from the joint row partition.",
         "R2-2 supports count rates only; numeric sum/mean rates require a future field-domain mechanism.",
+        (
+            "Share is future work: correct share semantics require key-partition counts over one common "
+            "denominator, observed shares summing to 1 over known rows, and interval-typed bounds."
+        ),
         "The numerator population must be declared as a same-source subset of the denominator population.",
         "A num PASS row with denominator FAIL or UNKNOWN raises because the evidence violates the subset law.",
         "Degenerate denominators emit a typed UNKNOWN rate instead of zero, NaN, or an omitted row.",
@@ -238,9 +235,9 @@ class RateIntervalResult:
             or lower_bound is not _BOUND_NOT_SUPPLIED
             or upper_bound is not _BOUND_NOT_SUPPLIED
         ):
-            raise ValueError("rate_and_share bounds are computed internally and cannot be supplied")
+            raise ValueError("rate bounds are computed internally and cannot be supplied")
         if rate_kind not in set(RATE_KINDS):
-            raise ValueError(f"unsupported rate_and_share rate_kind {rate_kind}")
+            raise ValueError(f"unsupported rate rate_kind {rate_kind}")
         counts = {
             "a_count": int(a_count),
             "b_count": int(b_count),
@@ -250,7 +247,7 @@ class RateIntervalResult:
             "e_count": int(e_count),
         }
         if min(counts.values()) < 0:
-            raise ValueError("rate_and_share partition counts must be non-negative")
+            raise ValueError("rate partition counts must be non-negative")
 
         observed_denominator = counts["a_count"] + counts["b_count"]
         bound_denominator = (
@@ -312,6 +309,8 @@ def _rate_interval_from_partition(
     )
     if bound_denominator == 0:
         return "UNKNOWN", None, None, None
+    if observed_denominator == 0 and counts["a_count"] + counts["c_count"] + counts["d2_count"] == 0:
+        return "UNKNOWN", None, 0.0, 0.0
     observed = counts["a_count"] / observed_denominator if observed_denominator > 0 else None
     lower = counts["a_count"] / bound_denominator
     upper_denominator = counts["a_count"] + counts["b_count"] + counts["c_count"] + counts["d2_count"]
@@ -323,7 +322,7 @@ def _rate_interval_from_partition(
     return "PASS", observed, lower, upper
 
 
-def execute_rate_and_share(
+def execute_rate(
     *,
     state: Any,
     node: Any,
@@ -338,27 +337,25 @@ def execute_rate_and_share(
 
     rate_kind = _parameter_enum(parameters, "rate_kind")
     if rate_kind not in set(RATE_KINDS):
-        raise ValueError(f"rate_and_share unsupported rate_kind {rate_kind}")
+        raise ValueError(f"rate unsupported rate_kind {rate_kind}")
     group_by_fields = _parameter_entity_set(parameters, "group_by_fields")
     numerator_status_field = _parameter_enum(parameters, "numerator_status_field")
     denominator_status_field = _parameter_enum(parameters, "denominator_status_field")
     population_expression = _parameter_enum(parameters, "population_expression")
     subset_declaration = _parameter_enum(parameters, "subset_declaration")
     constraint_opt_out_reason = _parameter_enum(parameters, "constraint_opt_out_reason", "none")
-    share_key_field = _parameter_enum(parameters, "share_key_field", "none")
-    if rate_kind == "share" and share_key_field == "none":
-        raise ValueError("rate_and_share share outputs require share_key_field")
-
     groups: dict[tuple[str, ...], list[dict[str, Any]]] = {}
     for record in denominator_records:
         if not isinstance(record, dict):
-            raise ValueError("rate_and_share population records must be objects")
+            raise ValueError("rate population records must be objects")
         key_values = []
         for field in group_by_fields:
             if field not in record:
-                raise ValueError(f"rate_and_share group_by field {field} missing from source record")
+                raise ValueError(f"rate group_by field {field} missing from source record")
             key_values.append(str(record[field]))
         groups.setdefault(tuple(key_values), []).append(record)
+    if not groups:
+        groups[tuple(_empty_group_value(state, field) for field in group_by_fields)] = []
 
     source_ref = node.inputs["denominator"]
     numerator_ref = node.inputs["numerator"]
@@ -391,8 +388,6 @@ def execute_rate_and_share(
                 source_records=group_records,
             )
         )
-    if rate_kind == "share":
-        _assert_share_observed_sum(rate_records=rate_records, share_key_field=share_key_field)
     state.signals[node.node_id] = {
         "rate_records": rate_records,
         "rate_records_records": rate_records,
@@ -418,12 +413,12 @@ def _joint_partition_counts(
         denominator_status = _tri_state(record, denominator_status_field)
         if denominator_status == "FAIL":
             if numerator_status == "PASS":
-                raise ValueError("rate_and_share subset invariant violated: numerator PASS with denominator FAIL")
+                raise ValueError("rate subset invariant violated: numerator PASS with denominator FAIL")
             counts["e_count"] += 1
             continue
         if denominator_status == "UNKNOWN":
             if numerator_status == "PASS":
-                raise ValueError("rate_and_share subset invariant violated: numerator PASS with denominator UNKNOWN")
+                raise ValueError("rate subset invariant violated: numerator PASS with denominator UNKNOWN")
             if numerator_status == "FAIL":
                 counts["d1_count"] += 1
             else:
@@ -462,7 +457,7 @@ def _result_record(
     close_frame_id = max(frame_ids) if frame_ids else open_frame_id
     relation_id = stable_hash(
         {
-            "operator": "rate_and_share",
+            "operator": "rate",
             "match_id": str(state.match_id),
             "period": str(state.period),
             "population_expression": result.population_expression,
@@ -507,16 +502,16 @@ def _result_record(
 
 def _runtime_records(value: RuntimeValue | None) -> list[dict[str, Any]]:
     if value is None:
-        raise ValueError("rate_and_share missing population input")
+        raise ValueError("rate missing population input")
     if value.records:
         if not all(isinstance(item, dict) for item in value.records):
-            raise ValueError("rate_and_share population records must be objects")
+            raise ValueError("rate population records must be objects")
         return value.records
     if isinstance(value.value, list):
         if not all(isinstance(item, dict) for item in value.value):
-            raise ValueError("rate_and_share population value must be a list of objects")
+            raise ValueError("rate population value must be a list of objects")
         return value.value
-    raise ValueError("rate_and_share population input is malformed")
+    raise ValueError("rate population input is malformed")
 
 
 def _validate_shared_source_records(
@@ -524,10 +519,10 @@ def _validate_shared_source_records(
     denominator_records: list[dict[str, Any]],
 ) -> None:
     if len(numerator_records) != len(denominator_records):
-        raise ValueError("rate_and_share numerator and denominator source rows must be identical")
+        raise ValueError("rate numerator and denominator source rows must be identical")
     for numerator_record, denominator_record in zip(numerator_records, denominator_records, strict=True):
         if _record_identity(numerator_record) != _record_identity(denominator_record):
-            raise ValueError("rate_and_share numerator and denominator source rows must be identical")
+            raise ValueError("rate numerator and denominator source rows must be identical")
 
 
 def _record_identity(record: dict[str, Any]) -> str:
@@ -547,35 +542,16 @@ def _validate_rate_interval_order(
     if lower_bound is None or upper_bound is None:
         return
     if observed is not None and not (lower_bound <= observed <= upper_bound):
-        raise ValueError("rate_and_share interval invariant requires lower_bound <= observed <= upper_bound")
+        raise ValueError("rate interval invariant requires lower_bound <= observed <= upper_bound")
     if lower_bound > upper_bound:
-        raise ValueError("rate_and_share interval invariant requires lower_bound <= upper_bound")
-
-
-def _assert_share_observed_sum(
-    *,
-    rate_records: list[dict[str, Any]],
-    share_key_field: str,
-) -> None:
-    sums: dict[tuple[tuple[str, str], ...], float] = {}
-    for record in rate_records:
-        if record.get("rate_status") == "UNKNOWN" or record.get("observed") is None:
-            continue
-        group_key = record.get("group_key")
-        if not isinstance(group_key, dict) or share_key_field not in group_key:
-            raise ValueError("rate_and_share share records must carry the declared share_key_field")
-        base_key = tuple(sorted((key, str(value)) for key, value in group_key.items() if key != share_key_field))
-        sums[base_key] = sums.get(base_key, 0.0) + float(record["observed"])
-    for base_key, observed_sum in sums.items():
-        if abs(observed_sum - 1.0) > 1e-9:
-            raise ValueError(f"rate_and_share share observed values must sum to 1 for {dict(base_key)}")
+        raise ValueError("rate interval invariant requires lower_bound <= upper_bound")
 
 
 def _tri_state(record: dict[str, Any], status_field: str) -> str:
     raw = record.get(status_field)
     status = "UNKNOWN" if raw is None else str(raw)
     if status not in set(TRI_STATE_VALUES):
-        raise ValueError(f"rate_and_share status_field {status_field} must be PASS/FAIL/UNKNOWN")
+        raise ValueError(f"rate status_field {status_field} must be PASS/FAIL/UNKNOWN")
     return status
 
 
@@ -583,7 +559,7 @@ def _parameter_enum(parameters: dict[str, TypedValue], name: str, default: str |
     value = parameters.get(name)
     if value is None:
         if default is None:
-            raise ValueError(f"rate_and_share missing parameter {name}")
+            raise ValueError(f"rate missing parameter {name}")
         return default
     return str(value.value)
 
@@ -591,11 +567,16 @@ def _parameter_enum(parameters: dict[str, TypedValue], name: str, default: str |
 def _parameter_entity_set(parameters: dict[str, TypedValue], name: str) -> list[str]:
     value = parameters.get(name)
     if value is None or not isinstance(value.value, list):
-        raise ValueError(f"rate_and_share missing entity-set parameter {name}")
+        raise ValueError(f"rate missing entity-set parameter {name}")
     fields = [str(item) for item in value.value]
     if not fields:
-        raise ValueError("rate_and_share group_by_fields must be non-empty")
+        raise ValueError("rate group_by_fields must be non-empty")
     return fields
+
+
+def _empty_group_value(state: Any, field: str) -> str:
+    value = getattr(state, field, None)
+    return "UNKNOWN" if value is None else str(value)
 
 
 def _compact_optional_number(value: float | None) -> float | int | None:

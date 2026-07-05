@@ -9,11 +9,10 @@ from unittest import mock
 
 from tqe.runtime.binder import BindError, bind_document, bind_error_codes
 from tqe.runtime.ir import CatalogOutput, MissingDataSemantics, TacticalQueryDocument, TypedValue
-from tqe.runtime.operators.rate_and_share import (
-    RATE_AND_SHARE_SIGNATURE,
+from tqe.runtime.operators.rate import (
+    RATE_SIGNATURE,
     RateIntervalResult,
-    _assert_share_observed_sum,
-    execute_rate_and_share,
+    execute_rate,
 )
 from tqe.runtime.values import RuntimeValue, canonical_anchor_record_id, runtime_value_from_raw
 
@@ -63,7 +62,7 @@ def rate_record(
 
 
 def population_value(records: list[dict[str, object]]) -> RuntimeValue:
-    input_def = {item.name: item for item in RATE_AND_SHARE_SIGNATURE.inputs}["denominator"]
+    input_def = {item.name: item for item in RATE_SIGNATURE.inputs}["denominator"]
     return runtime_value_from_raw(
         node_id="population",
         output=CatalogOutput(
@@ -109,7 +108,7 @@ def run_rate(
 ) -> list[dict[str, object]]:
     state = SimpleNamespace(match_id="TST", period="firstHalf", perspective_team_role="home", signals={})
     value = population_value(records)
-    execute_rate_and_share(
+    execute_rate(
         state=state,
         node=rate_node(),
         inputs={"numerator": value, "denominator": value},
@@ -122,7 +121,6 @@ def run_rate(
             "subset_declaration": typed_enum("same source relation; numerator adds retention predicate"),
             "subset_predicate_fields": typed_entity_set(["numerator_status"]),
             "removed_denominator_predicate_fields": typed_entity_set([]),
-            "share_key_field": typed_enum("none"),
             "same_team_perspective_required": typed_bool(True),
             "entity_identity_preserved_required": typed_bool(True),
             "frame_alignment_required": typed_bool(True),
@@ -145,7 +143,7 @@ def rate_node_payload(
     same_team_required: bool = True,
     entity_required: bool = False,
     frame_required: bool = True,
-    constraint_opt_out_reason: str = "entity identity is not part of the CAR-0 rate denominator",
+    constraint_opt_out_reason: str = "entity identity is not part of the fragile-condition retention denominator",
     include_constraint_parameters: bool = True,
 ) -> dict[str, object]:
     parameters = {
@@ -169,7 +167,6 @@ def rate_node_payload(
             "payload_type": "entity_set",
             "value": removed_predicates or [],
         },
-        "share_key_field": {"payload_type": "enum", "value": "none"},
         "team_role_field": {"payload_type": "enum", "value": "perspective_team_role"},
     }
     if include_constraint_parameters:
@@ -184,13 +181,13 @@ def rate_node_payload(
     return {
         "kind": "operator",
         "node_id": node_id,
-        "operator": {"name": "rate_and_share", "version": "0.1.0"},
+        "operator": {"name": "rate", "version": "0.1.0"},
         "inputs": {
             "numerator": {"source_node_id": numerator_source, "output_name": numerator_output},
             "denominator": {"source_node_id": denominator_source, "output_name": denominator_output},
         },
         "parameters": parameters,
-        "outputs": [output.model_dump(mode="json") for output in RATE_AND_SHARE_SIGNATURE.outputs],
+        "outputs": [output.model_dump(mode="json") for output in RATE_SIGNATURE.outputs],
     }
 
 
@@ -213,7 +210,7 @@ def declare_typed_join_identity_fields(payload: dict[str, object]) -> None:
                     evidence_fields.insert(0, field)
 
 
-class RateAndShareOperatorTests(unittest.TestCase):
+class RateOperatorTests(unittest.TestCase):
     def test_joint_partition_bounds_use_spec_formula(self) -> None:
         records = [
             rate_record(100, team_role="home", numerator_status="PASS", denominator_status="PASS"),
@@ -270,6 +267,16 @@ class RateAndShareOperatorTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "numerator PASS with denominator UNKNOWN"):
             run_rate([rate_record(100, team_role="home", numerator_status="PASS", denominator_status="UNKNOWN")])
 
+    def test_signature_declares_rate_as_only_rate_kind(self) -> None:
+        [rate_kind] = [parameter for parameter in RATE_SIGNATURE.parameters if parameter.name == "rate_kind"]
+
+        self.assertEqual(["rate"], rate_kind.allowed_values)
+
+    def test_signature_does_not_advertise_share_key_field(self) -> None:
+        parameter_names = {parameter.name for parameter in RATE_SIGNATURE.parameters}
+
+        self.assertNotIn("share_key_field", parameter_names)
+
     def test_constructor_refuses_external_bounds(self) -> None:
         with self.assertRaisesRegex(ValueError, "computed internally"):
             RateIntervalResult(
@@ -287,7 +294,7 @@ class RateAndShareOperatorTests(unittest.TestCase):
 
     def test_constructor_enforces_interval_ordering_invariant(self) -> None:
         with mock.patch(
-            "tqe.runtime.operators.rate_and_share._rate_interval_from_partition",
+            "tqe.runtime.operators.rate._rate_interval_from_partition",
             return_value=("PASS", 0.9, 0.1, 0.8),
         ):
             with self.assertRaisesRegex(ValueError, "lower_bound <= observed <= upper_bound"):
@@ -316,22 +323,29 @@ class RateAndShareOperatorTests(unittest.TestCase):
         self.assertIsNone(result["lower_bound"])
         self.assertIsNone(result["upper_bound"])
 
-    def test_share_sum_assertion_fires_on_corrupted_fixture(self) -> None:
-        corrupted = [
-            {
-                "rate_status": "PASS",
-                "observed": 0.7,
-                "group_key": {"match_id": "TST", "share_key": "left"},
-            },
-            {
-                "rate_status": "PASS",
-                "observed": 0.4,
-                "group_key": {"match_id": "TST", "share_key": "right"},
-            },
-        ]
+    def test_d1_only_population_is_unknown_with_zero_bounds(self) -> None:
+        [result] = run_rate(
+            [
+                rate_record(100, team_role="home", numerator_status="FAIL", denominator_status="UNKNOWN"),
+                rate_record(110, team_role="home", numerator_status="FAIL", denominator_status="UNKNOWN"),
+            ]
+        )
 
-        with self.assertRaisesRegex(ValueError, "sum to 1"):
-            _assert_share_observed_sum(rate_records=corrupted, share_key_field="share_key")
+        self.assertEqual("UNKNOWN", result["rate_status"])
+        self.assertIsNone(result["observed"])
+        self.assertEqual(0, result["lower_bound"])
+        self.assertEqual(0, result["upper_bound"])
+        self.assertEqual(2, result["d1_count"])
+
+    def test_empty_population_emits_typed_unknown_row(self) -> None:
+        [result] = run_rate([])
+
+        self.assertEqual("UNKNOWN", result["rate_status"])
+        self.assertIsNone(result["observed"])
+        self.assertIsNone(result["lower_bound"])
+        self.assertIsNone(result["upper_bound"])
+        self.assertEqual({"left_team_role": "UNKNOWN", "match_id": "TST"}, result["group_key"])
+        self.assertEqual(0, result["denominator_count_interval"]["population_count"])
 
     def test_group_by_keys_preserve_both_team_perspectives(self) -> None:
         records = [
@@ -406,7 +420,7 @@ class RateAndShareOperatorTests(unittest.TestCase):
         malformed = RuntimeValue(output=empty_population.output, value=[1], records=[])
 
         with self.assertRaisesRegex(ValueError, "list of objects"):
-            execute_rate_and_share(
+            execute_rate(
                 state=SimpleNamespace(match_id="TST", period="firstHalf", signals={}),
                 node=rate_node(),
                 inputs={"numerator": malformed, "denominator": malformed},
@@ -419,8 +433,7 @@ class RateAndShareOperatorTests(unittest.TestCase):
                     "subset_declaration": typed_enum("same source relation"),
                     "subset_predicate_fields": typed_entity_set([]),
                     "removed_denominator_predicate_fields": typed_entity_set([]),
-                    "share_key_field": typed_enum("none"),
-                    "same_team_perspective_required": typed_bool(True),
+                            "same_team_perspective_required": typed_bool(True),
                     "entity_identity_preserved_required": typed_bool(True),
                     "frame_alignment_required": typed_bool(True),
                     "constraint_opt_out_reason": typed_enum("none"),

@@ -1,8 +1,8 @@
-# R2-2 Flagship CAR-0 Retention Rate Table
+# R2-2 Flagship Fragile Retention Rate Table
 
-Plan: `delivery/packets/r2-2-flagship/rate_and_share_car0_retention_v0.json`
-Plan hash: `4a5650d8072539b68363d776bc146566bf47758226815f7eb523d5e71a675dba`
-R2-1 denominator table: `delivery/packets/r2-1-flagship/fragile_possession_state_denominator_table.json`
+Plan: `delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json`
+Plan hash: `63436ccbb0eaf3b5c305617a811c8536ce4b041d8742928d343778f7f539e366`
+R2-1 source-population table: `delivery/packets/r2-1-flagship/fragile_possession_state_denominator_table.json`
 
 | Role | Match | Rate | Lower | Upper | A | B | C | D1 | D2 | E | Known Den | Source Rows |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -31,7 +31,7 @@ R2-1 denominator table: `delivery/packets/r2-1-flagship/fragile_possession_state
 - E denominator-FAIL rows excluded from the rate: 5578
 - Source rows: 8414
 
-## R2-1 Denominator Reconciliation
+## R2-1 Source-Population And PASS-Count Reconciliation
 
 - Same 14 role-match rows: True
 - Source population count matches R2-1: 8414 == 8414

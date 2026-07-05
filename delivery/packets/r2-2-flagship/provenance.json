@@ -1,12 +1,12 @@
 {
-  "flagship_plan": "delivery/packets/r2-2-flagship/rate_and_share_car0_retention_v0.json",
-  "flagship_plan_hash": "4a5650d8072539b68363d776bc146566bf47758226815f7eb523d5e71a675dba",
+  "flagship_plan": "delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json",
+  "flagship_plan_hash": "63436ccbb0eaf3b5c305617a811c8536ce4b041d8742928d343778f7f539e366",
   "generated_by": "scripts/packets/r2_2_flagship_generator.py",
   "generated_from": "delivery/packets/r1-c-sweep/plans/r1_5_fragile_possession_state_v0.json",
   "generated_from_hash": "bc77278b3358106178749a72edfdc730b56b23bd6b6b650c60895598ac2edfbe",
   "r2_1_denominator_table": "delivery/packets/r2-1-flagship/fragile_possession_state_denominator_table.json",
   "r2_1_denominator_table_hash": "32fc3c7696aec2a7822644905af280af8524f5059478029c4376deaa6d0cea77",
-  "rate_node_id": "rate_and_share_car0_retention",
+  "rate_node_id": "fragile_retention_rate",
   "schema_version": "r2_2_flagship_provenance.v1",
   "source_population_audit": "delivery/packets/r1-c-sweep/population-audit/audit.json",
   "source_population_audit_hash": "7b99cabfc9d3c240b4f8eb7f1083c788e64219677c90e2e5228467167f4caa5d"

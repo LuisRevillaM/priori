@@ -1,6 +1,6 @@
 {
   "denominator": "right_status PASS/UNKNOWN over the same typed_join_2 source relation",
-  "numerator": "typed_join_status PASS: retained final CAR-0 fragile state",
+  "numerator": "typed_join_status PASS: retained fragile-condition state",
   "per_row_r2_1_reconciliation": [
     {
       "audit_role": "home",
@@ -172,10 +172,10 @@
     }
   ],
   "period_record_count": 28,
-  "period_records_hash": "93401c89977af5db60a2193aa2cd0a74c711226e98a38db75d00a2e5d2445715",
-  "plan": "delivery/packets/r2-2-flagship/rate_and_share_car0_retention_v0.json",
-  "plan_hash": "4a5650d8072539b68363d776bc146566bf47758226815f7eb523d5e71a675dba",
-  "question": "When a team's possession turns fragile, how often do they keep the ball anyway?",
+  "period_records_hash": "1a263f547ac10216bfbf7e764e69547c3a0227392568f62830ca69e7f95bd7d2",
+  "plan": "delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json",
+  "plan_hash": "63436ccbb0eaf3b5c305617a811c8536ce4b041d8742928d343778f7f539e366",
+  "question": "When a team faces the fragile condition, how often is possession retained?",
   "r2_1_reconciliation": {
     "all_14_retained_fragile_pass_counts_match_r2_1": true,
     "all_14_source_populations_match_r2_1": true,
@@ -187,7 +187,7 @@
     "rate_source_record_count": 8414,
     "same_14_role_match_rows": true
   },
-  "rate_node_id": "rate_and_share_car0_retention",
+  "rate_node_id": "fragile_retention_rate",
   "rows": [
     {
       "a_count": 13,
@@ -261,11 +261,11 @@
           "upper_bound": 0.9873417721518988
         }
       ],
-      "population_expression": "CAR-0 retained fragile-condition rate: final typed_join_status over right_status, per team perspective per match",
+      "population_expression": "fragile-condition retention rate: final typed_join_status over right_status, per team perspective per match",
       "rate_kind": "rate",
       "rate_status": "PASS",
       "source_record_count": 503,
-      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal CAR-0 join",
+      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal fragile-condition join",
       "upper_bound": 0.9732620320855615
     },
     {
@@ -340,11 +340,11 @@
           "upper_bound": 0.9659090909090909
         }
       ],
-      "population_expression": "CAR-0 retained fragile-condition rate: final typed_join_status over right_status, per team perspective per match",
+      "population_expression": "fragile-condition retention rate: final typed_join_status over right_status, per team perspective per match",
       "rate_kind": "rate",
       "rate_status": "PASS",
       "source_record_count": 575,
-      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal CAR-0 join",
+      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal fragile-condition join",
       "upper_bound": 0.9710982658959537
     },
     {
@@ -419,11 +419,11 @@
           "upper_bound": 0.9565217391304348
         }
       ],
-      "population_expression": "CAR-0 retained fragile-condition rate: final typed_join_status over right_status, per team perspective per match",
+      "population_expression": "fragile-condition retention rate: final typed_join_status over right_status, per team perspective per match",
       "rate_kind": "rate",
       "rate_status": "PASS",
       "source_record_count": 654,
-      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal CAR-0 join",
+      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal fragile-condition join",
       "upper_bound": 0.9567307692307693
     },
     {
@@ -498,11 +498,11 @@
           "upper_bound": 0.9836065573770492
         }
       ],
-      "population_expression": "CAR-0 retained fragile-condition rate: final typed_join_status over right_status, per team perspective per match",
+      "population_expression": "fragile-condition retention rate: final typed_join_status over right_status, per team perspective per match",
       "rate_kind": "rate",
       "rate_status": "PASS",
       "source_record_count": 662,
-      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal CAR-0 join",
+      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal fragile-condition join",
       "upper_bound": 0.9767441860465116
     },
     {
@@ -577,11 +577,11 @@
           "upper_bound": 0.96875
         }
       ],
-      "population_expression": "CAR-0 retained fragile-condition rate: final typed_join_status over right_status, per team perspective per match",
+      "population_expression": "fragile-condition retention rate: final typed_join_status over right_status, per team perspective per match",
       "rate_kind": "rate",
       "rate_status": "PASS",
       "source_record_count": 649,
-      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal CAR-0 join",
+      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal fragile-condition join",
       "upper_bound": 0.9690721649484536
     },
     {
@@ -656,11 +656,11 @@
           "upper_bound": 0.99
         }
       ],
-      "population_expression": "CAR-0 retained fragile-condition rate: final typed_join_status over right_status, per team perspective per match",
+      "population_expression": "fragile-condition retention rate: final typed_join_status over right_status, per team perspective per match",
       "rate_kind": "rate",
       "rate_status": "PASS",
       "source_record_count": 714,
-      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal CAR-0 join",
+      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal fragile-condition join",
       "upper_bound": 0.9759036144578314
     },
     {
@@ -735,11 +735,11 @@
           "upper_bound": 1
         }
       ],
-      "population_expression": "CAR-0 retained fragile-condition rate: final typed_join_status over right_status, per team perspective per match",
+      "population_expression": "fragile-condition retention rate: final typed_join_status over right_status, per team perspective per match",
       "rate_kind": "rate",
       "rate_status": "PASS",
       "source_record_count": 450,
-      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal CAR-0 join",
+      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal fragile-condition join",
       "upper_bound": 0.9927536231884058
     },
     {
@@ -814,11 +814,11 @@
           "upper_bound": 0.9425287356321839
         }
       ],
-      "population_expression": "CAR-0 retained fragile-condition rate: final typed_join_status over right_status, per team perspective per match",
+      "population_expression": "fragile-condition retention rate: final typed_join_status over right_status, per team perspective per match",
       "rate_kind": "rate",
       "rate_status": "PASS",
       "source_record_count": 503,
-      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal CAR-0 join",
+      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal fragile-condition join",
       "upper_bound": 0.9679144385026738
     },
     {
@@ -893,11 +893,11 @@
           "upper_bound": 0.956989247311828
         }
       ],
-      "population_expression": "CAR-0 retained fragile-condition rate: final typed_join_status over right_status, per team perspective per match",
+      "population_expression": "fragile-condition retention rate: final typed_join_status over right_status, per team perspective per match",
       "rate_kind": "rate",
       "rate_status": "PASS",
       "source_record_count": 575,
-      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal CAR-0 join",
+      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal fragile-condition join",
       "upper_bound": 0.9705882352941176
     },
     {
@@ -972,11 +972,11 @@
           "upper_bound": 1
         }
       ],
-      "population_expression": "CAR-0 retained fragile-condition rate: final typed_join_status over right_status, per team perspective per match",
+      "population_expression": "fragile-condition retention rate: final typed_join_status over right_status, per team perspective per match",
       "rate_kind": "rate",
       "rate_status": "PASS",
       "source_record_count": 654,
-      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal CAR-0 join",
+      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal fragile-condition join",
       "upper_bound": 0.9897435897435898
     },
     {
@@ -1051,11 +1051,11 @@
           "upper_bound": 0.9473684210526315
         }
       ],
-      "population_expression": "CAR-0 retained fragile-condition rate: final typed_join_status over right_status, per team perspective per match",
+      "population_expression": "fragile-condition retention rate: final typed_join_status over right_status, per team perspective per match",
       "rate_kind": "rate",
       "rate_status": "PASS",
       "source_record_count": 662,
-      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal CAR-0 join",
+      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal fragile-condition join",
       "upper_bound": 0.9251700680272109
     },
     {
@@ -1130,11 +1130,11 @@
           "upper_bound": 0.9887640449438202
         }
       ],
-      "population_expression": "CAR-0 retained fragile-condition rate: final typed_join_status over right_status, per team perspective per match",
+      "population_expression": "fragile-condition retention rate: final typed_join_status over right_status, per team perspective per match",
       "rate_kind": "rate",
       "rate_status": "PASS",
       "source_record_count": 649,
-      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal CAR-0 join",
+      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal fragile-condition join",
       "upper_bound": 0.988950276243094
     },
     {
@@ -1209,11 +1209,11 @@
           "upper_bound": 0.9896907216494846
         }
       ],
-      "population_expression": "CAR-0 retained fragile-condition rate: final typed_join_status over right_status, per team perspective per match",
+      "population_expression": "fragile-condition retention rate: final typed_join_status over right_status, per team perspective per match",
       "rate_kind": "rate",
       "rate_status": "PASS",
       "source_record_count": 714,
-      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal CAR-0 join",
+      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal fragile-condition join",
       "upper_bound": 0.9724409448818898
     },
     {
@@ -1288,15 +1288,15 @@
           "upper_bound": 0.9818181818181818
         }
       ],
-      "population_expression": "CAR-0 retained fragile-condition rate: final typed_join_status over right_status, per team perspective per match",
+      "population_expression": "fragile-condition retention rate: final typed_join_status over right_status, per team perspective per match",
       "rate_kind": "rate",
       "rate_status": "PASS",
       "source_record_count": 450,
-      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal CAR-0 join",
+      "subset_declaration": "typed_join_status PASS is the same-source retained subset of right_status PASS; the added predicate is the same-team retention window from the terminal fragile-condition join",
       "upper_bound": 0.972027972027972
     }
   ],
-  "schema_version": "r2_2_flagship_car0_retention_rate_table.v1",
+  "schema_version": "r2_2_flagship_fragile_retention_rate_table.v1",
   "totals": {
     "a_count": 145,
     "b_count": 77,
