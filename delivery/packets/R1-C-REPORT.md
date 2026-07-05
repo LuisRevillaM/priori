@@ -8,7 +8,7 @@ Branch: `packet/r1-c` from `codex/afl08-passport-loop` at
 | Item | Status | Evidence |
 | --- | --- | --- |
 | C1 unified sweep | DONE_WITH_CONCERNS | `delivery/packets/r1-c-sweep/` and `generated/compiler-search-v0/` |
-| C2 KPI semantic-correspondence hardening | NOT_STARTED | Pending |
+| C2 KPI semantic-correspondence hardening | DONE | `scripts/coverage_map/compiler_search_reachability.py`, `tests/test_r1_c_checkpoint.py` |
 | C3 R1-5 riders | NOT_STARTED | Pending |
 | C4 gate integrity manifest latency | NOT_STARTED | Pending |
 | Full committed-tree suite | NOT_STARTED | Pending |
@@ -79,7 +79,23 @@ above with shared node cache disabled.
 
 ## C2 KPI Semantic-Correspondence Hardening
 
-Pending.
+`update_coverage_rows` now raises for any `compiler_reachable` result that
+lacks either:
+
+- `semantic_correspondence`
+- certified plan reference fields: `plan_path` and `document_hash`
+
+The positive ledger evidence now records `plan_path` alongside
+`document_hash`, so a compiler-reachable flip points to the certified plan
+that earned it.
+
+Verification:
+
+| Command | Result | Notes |
+| --- | --- | --- |
+| `UV_CACHE_DIR=/private/tmp/uv-cache uv run --no-sync python -m unittest tests.test_r1_c_checkpoint -v` | PASS | 5 tests; positive ledger update plus missing-correspondence, missing-plan, missing-hash, and non-reachable paths. |
+| Mutation: break semantic-correspondence guard, then run `tests.test_r1_c_checkpoint.R1CCheckpointTests.test_update_coverage_rows_rejects_missing_semantic_correspondence` | FAIL as expected | Test errored after the guard was disabled, proving the named rejection path is load-bearing. Guard restored. |
+| Mutation: break certified-plan-reference guard, then run `tests.test_r1_c_checkpoint.R1CCheckpointTests.test_update_coverage_rows_rejects_missing_certified_plan_reference` | FAIL as expected | Test errored after the guard was disabled, proving the named rejection path is load-bearing. Guard restored. |
 
 ## C3 R1-5 Riders
 

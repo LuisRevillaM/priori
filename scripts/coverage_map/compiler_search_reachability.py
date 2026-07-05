@@ -3870,7 +3870,15 @@ def update_coverage_rows(rows: list[dict[str, Any]], results: list[dict[str, Any
         if result is None or result["result"] != "compiler_reachable":
             continue
         if not result.get("semantic_correspondence"):
-            continue
+            raise ValueError(
+                "compiler_reachable result is missing semantic_correspondence; "
+                f"concept={result.get('concept')} target_id={result.get('target_id')}"
+            )
+        if not result.get("plan_path") or not result.get("document_hash"):
+            raise ValueError(
+                "compiler_reachable result is missing certified plan reference; "
+                f"concept={result.get('concept')} target_id={result.get('target_id')}"
+            )
         row["composition_maturity"] = "compiler_reachable"
         row["composition_maturity_applicable"] = row.get("classification") == "supported"
         row["compiler_reachability_status"] = "compiler_reachable"
@@ -3879,6 +3887,7 @@ def update_coverage_rows(rows: list[dict[str, Any]], results: list[dict[str, Any
             "synthesizer_strategy": SYNTHESIZER_STRATEGY,
             "target_id": result["target_id"],
             "report_path": relative_path(REPORT),
+            "plan_path": result["plan_path"],
             "document_hash": result["document_hash"],
             "held_out": result["held_out"],
             "result_count": result["result_count"],
