@@ -45,3 +45,23 @@ declarations are input-derived; the acceptance boundary re-asserted (this
 ruling). R1-C then runs the full sweep, the KPI semantic-correspondence
 hardening, and the backlog (fabricated-trace deletion with plan
 retirement, stale R3/S2 pins, FrameSignal trap, rule-id vocabulary).
+
+---
+
+# R1-5 Closing Round: ACCEPTED — the era closes
+
+Reviewed 2026-07-04 at b90b5d5. All four rulings verified empirically,
+including mutation-tested regression teeth: the hardcoded-perspective bug
+reintroduced -> the named both-teams test fails exactly right; the R1-4
+canon bug reintroduced -> caught at unit level (rider: one assertion line
+promotes it to composition level at R1-C). Boundary restored
+byte-identically to the frontier; R1-4 provenance intact; the delta
+republished on a copy hash-anchored to the committed tree (before=11 ==
+committed map, after=12, correspondence present, 24 = 11 away + 13 home
+independently reproduced). Genericity real: zero composition names in
+operator source; per-side statuses load-bearing in the certified plan.
+Full-population audit in-tree: 145 PASS = 72 away / 73 home, all 7
+matches, canon semantics population-wide.
+
+R1-C riders: the continuity_team==anchor_team assertion line; commit the
+population-audit generator. The 12 flips by the director's hand.
