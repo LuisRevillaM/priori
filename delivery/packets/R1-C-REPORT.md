@@ -11,7 +11,7 @@ Branch: `packet/r1-c` from `codex/afl08-passport-loop` at
 | C2 KPI semantic-correspondence hardening | DONE | `scripts/coverage_map/compiler_search_reachability.py`, `tests/test_r1_c_checkpoint.py` |
 | C3 R1-5 riders | DONE | `tests/test_r1_5_typed_join.py`, `scripts/audits/r1_5_population_audit.py`, `tests/test_r1_c_checkpoint.py` |
 | C4 gate integrity manifest latency | DONE_WITH_CONCERNS | `data/manifest.json`, `src/tqe/runtime/executor.py`, `scripts/data/build_data_manifest.py`, `tests/test_executor_boundaries.py` |
-| Full committed-tree suite | NOT_STARTED | Pending |
+| Full committed-tree suite | DONE | `make test` on committed tree `b26627c` |
 
 ## C1 Unified Sweep
 
@@ -157,4 +157,21 @@ Verification:
 
 ## Verification
 
-Full committed-tree `make test` is pending final item completion.
+Full-suite table, run on committed tree `b26627c`:
+
+| Command | Result | Tests | Runtime | Attestation | Failures |
+| --- | --- | ---: | ---: | --- | --- |
+| `UV_CACHE_DIR=/private/tmp/uv-cache /usr/bin/time -p make PYTHON="uv run --no-sync python" test` | PASS | 457 | 450.095s (`real 450.99`) | `VERIFIED`, blocking reasons `[]` | None |
+
+Failure attribution: no full-suite failures.
+
+## Local Commits
+
+| Commit | Scope |
+| --- | --- |
+| `3d2c9cb` | C1 unified compiler sweep evidence and initial report |
+| `7dca26e` | C2 correspondence/plan-reference hardening and tests |
+| `8f317e0` | C3 typed-join assertion and R1-5 audit generator |
+| `b26627c` | C4 data manifest integrity checks and timing report |
+
+No push performed.
