@@ -97,4 +97,14 @@ Generator verification:
 
 ## Full-suite table on committed tree
 
-Status: pending.
+Status: complete.
+
+Committed tree tested: `0b35f6f`.
+
+| Command | Result | Tests | Skipped | Failures | Errors | Duration |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| `make test` | PASS | 496 | 0 | 0 | 0 | 515.694s |
+
+Failure enumeration for the committed-tree run: none.
+
+Additional suite output: `{"attestation_status": "VERIFIED", "blocking_reasons": []}`.
