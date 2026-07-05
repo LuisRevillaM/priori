@@ -10,7 +10,7 @@ Branch: `packet/r2-0` from frontier `codex/afl08-passport-loop` at
 | Seven pre-era declarations | DONE_WITH_ROUND_2_FIXES | `config/compiler-reachability/search-targets.v0.json`; appendix below |
 | Loads-well-formed test | DONE_WITH_ROUND_2_FIXES | `tests/test_r1_c_checkpoint.py::R1CCheckpointTests.test_committed_target_declarations_are_well_formed` |
 | Mutation verification | DONE_WITH_ROUND_2_FIXES | Scratch-copy direct-loader mutation failed as expected; clean rerun passed |
-| Full committed-tree suite | PENDING_ROUND_2 | Round-2 `make test` pending |
+| Full committed-tree suite | DONE_WITH_ROUND_2_FIXES | `make test` on committed tree `0dd4548` |
 
 Fences observed so far: no sweep run, no ledger update, no sealed evidence
 edits, no freeze, no re-pin.
@@ -61,7 +61,7 @@ Result: all seven returned `true`.
 | F4 partial | DONE | `post_regain_retention` declaration includes `minimum_prior_possession_seconds: 0.4`. |
 | F5 | DONE | `post_regain_retention` declaration states the settled segment may begin anywhere in the 8.0-second window. |
 | F6 | DONE | Appendix wording no longer uses overbroad identity phrasing. |
-| Full-suite table | PENDING | Round-2 committed-tree run pending. |
+| Full-suite table | DONE | Round-2 committed-tree run recorded below. |
 
 ## Declaration Verification Appendix
 
@@ -184,12 +184,12 @@ Initial checks:
 | Mutation: corrupt `coverage_row` for `search_heldout_carry_displacement_v0` in workspace scratch copy `.r2-0-search-targets-mutated.json`, then call `declared_targets_from_files([scratch_path])` directly | FAIL as expected | Raised `coverage_row does not match coverage row`; scratch file removed; clean checkpoint module rerun passed. |
 | `UV_CACHE_DIR=/private/tmp/uv-cache uv run --no-sync python -m unittest tests.test_r1_c_checkpoint -v` | PASS | 12 checkpoint tests, including existing R1-C guards and the new declaration loader. |
 
-Full-suite table, run on committed tree `de39f6b` before this final
+Full-suite table, run on committed tree `0dd4548` before this final
 report-only update:
 
 | Command | Result | Tests | Runtime | Attestation | Failures |
 | --- | --- | ---: | ---: | --- | --- |
-| `UV_CACHE_DIR=/private/tmp/uv-cache /usr/bin/time -p make PYTHON="uv run --no-sync python" test` | PASS | 463 | 442.205s (`real 443.35`) | `VERIFIED`, blocking reasons `[]` | None |
+| `UV_CACHE_DIR=/private/tmp/uv-cache /usr/bin/time -p make PYTHON="uv run --no-sync python" test` | PASS | 463 | 433.402s (`real 434.18`) | `VERIFIED`, blocking reasons `[]` | None |
 
 Failure attribution: no full-suite failures.
 
@@ -199,5 +199,6 @@ Failure attribution: no full-suite failures.
 | --- | --- |
 | `240dc90` | R2-0 declarations plus verification appendix report |
 | `de39f6b` | Declaration-loader test, mutation evidence, and report update |
+| `0dd4548` | Round-2 accept-with-fixes mechanics, direct-loader mutation evidence, and report update |
 
 No push performed.
