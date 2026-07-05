@@ -116,6 +116,18 @@ class R1CCheckpointTests(unittest.TestCase):
 
         self.assertEqual(expected, r1_5_population_audit.render_markdown(audit))
 
+    def test_r1_c_population_audit_matches_sealed_period_numbers(self) -> None:
+        sealed_path = Path("delivery/packets/r1-5-population-audit/audit.json")
+        regenerated_path = Path("delivery/packets/r1-c-sweep/population-audit/audit.json")
+        sealed = json.loads(sealed_path.read_text(encoding="utf-8"))
+        regenerated = json.loads(regenerated_path.read_text(encoding="utf-8"))
+
+        sealed_signature = r1_5_population_audit.population_number_signature(sealed)
+        regenerated_signature = r1_5_population_audit.population_number_signature(regenerated)
+
+        self.assertEqual(7, len(set(sealed_signature["match_ids"])))
+        self.assertEqual(sealed_signature, regenerated_signature)
+
 
 if __name__ == "__main__":
     unittest.main()

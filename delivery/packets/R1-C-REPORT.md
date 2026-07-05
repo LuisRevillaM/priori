@@ -9,7 +9,7 @@ Branch: `packet/r1-c` from `codex/afl08-passport-loop` at
 | --- | --- | --- |
 | C1 unified sweep | DONE_WITH_CONCERNS | `delivery/packets/r1-c-sweep/` and `generated/compiler-search-v0/` |
 | C2 KPI semantic-correspondence hardening | DONE | `scripts/coverage_map/compiler_search_reachability.py`, `tests/test_r1_c_checkpoint.py` |
-| C3 R1-5 riders | DONE | `tests/test_r1_5_typed_join.py`, `scripts/audits/r1_5_population_audit.py`, `tests/test_r1_c_checkpoint.py` |
+| C3 R1-5 riders | DONE | `tests/test_r1_5_typed_join.py`, `scripts/audits/r1_5_population_audit.py`, `tests/test_r1_c_checkpoint.py`, `delivery/packets/r1-c-sweep/population-audit/` |
 | C4 gate integrity manifest latency | DONE_WITH_CONCERNS | `data/manifest.json`, `src/tqe/runtime/executor.py`, `scripts/data/build_data_manifest.py`, `tests/test_executor_boundaries.py` |
 | Full committed-tree suite | DONE | `make test` on committed tree `b26627c` |
 
@@ -110,10 +110,39 @@ Verification:
 Rider 1: the both-teams CAR-0 composition suite now asserts
 `continuity_team_role == anchor_team_role` for every accepted row.
 
-Rider 2: committed `scripts/audits/r1_5_population_audit.py`. It has a
-`summarize` path that renders `audit.md` from the committed `audit.json`, and
-a `generate` path for rebuilding the full terminal-population audit from the
-R1-5 plan bundle when canonical data is available.
+Rider 2: committed `scripts/audits/r1_5_population_audit.py`. It keeps a
+`summarize` path that renders the sealed audit markdown from the sealed JSON,
+and its `generate` path now accepts an explicit match scope. The round-2 R-R
+audit was regenerated under the unsealed R1-C path:
+
+- `delivery/packets/r1-c-sweep/population-audit/audit.json`
+- `delivery/packets/r1-c-sweep/population-audit/audit.md`
+
+Generation command:
+
+```bash
+UV_CACHE_DIR=/private/tmp/uv-cache \
+/usr/bin/time -p \
+uv run --no-sync python scripts/audits/r1_5_population_audit.py generate --all-canonical-matches
+```
+
+Result: PASS in 464.05s. The regenerated audit covers all seven canonical
+matches from `data/canonical/v1/matches.parquet`, both audit roles, both
+periods, and 8,414 terminal rows. It records the committed source bundle hash
+`ae4d5b3915454e78ff11b81f88cd302b3564c12de1af978a52b3c420ba69c20e`, the
+effective execution bundle hash
+`bc77278b3358106178749a72edfdc730b56b23bd6b6b650c60895598ac2edfbe`, and the
+match scope source `canonical_matches.parquet`.
+
+Sealed-audit provenance note: the sealed audit remains untouched under
+`delivery/packets/r1-5-population-audit/`. Its recorded
+`source_plan_bundle_hash`
+`44f90db1cf9949323d30dc2fe90587b61549edab0942994732901f75c8db060c` does not
+reproduce from the committed plan bundle at the recorded path, whose current
+stable hash is
+`ae4d5b3915454e78ff11b81f88cd302b3564c12de1af978a52b3c420ba69c20e`. The R-R
+corroboration is therefore the sealed-number smoke test, not sealed provenance
+reuse.
 
 Verification:
 
@@ -121,6 +150,8 @@ Verification:
 | --- | --- | --- |
 | `UV_CACHE_DIR=/private/tmp/uv-cache uv run --no-sync python -m unittest tests.test_r1_c_checkpoint.R1CCheckpointTests.test_r1_5_population_audit_markdown_regenerates_from_json -v` | PASS | Committed `audit.json` renders committed `audit.md` byte-identically in-process. |
 | `UV_CACHE_DIR=/private/tmp/uv-cache uv run --no-sync python scripts/audits/r1_5_population_audit.py summarize --audit-json delivery/packets/r1-5-population-audit/audit.json --output /private/tmp/r1_5_audit_smoke.md` + `cmp` | PASS | CLI-rendered markdown is byte-identical to committed `audit.md`. |
+| `UV_CACHE_DIR=/private/tmp/uv-cache uv run --no-sync python -m unittest tests.test_r1_c_checkpoint.R1CCheckpointTests.test_r1_c_population_audit_matches_sealed_period_numbers -v` | PASS | Regenerated R1-C audit numbers match the sealed audit across all 7 matches, both roles, both periods, total rows, status distributions, UNKNOWN accounting, and requested-evidence missing rows. |
+| Mutation: change regenerated audit summary `total_rows` from 8,414 to 8,415, then run `test_r1_c_population_audit_matches_sealed_period_numbers` | FAIL as expected | Failed on numeric-signature equality; artifact restored and clean test rerun passed. |
 | `PYTHONPATH=src UV_CACHE_DIR=/private/tmp/uv-cache uv run --no-sync python -m unittest tests.test_r1_5_typed_join.TypedJoinCompositionSuiteTests.test_car0_composition_executes_for_both_team_perspectives -v` | PASS | 1 canonical-data composition test in 58.108s after mutation restore. |
 | Mutation: temporarily invert the new continuity-team assertion and run the same named typed-join composition test | FAIL as expected | Failed on `AssertionError: 'away' == 'away'`; assertion restored and clean test rerun passed. |
 | `PYTHONPATH=src UV_CACHE_DIR=/private/tmp/uv-cache uv run --no-sync python -m py_compile scripts/audits/r1_5_population_audit.py tests/test_r1_c_checkpoint.py tests/test_r1_5_typed_join.py` | PASS | Syntax check for changed Python files. |
