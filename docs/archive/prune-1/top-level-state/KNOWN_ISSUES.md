@@ -1,3 +1,16 @@
+# PRUNE-1 Quarantine Provenance
+
+Original path: `KNOWN_ISSUES.md`
+
+Quarantined under PRUNE-1 after inventory commit `7a07dde`.
+
+Reason: stale top-level issue list. Use current packet reports, audit docs,
+`delivery/status.yaml`, and `delivery/ledger.jsonl` for active blockers and
+verified status. This file is preserved as historical evidence, not current
+guidance.
+
+Original content begins below.
+
 # Known Issues
 
 Updated: 2026-07-01. Ordered by severity. See `CURRENT_STATE.md` for the

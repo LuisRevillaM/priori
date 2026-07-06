@@ -87,8 +87,39 @@ Inventory evidence commands:
 
 ## Execution
 
-Pending inventory commit.
+Status: `DELIVERED with evidence`
+
+Execution evidence:
+
+- Inventory-first commit exists: `7a07dde`.
+- Quarantine paths were created under `docs/archive/prune-1/`.
+- Quarantined files carry PRUNE-1 provenance headers naming their original
+  path, inventory commit, reason, and current source to use instead.
+- Current pointers were updated in `README.md`, `delivery/status.yaml`,
+  `docs/CI.md`, and `.github/workflows/ci.yml`.
+- Protected/fenced areas were left untouched: `delivery/ledger.jsonl`,
+  `review-packets/**`, `docs/design/**`, `docs/adr/**`,
+  `semantic-registry/atlas/**`, and `generated/**`.
+
+Quarantined files:
+
+| Original path | New path |
+| --- | --- |
+| `CURRENT_STATE.md` | `docs/archive/prune-1/top-level-state/CURRENT_STATE.md` |
+| `KNOWN_ISSUES.md` | `docs/archive/prune-1/top-level-state/KNOWN_ISSUES.md` |
+| `MILESTONES.md` | `docs/archive/prune-1/top-level-state/MILESTONES.md` |
+| `docs/TACTICAL_QUERY_ARCHITECTURE_AND_STANDARD_LIBRARY.md` | `docs/archive/prune-1/architecture/TACTICAL_QUERY_ARCHITECTURE_AND_STANDARD_LIBRARY.md` |
+| `docs/BETA_1A_PRODUCT_FLOW_PRUNING_REPORT.md` | `docs/archive/prune-1/workbench/BETA_1A_PRODUCT_FLOW_PRUNING_REPORT.md` |
+| `docs/BETA_1A_1_UX_STATE_HARDENING_REPORT.md` | `docs/archive/prune-1/workbench/BETA_1A_1_UX_STATE_HARDENING_REPORT.md` |
+| `docs/BETA_1B_COMPREHENSION_POLISH_REPORT.md` | `docs/archive/prune-1/workbench/BETA_1B_COMPREHENSION_POLISH_REPORT.md` |
+
+Compatibility pointer:
+
+- `docs/TACTICAL_QUERY_ARCHITECTURE_AND_STANDARD_LIBRARY.md` now remains as a
+  short pointer to current architecture sources and the archived original. It
+  explicitly says the legacy `operators` key is still live machinery while the
+  old prose is not current composition grammar.
 
 ## Verification
 
-Pending execution commit.
+Pending execution commit and full-suite run on the committed tree.

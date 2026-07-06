@@ -1,3 +1,15 @@
+# PRUNE-1 Quarantine Provenance
+
+Original path: `docs/BETA_1A_PRODUCT_FLOW_PRUNING_REPORT.md`
+
+Quarantined under PRUNE-1 after inventory commit `7a07dde`.
+
+Reason: M1-era Workbench product-shell report with no live reference outside
+sealed review-packet history. Preserved as historical evidence, not current
+product guidance.
+
+Original content begins below.
+
 # Workbench Beta 1A — Product Flow Pruning Report
 
 Date: 2026-06-22

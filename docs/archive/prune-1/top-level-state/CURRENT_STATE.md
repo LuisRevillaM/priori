@@ -1,3 +1,16 @@
+# PRUNE-1 Quarantine Provenance
+
+Original path: `CURRENT_STATE.md`
+
+Quarantined under PRUNE-1 after inventory commit `7a07dde`.
+
+Reason: stale top-level current-state snapshot. Use `README.md`,
+`delivery/status.yaml`, `delivery/ledger.jsonl`, and current packet reports for
+active state. This file is preserved as historical evidence, not current
+guidance.
+
+Original content begins below.
+
 # Current State Snapshot
 
 Date: 2026-07-01
