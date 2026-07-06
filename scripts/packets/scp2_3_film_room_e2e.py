@@ -217,7 +217,19 @@ def png_chunk(kind: bytes, data: bytes) -> bytes:
     return len(data).to_bytes(4, "big") + kind + data + crc.to_bytes(4, "big")
 
 
-def capture_screenshot(base_url: str, path: Path, *, timeout_ms: int, metadata: dict[str, Any]) -> None:
+def capture_screenshot(
+    base_url: str,
+    path: Path,
+    *,
+    timeout_ms: int,
+    metadata: dict[str, Any],
+    select_unknown: bool = False,
+) -> None:
+    unknown_script = """
+const unknownMoment = page.locator('.momentItem', { hasText: 'UNKNOWN' }).first();
+await unknownMoment.click();
+await page.waitForSelector('.unknownOverlay');
+""" if select_unknown else ""
     script = f"""
 import {{ chromium }} from 'playwright';
 const browser = await chromium.launch({{ headless: true }});
@@ -226,6 +238,7 @@ page.setDefaultTimeout({timeout_ms});
 await page.goto('{base_url}/film-room', {{ waitUntil: 'networkidle' }});
 await page.waitForSelector('.stagebox svg');
 await page.waitForSelector('.metricValue');
+{unknown_script}
 await page.screenshot({{ path: '{path.as_posix()}', fullPage: true }});
 await browser.close();
 """
@@ -245,6 +258,56 @@ def assert_interval_metric(response: dict[str, Any]) -> None:
     for key in ("observed", "lower", "upper", "unknown_count"):
         if not isinstance(metric.get(key), (int, float)):
             raise AssertionError(f"interval_metric.{key} is not numeric")
+
+
+def assert_chain_moments(response: dict[str, Any]) -> dict[str, Any]:
+    answer = response["answer"]
+    moments = answer.get("moments")
+    if not isinstance(moments, list) or not moments:
+        raise AssertionError("Film Room answer returned no chain moments")
+    total = int(answer.get("moment_total_count") or 0)
+    visible = int(answer.get("visible_moment_count") or 0)
+    if total != len(moments) or visible != len(moments):
+        raise AssertionError(f"moment totals must match rendered list: total={total} visible={visible} len={len(moments)}")
+    chain_moments = [moment for moment in moments if moment.get("source_kind") == "chain_record"]
+    if len(chain_moments) != len(moments):
+        raise AssertionError("all Film Room moments must be derived chain records")
+    replay_ids = [str(moment.get("replay_window_id") or "") for moment in moments]
+    if len(set(replay_ids)) != len(replay_ids):
+        raise AssertionError("per-moment replay windows must be unique")
+    staged = [
+        moment
+        for moment in moments
+        if len(((moment.get("evidence_overlay") or {}).get("stage_labels") or [])) >= 3
+    ]
+    trails = [
+        moment
+        for moment in moments
+        if ((moment.get("evidence_overlay") or {}).get("carry_trails") or [])
+    ]
+    unknown = [
+        moment
+        for moment in moments
+        if moment.get("chain_status") == "UNKNOWN"
+        and ((moment.get("evidence_overlay") or {}).get("unknown") or {}).get("is_unknown") is True
+    ]
+    if not staged:
+        raise AssertionError("no chain moment exercised stage-label overlays")
+    if not trails:
+        raise AssertionError("no chain moment exercised carry-trail overlays")
+    if not unknown:
+        raise AssertionError("no chain moment exercised UNKNOWN slate overlay")
+    return {
+        "moment_total_count": total,
+        "visible_moment_count": visible,
+        "chain_record_count": len(chain_moments),
+        "unique_replay_window_count": len(set(replay_ids)),
+        "stage_overlay_count": len(staged),
+        "carry_trail_count": len(trails),
+        "unknown_slate_count": len(unknown),
+        "first_unknown_replay_window_id": unknown[0]["replay_window_id"],
+        "first_unknown_chain_reason": unknown[0].get("chain_reason"),
+    }
 
 
 def main() -> None:
@@ -269,6 +332,7 @@ def main() -> None:
     if run_dir.exists():
         raise RuntimeError(f"evidence run directory already exists: {run_dir}")
     run_dir.mkdir(parents=True)
+    output_root_preexisting = args.output_root.exists()
 
     table = read_json(TABLE_PATH)
     expected_plan_hash = str(table["plan_hash"])
@@ -315,6 +379,7 @@ def main() -> None:
         if not isinstance(bootstrap.get("prewarmed_response"), dict):
             raise AssertionError("bootstrap did not include a prewarmed Film Room response")
         assert_interval_metric(bootstrap["prewarmed_response"])
+        bootstrap_chain_checks = assert_chain_moments(bootstrap["prewarmed_response"])
 
         ask_started = time.monotonic()
         cold_response = post_json(
@@ -327,6 +392,7 @@ def main() -> None:
         if cold_response.get("ok") is not True or cold_response.get("outcome") != "expression":
             raise AssertionError(f"unexpected Film Room outcome: {cold_response.get('outcome')}")
         assert_interval_metric(cold_response)
+        cold_chain_checks = assert_chain_moments(cold_response)
 
         answer = cold_response["answer"]
         actual_document_hash = stable_hash(answer["document"])
@@ -338,14 +404,17 @@ def main() -> None:
             raise AssertionError(
                 f"historical certified table hash mismatch: {answer['provenance']['plan_hash']} != {expected_plan_hash}"
             )
-        if int(answer.get("moment_total_count") or 0) <= 0:
-            raise AssertionError("Film Room answer returned no chain moments")
         first_moment = answer["moments"][0]
         replay_window_id = str(first_moment["replay_window_id"])
         replay_started = time.monotonic()
         replay_window = get_json(replay_window_url(base_url, replay_window_id), timeout=args.timeout)
         replay_fetch_elapsed_ms = int((time.monotonic() - replay_started) * 1000)
         write_json(run_dir / "film-room-replay-window.json", replay_window, metadata)
+        unknown_replay_window_id = str(cold_chain_checks["first_unknown_replay_window_id"])
+        unknown_replay_started = time.monotonic()
+        unknown_replay_window = get_json(replay_window_url(base_url, unknown_replay_window_id), timeout=args.timeout)
+        unknown_replay_fetch_elapsed_ms = int((time.monotonic() - unknown_replay_started) * 1000)
+        write_json(run_dir / "film-room-unknown-replay-window.json", unknown_replay_window, metadata)
         frame_checks = assert_canonical_frame_match(
             cold_response,
             replay_window["replay"],
@@ -354,8 +423,16 @@ def main() -> None:
         )
 
         screenshot_path = run_dir / "film-room.png"
+        unknown_screenshot_path = run_dir / "film-room-unknown.png"
         if not args.skip_screenshot:
             capture_screenshot(base_url, screenshot_path, timeout_ms=args.timeout * 1000, metadata=metadata)
+            capture_screenshot(
+                base_url,
+                unknown_screenshot_path,
+                timeout_ms=args.timeout * 1000,
+                metadata=metadata,
+                select_unknown=True,
+            )
 
         evidence = {
             "schema_version": "scp2_3.film_room_e2e.v2",
@@ -366,6 +443,11 @@ def main() -> None:
             "output_root": str(args.output_root),
             "skip_service_prewarm": args.skip_service_prewarm,
             "timeout_seconds": args.timeout,
+            "cache_provenance": {
+                "output_root": str(args.output_root),
+                "output_root_preexisting_at_start": output_root_preexisting,
+                "service_prewarm_enabled": not args.skip_service_prewarm,
+            },
             "expected_r2_4_plan_hash": expected_plan_hash,
             "answer_plan_hash": answer["provenance"]["plan_hash"],
             "answer_document_hash": actual_document_hash,
@@ -378,19 +460,26 @@ def main() -> None:
             "visible_moment_count": answer["visible_moment_count"],
             "interval_metric": answer["interval_metric"],
             "frame_checks": frame_checks,
+            "chain_moment_checks": {
+                "bootstrap": bootstrap_chain_checks,
+                "cold": cold_chain_checks,
+            },
             "latency_ms": {
                 "service_ready_including_startup_prewarm": ready_elapsed_ms,
                 "bootstrap_prewarmed_fetch": bootstrap_elapsed_ms,
                 "cold_ask_total_observed": cold_ask_elapsed_ms,
                 "cold_ask_attribution": cold_response["latency_breakdown_ms"],
                 "replay_window_fetch": replay_fetch_elapsed_ms,
+                "unknown_replay_window_fetch": unknown_replay_fetch_elapsed_ms,
             },
             "prewarm_records": bootstrap.get("prewarm_records", []),
             "artifacts": {
                 "bootstrap": str((run_dir / "film-room-bootstrap.json").relative_to(ROOT)),
                 "cold_response": str((run_dir / "film-room-cold-response.json").relative_to(ROOT)),
                 "replay_window": str((run_dir / "film-room-replay-window.json").relative_to(ROOT)),
+                "unknown_replay_window": str((run_dir / "film-room-unknown-replay-window.json").relative_to(ROOT)),
                 "screenshot": str(screenshot_path.relative_to(ROOT)) if screenshot_path.exists() else None,
+                "unknown_screenshot": str(unknown_screenshot_path.relative_to(ROOT)) if unknown_screenshot_path.exists() else None,
                 "service_log": str(service_log_path.relative_to(ROOT)),
             },
         }
