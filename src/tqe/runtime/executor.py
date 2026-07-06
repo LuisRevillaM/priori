@@ -13,6 +13,7 @@ import json
 import math
 import os
 import sys
+import time
 from collections.abc import MutableMapping
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
@@ -304,6 +305,7 @@ class TacticalQueryExecutor:
         self.operators: dict[OperatorKey, OperatorImplementation] = build_operator_registry(registry_namespace)
 
     def execute(self, bound_plan: BoundQueryPlan) -> QueryExecution:
+        execute_started = time.perf_counter()
         if bound_plan.execution_mode == ExecutionMode.BIND_ONLY:
             return QueryExecution(
                 execution_id=hashlib.sha256(
@@ -350,6 +352,7 @@ class TacticalQueryExecutor:
         progress_events: list[dict[str, Any]] = []
         node_cache_summary: Counter[str] = Counter()
 
+        period_execution_started = time.perf_counter()
         if self.parallel_workers > 1 and len(bound_plan.match_ids) * len(bound_plan.periods) > 1:
             (
                 results,
@@ -381,7 +384,9 @@ class TacticalQueryExecutor:
                 runtime_value_count += match_runtime_value_count
                 progress_events.extend(match_progress_events)
                 node_cache_summary.update(match_node_cache_summary)
+        period_execution_ms = elapsed_ms(period_execution_started)
 
+        merge_started = time.perf_counter()
         results, trace_records, unknown_policy_status = apply_result_semantics(
             results=results,
             trace_records=trace_records,
@@ -398,6 +403,7 @@ class TacticalQueryExecutor:
         evidence_failures = unresolved_requested_evidence(results, bound_plan)
         if evidence_failures:
             unknown_policy_status = ExecutionStatus.INCOMPLETE
+        merge_apply_result_semantics_ms = elapsed_ms(merge_started)
 
         query_results = [
             QueryResult(
@@ -479,6 +485,13 @@ class TacticalQueryExecutor:
                 "requested_evidence_failure_count": len(evidence_failures),
                 "requested_evidence_failures": evidence_failures[:20],
                 "runtime_trace_hash": stable_hash(trace_payload),
+            },
+            timing_ms={
+                "schema_version": "perf1_execution_timing.v1",
+                "total_ms": elapsed_ms(execute_started),
+                "period_execution_ms": period_execution_ms,
+                "merge_apply_result_semantics_ms": merge_apply_result_semantics_ms,
+                "periods": period_timing_rows(progress_events),
             },
         )
 
@@ -640,6 +653,7 @@ class TacticalQueryExecutor:
         compatibility_profile: str | None = None,
     ) -> PeriodState:
         profile = compatibility_profile or self.compatibility_profile
+        period_started = time.perf_counter()
         state = self._period_state(
             match_id=match_id,
             period=period,
@@ -678,6 +692,7 @@ class TacticalQueryExecutor:
                 "period": period,
                 "node_count": len(bound_plan.nodes),
                 "runtime_node_count": len(state.runtime_values),
+                "duration_ms": elapsed_ms(period_started),
             },
         )
         return state
@@ -979,6 +994,27 @@ def runtime_parameters(bound_plan: BoundQueryPlan) -> RuntimeParameters:
     return RuntimeParameters(
         values=values
     )
+
+
+def elapsed_ms(started: float) -> float:
+    return round((time.perf_counter() - started) * 1000.0, 3)
+
+
+def period_timing_rows(progress_events: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for event in progress_events:
+        if event.get("event") != "period_complete":
+            continue
+        rows.append(
+            {
+                "match_id": str(event.get("match_id")),
+                "period": str(event.get("period")),
+                "duration_ms": float(event.get("duration_ms", 0.0)),
+                "node_count": int(event.get("node_count", 0)),
+                "runtime_node_count": int(event.get("runtime_node_count", 0)),
+            }
+        )
+    return rows
 
 
 def derive_node_cache_key(
