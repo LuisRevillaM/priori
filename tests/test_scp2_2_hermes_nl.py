@@ -10,6 +10,7 @@ from pydantic import ValidationError
 from scripts.scp2_2.eval_harness import evaluate_case_set_payload
 from tqe.semantic_compiler.hermes_nl import (
     HERMES_OUTCOME_ADAPTER,
+    HermesNLClarificationSelectionError,
     HermesNLContext,
     HermesNLModelOutputError,
     UnderstoodButNotExpressibleOutcome,
@@ -330,6 +331,41 @@ class SCP2HermesNLTests(unittest.TestCase):
 
         self.assertEqual("expression", second.outcome)
         self.assertEqual(controlled["expression_id"], second.expression.expression_id)
+        self.assertEqual(1, len(invoker.prompts))
+
+    def test_clarification_resume_unmatched_answer_is_not_model_output_error(self) -> None:
+        controlled = self.fixture_payload("fragile_possession_state_known.v0.json")
+        sequence = self.fixture_payload("fragile_window_join_count_novel.v0.json")
+        raw = json.dumps(
+            {
+                "outcome": "clarification_required",
+                "dimension": "SUPPORT_DEFINITION",
+                "question": "Which support reading should be used?",
+                "readings": [
+                    {
+                        "reading_id": "underneath_support",
+                        "label": "underneath support",
+                        "answer_aliases": ["underneath"],
+                        "expression": controlled,
+                    },
+                    {
+                        "reading_id": "behind_ball_support",
+                        "label": "behind ball support",
+                        "answer_aliases": ["behind ball"],
+                        "expression": sequence,
+                    },
+                ],
+            }
+        )
+        invoker = FakeInvoker(raw)
+        first = compile_nl_request("show support", invoker=invoker)
+
+        with self.assertRaises(HermesNLClarificationSelectionError):
+            compile_nl_request(
+                "within five metres",
+                context=HermesNLContext(pending_clarification=first.state, answer="within five metres"),
+                invoker=invoker,
+            )
         self.assertEqual(1, len(invoker.prompts))
 
     def test_clarification_resume_regates_selected_reading(self) -> None:

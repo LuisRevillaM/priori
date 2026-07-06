@@ -73,6 +73,10 @@ class HermesNLModelOutputError(ValueError):
         self.rejected_attempts = rejected_attempts or []
 
 
+class HermesNLClarificationSelectionError(ValueError):
+    """Raised when a local clarification answer selects no typed reading."""
+
+
 class TranscriptEvidence(StrictModel):
     prompt_hash: str
     pack_sha256: str
@@ -876,7 +880,7 @@ def resume_from_clarification(state: ClarificationState, answer: str) -> HermesO
             transcript=transcript,
             vocabulary=load_pack_vocabulary(),
         )
-    raise HermesNLModelOutputError(f"clarification answer did not select a typed reading: {answer}")
+    raise HermesNLClarificationSelectionError(f"clarification answer did not select a typed reading: {answer}")
 
 
 def transcript_for(
