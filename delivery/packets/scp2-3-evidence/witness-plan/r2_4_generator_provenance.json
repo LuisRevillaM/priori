@@ -1,0 +1,15 @@
+{
+  "canonical_manifest_hash": "bc5d6d4b74e5915b3f5627ea74e0ceb24739f96dae1150f91bcb0c90d696ba41",
+  "flagship_plan": "/Users/luisrevilla/code/priori/delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_v0.json",
+  "flagship_plan_hash": "d8179a5a1af54ecdd45514e4fa3403b3ab515977fb79dd29b4a62f2ecfd9bb7e",
+  "generated_by": "scripts/packets/r2_4_flagship_generator.py",
+  "long_execution_threshold_seconds": 300.0,
+  "meaning_expression": "delivery/packets/r2-4-flagship/meaning-expressions/counterattack_initiation_sequence_rate.v0.json",
+  "meaning_expression_hash": "4c11f6699e3788951d4e4f33ee4cb7c8f54f7375ee333dda7df88362008f146e",
+  "period_record_count": 28,
+  "period_records_hash": "3fb270eda29fc14f57746491881afacaee388f7799284ee9f6caf2bf74416afd",
+  "schema_version": "r2_4_flagship_provenance.v1",
+  "synthesized_sequence_rate_document_hash": "d8179a5a1af54ecdd45514e4fa3403b3ab515977fb79dd29b4a62f2ecfd9bb7e",
+  "table": "/Users/luisrevilla/code/priori/delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json",
+  "table_hash": "a9b2d257c9e36995b237ce13555047eeaaf09218473d0c3de2f98c01ab18fa65"
+}
