@@ -87,8 +87,59 @@ Inventory evidence commands:
 
 ## Execution
 
-Pending inventory commit.
+Status: `DELIVERED with evidence`
+
+Execution evidence:
+
+- Inventory-first commit exists: `7a07dde`.
+- Quarantine paths were created under `docs/archive/prune-1/`.
+- Quarantined files carry PRUNE-1 provenance headers naming their original
+  path, inventory commit, reason, and current source to use instead.
+- Current pointers were updated in `README.md`, `delivery/status.yaml`,
+  `docs/CI.md`, and `.github/workflows/ci.yml`.
+- Protected/fenced areas were left untouched: `delivery/ledger.jsonl`,
+  `review-packets/**`, `docs/design/**`, `docs/adr/**`,
+  `semantic-registry/atlas/**`, and `generated/**`.
+
+Quarantined files:
+
+| Original path | New path |
+| --- | --- |
+| `CURRENT_STATE.md` | `docs/archive/prune-1/top-level-state/CURRENT_STATE.md` |
+| `KNOWN_ISSUES.md` | `docs/archive/prune-1/top-level-state/KNOWN_ISSUES.md` |
+| `MILESTONES.md` | `docs/archive/prune-1/top-level-state/MILESTONES.md` |
+| `docs/TACTICAL_QUERY_ARCHITECTURE_AND_STANDARD_LIBRARY.md` | `docs/archive/prune-1/architecture/TACTICAL_QUERY_ARCHITECTURE_AND_STANDARD_LIBRARY.md` |
+| `docs/BETA_1A_PRODUCT_FLOW_PRUNING_REPORT.md` | `docs/archive/prune-1/workbench/BETA_1A_PRODUCT_FLOW_PRUNING_REPORT.md` |
+| `docs/BETA_1A_1_UX_STATE_HARDENING_REPORT.md` | `docs/archive/prune-1/workbench/BETA_1A_1_UX_STATE_HARDENING_REPORT.md` |
+| `docs/BETA_1B_COMPREHENSION_POLISH_REPORT.md` | `docs/archive/prune-1/workbench/BETA_1B_COMPREHENSION_POLISH_REPORT.md` |
+
+Compatibility pointer:
+
+- `docs/TACTICAL_QUERY_ARCHITECTURE_AND_STANDARD_LIBRARY.md` now remains as a
+  short pointer to current architecture sources and the archived original. It
+  explicitly says the legacy `operators` key is still live machinery while the
+  old prose is not current composition grammar.
 
 ## Verification
 
-Pending execution commit.
+Status: `DELIVERED with evidence`
+
+Committed execution tree tested: `6e7e086`
+
+The final report commit appends this verification table only.
+
+| Command | Result | Evidence |
+| --- | --- | --- |
+| `make test` | PASS; flagged long run over five minutes | Ran 561 tests in 487.660s, `OK`, with attestation `{"attestation_status": "VERIFIED", "blocking_reasons": []}`. Environment warnings: Matplotlib cache path not writable, Arrow `sysctlbyname` cache probes denied by sandbox. |
+| `GIT_INDEX_FILE=/tmp/priori-prune-1.index git diff --quiet HEAD --` | PASS | Exit code `0` after the execution commit, proving the alternate-index committed tree matches the working tree. |
+| `GIT_INDEX_FILE=/tmp/priori-prune-1.index git status --short --branch` | PASS with pre-existing untracked flags | Branch `packet/prune-1`; only untracked flagged artifacts remained: `delivery/packets/PERF-1-cold-ask-latency.md`, `delivery/packets/r2-4-flagship/run-sidecar.local.json`, and `docs/visual-explainers/tactical-compilation-concept.png`. |
+
+Local Git index note:
+
+- After the inventory commit, this sandbox refused creation of
+  `.git/index.lock` and direct writes to `.git/index` (`Operation not
+  permitted`). The execution and final report commits therefore used an
+  alternate index at `/tmp/priori-prune-1.index`.
+- The normal default-index `git status` can show stale entries from before the
+  alternate-index execution commit. The alternate-index status above is the
+  status evidence for the committed PRUNE-1 tree.
