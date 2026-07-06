@@ -1,5 +1,12 @@
 import assert from "node:assert/strict";
-import { assertIntervalMetric, filmRoomOutcomeClass, headerChipsFromResponse, refusalViewModel } from "../src/FilmRoom";
+import {
+  assertIntervalMetric,
+  chainStatusLabel,
+  filmRoomOutcomeClass,
+  headerChipsFromResponse,
+  intervalHeadline,
+  refusalViewModel
+} from "../src/FilmRoom";
 import type { FilmRoomAskResponse } from "../src/types";
 
 const metric = assertIntervalMetric({
@@ -8,13 +15,18 @@ const metric = assertIntervalMetric({
   lower: 0.2,
   upper: 0.8,
   unknown_count: 11,
-  source: { plan_hash: "abc" }
+  source: { evidence_kind: "certified", plan_hash: "abc" }
 });
 
 assert.equal(metric.observed, 0.42);
 assert.equal(metric.lower, 0.2);
 assert.equal(metric.upper, 0.8);
 assert.equal(metric.unknown_count, 11);
+assert.equal(intervalHeadline(metric), "Certified interval");
+assert.equal(
+  intervalHeadline({ ...metric, source: { evidence_kind: "runtime" } }),
+  "Runtime evidence interval"
+);
 
 for (const key of ["observed", "lower", "upper", "unknown_count"] as const) {
   const candidate: Record<string, unknown> = {
@@ -91,6 +103,8 @@ const chips = headerChipsFromResponse({
       }
     },
     certified_evidence_rows: [],
+    runtime_evidence_rows: [],
+    evidence_rows_kind: "runtime",
     interval_metric: null,
     moments: [],
     moment_total_count: 0,
@@ -110,5 +124,35 @@ const chips = headerChipsFromResponse({
   refusal: null
 } as FilmRoomAskResponse);
 assert.deepEqual(chips, ["2 matches", "home perspective", "openai-codex · gpt-5.5", "tree 1234567"]);
+
+assert.equal(chainStatusLabel(null), "no chain selected");
+assert.equal(
+  chainStatusLabel({
+    result_id: "chain-1",
+    source_kind: "chain_record",
+    classification: "COUNTERATTACK",
+    match_id: "J03WOY",
+    period: "secondHalf",
+    anchor_frame_id: 121915,
+    requested_evidence: {},
+    chain_status: null,
+    evidence_overlay: {}
+  }),
+  "chain_status not emitted"
+);
+assert.equal(
+  chainStatusLabel({
+    result_id: "chain-2",
+    source_kind: "chain_record",
+    classification: "COUNTERATTACK",
+    match_id: "J03WOY",
+    period: "secondHalf",
+    anchor_frame_id: 121915,
+    requested_evidence: {},
+    chain_status: "UNKNOWN",
+    evidence_overlay: {}
+  }),
+  "UNKNOWN"
+);
 
 console.log("film room tests passed");

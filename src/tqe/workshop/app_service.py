@@ -397,6 +397,7 @@ class FilmRoomIntervalMetricResponse(WorkbenchResponseModel):
 
 class FilmRoomMomentResponse(WorkbenchResponseModel):
     result_id: str
+    source_kind: Literal["result", "target", "chain_record"]
     classification: str
     match_id: str
     period: str
@@ -447,6 +448,8 @@ class FilmRoomAnswerResponse(WorkbenchResponseModel):
     compiled_chips: list[str]
     document: dict[str, Any]
     certified_evidence_rows: list[dict[str, Any]]
+    runtime_evidence_rows: list[dict[str, Any]]
+    evidence_rows_kind: Literal["certified", "runtime"]
     interval_metric: FilmRoomIntervalMetricResponse | None = None
     moments: list[FilmRoomMomentResponse]
     moment_total_count: int
@@ -2566,11 +2569,18 @@ def film_room_answer_from_document(
                 match_id = str(chain_record.get("match_id") or row.get("match_id") or "")
                 period = str(chain_record.get("period") or row.get("period") or "")
                 anchor_frame_id = int(chain_record.get("anchor_frame_id") or row.get("anchor_frame_id") or 0)
+                source_kind = film_room_source_kind(chain_record, fallback=row)
+                result_id = str(
+                    chain_record.get("chain_id")
+                    or chain_record.get("anchor_id")
+                    or row.get("result_id")
+                    or stable_hash(chain_record)[:16]
+                )
                 moment_key = (
                     match_id,
                     period,
                     anchor_frame_id,
-                    str(chain_record.get("chain_id") or chain_record.get("anchor_id") or row.get("result_id") or ""),
+                    result_id,
                 )
                 if moment_key in seen_moments:
                     continue
@@ -2579,6 +2589,7 @@ def film_room_answer_from_document(
                     chain_record,
                     plan_hash=plan_hash,
                     fallback_result_id=str(row.get("result_id") or ""),
+                    source_kind=source_kind,
                 )
                 if replay_payload is None and replay_meta["replay_window_id"]:
                     replay_payload = ensure_film_room_replay_payload(
@@ -2590,14 +2601,19 @@ def film_room_answer_from_document(
                 evidence_row = deepcopy(chain_record)
                 moments.append(
                     {
-                        "result_id": str(chain_record.get("chain_id") or chain_record.get("anchor_id") or row.get("result_id")),
+                        "result_id": result_id,
+                        "source_kind": source_kind,
                         "classification": str(row.get("classification") or chain_record.get("chain_status") or ""),
                         "match_id": match_id,
                         "period": period,
                         "anchor_frame_id": anchor_frame_id,
                         "start_frame_id": int_or_none(chain_record.get("start_frame_id")),
                         "end_frame_id": int_or_none(chain_record.get("end_frame_id")),
-                        "match_time_ms": row.get("match_time_ms") if isinstance(row.get("match_time_ms"), int) else None,
+                        "match_time_ms": (
+                            chain_record.get("match_time_ms")
+                            if isinstance(chain_record.get("match_time_ms"), int)
+                            else row.get("match_time_ms") if isinstance(row.get("match_time_ms"), int) else None
+                        ),
                         "requested_evidence": deepcopy(chain_record),
                         "replay_window_id": replay_meta["replay_window_id"],
                         "replay_start_frame_id": replay_meta["replay_start_frame_id"],
@@ -2625,7 +2641,9 @@ def film_room_answer_from_document(
         "status": "answer_ready",
         "compiled_chips": film_room_compiled_chips(expression_payload, document_payload),
         "document": document_payload,
-        "certified_evidence_rows": certified.get("table", {}).get("rows", []) if certified else runtime_evidence_rows,
+        "certified_evidence_rows": certified.get("table", {}).get("rows", []) if certified else [],
+        "runtime_evidence_rows": runtime_evidence_rows,
+        "evidence_rows_kind": "certified" if certified else "runtime",
         "interval_metric": interval_metric,
         "moments": moments,
         "moment_total_count": len(moments),
@@ -2733,37 +2751,66 @@ def film_room_chain_population_records(requested_evidence: dict[str, Any], *, fa
     return [deepcopy(fallback)]
 
 
+def film_room_source_kind(record: dict[str, Any], *, fallback: dict[str, Any] | None = None) -> Literal["result", "target", "chain_record"]:
+    del fallback
+    if record.get("chain_id") or record.get("chain_status") is not None:
+        return "chain_record"
+    if any(key.startswith("stage_") for key in record):
+        return "chain_record"
+    if record.get("target_id"):
+        return "target"
+    return "result"
+
+
+def film_room_witness_frame_ids(record: dict[str, Any]) -> list[int]:
+    frame_ids: list[int] = []
+    for key, value in record.items():
+        if not isinstance(value, int):
+            continue
+        if key == "anchor_frame_id" or key.endswith("_frame_id") or key.endswith("_start_frame_id") or key.endswith("_end_frame_id"):
+            frame_ids.append(value)
+    return sorted(set(frame_ids))
+
+
 def film_room_register_replay_window(
     record: dict[str, Any],
     *,
     plan_hash: str,
     fallback_result_id: str,
+    source_kind: Literal["result", "target", "chain_record"],
 ) -> dict[str, Any]:
     match_id = str(record.get("match_id") or "")
     period = str(record.get("period") or "")
     anchor_frame_id = int(record.get("anchor_frame_id") or 0)
     source_id = str(record.get("chain_id") or record.get("anchor_id") or fallback_result_id or stable_hash(record)[:16])
+    witness_frames = film_room_witness_frame_ids(record)
+    padding_frames = max(
+        50,
+        *[abs(frame_id - anchor_frame_id) + 25 for frame_id in witness_frames],
+    )
+    padding_seconds = padding_frames / 25.0
     replay_window_id = "replay_" + stable_hash(
         {
             "plan_hash": plan_hash,
             "source_id": source_id,
+            "source_kind": source_kind,
             "match_id": match_id,
             "period": period,
             "anchor_frame_id": anchor_frame_id,
-            "padding_seconds": 2.0,
+            "padding_seconds": padding_seconds,
         }
     )[:16]
-    replay_start_frame_id = max(0, anchor_frame_id - 50)
-    replay_end_frame_id = anchor_frame_id + 50
+    replay_start_frame_id = max(0, anchor_frame_id - padding_frames)
+    replay_end_frame_id = anchor_frame_id + padding_frames
     FILM_ROOM_REPLAY_INDEX[replay_window_id] = {
         "replay_window_id": replay_window_id,
         "plan_hash": plan_hash,
         "source_id": source_id,
-        "source_kind": "chain_record",
+        "source_kind": source_kind,
         "match_id": match_id,
         "period": period,
         "anchor_frame_id": anchor_frame_id,
-        "padding_seconds": 2.0,
+        "padding_seconds": padding_seconds,
     }
     return {
         "replay_window_id": replay_window_id,
@@ -2981,6 +3028,7 @@ def film_room_interval_metric(table: dict[str, Any] | None) -> dict[str, Any] | 
             "upper": float(upper),
             "unknown_count": int(unknown_count),
             "source": {
+                "evidence_kind": "certified",
                 "plan_hash": str(table.get("plan_hash")),
                 "period_records_hash": str(table.get("period_records_hash")),
                 "a_count": int(totals.get("a_count") or 0),
@@ -3018,6 +3066,7 @@ def film_room_interval_metric_from_evidence(rows: list[dict[str, Any]]) -> dict[
                 "upper": float(upper),
                 "unknown_count": int(unknown),
                 "source": {
+                    "evidence_kind": "runtime",
                     "source": "execution_requested_evidence",
                     "match_id": str(row.get("match_id") or ""),
                     "period": str(row.get("period") or ""),
@@ -4143,7 +4192,12 @@ def public_canonical_sources(raw: Any) -> dict[str, str]:
     sources = raw if isinstance(raw, dict) else {}
     public: dict[str, str] = {}
     for key, value in sources.items():
-        public[str(key)] = f"canonical_source:{sha256(str(value).encode('utf-8')).hexdigest()[:16]}"
+        source_id = str(value)
+        public[str(key)] = (
+            source_id
+            if source_id.startswith("canonical_source:")
+            else f"canonical_source:{sha256(source_id.encode('utf-8')).hexdigest()[:16]}"
+        )
     return public
 
 

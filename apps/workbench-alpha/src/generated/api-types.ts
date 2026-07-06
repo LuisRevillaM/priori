@@ -576,6 +576,14 @@ export const apiSchemas = {
             "title": "Document",
             "type": "object"
           },
+          "evidence_rows_kind": {
+            "enum": [
+              "certified",
+              "runtime"
+            ],
+            "title": "Evidence Rows Kind",
+            "type": "string"
+          },
           "executions": {
             "items": {
               "$ref": "#/$defs/FilmRoomExecutionRecordResponse"
@@ -624,6 +632,14 @@ export const apiSchemas = {
             ],
             "default": null
           },
+          "runtime_evidence_rows": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Runtime Evidence Rows",
+            "type": "array"
+          },
           "status": {
             "const": "answer_ready",
             "title": "Status",
@@ -639,6 +655,8 @@ export const apiSchemas = {
           "compiled_chips",
           "document",
           "certified_evidence_rows",
+          "runtime_evidence_rows",
+          "evidence_rows_kind",
           "moments",
           "moment_total_count",
           "visible_moment_count",
@@ -880,6 +898,15 @@ export const apiSchemas = {
             "title": "Result Id",
             "type": "string"
           },
+          "source_kind": {
+            "enum": [
+              "result",
+              "target",
+              "chain_record"
+            ],
+            "title": "Source Kind",
+            "type": "string"
+          },
           "start_frame_id": {
             "anyOf": [
               {
@@ -907,6 +934,7 @@ export const apiSchemas = {
         },
         "required": [
           "result_id",
+          "source_kind",
           "classification",
           "match_id",
           "period",

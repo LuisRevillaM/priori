@@ -44,13 +44,24 @@ export function assertIntervalMetric(metric: unknown): FilmRoomIntervalMetric {
     }
   }
   return {
-    label: String(record.label ?? "Certified interval"),
+    label: String(record.label ?? "Runtime evidence interval"),
     observed: record.observed as number,
     lower: record.lower as number,
     upper: record.upper as number,
     unknown_count: record.unknown_count as number,
     source: asRecord(record.source)
   };
+}
+
+export function intervalHeadline(metric: FilmRoomIntervalMetric | null | undefined) {
+  const source = asRecord(metric?.source);
+  return source.evidence_kind === "certified" ? "Certified interval" : "Runtime evidence interval";
+}
+
+export function chainStatusLabel(moment: FilmRoomMoment | null | undefined) {
+  if (!moment) return "no chain selected";
+  if (typeof moment.chain_status === "string" && moment.chain_status.length > 0) return moment.chain_status;
+  return "chain_status not emitted";
 }
 
 export function filmRoomOutcomeClass(response: FilmRoomAskResponse | null) {
@@ -114,7 +125,7 @@ function IntervalCard({ metric }: { metric: FilmRoomIntervalMetric | null | unde
   return (
     <section className="filmPanel metricPanel">
       <div className="filmPanelHeader">
-        <span>Certified interval</span>
+        <span>{intervalHeadline(renderable)}</span>
         <span>UNKNOWN {renderable.unknown_count}</span>
       </div>
       <div className="metricValue">{formatPercent(renderable.observed)}</div>
@@ -342,7 +353,7 @@ function MomentList({
             <span>{moment.match_id}</span>
             <span>{moment.period}</span>
             <strong>{moment.anchor_frame_id}</strong>
-            <small>{moment.chain_status ?? moment.classification}</small>
+            <small>{chainStatusLabel(moment)}</small>
             {moment.unknown_reason ? <em>{moment.unknown_reason}</em> : null}
           </button>
         ))}
@@ -438,7 +449,7 @@ function EvidencePanel({ moment, response }: { moment: FilmRoomMoment | null | u
         <pre>{JSON.stringify(moment?.evidence_row ?? response?.answer?.raw_evidence ?? {}, null, 2)}</pre>
       ) : (
         <dl className="evidenceSummary">
-          <div><dt>chain</dt><dd>{moment?.chain_status ?? "pending"}</dd></div>
+          <div><dt>chain</dt><dd>{chainStatusLabel(moment)}</dd></div>
           <div><dt>reason</dt><dd>{moment?.chain_reason ?? moment?.unknown_reason ?? "observed"}</dd></div>
           <div><dt>window</dt><dd>{moment?.replay_start_frame_id ?? "-"} - {moment?.replay_end_frame_id ?? "-"}</dd></div>
           <div><dt>overlays</dt><dd>{asArray(overlay.stage_labels).length} stages · {asArray(overlay.carry_trails).length} trails</dd></div>

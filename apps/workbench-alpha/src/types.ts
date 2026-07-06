@@ -265,6 +265,7 @@ export type FilmRoomIntervalMetric = {
 
 export type FilmRoomMoment = {
   result_id: string;
+  source_kind: "result" | "target" | "chain_record";
   classification: string;
   match_id: string;
   period: string;
@@ -299,6 +300,8 @@ export type FilmRoomAskResponse = Omit<GeneratedFilmRoomAskResponse, "answer" | 
     compiled_chips: string[];
     document: JsonObject;
     certified_evidence_rows: JsonObject[];
+    runtime_evidence_rows: JsonObject[];
+    evidence_rows_kind: "certified" | "runtime";
     interval_metric?: FilmRoomIntervalMetric | null;
     moments: FilmRoomMoment[];
     moment_total_count: number;
