@@ -2743,7 +2743,7 @@ def film_room_register_replay_window(
     period = str(record.get("period") or "")
     anchor_frame_id = int(record.get("anchor_frame_id") or 0)
     source_id = str(record.get("chain_id") or record.get("anchor_id") or fallback_result_id or stable_hash(record)[:16])
-    replay_window_id = "film_room_chain_" + stable_hash(
+    replay_window_id = "replay_" + stable_hash(
         {
             "plan_hash": plan_hash,
             "source_id": source_id,
