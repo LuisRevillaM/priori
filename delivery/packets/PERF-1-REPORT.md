@@ -118,3 +118,104 @@ Earlier PERF-1 evidence run
 `delivery/packets/perf-1-evidence/runs/2026-07-06T163909Z0000-9a9e54440adb/`
 is retained in history, but the final report relies on the fresh post-fallback
 run listed above.
+
+---
+
+# PERF-1 Fix Round Report
+
+Status: DELIVERED with evidence. Review judgment remains external.
+
+## Mechanical Fixes
+
+- Deleted dead lineage-less wrappers: `catalog_node_cache_key`,
+  `shared_catalog_node_cache_key`, and `synthetic_cache_state`.
+- Removed the dependent shared-cache wrapper test.
+- Expanded cache-key mutation coverage to sub-components: runtime parameter
+  default value, `match_id`, `period`, resolved parameter value, upstream key,
+  code epoch, schema version, node version, data manifest entry, and perspective.
+- Added persistent-cache corrupted-preimage detection coverage.
+- Changed `encode_cache_output` to reject tuple and ndarray values loudly.
+- Persistent-cache store rejection now records `persistent_store_rejected` and a
+  progress event instead of writing an ambiguous cache entry.
+- Harness variant summaries now include `execution_parallelism`, including pool
+  backend.
+
+## Fix Evidence
+
+Focused test evidence:
+
+- Run: `delivery/packets/perf-1-evidence/fix-focused-tests/2026-07-06T195233Z0000-ebc5bd558507/`
+- Script: `scripts/packets/perf1_focused_test_evidence.py`
+- Script SHA-256: `ebc5bd558507d6b83891e9b88577b68c839be4f9582a1bc71adf0a288e76d402`
+- Evidence commit: `25812730cc95b79c1ad6d79ba6214a4f640caeb5`
+- Result: PASS, 8 named tests, 85,654.974 ms.
+
+Named focused tests:
+
+- `tests.test_executor_boundaries.ExecutorRegistryBoundaryTests.test_perf1_cache_key_mutates_for_every_director_component`
+- `tests.test_executor_boundaries.ExecutorRegistryBoundaryTests.test_perf1_cache_key_canonicalizes_expanded_defaults`
+- `tests.test_executor_boundaries.ExecutorRegistryBoundaryTests.test_perf1_persistent_cache_detects_corrupt_output_without_serving`
+- `tests.test_executor_boundaries.ExecutorRegistryBoundaryTests.test_perf1_persistent_cache_detects_corrupt_preimage_without_serving`
+- `tests.test_executor_boundaries.ExecutorRegistryBoundaryTests.test_perf1_persistent_cache_round_trips_frame_signal_outputs`
+- `tests.test_executor_boundaries.ExecutorRegistryBoundaryTests.test_perf1_encode_cache_output_rejects_ambiguous_containers`
+- `tests.test_executor_boundaries.ExecutorRegistryBoundaryTests.test_perf1_parallel_pool_falls_back_when_process_pool_is_unavailable`
+- `tests.test_m1_1_runtime.M11RuntimeTests.test_parallel_period_execution_matches_sequential_ordering`
+
+Filtered harness evidence for backend recording:
+
+- Run: `delivery/packets/perf-1-evidence/runs/2026-07-06T195405Z0000-72254d3bd996/`
+- Plan set: `scp2_1_fragile_window_join_count_novel`
+- Result: all executable roles byte-identical.
+- Recorded optimized backend: `process`.
+- Optimized-cold node cache: `persistent_store_rejected=2`,
+  `detected_never_served=0`.
+- Optimized-warm node cache: `persistent_hits=12`,
+  `persistent_store_rejected=2`, `detected_never_served=0`.
+
+## Full Suite
+
+| Check | Commit | Result |
+| --- | --- | --- |
+| Full suite: `make test` | `d18dc9a` | PASS, 568 tests in 510.398s |
+
+The full-suite run exceeded five minutes. Matplotlib temporary-cache and Arrow
+sysctl warnings were non-blocking sandbox warnings.
+
+## Disclosures
+
+Cache-entry working files were removed from evidence run directories before
+commit. Reason: persistent node-cache entries are generated working cache state,
+not review evidence; committed evidence is the self-stamped JSON/Markdown
+summary produced by committed scripts. The deletion was targeted to untracked
+`node-cache/` working directories only.
+
+Abandoned run directories:
+
+- `delivery/packets/perf-1-evidence/runs/2026-07-06T162827Z0000-9a9e54440adb/`
+  came from a pre-commit refusal-only smoke run. Its untracked summary files
+  were deleted and no committed evidence depends on it.
+- `delivery/packets/perf-1-evidence/runs/2026-07-06T162912Z0000-9a9e54440adb/`
+  came from the failed FrameSignal serialization evidence run. It produced no
+  committed evidence files.
+- Fix-round failed filtered run
+  `delivery/packets/perf-1-evidence/runs/2026-07-06T194957Z0000-72254d3bd996/`
+  exposed tuple rejection during persistent store. It was removed as untracked
+  failed-run working state after the executor was changed to record unsupported
+  persistent stores without serving or writing ambiguous entries.
+
+Production activation disclosure:
+
+- `render.yaml` activates persistent node cache with
+  `TQE_NODE_CACHE_ROOT=/var/data/cache/node-output`.
+- `render.yaml` activates four execution workers with
+  `TQE_EXECUTION_WORKERS="4"`.
+- This is deliberate PERF-1 scope, not incidental config churn; the director
+  ratifies production activation at merge.
+
+Branch-tree-vs-worktree statement:
+
+- No alternate-index or clone route was used.
+- Work was committed through the normal `packet/perf-1` worktree.
+- Final verification command: `git diff packet/perf-1 -- .`; expected result is
+  empty after this report is committed, and the final handoff will state the
+  observed result.
