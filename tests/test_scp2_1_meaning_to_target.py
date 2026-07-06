@@ -12,7 +12,9 @@ from unittest.mock import patch
 from pydantic import ValidationError
 from scripts.coverage_map import compiler_search_reachability as search
 from scripts.packets import scp2_1_roundtrip_generator as roundtrip_generator
+from tqe.runtime.binder import bind_document
 from tqe.runtime.ir import stable_hash
+from tqe.runtime.ir import TacticalQueryDocument
 from tqe.semantic_compiler.meaning_expression import (
     BridgeRefusalKind,
     CompositionConstraint,
@@ -174,6 +176,25 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "coverage_row does not match"):
             validate_correspondence_with_r1c_guard(mutated)
 
+    def test_renderer_makes_target_contract_name_free_even_when_text_echoes_concept(self) -> None:
+        payload = self.fixture_payload("fragile_possession_state_known.v0.json")
+        concept = payload["concept_identity"]
+        payload["meaning_clauses"][0]["value"] = concept
+        payload["target_contract"]["claim_boundary"] = (
+            f"{concept} appears in free text but must not reach the contract body."
+        )
+        result = load_meaning_expression_result(payload, vocabulary=self.vocabulary)
+        self.assertEqual("accepted", result.outcome)
+        self.assertIsNotNone(result.expression)
+
+        target = synthesize_search_target(result.expression)
+
+        contract_json = json.dumps(target["target_contract"], sort_keys=True).lower()
+        self.assertNotIn(concept, contract_json)
+        self.assertFalse(search.concept_name_used_as_hint(target))
+        self.assertEqual(concept, target["semantic_correspondence"]["coverage_row"])
+        self.assertIn(concept, target["semantic_correspondence"]["meaning"])
+
     def test_ledger_write_path_is_unreachable_from_bridge_code(self) -> None:
         with patch.dict(os.environ, {"TQE_WRITE": "0", "TQE_SEARCH_UPDATE_LEDGER": "0"}):
             with self.assertRaises(PermissionError):
@@ -202,6 +223,72 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
         self.assertEqual("PASS", synthesized["bind"]["status"])
         self.assertEqual(expected_hash, synthesized["document_hash"])
 
+    def test_typed_join_synthesis_does_not_emit_inactive_missing_field_defaults(self) -> None:
+        contract = {
+            "desired_output": "classification",
+            "required_evidence": [
+                "typed_join_status",
+                "left_anchor_id",
+                "right_anchor_id",
+                "left_frame_id",
+                "right_frame_id",
+            ],
+            "required_modalities": [],
+            "status_semantics": [{"field": "typed_join_status", "required_value": "PASS"}],
+            "claim_boundary": "Bind regression only.",
+            "composition_constraints": [
+                {
+                    "kind": "typed_join",
+                    "join_key": "same_anchor",
+                    "no_match_policy": "UNKNOWN",
+                    "same_team_perspective_required": False,
+                    "entity_identity_preserved_required": False,
+                    "frame_alignment_required": True,
+                    "left_required_fields": ["anchor_id", "anchor_frame_id"],
+                    "right_required_fields": ["anchor_id", "anchor_frame_id"],
+                }
+            ],
+        }
+        target = {
+            "target_id": "be_011_fragile_possession_state_bind_regression",
+            "concept": "fragile_possession_state",
+            "held_out": True,
+            "multi_step": True,
+            "semantic_correspondence": {
+                "coverage_row": "fragile_possession_state",
+                "meaning": "regression",
+                "composition": "typed_join",
+                "claim_boundary": "Bind regression only.",
+            },
+            "target_contract": contract,
+        }
+
+        build = search.synthesize_by_search(
+            target=target,
+            row={"concept": "fragile_possession_state"},
+            context=search.SearchContext(
+                catalog=search.CatalogIndex(),
+                target_contract=contract,
+            ),
+        )
+        join_node = next(
+            node
+            for node in build["document"]["draft_plan"]["nodes"]
+            if node.get("operator", {}).get("name") == "typed_join"
+        )
+
+        for parameter in (
+            "left_start_frame_field",
+            "left_end_frame_field",
+            "right_start_frame_field",
+            "right_end_frame_field",
+        ):
+            self.assertEqual("none", join_node["parameters"][parameter]["value"])
+        self.assertEqual("anchor_id", join_node["parameters"]["left_anchor_id_field"]["value"])
+        self.assertEqual("anchor_frame_id", join_node["parameters"]["left_frame_field"]["value"])
+
+        bind_document(TacticalQueryDocument.model_validate(build["document"]))
+
     def test_binder_accepts_novel_in_grammar_composition(self) -> None:
         expression = self.accepted_expression("fragile_window_join_count_novel.v0.json")
 
@@ -215,7 +302,7 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
             synthesized["target"]["semantic_correspondence"]["coverage_row"],
         )
 
-    def test_r2_4_sequence_expression_synthesizes_from_registry_grammar(self) -> None:
+    def test_r2_4_sequence_expression_uses_search_not_committed_certified_plan_ref(self) -> None:
         result = load_meaning_expression_from_path(
             R2_4_FIXTURE_DIR / "counterattack_initiation_sequence_rate.v0.json",
             vocabulary=self.vocabulary,
@@ -227,18 +314,149 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
 
         self.assertEqual("PASS", synthesized["bind"]["status"])
         self.assertEqual("operator:rate", synthesized["build"]["terminal_provider"])
-        self.assertEqual("operator:sequence_pattern", synthesized["build"]["build_metadata"]["population_terminal"])
-        self.assertEqual("aggregate_over", synthesized["build"]["build_metadata"]["companion_aggregate_node_id"])
-        self.assertEqual(
-            "r2_4_counterattack_initiation_sequence_rate",
-            synthesized["target"]["semantic_correspondence"]["coverage_row"],
+        self.assertIn("provider_field_backward_search", synthesized["build"]["rules_used"])
+        self.assertIn("rate_operator_composition", synthesized["build"]["rules_used"])
+        self.assertIn("sequence_pattern_operator_composition", synthesized["build"]["rules_used"])
+        self.assertIsNone(synthesized["document"].get("plan_id"))
+        self.assertIsNone(synthesized["document"].get("recipe_id"))
+
+    def test_recipe_id_does_not_bypass_search_with_exact_plan_ref(self) -> None:
+        pack = json.loads(Path("generated/tactical-knowledge-pack.json").read_text(encoding="utf-8"))
+        recipe = next(
+            item for item in pack["recipes"] if item["recipe_id"] == "line_break_support_response_v1"
         )
+        payload = self.recipe_expression_payload(recipe)
+        result = load_meaning_expression_result(payload, vocabulary=self.vocabulary)
+        self.assertEqual("accepted", result.outcome)
+        self.assertIsNotNone(result.expression)
+
+        with self.assertRaises(search.SynthesisError):
+            synthesize_and_bind(result.expression, coverage_rows=self.coverage_rows)
+
+    def test_single_provider_overcomposition_is_not_silently_elided(self) -> None:
+        payload = self.controlled_pass_variant_payload("settled_completed_pass_retained_control")
+        payload["operator_applications"] = [{"operator": "typed_join", "parameters": []}]
+        payload["target_contract"]["composition_constraints"] = [{"kind": "typed_join", "parameters": []}]
+        result = load_meaning_expression_result(payload, vocabulary=self.vocabulary)
+        self.assertEqual("accepted", result.outcome)
+        self.assertIsNotNone(result.expression)
+
+        with self.assertRaisesRegex(search.SynthesisError, "No registered operator composition"):
+            synthesize_and_bind(result.expression, coverage_rows=self.coverage_rows)
+
+    @staticmethod
+    def controlled_pass_variant_payload(identity: str) -> dict:
+        return {
+            "schema_version": "meaning_expression.v0",
+            "expression_id": identity,
+            "expression_version": "0.1.0",
+            "concept_identity": identity,
+            "display_name": "Settled Completed Pass Retained Control",
+            "meaning_clauses": [
+                {
+                    "subject": "controlled_pass_episode",
+                    "action": "requires",
+                    "field": "controlled_pass_status",
+                    "operator": "eq",
+                    "value": "PASS",
+                }
+            ],
+            "concept_refs": ["controlled_pass_episode"],
+            "operator_applications": [],
+            "population": {
+                "match_ids": [],
+                "periods": ["firstHalf", "secondHalf"],
+                "perspective_team_roles": ["home", "away"],
+            },
+            "group_by": [],
+            "target": {
+                "target_id": f"{identity}_v0",
+                "held_out": True,
+                "multi_step": False,
+            },
+            "target_contract": {
+                "desired_output": "classification",
+                "required_evidence": ["pass_episode_id", "controlled_pass_status"],
+                "required_modalities": ["events", "tracking"],
+                "status_semantics": [
+                    {"field": "controlled_pass_status", "operator": "eq", "required_value": "PASS"}
+                ],
+                "composition_constraints": [],
+                "claim_boundary": "Observed controlled pass status only.",
+            },
+            "correspondence_clauses": [
+                {"name": "claim_boundary", "value": "single provider should satisfy this request"}
+            ],
+        }
 
     def accepted_expression(self, name: str):
         result = load_meaning_expression_from_path(FIXTURE_DIR / name, vocabulary=self.vocabulary)
         self.assertEqual("accepted", result.outcome)
         self.assertIsNotNone(result.expression)
         return result.expression
+
+    @staticmethod
+    def recipe_expression_payload(recipe: dict) -> dict:
+        fields = []
+        for evidence in recipe["authoring_contract"]["requested_evidence"]:
+            field = evidence["field"]
+            if field not in fields:
+                fields.append(field)
+        status_semantics = [
+            {
+                "field": predicate["input"]["output_name"],
+                "operator": predicate["operator"]["name"],
+                "required_value": (predicate.get("compare") or {}).get("value"),
+            }
+            for predicate in recipe["authoring_contract"]["required_predicates"]
+        ]
+        refs = []
+        for node in recipe["authoring_contract"]["authorable_nodes"]:
+            ref = node["catalog_ref"]
+            if ref not in refs:
+                refs.append(ref)
+        base_id = recipe["recipe_id"].removesuffix("_v1")
+        return {
+            "schema_version": "meaning_expression.v0",
+            "expression_id": base_id,
+            "expression_version": "0.1.0",
+            "concept_identity": base_id,
+            "display_name": recipe["display_name"],
+            "meaning_clauses": [
+                {
+                    "subject": "recipe",
+                    "action": "requires",
+                    "field": status_semantics[0]["field"],
+                    "operator": status_semantics[0]["operator"],
+                    "value": status_semantics[0]["required_value"],
+                }
+            ],
+            "concept_refs": refs,
+            "operator_applications": [],
+            "population": {
+                "match_ids": ["J03WOY"],
+                "periods": ["firstHalf", "secondHalf"],
+                "perspective_team_roles": ["home"],
+            },
+            "group_by": [],
+            "target": {
+                "target_id": f"{base_id}_v0",
+                "held_out": True,
+                "multi_step": True,
+            },
+            "target_contract": {
+                "desired_output": "classification",
+                "required_evidence": fields,
+                "required_modalities": ["events", "tracking"],
+                "status_semantics": status_semantics,
+                "composition_constraints": [],
+                "claim_boundary": "Observed recipe-backed evidence only.",
+            },
+            "correspondence_clauses": [
+                {"name": "recipe_id", "value": recipe["recipe_id"]},
+                {"name": "claim_boundary", "value": "generated exact typed plan reference"},
+            ],
+        }
 
     @staticmethod
     def fixture_payload(name: str) -> dict:

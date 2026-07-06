@@ -1,0 +1,169 @@
+{
+  "schema_version": "scp2_2.dev_cases.v0",
+  "description": "Executor-authored SCP2-2 DEV cases. The director blind set remains hash-pinned only at config/scp2-2-blind-eval.sha256.",
+  "cases": [
+    {
+      "case_id": "dev_same_meaning_controlled_pass",
+      "kind": "same_meaning_pair",
+      "request_texts": [
+        "Find controlled pass episodes for the home and away teams.",
+        "Show the settled completed passes where the receiving team keeps control."
+      ],
+      "expected": {
+        "outcome": "expression"
+      }
+    },
+    {
+      "case_id": "dev_same_meaning_sequence_rate",
+      "kind": "same_meaning_pair",
+      "request_texts": [
+        "For each team and match, rate counterattack initiation chains where a regain is followed by a progressive carry of at least 3 metres within 5 seconds and then a controlled pass within 4 seconds.",
+        "Measure regains that turn into a 3 metre progressive carry and then a controlled pass, reported as a per-regain rate by team and match."
+      ],
+      "expected": {
+        "outcome": "expression",
+        "operators_include": [
+          "sequence_pattern",
+          "rate"
+        ]
+      }
+    },
+    {
+      "case_id": "dev_same_meaning_line_break_support",
+      "kind": "same_meaning_pair",
+      "request_texts": [
+        "Show line breaks where a support option arrives after the receiver crosses the line.",
+        "Find receiver line transitions during passes with an underneath support arrival response."
+      ],
+      "expected": {
+        "outcome": "expression"
+      }
+    },
+    {
+      "case_id": "dev_changed_rate_vs_count",
+      "kind": "changed_meaning_pair",
+      "request_texts": [
+        "Count regain to progressive carry to controlled pass chains by team and match.",
+        "Report the per-regain rate of regain to progressive carry to controlled pass chains by team and match."
+      ],
+      "expected": {
+        "outcome": "expression"
+      }
+    },
+    {
+      "case_id": "dev_changed_controlled_vs_bypass",
+      "kind": "changed_meaning_pair",
+      "request_texts": [
+        "Show controlled passes.",
+        "Show completed passes that bypass multiple opponents."
+      ],
+      "expected": {
+        "outcome": "expression"
+      }
+    },
+    {
+      "case_id": "dev_known_possession_corridor",
+      "kind": "single",
+      "request_text": "Find possessions with a progressive corridor available ahead of the ball side.",
+      "expected": {
+        "outcome": "expression",
+        "synthesis": "pass"
+      }
+    },
+    {
+      "case_id": "dev_known_high_bypass",
+      "kind": "single",
+      "request_text": "Show high-bypass completed passes that bypass opponents.",
+      "expected": {
+        "outcome": "expression",
+        "synthesis": "pass"
+      }
+    },
+    {
+      "case_id": "dev_known_first_time_relay",
+      "kind": "single",
+      "request_text": "Find first-time relays after the receiver transitions beyond a defensive line.",
+      "expected": {
+        "outcome": "expression",
+        "synthesis": "pass"
+      }
+    },
+    {
+      "case_id": "dev_novel_sequence_rate",
+      "kind": "single",
+      "request_text": "Build the sequence plus rate ask: regain, then progressive carry of at least 3 metres within 5 seconds, then controlled pass within 4 seconds; report count and rate by team and match.",
+      "expected": {
+        "outcome": "expression",
+        "operators_include": [
+          "sequence_pattern",
+          "aggregate_over",
+          "rate"
+        ],
+        "synthesis": "pass"
+      }
+    },
+    {
+      "case_id": "dev_refusal_body_orientation",
+      "kind": "single",
+      "request_text": "Show receiving players whose body orientation is open before the pass arrives.",
+      "expected": {
+        "outcome": "understood_but_not_expressible",
+        "gap_code": "BODY_ORIENTATION"
+      }
+    },
+    {
+      "case_id": "dev_refusal_pass_probability",
+      "kind": "single",
+      "request_text": "Show the expected completion probability for each pass.",
+      "expected": {
+        "outcome": "understood_but_not_expressible",
+        "gap_code": "PASS_PROBABILITY"
+      }
+    },
+    {
+      "case_id": "dev_refusal_player_intent",
+      "kind": "single",
+      "request_text": "Find moments where the ball carrier intended to bait the press.",
+      "expected": {
+        "outcome": "understood_but_not_expressible",
+        "gap_code": "PLAYER_INTENT"
+      }
+    },
+    {
+      "case_id": "dev_refusal_video_modality",
+      "kind": "single",
+      "request_text": "Show me the video clips of those counterattack chains.",
+      "expected": {
+        "outcome": "unsupported_modality",
+        "gap_code": "VIDEO",
+        "modality": "video"
+      }
+    },
+    {
+      "case_id": "dev_clarification_support_definition",
+      "kind": "clarification_turn",
+      "request_text": "Show support after line breaks.",
+      "answer": "use underneath receiving option support",
+      "expected": {
+        "outcome": "clarification_required",
+        "dimension": "SUPPORT_DEFINITION"
+      },
+      "final_expected": {
+        "outcome": "expression"
+      }
+    },
+    {
+      "case_id": "dev_clarification_distance_threshold",
+      "kind": "clarification_turn",
+      "request_text": "Show nearby support around possessions.",
+      "answer": "within five metres",
+      "expected": {
+        "outcome": "clarification_required",
+        "dimension": "DISTANCE_THRESHOLD"
+      },
+      "final_expected": {
+        "outcome": "expression"
+      }
+    }
+  ]
+}
