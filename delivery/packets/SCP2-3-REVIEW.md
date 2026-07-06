@@ -176,3 +176,14 @@ evidence run. Nothing else changes.
 On the fix's completion the packet merges. The third executor's two
 rounds are on record as the standard: exemplary evidence discipline,
 honest labels, self-enforcing evidence scripts.
+
+---
+
+# SCP2-3 Fix Round: ACCEPTED — the Film Room merges
+
+Reviewed 2026-07-06 at 93ea4c7. The fence repair verified by the
+director: delivery/packets/r2-4-flagship/ is byte-identical to its
+merged state (empty diff against the merge-base); the witness-
+enriched plan lives under scp2-3-evidence/witness-plan/ with its own
+provenance; fresh R-AZ evidence run committed; director's full suite
+green. The loop has its face.
