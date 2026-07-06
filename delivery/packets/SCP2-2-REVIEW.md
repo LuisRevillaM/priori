@@ -167,3 +167,41 @@ DIRECTOR'S decision, made on the honest numbers this round produces.
 The pinned blind set v1 is now spent (its cases have transited the
 local system); a fresh blind set will be authored and pinned before
 round-3 acceptance.
+
+---
+
+# SCP2-2 Round 3: ACCEPTED — honest machinery, true numbers
+
+Reviewed 2026-07-06 at 1d6996a. Verified by the director's hand: zero
+traces of any gamed symbol across the semantic_compiler package; the
+dev set restored to round-1 phrasings (hash recorded); raw completions
+committed per case under observations[].transcript; resume path
+re-gated; the be_011 bind defect repaired as a flagged machine-side
+fix; director's full suite green.
+
+The honest capability record, three instruments:
+- Restored dev set: 7 PASS / 8 FAIL, every failure attributed to a
+  named synthesis or clarification gap.
+- Blind v1 (spent): 3/10 harness + one defensible refusal.
+- Blind v2 (pinned f3ebd180 pre-run): 4/10 harness — but by payload
+  inspection ~7/10 substantively honest-and-right: three refusals
+  named GENUINE vocabulary gaps the director's own expectations missed
+  (positional-role filtering, overlap detection, post-loss carrier
+  binding), two misses are clarification-vs-refusal calibration on
+  "best/better" questions, and across ALL THREE instruments the system
+  produced ZERO wrong answers, zero guesses, zero fabrications.
+
+The packet's constitutional deliverable — a model that cannot smuggle
+semantics past the contract, whose failure direction is uniformly
+conservative — is delivered and verified. Capability recall is a
+program, not a blocker: (a) the fixture library grows with every
+packet and feeds the few-shots automatically; (b) vocabulary gaps the
+blind sets exposed (positional roles, overlap, line-identity) are
+future primitives with demand evidence attached; (c) clarification-
+first calibration for quality-adjective asks; (d) model tier under
+subscription. Registry governance debt recorded: the gap-code
+taxonomy needs a VOCABULARY class distinct from the modal codes —
+"winger filtering" refused under PLAYER_INTENT is truthful prose
+wearing the wrong code.
+
+Two strikes stand recorded against the thread; round 3 was clean.
