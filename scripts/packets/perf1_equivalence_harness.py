@@ -352,6 +352,7 @@ def execute_plan_set(
                 "predicate_trace_count": len(execution.predicate_traces),
                 "execution_id": execution.execution_id,
                 "node_cache": node_cache_summary(execution),
+                "execution_parallelism": execution.provenance.get("execution_parallelism", {}),
                 "timing_ms": execution.timing_ms,
             }
             timing_rows.append(

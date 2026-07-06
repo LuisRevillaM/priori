@@ -234,11 +234,11 @@ def encode_cache_output(value: Any) -> Any:
     if isinstance(value, list):
         return [encode_cache_output(child) for child in value]
     if isinstance(value, tuple):
-        return [encode_cache_output(child) for child in value]
+        raise RuntimeError("persistent cache output cannot encode tuple values")
     if isinstance(value, np.generic):
         return value.item()
     if isinstance(value, np.ndarray):
-        return encode_cache_output(value.tolist())
+        raise RuntimeError("persistent cache output cannot encode ndarray values")
     if isinstance(value, Unit | EntityScope):
         return value.value
     return value
@@ -1173,28 +1173,6 @@ def node_upstream_lineage(state: PeriodState, node: BoundPlanNode) -> list[dict[
     return lineage
 
 
-def catalog_node_cache_key(node: BoundCatalogNode) -> str:
-    state = synthetic_cache_state()
-    return derive_node_cache_key(node=node, state=state, upstream_lineage=[])["cache_key"]
-
-
-def synthetic_cache_state() -> Any:
-    return type(
-        "SyntheticCacheState",
-        (),
-        {
-            "match_id": "synthetic",
-            "period": "firstHalf",
-            "params": RuntimeParameters(values={}),
-            "data_scope_manifest_entries": [],
-            "perspective_team_role": "home",
-            "perspective_team_id": "",
-            "defending_team_role": "away",
-            "defending_team_id": "",
-        },
-    )()
-
-
 def normalize_worker_count(value: int | str | None) -> int:
     if value is None or value == "":
         return 1
@@ -1441,21 +1419,6 @@ def file_content_hash(path: Path, *, schema_version: str) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
-
-
-def shared_catalog_node_cache_key(state: PeriodState, node: BoundCatalogNode, node_cache_key: str) -> str:
-    if not getattr(state, "data_scope_manifest_entries", None):
-        state.data_scope_manifest_entries = data_scope_manifest_entries(
-            canonical_root=state.canonical_root,
-            raw_tracking=state.raw_tracking,
-            match_id=state.match_id,
-            period=state.period,
-        )
-    return derive_node_cache_key(
-        node=node,
-        state=state,
-        upstream_lineage=[],
-    )["cache_key"]
 
 
 def evaluate_target_in_state(

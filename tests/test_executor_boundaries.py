@@ -9,6 +9,8 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest import mock
 
+import numpy as np
+
 from tqe.runtime import executor
 from tqe.runtime.capabilities import (
     PRIMITIVE_IMPLEMENTATION_NAMES,
@@ -214,26 +216,6 @@ class ExecutorRegistryBoundaryTests(unittest.TestCase):
                 bound_plan=minimal_bound_plan(max_relations_per_anchor=1),
             )
 
-    def test_shared_cache_key_changes_with_scope_file_hash(self) -> None:
-        node = BoundCatalogNode(
-            kind=NodeKind.PRIMITIVE,
-            node_id="sample_node",
-            catalog_ref="sample_capability",
-            version="0.1.0",
-            outputs=[],
-            resolved_parameters={},
-        )
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            (root / "manifest.json").write_text('{"version": 1}\n', encoding="utf-8")
-            raw_tracking = root / "tracking.xml"
-            raw_tracking.write_text("<tracking />\n", encoding="utf-8")
-            first = executor.shared_catalog_node_cache_key(scope_key_state(root, raw_tracking), node, "node-cache-key")
-            raw_tracking.write_text("<tracking version='2' />\n", encoding="utf-8")
-            second = executor.shared_catalog_node_cache_key(scope_key_state(root, raw_tracking), node, "node-cache-key")
-
-        self.assertNotEqual(first, second)
-
     def test_perf1_cache_key_mutates_for_every_director_component(self) -> None:
         node = BoundCatalogNode(
             kind=NodeKind.PRIMITIVE,
@@ -262,6 +244,14 @@ class ExecutorRegistryBoundaryTests(unittest.TestCase):
             upstream_lineage=upstream,
             code_epoch="epoch-a",
         )["cache_key"]
+        node_with_resolved_value_change = BoundCatalogNode(
+            kind=NodeKind.PRIMITIVE,
+            node_id="sample_node",
+            catalog_ref="sample_capability",
+            version="0.1.0",
+            outputs=[],
+            resolved_parameters={"threshold": {"payload_type": "number", "value": 2.0, "unit": "metre"}},
+        )
 
         cases = [
             executor.derive_node_cache_key(
@@ -284,6 +274,12 @@ class ExecutorRegistryBoundaryTests(unittest.TestCase):
                 code_epoch="epoch-a",
             )["cache_key"],
             executor.derive_node_cache_key(
+                node=node_with_resolved_value_change,
+                state=state,
+                upstream_lineage=upstream,
+                code_epoch="epoch-a",
+            )["cache_key"],
+            executor.derive_node_cache_key(
                 node=node,
                 state=state,
                 upstream_lineage=[{**upstream[0], "cache_key": "upstream-b"}],
@@ -301,6 +297,29 @@ class ExecutorRegistryBoundaryTests(unittest.TestCase):
                                 "sha256": "b",
                             }
                         ],
+                    }
+                ),
+                upstream_lineage=upstream,
+                code_epoch="epoch-a",
+            )["cache_key"],
+            executor.derive_node_cache_key(
+                node=node,
+                state=SimpleNamespace(**{**state.__dict__, "match_id": "J03WOY"}),
+                upstream_lineage=upstream,
+                code_epoch="epoch-a",
+            )["cache_key"],
+            executor.derive_node_cache_key(
+                node=node,
+                state=SimpleNamespace(**{**state.__dict__, "period": "secondHalf"}),
+                upstream_lineage=upstream,
+                code_epoch="epoch-a",
+            )["cache_key"],
+            executor.derive_node_cache_key(
+                node=node,
+                state=SimpleNamespace(
+                    **{
+                        **state.__dict__,
+                        "params": executor.RuntimeParameters(values={"analysis_rate_hz": 10}),
                     }
                 ),
                 upstream_lineage=upstream,
@@ -383,6 +402,29 @@ class ExecutorRegistryBoundaryTests(unittest.TestCase):
         self.assertIsNone(output)
         self.assertEqual("detected_never_served", status)
 
+    def test_perf1_persistent_cache_detects_corrupt_preimage_without_serving(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            cache = executor.PersistentNodeOutputCache(Path(directory))
+            preimage = {
+                "cache_schema_version": executor.CACHE_SCHEMA_VERSION,
+                "code_epoch": "epoch",
+                "node_semantic_identity": {"catalog_ref": "sample"},
+                "upstream_lineage": [],
+                "data_scope": {"match_id": "J03WOH", "period": "firstHalf", "manifest_entries": []},
+                "perspective_bindings": {"perspective_team_role": "home"},
+            }
+            key = executor.stable_hash(preimage)
+            cache.store(key=key, preimage=preimage, output={"records": [{"value": 1}]})
+            path = cache.path_for(key)
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            payload["key_preimage"]["data_scope"]["period"] = "secondHalf"
+            path.write_text(json.dumps(payload, sort_keys=True) + "\n", encoding="utf-8")
+
+            output, status = cache.load(key=key, preimage=preimage)
+
+        self.assertIsNone(output)
+        self.assertEqual("detected_never_served", status)
+
     def test_perf1_persistent_cache_round_trips_frame_signal_outputs(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             cache = executor.PersistentNodeOutputCache(Path(directory))
@@ -409,6 +451,12 @@ class ExecutorRegistryBoundaryTests(unittest.TestCase):
         self.assertEqual("persistent_hit", status)
         self.assertIsInstance(output["status"], FrameSignal)
         self.assertEqual(frame_signal, output["status"])
+
+    def test_perf1_encode_cache_output_rejects_ambiguous_containers(self) -> None:
+        with self.assertRaisesRegex(RuntimeError, "tuple"):
+            executor.encode_cache_output({"value": (1, 2)})
+        with self.assertRaisesRegex(RuntimeError, "ndarray"):
+            executor.encode_cache_output({"value": np.array([1, 2])})
 
     def test_perf1_parallel_pool_falls_back_when_process_pool_is_unavailable(self) -> None:
         with mock.patch.object(
@@ -634,19 +682,6 @@ EXPECTED_SHARED_CAPABILITY_MENTIONS = {}
 
 
 EXPECTED_SHARED_HELPER_MENTION_COUNTS = {}
-
-
-def scope_key_state(root: Path, raw_tracking: Path) -> SimpleNamespace:
-    return SimpleNamespace(
-        canonical_root=root,
-        raw_tracking=raw_tracking,
-        match_id="synthetic",
-        period="firstHalf",
-        perspective_team_role="home",
-        defending_team_role="away",
-        params=SimpleNamespace(values={}),
-        canonical_data_manifest_hash="",
-    )
 
 
 def minimal_bound_plan(*, max_relations_per_anchor: int) -> BoundQueryPlan:
