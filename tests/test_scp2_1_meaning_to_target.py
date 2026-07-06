@@ -320,6 +320,14 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
         self.assertIn("sequence_pattern_operator_composition", synthesized["build"]["rules_used"])
         self.assertIsNone(synthesized["document"].get("plan_id"))
         self.assertIsNone(synthesized["document"].get("recipe_id"))
+        for document in synthesized["document"]["documents"].values():
+            rate_requests = [
+                item
+                for item in document["draft_plan"]["requested_evidence"]
+                if item["source"]["source_node_id"] == "rate"
+                and item["source"]["output_name"] == "rate_records"
+            ]
+            self.assertIn("source_records", {item["field"] for item in rate_requests})
 
     def test_recipe_id_does_not_bypass_search_with_exact_plan_ref(self) -> None:
         pack = json.loads(Path("generated/tactical-knowledge-pack.json").read_text(encoding="utf-8"))
