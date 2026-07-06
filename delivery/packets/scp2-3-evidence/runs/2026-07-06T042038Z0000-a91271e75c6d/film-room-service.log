@@ -1,0 +1,10 @@
+{"evidence_metadata": {"git_commit": "c92494e9954aba943066c61af205ae8dbac965dd", "git_tree": "60f4b7ff15ead61be31e39e5ea8a5eed4f466f34", "produced_by": "scripts/packets/scp2_3_film_room_e2e.py", "producing_script_sha256": "a91271e75c6dc5978b0be72d9be9a20dfd18748d47c3d8ff20763d99b7be8ab5", "run_started_at": "2026-07-06T04:20:38+00:00", "schema_version": "scp2_3.evidence_metadata.v1"}}
+Prewarming Film Room flagship delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json...
+Prewarmed Film Room flagship delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json: cache_statuses=MISS,MISS returned_results=40 elapsed_ms=470426
+Prewarming Film Room flagship delivery/packets/r2-4-flagship/counterattack_initiation_v0.json...
+Prewarmed Film Room flagship delivery/packets/r2-4-flagship/counterattack_initiation_v0.json: cache_statuses=MISS,MISS returned_results=1 elapsed_ms=386117
+Workbench Alpha host service: http://127.0.0.1:59398
+Static root: apps/workbench-alpha/dist
+Output root: /private/tmp/scp2-3-film-room-workshop-runs/2026-07-06T042038Z0000-a91271e75c6d
+hermes_diagnostic={"details": {"cwd": {"executable": true, "exists": true, "is_symlink": false, "path": "/Users/luisrevilla/code/priori"}, "hermes": {"executable": true, "exists": true, "is_symlink": true, "path": "/Users/luisrevilla/.local/bin/hermes"}, "python": {"executable": true, "exists": true, "is_symlink": true, "path": "/Users/luisrevilla/.local/src/hermes-agent/venv/bin/python3"}, "pythonpath_entries": 3, "subcommand": "interpret", "workshop_output_root": "<local-dev-path>"}, "event": "subprocess_start"}
+hermes_diagnostic={"details": {"returncode": 0, "stderr_prefix": "", "stdout_prefix": "{\"exit_code\": 0, \"ok\": true, \"stderr\": \"\", \"stdout\": \"{\\\"outcome\\\":\\\"expression\\\",\\\"expression\\\":{\\\"schema_version\\\":\\\"meaning_expression.v0\\\",\\\"expression_id\\\":\\\"regain_carry_controlled_pass_rate\\\",\\\"concept_identity\\\":\\\"r2_4_counterattack", "subcommand": "interpret"}, "event": "subprocess_complete"}

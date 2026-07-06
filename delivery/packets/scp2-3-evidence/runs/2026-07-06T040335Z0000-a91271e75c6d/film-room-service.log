@@ -1,0 +1,26 @@
+{"evidence_metadata": {"git_commit": "25fb5baf30681eff2a3f2af53a3fef8bc3c60fae", "git_tree": "dab7267c789db035dd7d38c6f9e340d41248483d", "produced_by": "scripts/packets/scp2_3_film_room_e2e.py", "producing_script_sha256": "a91271e75c6dc5978b0be72d9be9a20dfd18748d47c3d8ff20763d99b7be8ab5", "run_started_at": "2026-07-06T04:03:35+00:00", "schema_version": "scp2_3.evidence_metadata.v1"}}
+Prewarming Film Room flagship delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json...
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/luisrevilla/code/priori/src/tqe/workshop/app_service.py", line 4992, in <module>
+    main()
+  File "/Users/luisrevilla/code/priori/src/tqe/workshop/app_service.py", line 4978, in main
+    prewarm_film_room_flagships(output_root=args.output_root)
+  File "/Users/luisrevilla/code/priori/src/tqe/workshop/app_service.py", line 3167, in prewarm_film_room_flagships
+    response = film_room_prewarmed_response(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/src/tqe/workshop/app_service.py", line 3097, in film_room_prewarmed_response
+    answer = film_room_answer_from_document(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/src/tqe/workshop/app_service.py", line 2584, in film_room_answer_from_document
+    replay_payload = ensure_film_room_replay_payload(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/src/tqe/workshop/app_service.py", line 2776, in ensure_film_room_replay_payload
+    artifact = replay_artifact_path(replay_window_id, output_root=output_root)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/src/tqe/workshop/m1_2.py", line 1934, in replay_artifact_path
+    handle_path("replay-windows", replay_window_id, output_root=output_root)
+  File "/Users/luisrevilla/code/priori/src/tqe/workshop/m1_2.py", line 468, in handle_path
+    raise CapabilityGap(f"Invalid {kind} handle: {handle_id}")
+tqe.workshop.m1_2.CapabilityGap: Invalid replay-windows handle: film_room_chain_b920050144d0b7d6
