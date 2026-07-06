@@ -104,3 +104,76 @@ Committed implementation tree: `45fa857`.
 | `TMPDIR=/private/tmp npm --prefix apps/workbench-alpha run test:unit` | PASS | Film Room interval guard included. |
 | `npm --prefix apps/workbench-alpha run build` | PASS | Contract generation, `tsc --noEmit`, Vite build. |
 | `UV_CACHE_DIR=/private/tmp/uv-cache-priori make PYTHON=/Users/luisrevilla/code/priori/.venv/bin/python test` | PASS | 554 tests in `439.224s`; long run; attestation `VERIFIED`. |
+
+---
+
+# SCP2-3 Round 2 Report: R-AZ..R-BE
+
+Round-1 report content above is retained as historical rejected material. This section is the round-2 report for implementation/evidence tree `c95066fc1b6e9c213b6532b33bd42929d6784983` (`HEAD^{tree}` `78bd3d7c23705d59a212b24e6c802455a9d1a181`). No push was performed.
+
+## Rulings
+
+| Ruling | Status | Evidence |
+| --- | --- | --- |
+| R-AZ evidence discipline | DONE | Evidence is produced by committed `scripts/packets/scp2_3_film_room_e2e.py`; final script SHA-256 `9c5ffea75942811f0594571047ff11aab6ec8da1b34dbdd1a796f78685db90ae`; final run `delivery/packets/scp2-3-evidence/runs/2026-07-06T050609Z0000-9c5ffea75942/`. Round-1 artifacts were moved to `delivery/packets/scp2-3-evidence/round-1-rejected-artifacts/`. |
+| R-BA null interval | DONE, FLAGGED machine-side repair | `rate.source_records` now preserves rate source rows; empty live-synthesized `population.periods` now falls back to canonical `firstHalf/secondHalf`. Final cold ask renders interval `observed=1.0`, `lower=0.008695652173913044`, `upper=1.0`, `unknown_count=114`. Raw evidence is hidden behind the Film Room JSON toggle. |
+| R-BB chain moments | DONE | Final cold response has `moment_total_count=1`, `visible_moment_count=1`, `replay_window_id=replay_81c406e111a32e9b`; replay window reports `source_kind=chain_record`; sampled frames byte-match canonical recomputation. |
+| R-BC overlays | DONE | Final bootstrap/cold moment overlays include an observed-anchor marker at frame `121915`; screenshot shows the anchor overlay and `1 stages · 0 trails`. |
+| R-BD prewarm/cold ask | DONE | Startup prewarm uses the live execution-cache path; final cached prewarm rows are `81ms` and `125ms`. The UI first renders prewarmed committed content (`prewarmed_committed_plan/not_invoked`) and does not auto-fire a browser cold ask. Final cold ask latency is attributed as Hermes `72178ms`, synthesis `14ms`, execution `359131ms`, observed total `431376ms`. |
+| R-BE mechanics | DONE | Header chips are derived from response data, provenance strip includes tree `2e420927c756f0c27ede9e06e9080ebde0b27422`, fields use `observed/lower/upper/unknown_count`, law-4 refusal rendering is typed, and outcome-class/front-end guards are covered by `filmRoom.test.ts`. |
+
+## Final Evidence
+
+Final successful evidence run:
+
+| Field | Value |
+| --- | --- |
+| Run | `2026-07-06T05:06:09+00:00` |
+| Producing commit | `55a7a506a43d746b089dbc35a24f67ce27aca17a` |
+| Producing script hash | `9c5ffea75942811f0594571047ff11aab6ec8da1b34dbdd1a796f78685db90ae` |
+| Billing surface | ChatGPT subscription via `openai-codex` Hermes CLI |
+| Bootstrap/prewarmed row | fragile retention `81ms` HIT/HIT; counterattack `125ms` HIT/HIT |
+| Cold ask row | observed `431376ms`; Hermes `72178ms`, synthesis `14ms`, execution `359131ms` |
+| Interval | observed `1.0`, lower `0.008695652173913044`, upper `1.0`, unknown `114` |
+| Chain moments | total `1`, visible `1` |
+| Replay | `replay_81c406e111a32e9b`, frames `121865`, `121915`, `121965` byte-checked |
+| Live synthesized hash | `7c7ca1e114a6e605219c588dbf76e476a2401cc974c2414624561b5ac453a75f` |
+| Certified R2-4 hash | `bf12768919f517f7b9412bd42622d2e4f262a6ceba6667319a597fae06921749` |
+| Certified table match | `false`; no table substitution applied |
+
+Artifacts:
+
+| Artifact | Notes |
+| --- | --- |
+| `delivery/packets/scp2-3-evidence/runs/2026-07-06T050609Z0000-9c5ffea75942/film-room-bootstrap.json` | Prewarmed committed content, interval card source, overlay marker, tree. |
+| `delivery/packets/scp2-3-evidence/runs/2026-07-06T050609Z0000-9c5ffea75942/film-room-cold-response.json` | Live subscription-backed cold ask response with synthesized hash, latency attribution, interval, chain moment. |
+| `delivery/packets/scp2-3-evidence/runs/2026-07-06T050609Z0000-9c5ffea75942/film-room-replay-window.json` | Chain-record replay window used for byte-frame checks. |
+| `delivery/packets/scp2-3-evidence/runs/2026-07-06T050609Z0000-9c5ffea75942/film-room.png` | Browser screenshot; PNG contains script-hash, run timestamp, and git-tree tEXt metadata. |
+| `delivery/packets/scp2-3-evidence/runs/2026-07-06T050609Z0000-9c5ffea75942/film-room-service.log` | Streamed service/Hermes log, stamped before app launch. |
+
+Earlier script-produced diagnostic runs were also committed and retained: `2026-07-06T040335Z0000-a91271e75c6d` (invalid replay handle), `2026-07-06T042038Z0000-a91271e75c6d` (startup prewarm MISS timings, manually interrupted during cold ask), `2026-07-06T044114Z0000-9c5ffea75942` (HTTP 400 caused by empty synthesized periods), and `2026-07-06T045634Z0000-9c5ffea75942` (successful run before overlay fallback).
+
+## Flags
+
+| Flag | True observation |
+| --- | --- |
+| Long run | `2026-07-06T042038Z0000-a91271e75c6d` ran over five minutes; service log records startup prewarm MISS rows of `470426ms` and `386117ms`; run was manually interrupted during cold ask. |
+| Long run | Direct live ask reproduction exceeded five minutes and was interrupted to capture stack location in runtime controlled-pass execution. |
+| Long run | `2026-07-06T045634Z0000-9c5ffea75942` completed with cold ask `445199ms`. |
+| Long run | Final evidence `2026-07-06T050609Z0000-9c5ffea75942` completed with cold ask `431376ms`. |
+| Long run | Full Python suite completed in `436.650s`. |
+| Provenance drift | Live Hermes/synthesis did not reproduce the committed R2-4 plan hash. The UI/API report actual synthesized hashes and `certified_table_path: null` for cold asks. |
+
+## Verification
+
+Verification was run on committed implementation/evidence tree `c95066fc1b6e9c213b6532b33bd42929d6784983` before this report addendum was committed.
+
+| Command | Result | Notes |
+| --- | --- | --- |
+| `PYTHONPATH=src .venv/bin/python -m py_compile src/tqe/workshop/app_service.py src/tqe/semantic_compiler/target_synthesis.py scripts/packets/scp2_3_film_room_e2e.py` | PASS | Syntax/import check. |
+| `PYTHONPATH=src .venv/bin/python -m unittest tests.test_film_room_app tests.test_scp2_1_meaning_to_target.SCP2MeaningToTargetTests.test_empty_expression_periods_fall_back_to_canonical_periods tests.test_r2_2_rate.RateOperatorTests.test_rate_record_projects_interval_to_source_chain_anchor` | PASS | 3 tests in `0.006s`. |
+| `npm --prefix apps/workbench-alpha run test:contracts` | PASS | Generated contracts clean. |
+| `TMPDIR=/private/tmp npm --prefix apps/workbench-alpha run test:unit` | PASS | Film Room outcome/refusal/chip/interval guards included. |
+| `npm --prefix apps/workbench-alpha run build` | PASS | Typecheck and Vite build passed; Vite chunk-size warning only. |
+| `npm --prefix apps/workbench-alpha run test:fixtures` | PASS | No hardcoded tactical fixtures/canned replay frames. |
+| `UV_CACHE_DIR=/private/tmp/uv-cache-priori make PYTHON=/Users/luisrevilla/code/priori/.venv/bin/python test` | PASS | 557 tests in `436.650s`; attestation `VERIFIED`. |
