@@ -177,3 +177,75 @@ Verification was run on committed implementation/evidence tree `c95066fc1b6e9c21
 | `npm --prefix apps/workbench-alpha run build` | PASS | Typecheck and Vite build passed; Vite chunk-size warning only. |
 | `npm --prefix apps/workbench-alpha run test:fixtures` | PASS | No hardcoded tactical fixtures/canned replay frames. |
 | `UV_CACHE_DIR=/private/tmp/uv-cache-priori make PYTHON=/Users/luisrevilla/code/priori/.venv/bin/python test` | PASS | 557 tests in `436.650s`; attestation `VERIFIED`. |
+
+---
+
+# SCP2-3 Round 3 Report: Focused Revision
+
+Round-3 implementation/evidence tree before this report: `496182125a3ae9a66f070d275c97b2c5bd2a868e` (`HEAD^{tree}` `e7acc2c277b673df6ae6365c95f3c168ad697b44`). No push was performed. Executor status language below is `DELIVERED with evidence`; reviewer `DONE` judgment is not claimed here.
+
+## Rulings
+
+| Ruling | Status | Evidence |
+| --- | --- | --- |
+| R-AZ evidence discipline | DELIVERED with evidence | Fresh run `delivery/packets/scp2-3-evidence/runs/2026-07-06T062302Z0000-e35372e8b9d7/` was produced by committed `scripts/packets/scp2_3_film_room_e2e.py`; script SHA-256 `e35372e8b9d79da58b193537003ec0b52bc9e429a6cdc4863b1ce0e3c584ea2e`; run timestamp `2026-07-06T06:23:02+00:00`; producing commit `6f8e0e6606ee05ba58bff11e97fd483d89db50e9`; tree `1b026661f74bf211e857131d015c86c56dec7810`. PNGs carry script hash/timestamp/tree metadata. |
+| R-BB chain-record moments | DELIVERED with evidence | Bootstrap and cold responses each render `115` total/visible moments, all with derived `source_kind=chain_record`, and `115` unique replay windows. Cold evidence includes PASS stage/trail replay `replay_9328db0c3b7a555f` and truncation UNKNOWN replay `replay_f55da46381136601`. |
+| R-BB overlays and UNKNOWN slate | DELIVERED with evidence | Evidence script now fails unless stage labels, carry trails, UNKNOWN slates, and truncation UNKNOWN slate reasons are present. Cold PASS moment has labels `regain`, `carry >= 3m`, `pass` and carry trail `121945-122091`; UNKNOWN slate reason is `stage_2_window_truncated`. Screenshots: `film-room-stage-trail.png`, `film-room-unknown.png`. |
+| source_kind derived | DELIVERED with evidence | `film_room_source_kind` derives from record shape; no constant stamping. Fresh cold response source kind set is only `chain_record`; stage/trail replay window reports `source_kind=chain_record` with source id `3a3144e50eb99e0b`. |
+| Honest labels and fields | DELIVERED with evidence | Runtime intervals carry `source.evidence_kind=runtime`, UI headline is `Runtime evidence interval`; `certified_evidence_rows` remains empty when no certified table matches, `runtime_evidence_rows` contains the live row, and `evidence_rows_kind=runtime`. Null chain status renders as `chain_status not emitted`; UNKNOWN/PASS render truthfully. |
+| Canonical-source double hash | DELIVERED with evidence | `public_canonical_sources` is idempotent. Cold provenance and replay-window payloads cross-reference `frames=canonical_source:323efd58ce461520` and `positions=canonical_source:40e0942910a7793c`, without `canonical_source:canonical_source:*`. |
+| R-BD prewarm/cold latency | DELIVERED with evidence | Startup prewarm used live execution path with fresh cache root (`output_root_preexisting_at_start=false`). Service readiness including prewarm: `835650ms`; bootstrap prewarmed fetch: `104ms`; cold ask observed: `416266ms`; attribution Hermes `55121ms`, synthesis `12ms`, execution `361011ms`; replay fetches `16ms`, `269ms`, `327ms`. |
+
+## Final Evidence
+
+| Field | Value |
+| --- | --- |
+| Run | `delivery/packets/scp2-3-evidence/runs/2026-07-06T062302Z0000-e35372e8b9d7/` |
+| Billing surface | ChatGPT subscription via `openai-codex` Hermes CLI |
+| Cache provenance | `/private/tmp/scp2-3-film-room-workshop-runs/2026-07-06T062302Z0000-e35372e8b9d7`; preexisting at start `false`; prewarm enabled `true` |
+| Prewarm rows | fragile retention `MISS,MISS` `476363ms`, 40 results; counterattack `MISS,MISS` `358619ms`, 1 result |
+| Runtime interval | observed `1.0`, lower `0.008695652173913044`, upper `1.0`, unknown `114`; source `execution_requested_evidence` |
+| Live synthesized hash | `671f4828f72bce733823154e30de094f54b9668843c83253417db932b62313e9` |
+| Certified R2-4 hash | `d8179a5a1af54ecdd45514e4fa3403b3ab515977fb79dd29b4a62f2ecfd9bb7e` |
+| Certified table match | `false`; no certified-table substitution applied |
+| Chain moment totals | bootstrap `115/115`, cold `115/115`; both `115` unique replay windows |
+| Replay frame checks | Frames `100200`, `100250`, `100300` byte-match canonical recomputation |
+
+Artifacts:
+
+| Artifact | Notes |
+| --- | --- |
+| `film-room-e2e.json` | Top-level manifest with metadata, cache provenance, latency, frame checks, chain checks. |
+| `film-room-bootstrap.json` | Startup prewarmed content served first. |
+| `film-room-cold-response.json` | Live subscription-backed cold ask response with runtime interval and chain moments. |
+| `film-room-replay-window.json` | First selected replay, used for canonical byte checks. |
+| `film-room-unknown-replay-window.json` | Truncation UNKNOWN moment replay window. |
+| `film-room-stage-trail-replay-window.json` | PASS stage/trail replay window; `603` frames from `121614` to `122216`. |
+| `film-room.png` | Browser screenshot of the default prewarmed Film Room state. |
+| `film-room-unknown.png` | Browser screenshot after selecting an UNKNOWN truncation slate. |
+| `film-room-stage-trail.png` | Browser screenshot after selecting the PASS stage/trail moment. |
+| `film-room-service.log` | Stamped service/Hermes log for the run. |
+
+## Flags
+
+| Flag | True observation |
+| --- | --- |
+| Long run | Fresh round-3 evidence run exceeded five minutes; service readiness including startup prewarm was `835650ms`, cold ask was `416266ms`. |
+| Long run | R2-4 generator rerun for committed chain witnesses took `350.001s`. |
+| Long run | Full suite took `443.482s`. |
+| Provenance drift | Live Hermes/synthesis did not reproduce the certified R2-4 table hash. The response reports actual synthesized hash `671f4828...`, `certified_table_path=null`, `evidence_rows_kind=runtime`, and runtime interval labeling. |
+
+## Verification
+
+Verification was run on committed implementation/evidence tree `496182125a3ae9a66f070d275c97b2c5bd2a868e` before this report addendum was committed.
+
+| Command | Result | Notes |
+| --- | --- | --- |
+| `PYTHONPATH=src .venv/bin/python -m py_compile src/tqe/workshop/app_service.py scripts/coverage_map/compiler_search_reachability.py scripts/packets/scp2_3_film_room_e2e.py` | PASS | Syntax/import check. |
+| `PYTHONPATH=src .venv/bin/python -m unittest tests.test_film_room_app tests.test_scp2_1_meaning_to_target.SCP2MeaningToTargetTests.test_r2_4_sequence_expression_uses_search_not_committed_certified_plan_ref` | PASS | 6 tests in `0.019s`; includes chain witness overlay/source-kind/canonical-source checks. |
+| `npm --prefix apps/workbench-alpha run test:contracts` | PASS | Generated API schemas/types are clean. |
+| `TMPDIR=/private/tmp npm --prefix apps/workbench-alpha run test:unit` | PASS | Frontend Film Room interval headline, null chain status, outcome/refusal, and fixtures guards included. |
+| `npm --prefix apps/workbench-alpha run build` | PASS | Contract generation, `tsc --noEmit`, Vite build; Vite chunk-size warning only. |
+| `npm --prefix apps/workbench-alpha run test:fixtures` | PASS | No hardcoded tactical fixtures/canned replay frames. |
+| `PYTHONPATH=src:. .venv/bin/python scripts/packets/scp2_3_film_room_e2e.py --timeout 1200` | PASS | Fresh live R-AZ evidence run; long run flagged; committed run directory above. |
+| `UV_CACHE_DIR=/private/tmp/uv-cache-priori make PYTHON=/Users/luisrevilla/code/priori/.venv/bin/python test` | PASS | 561 tests in `443.482s`; attestation `VERIFIED`; long run flagged. |
