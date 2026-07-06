@@ -298,6 +298,9 @@ def first_vocabulary_refusal(
     expression: MeaningExpressionV0,
     vocabulary: PackVocabulary,
 ) -> BridgeRefusal | None:
+    refusal = first_numeric_clause_parameter_refusal(expression, vocabulary)
+    if refusal is not None:
+        return refusal
     for ref in expression.concept_refs:
         if ref not in vocabulary.concept_names:
             return _refusal(vocabulary, "concept_refs", ref, f"concept:{ref}")
@@ -353,6 +356,85 @@ def first_vocabulary_refusal(
         if refusal is not None:
             return refusal
     return None
+
+
+def first_numeric_clause_parameter_refusal(
+    expression: MeaningExpressionV0,
+    vocabulary: PackVocabulary,
+) -> BridgeRefusal | None:
+    parameter_values = _numeric_parameter_values_by_field(expression)
+    for index, clause in enumerate(expression.meaning_clauses):
+        if clause.field is None or clause.value is None:
+            continue
+        if isinstance(clause.value, bool) or not isinstance(clause.value, (int, float)):
+            continue
+        declarations = parameter_values.get(clause.field)
+        if not declarations:
+            continue
+        clause_value = float(clause.value)
+        for declaration in declarations:
+            if float(declaration["value"]) == clause_value:
+                continue
+            return BridgeRefusal(
+                outcome=BridgeRefusalKind.UNDERSTOOD_BUT_NOT_EXPRESSIBLE,
+                gap_code="MEANING_PARAMETER_MISMATCH",
+                missing_capability="numeric_clause_parameter_consistency",
+                reference=f"{clause.field}:{clause_value}!={float(declaration['value'])}",
+                vocabulary_section=f"meaning_clauses[{index}]",
+                message=(
+                    "Numeric meaning clause disagrees with the executable operator parameter: "
+                    f"{clause.field} clause value {clause_value} does not match "
+                    f"{declaration['parameter_name']} value {float(declaration['value'])}."
+                ),
+                pack_sha256=vocabulary.pack_sha256,
+            )
+    return None
+
+
+def _numeric_parameter_values_by_field(expression: MeaningExpressionV0) -> dict[str, list[dict[str, Any]]]:
+    values: dict[str, list[dict[str, Any]]] = {}
+
+    def add_parameters(parameters: list[MeaningParameter], *, path: str) -> None:
+        by_name = {parameter.name: parameter for parameter in parameters}
+        for parameter in parameters:
+            if not parameter.name.endswith("_field"):
+                continue
+            if not isinstance(parameter.value, str) or parameter.value == "none":
+                continue
+            value_parameter_name = parameter.name[: -len("_field")] + "_value"
+            value_parameter = by_name.get(value_parameter_name)
+            if value_parameter is None:
+                continue
+            if isinstance(value_parameter.value, bool) or not isinstance(value_parameter.value, (int, float)):
+                continue
+            values.setdefault(parameter.value, []).append(
+                {
+                    "field_parameter_name": parameter.name,
+                    "parameter_name": value_parameter.name,
+                    "value": value_parameter.value,
+                    "path": path,
+                }
+            )
+
+    for index, application in enumerate(expression.operator_applications):
+        add_parameters(application.parameters, path=f"operator_applications[{index}]")
+
+    def walk_constraint(constraint: CompositionConstraint, *, path: str) -> None:
+        add_parameters(constraint.parameters, path=path)
+        nested_groups = (
+            ("left_composition_constraints", constraint.left_composition_constraints),
+            ("right_composition_constraints", constraint.right_composition_constraints),
+            ("population_composition_constraints", constraint.population_composition_constraints),
+            ("numerator_composition_constraints", constraint.numerator_composition_constraints),
+            ("denominator_composition_constraints", constraint.denominator_composition_constraints),
+        )
+        for name, children in nested_groups:
+            for child_index, child in enumerate(children):
+                walk_constraint(child, path=f"{path}.{name}[{child_index}]")
+
+    for index, constraint in enumerate(expression.target_contract.composition_constraints):
+        walk_constraint(constraint, path=f"target_contract.composition_constraints[{index}]")
+    return values
 
 
 def stable_expression_json(expression: MeaningExpressionV0) -> str:
