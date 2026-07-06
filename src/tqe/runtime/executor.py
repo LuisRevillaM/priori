@@ -2041,12 +2041,28 @@ def public_runtime_source_record(record: dict[str, Any]) -> dict[str, Any]:
         if key == "source_records":
             source_records = [item for item in value if isinstance(item, dict)] if isinstance(value, list) else []
             public["source_record_count"] = len(source_records)
-            public["source_records_hash"] = stable_hash(source_records)
+            public["source_records_hash"] = stable_hash(public_runtime_json_value(source_records))
             public["source_records_contract"] = "omitted_from_execution_response; use result replay/inspection for per-moment witnesses"
             continue
-        public[key] = copy.deepcopy(value)
-    public["record_hash"] = stable_hash(record)
+        public[key] = public_runtime_json_value(value)
+    public["record_hash"] = stable_hash(public)
     return public
+
+
+def public_runtime_json_value(value: Any) -> Any:
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return value
+    if isinstance(value, dict):
+        return {str(key): public_runtime_json_value(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [public_runtime_json_value(item) for item in value]
+    if isinstance(value, tuple):
+        return [public_runtime_json_value(item) for item in value]
+    if hasattr(value, "model_dump"):
+        return public_runtime_json_value(value.model_dump(mode="json"))
+    if hasattr(value, "tolist"):
+        return public_runtime_json_value(value.tolist())
+    return repr(value)
 
 
 def runtime_frame_values(value: RuntimeValue) -> list[Any]:
