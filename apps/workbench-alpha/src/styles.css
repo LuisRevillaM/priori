@@ -40,6 +40,370 @@
   --focus-ring: rgba(68, 116, 90, 0.28);
 }
 
+.filmRoom {
+  min-height: 100vh;
+  background: #0b0f0d;
+  color: #e8f2ea;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  padding: 22px;
+}
+
+.filmRoom button,
+.filmRoom input {
+  font: inherit;
+}
+
+.filmHeader {
+  max-width: 1180px;
+  margin: 0 auto 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid #243229;
+  padding-bottom: 12px;
+}
+
+.filmWordmark,
+.filmChips,
+.filmControls,
+.provenanceStrip,
+.metricValue,
+.metricBounds {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
+.filmWordmark {
+  font-size: 13px;
+  letter-spacing: 0;
+  color: #e8f2ea;
+}
+
+.filmChips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.filmChips span,
+.filmControls button,
+.readingRow button,
+.filmAskbar button {
+  border: 1px solid #3a5c46;
+  background: #111814;
+  color: #e8f2ea;
+  border-radius: 4px;
+  padding: 7px 10px;
+  font-size: 12px;
+}
+
+.askThread,
+.filmAskbar,
+.filmGrid {
+  max-width: 1180px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.askThread {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.bubble {
+  max-width: 780px;
+  border: 1px solid #243229;
+  border-radius: 6px;
+  padding: 10px 12px;
+  line-height: 1.45;
+  font-size: 14px;
+}
+
+.userBubble {
+  justify-self: end;
+  background: #111814;
+}
+
+.hermesBubble {
+  justify-self: start;
+  background: #101511;
+  color: #d9e7dc;
+}
+
+.refusalBubble {
+  justify-self: start;
+  background: #1d1514;
+  color: #ffbdb5;
+  overflow: auto;
+}
+
+.readingRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.filmAskbar {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.filmAskbar input {
+  min-width: 0;
+  border: 1px solid #3a5c46;
+  border-radius: 4px;
+  background: #111814;
+  color: #e8f2ea;
+  padding: 11px 12px;
+}
+
+.filmAskbar button:disabled {
+  color: #8b93a0;
+}
+
+.filmGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 14px;
+}
+
+.stagebox {
+  border: 1px solid #243229;
+  border-radius: 6px;
+  background: #111814;
+  overflow: hidden;
+}
+
+.stagebox svg {
+  width: 100%;
+  display: block;
+  background: #1e3a2a;
+  aspect-ratio: 680 / 440;
+}
+
+.emptyStage {
+  min-height: 430px;
+  display: grid;
+  place-items: center;
+}
+
+.emptyStageLabel {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  color: #8b93a0;
+}
+
+.pitchBase {
+  fill: #1e3a2a;
+}
+
+.pitchLine {
+  fill: none;
+  stroke: #3a5c46;
+  stroke-width: 2;
+}
+
+.playerHome {
+  fill: #5fb0ff;
+  stroke: #e8f2ea;
+  stroke-width: 1;
+}
+
+.playerAway {
+  fill: #ff6e5e;
+  stroke: #e8f2ea;
+  stroke-width: 1;
+}
+
+.ballDot {
+  fill: #f5f0e6;
+  stroke: #0b0f0d;
+  stroke-width: 1;
+}
+
+.filmControls {
+  display: grid;
+  grid-template-columns: auto minmax(120px, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-top: 1px solid #243229;
+  color: #9fb3a6;
+  font-size: 12px;
+}
+
+.filmControls input {
+  width: 100%;
+  accent-color: #ffb13d;
+}
+
+.provenanceStrip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 8px;
+  border: 1px solid #243229;
+  border-radius: 4px;
+  overflow: hidden;
+  font-size: 11px;
+  color: #9fb3a6;
+}
+
+.provenanceStrip span {
+  background: #111814;
+  padding: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.filmRail {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.filmPanel {
+  border: 1px solid #243229;
+  border-radius: 6px;
+  background: #111814;
+  padding: 12px;
+}
+
+.filmPanelHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #9fb3a6;
+  font-size: 11px;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  text-transform: uppercase;
+}
+
+.metricValue {
+  margin-top: 10px;
+  font-size: 38px;
+  line-height: 1;
+  color: #ffb13d;
+}
+
+.metricLabel {
+  margin-top: 8px;
+  color: #d9e7dc;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.partitionStrip {
+  position: relative;
+  height: 18px;
+  margin-top: 14px;
+  border: 1px solid #3a5c46;
+  border-radius: 3px;
+  background: #0b0f0d;
+}
+
+.partitionRange,
+.partitionObserved {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+
+.partitionRange {
+  background: #8a6524;
+}
+
+.partitionObserved {
+  width: 2px;
+  background: #ffb13d;
+}
+
+.metricBounds {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  color: #9fb3a6;
+  font-size: 11px;
+}
+
+.momentList {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+  max-height: 260px;
+  overflow: auto;
+}
+
+.momentItem {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+  border: 1px solid #243229;
+  border-radius: 4px;
+  background: #0b0f0d;
+  color: #d9e7dc;
+  padding: 8px;
+  text-align: left;
+}
+
+.momentItem.selected {
+  border-color: #ffb13d;
+}
+
+.momentItem strong {
+  color: #ffb13d;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
+.momentItem em {
+  grid-column: 1 / -1;
+  color: #9fb3a6;
+  font-size: 11px;
+  font-style: normal;
+}
+
+.notesPanel pre {
+  max-height: 230px;
+  overflow: auto;
+  color: #9fb3a6;
+  font-size: 11px;
+  line-height: 1.4;
+  margin: 10px 0 0;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 900px) {
+  .filmRoom {
+    padding: 14px;
+  }
+
+  .filmHeader,
+  .filmGrid,
+  .filmAskbar {
+    grid-template-columns: 1fr;
+  }
+
+  .filmHeader {
+    display: grid;
+  }
+
+  .filmChips {
+    justify-content: flex-start;
+  }
+
+  .filmControls,
+  .provenanceStrip {
+    grid-template-columns: 1fr;
+  }
+}
+
 * {
   box-sizing: border-box;
 }

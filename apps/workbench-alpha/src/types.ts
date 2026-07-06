@@ -5,6 +5,8 @@ import type {
   ErrorResponse as GeneratedErrorResponse,
   ExecutionProgressResponse as GeneratedExecutionProgressResponse,
   ExecutionResponse as GeneratedExecutionResponse,
+  FilmRoomAskResponse as GeneratedFilmRoomAskResponse,
+  FilmRoomReplayFrameResponse as GeneratedFilmRoomReplayFrameResponse,
   InspectResultResponse as GeneratedInspectResultResponse,
   InspectTimestampResponse as GeneratedInspectTimestampResponse,
   InterpretResponse as GeneratedInterpretResponse,
@@ -248,6 +250,72 @@ export type ReplayPayload = {
     coordinate_contract: string;
   };
   frames: ReplayFrame[];
+};
+
+export type FilmRoomIntervalMetric = {
+  label: string;
+  observed: number;
+  lower: number;
+  upper: number;
+  unknown_count: number;
+  source: JsonObject;
+};
+
+export type FilmRoomMoment = {
+  result_id: string;
+  classification: string;
+  match_id: string;
+  period: string;
+  anchor_frame_id: number;
+  match_time_ms?: number | null;
+  requested_evidence: JsonObject;
+  replay_window_id?: string | null;
+  evidence_row?: JsonObject | null;
+  unknown_reason?: string | null;
+};
+
+export type FilmRoomAskResponse = Omit<GeneratedFilmRoomAskResponse, "answer" | "hermes" | "clarification" | "refusal"> & {
+  ok: true;
+  outcome: "expression" | "clarification_required" | "understood_but_not_expressible" | "unsupported_modality";
+  request_text: string;
+  provider: string;
+  model: string;
+  latency_ms: number;
+  hermes: JsonObject;
+  clarification?: JsonObject | null;
+  refusal?: JsonObject | null;
+  answer?: {
+    status: "answer_ready";
+    compiled_chips: string[];
+    document: JsonObject;
+    certified_evidence_rows: JsonObject[];
+    interval_metric?: FilmRoomIntervalMetric | null;
+    moments: FilmRoomMoment[];
+    replay?: ReplayPayload | null;
+    executions: JsonObject[];
+    provenance: {
+      plan_hash: string;
+      synthesized_document_hash: string;
+      expression_hash?: string | null;
+      certified_table_path?: string | null;
+      certified_table_hash?: string | null;
+      certified_plan_path?: string | null;
+      certified_period_records_hash?: string | null;
+      bound_plan_hashes: Record<string, string>;
+      replay_window_id?: string | null;
+      canonical_sources: Record<string, string>;
+      runtime_commit?: string | null;
+    };
+  } | null;
+};
+
+export type FilmRoomReplayFrameResponse = Omit<GeneratedFilmRoomReplayFrameResponse, "frame"> & {
+  ok: true;
+  replay_window_id: string;
+  frame_id: number;
+  frame_sha256: string;
+  canonical_sources: Record<string, string>;
+  frame: ReplayFrame;
 };
 
 export type PredicateTrace = {

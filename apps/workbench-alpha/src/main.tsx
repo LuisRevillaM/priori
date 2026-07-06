@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import { App } from "./App";
 import { CaseStudy } from "./CaseStudy";
 import { CoachSurface } from "./CoachSurface";
+import { FilmRoom } from "./FilmRoom";
 import { MomentZero } from "./MomentZero";
 import "./styles.css";
 
@@ -18,6 +19,8 @@ const Root =
     ? MomentZero
     : window.location.pathname === "/case-study"
       ? CaseStudy
+    : window.location.pathname === "/film-room"
+      ? FilmRoom
     : window.location.pathname === "/workbench"
       ? App
       : CoachSurface;
