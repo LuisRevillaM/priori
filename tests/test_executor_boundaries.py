@@ -36,7 +36,7 @@ from tqe.runtime.ir import (
     Unit,
     UnknownEvidencePolicy,
 )
-from tqe.runtime.values import RuntimeValue
+from tqe.runtime.values import FrameSignal, RuntimeValue
 
 
 def write_data_manifest(path: Path, files: list[Path]) -> None:
@@ -382,6 +382,33 @@ class ExecutorRegistryBoundaryTests(unittest.TestCase):
 
         self.assertIsNone(output)
         self.assertEqual("detected_never_served", status)
+
+    def test_perf1_persistent_cache_round_trips_frame_signal_outputs(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            cache = executor.PersistentNodeOutputCache(Path(directory))
+            preimage = {
+                "cache_schema_version": executor.CACHE_SCHEMA_VERSION,
+                "code_epoch": "epoch",
+                "node_semantic_identity": {"catalog_ref": "sample"},
+                "upstream_lineage": [],
+                "data_scope": {"match_id": "J03WOH", "period": "firstHalf", "manifest_entries": []},
+                "perspective_bindings": {"perspective_team_role": "home"},
+            }
+            key = executor.stable_hash(preimage)
+            frame_signal = FrameSignal(
+                frame_ids=[10, 20],
+                values=["PASS", None],
+                unknown_mask=[False, True],
+                unit=Unit.NONE,
+                entity_scope=EntityScope.ANCHOR,
+            )
+            cache.store(key=key, preimage=preimage, output={"status": frame_signal})
+
+            output, status = cache.load(key=key, preimage=preimage)
+
+        self.assertEqual("persistent_hit", status)
+        self.assertIsInstance(output["status"], FrameSignal)
+        self.assertEqual(frame_signal, output["status"])
 
     def test_canonical_data_manifest_uses_manifest_hash_without_default_content_hash(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

@@ -41,6 +41,7 @@ from tqe.runtime.ir import (
     BoundPlanNode,
     ClassificationRule,
     CoverageDeclaration,
+    EntityScope,
     EvaluationTarget,
     ExecutionMode,
     ExecutionStatus,
@@ -189,25 +190,26 @@ class PersistentNodeOutputCache:
         if payload.get("schema_version") != CACHE_ENTRY_SCHEMA_VERSION:
             return None, "detected_never_served"
         stored_preimage = payload.get("key_preimage")
-        output = payload.get("output")
-        if not isinstance(stored_preimage, dict) or not isinstance(output, dict):
+        serialized_output = payload.get("output")
+        if not isinstance(stored_preimage, dict) or not isinstance(serialized_output, dict):
             return None, "detected_never_served"
         if stable_hash(stored_preimage) != key or stored_preimage != preimage:
             return None, "detected_never_served"
-        if payload.get("output_content_hash") != stable_hash(output):
+        if payload.get("output_content_hash") != stable_hash(serialized_output):
             return None, "detected_never_served"
-        return copy.deepcopy(output), "persistent_hit"
+        return decode_cache_output(serialized_output), "persistent_hit"
 
     def store(self, *, key: str, preimage: dict[str, Any], output: dict[str, Any]) -> None:
         path = self.path_for(key)
         path.parent.mkdir(parents=True, exist_ok=True)
+        serialized_output = encode_cache_output(output)
         payload = {
             "schema_version": CACHE_ENTRY_SCHEMA_VERSION,
             "cache_key": key,
             "key_preimage": preimage,
             "producing_code_epoch": preimage["code_epoch"],
-            "output_content_hash": stable_hash(output),
-            "output": output,
+            "output_content_hash": stable_hash(serialized_output),
+            "output": serialized_output,
         }
         tmp_path = path.with_suffix(path.suffix + f".{os.getpid()}.tmp")
         tmp_path.write_text(
@@ -215,6 +217,47 @@ class PersistentNodeOutputCache:
             encoding="utf-8",
         )
         tmp_path.replace(path)
+
+
+def encode_cache_output(value: Any) -> Any:
+    if isinstance(value, FrameSignal):
+        return {
+            "__tqe_cache_type__": "FrameSignal",
+            "frame_ids": [int(item) for item in value.frame_ids],
+            "values": encode_cache_output(value.values),
+            "unknown_mask": [bool(item) for item in value.unknown_mask],
+            "unit": value.unit.value,
+            "entity_scope": value.entity_scope.value,
+        }
+    if isinstance(value, dict):
+        return {str(key): encode_cache_output(child) for key, child in value.items()}
+    if isinstance(value, list):
+        return [encode_cache_output(child) for child in value]
+    if isinstance(value, tuple):
+        return [encode_cache_output(child) for child in value]
+    if isinstance(value, np.generic):
+        return value.item()
+    if isinstance(value, np.ndarray):
+        return encode_cache_output(value.tolist())
+    if isinstance(value, Unit | EntityScope):
+        return value.value
+    return value
+
+
+def decode_cache_output(value: Any) -> Any:
+    if isinstance(value, dict):
+        if value.get("__tqe_cache_type__") == "FrameSignal":
+            return FrameSignal(
+                frame_ids=[int(item) for item in value["frame_ids"]],
+                values=decode_cache_output(value["values"]),
+                unknown_mask=[bool(item) for item in value["unknown_mask"]],
+                unit=Unit(value["unit"]),
+                entity_scope=EntityScope(value["entity_scope"]),
+            )
+        return {str(key): decode_cache_output(child) for key, child in value.items()}
+    if isinstance(value, list):
+        return [decode_cache_output(child) for child in value]
+    return value
 
 
 class UndeclaredNodeParameterError(RuntimeError):
