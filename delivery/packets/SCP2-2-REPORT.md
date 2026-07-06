@@ -4,7 +4,7 @@ Branch: `packet/scp2-2`
 
 Frontier base: `a412a56` (`codex/afl08-passport-loop`)
 
-Current evidence commit before this report update: `e725c85`
+Current evidence commit before this report update: `b2b9148`
 
 ## Resolution Status
 
@@ -108,7 +108,16 @@ Per-case attribution:
 | Check | Result | Notes |
 | --- | --- | --- |
 | `PYTHONPATH=src:. .venv/bin/python -m unittest tests.test_scp2_1_meaning_to_target tests.test_scp2_2_hermes_nl` | PASS | 40 tests in `0.429s`. |
-| `make PYTHON=/Users/luisrevilla/code/priori/.venv/bin/python test` | PENDING | To run on the committed report tree and fill before close. |
+| `make PYTHON=/Users/luisrevilla/code/priori/.venv/bin/python test` | PASS | 554 tests in `450.287s`; long run. Executed in detached worktree `/private/tmp/priori-scp2-2-r3-fullsuite-b2b9148` at commit `b2b9148`, with gitignored `data/canonical`, `data/raw`, and `data/features` symlinked from the main checkout. Matplotlib cache and Arrow `sysctlbyname` warnings only. |
+
+Full-suite output ended with:
+
+```text
+Ran 554 tests in 450.287s
+
+OK
+{"attestation_status": "VERIFIED", "blocking_reasons": []}
+```
 
 ## Mutation-Standard Guards
 
@@ -137,6 +146,7 @@ Per-case attribution:
 | `9901bde` | SCP2-2 round 3 strip gamed bridge paths |
 | `8bb442d` | Classify clarification resume misses separately |
 | `e725c85` | Record SCP2-2 round 3 restored DEV evidence |
+| `b2b9148` | Report SCP2-2 round 3 honest DEV result |
 
 ## Residual Risk
 
