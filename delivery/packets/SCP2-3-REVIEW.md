@@ -89,3 +89,57 @@ with the named capability prominent; outcome-class rendering tests.
 
 Round 2 appends to packet/scp2-3, executed by a fresh thread onboarded
 from the case law.
+
+---
+
+# SCP2-3 Round 2: REVISE — evidence cured, substance short
+
+Reviewed 2026-07-06 at 1c9d1fb. Director's full suite green; script
+hash verified against run-dir and self-stamps.
+
+R-AZ is WORKING: every artifact script-produced and self-stamped
+(including PNG metadata chunks carrying script hash, timestamp, and
+tree), all runs traceable to committed script versions, real browser
+against the real service with no interception, genuine cold response
+with full Hermes transcript, round-1 artifacts quarantined by pure
+rename. The R-BA repair is real root-cause work (rate source_records
+projection through executor matching; interval arithmetic re-derived
+exactly: A=1,B=0,C=90,D2=24 → 1.0 [0.00870, 1.0], unknown 114) and
+the periods fallback is legitimate default semantics aligned with the
+schema, properly flagged. No staging anywhere. The third executor's
+evidence discipline is on record as exemplary.
+
+Findings for round 3 (substance, no strikes): F1/F2/F4 — R-BB was
+ruled DONE over the fallback: the moments list is the aggregate
+result row (payload honestly says moment_source=execution.results),
+source_kind="chain_record" is a stamped constant, and overlays only
+ever exercise the stage-0 anchor fallback because neither plan
+requests chain-record witness evidence. F3 — the interval card says
+"Certified interval" on uncertified runtime intervals, and
+certified_evidence_rows carries uncertified rows. F5-F7 — "pending"
+for completed chains; canonical-sources double-hash; prewarm-HIT
+wording leaning on a prior run's cache.
+
+Process refinement, standing: executors claim DELIVERED with
+evidence; DONE is the review's judgment. A ruling is not closed by
+its own subject.
+
+## Round-3 fix list (focused)
+
+1. R-BB for real: request chain-record/witness evidence through both
+   the committed and live-synthesized plans; the moments list is the
+   population's chain records (115 chains, 91 denominator-PASS) with
+   per-moment replay windows derived from stage witnesses;
+   stage-label and trail overlays exercised by committed evidence;
+   UNKNOWN moments in slate with truncation reason, exercised and
+   tested. If the population is large, the list paginates with the
+   TOTAL always rendered.
+2. source_kind derived from the actual record, never stamped.
+3. Honest labels: interval headline distinguishes CERTIFIED (matches
+   a committed flagship table) from RUNTIME EVIDENCE intervals;
+   rename/split certified_evidence_rows; chain_status null renders
+   as its true meaning.
+4. Canonical-sources double-hash fixed so provenance ids
+   cross-reference.
+5. Fresh evidence run per R-AZ (cache provenance stated plainly);
+   full-suite table.
