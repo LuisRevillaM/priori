@@ -410,6 +410,19 @@ class ExecutorRegistryBoundaryTests(unittest.TestCase):
         self.assertIsInstance(output["status"], FrameSignal)
         self.assertEqual(frame_signal, output["status"])
 
+    def test_perf1_parallel_pool_falls_back_when_process_pool_is_unavailable(self) -> None:
+        with mock.patch.object(
+            executor.concurrent.futures,
+            "ProcessPoolExecutor",
+            side_effect=PermissionError("sysconf denied"),
+        ):
+            pool, backend = executor.period_worker_pool(2)
+        try:
+            self.assertEqual("thread_fallback_process_pool_unavailable", backend)
+            self.assertIsInstance(pool, executor.concurrent.futures.ThreadPoolExecutor)
+        finally:
+            pool.shutdown(wait=True)
+
     def test_canonical_data_manifest_uses_manifest_hash_without_default_content_hash(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "canonical"

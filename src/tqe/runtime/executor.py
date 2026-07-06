@@ -513,6 +513,7 @@ class TacticalQueryExecutor:
                 },
                 "execution_parallelism": {
                     "workers": self.parallel_workers,
+                    "backend": parallel_backend_from_progress(progress_events, self.parallel_workers),
                     "period_state_independence": (
                         "Each worker constructs a fresh PeriodState for one "
                         "match_id/period, reading only scope-local canonical/raw "
@@ -621,7 +622,8 @@ class TacticalQueryExecutor:
                 )
         worker_count = min(self.parallel_workers, len(tasks))
         period_outputs: list[dict[str, Any]] = []
-        with concurrent.futures.ProcessPoolExecutor(max_workers=worker_count) as pool:
+        pool, parallel_backend = period_worker_pool(worker_count)
+        with pool:
             futures = [pool.submit(_execute_period_worker, task) for task in tasks]
             for future in concurrent.futures.as_completed(futures):
                 period_outputs.append(future.result())
@@ -633,7 +635,13 @@ class TacticalQueryExecutor:
         accepted: list[dict[str, Any]] = []
         traces: list[PredicateTrace] = []
         runtime_value_count = 0
-        progress_events: list[dict[str, Any]] = []
+        progress_events: list[dict[str, Any]] = [
+            {
+                "event": "parallel_executor_backend",
+                "backend": parallel_backend,
+                "workers": worker_count,
+            }
+        ]
         node_cache_summary: Counter[str] = Counter()
         for match_index, _match_id in enumerate(bound_plan.match_ids):
             match_results: list[dict[str, Any]] = []
@@ -1041,6 +1049,23 @@ def runtime_parameters(bound_plan: BoundQueryPlan) -> RuntimeParameters:
 
 def elapsed_ms(started: float) -> float:
     return round((time.perf_counter() - started) * 1000.0, 3)
+
+
+def period_worker_pool(worker_count: int) -> tuple[concurrent.futures.Executor, str]:
+    try:
+        return concurrent.futures.ProcessPoolExecutor(max_workers=worker_count), "process"
+    except PermissionError:
+        return (
+            concurrent.futures.ThreadPoolExecutor(max_workers=worker_count),
+            "thread_fallback_process_pool_unavailable",
+        )
+
+
+def parallel_backend_from_progress(progress_events: list[dict[str, Any]], workers: int) -> str:
+    for event in progress_events:
+        if event.get("event") == "parallel_executor_backend":
+            return str(event.get("backend"))
+    return "serial" if workers <= 1 else "not_recorded"
 
 
 def period_timing_rows(progress_events: list[dict[str, Any]]) -> list[dict[str, Any]]:
