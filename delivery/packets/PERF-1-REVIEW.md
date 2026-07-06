@@ -48,3 +48,15 @@ atomic rename + detect-never-served) — adjudicated harmless, now
 documented here. The narrow PermissionError fallback is fail-loud,
 acceptable. The MutableMapping/dict narrowing has no in-repo caller;
 carried.
+
+---
+
+# PERF-1 Fix Round: ACCEPTED — the engine is fast and provably the same
+
+Reviewed 2026-07-06 at 8233348. All six fixes verified by the
+director: dead wrappers deleted (zero occurrences); the mutation
+matrix extended to sub-components; unsupported cache types rejected
+loudly per ruling; the pool backend recorded in evidence — and the
+fix-round equivalence ran on REAL process pools ("backend":
+"process"), strengthening the acceptance; disclosure paragraphs in;
+director's full suite green on the committed tree.
