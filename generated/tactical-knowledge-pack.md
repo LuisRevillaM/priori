@@ -1,7 +1,7 @@
 # Tactical Knowledge Pack
 
 Version: `m1.2-s2i-a.0`
-SHA-256: `b40458086fe5d81e3f709ceb5f2301038391d6a97f64ee02585f4a9019018099`
+SHA-256: `07cbbdfb7d5e6f947d9d5d343f68bcdc5dd6715b3b9fba9a4e1dc8f0fbe897ee`
 Generated: `reproducible_from_source_hashes`
 
 ## Architecture
@@ -235,7 +235,7 @@ Composition constraint kinds:
 - `src/tqe/runtime/operators/delta_across_anchor.py`: `acd81710c06856c71aac2ac41e68a7e07d17262a69f597a92696a0721f77b806`
 - `src/tqe/runtime/operators/extremum_over_set.py`: `e9bf407db795f44600ffe65f6c0333a3cdaae3b8b234206e1157eed533eb15e3`
 - `src/tqe/runtime/operators/project_onto_axis.py`: `65159a823e7573cc19fd3728f425680a8cc80349e1bc8e790db890b589ecd9d0`
-- `src/tqe/runtime/operators/rate.py`: `6e87f7520107efe0a0219d929f8799b822eee17bdc42c9cf5795ea91c117ca88`
+- `src/tqe/runtime/operators/rate.py`: `b91e0475374e7b7295cdc511e545f7e21bbad28e9c5e08efff6470a6c8027d7c`
 - `src/tqe/runtime/operators/sequence_pattern.py`: `6826ac97639bcde8a4a441aa0e4fd474dd87a14577add8fbee0aa45ea3126921`
 - `src/tqe/runtime/operators/typed_join.py`: `8b897658f357f9cda39c287816daacf95733c3d75c69843d449c35fe8bd10af1`
 - `src/tqe/runtime/operators/window.py`: `c7247d0fb72c8c0c1705b75d71ced179d7c814c3c2aee93a2dbd9948c773188e`

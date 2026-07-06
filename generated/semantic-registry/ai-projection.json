@@ -6741,10 +6741,10 @@
   ],
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "12449b9abb05f105ee123803bb70d558885f007d249bfb43e6c5236d2f3f0419",
+    "baseline_artifact_revision": "39d7f416dba5e7664bdccb56e650911e249e757dc8dead479fa0acd2127d888f",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "0508b0be60b77ceebdad72e64f605cfb268e05eb40d8ea6d693491e0df3dfce5",
+    "lock_hash": "6271474ac29e7ce7dc1a4b729b906867e56af5f0164ccfabd335242ec8bf05ca",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
