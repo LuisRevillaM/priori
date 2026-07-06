@@ -82,13 +82,14 @@ def write_json(path: Path, payload: dict[str, Any], metadata: dict[str, Any]) ->
     path.write_text(json.dumps(with_metadata(payload, metadata), indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
-def write_log(path: Path, text: str, metadata: dict[str, Any]) -> None:
+def open_service_log(path: Path, metadata: dict[str, Any]):
     if path.exists():
         raise RuntimeError(f"refusing to overwrite evidence file: {path}")
-    path.write_text(
-        json.dumps({"evidence_metadata": metadata}, sort_keys=True) + "\n" + text,
-        encoding="utf-8",
-    )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    handle = path.open("x", encoding="utf-8")
+    handle.write(json.dumps({"evidence_metadata": metadata}, sort_keys=True) + "\n")
+    handle.flush()
+    return handle
 
 
 def post_json(url: str, payload: dict[str, Any], *, timeout: int) -> dict[str, Any]:
@@ -300,8 +301,9 @@ def main() -> None:
         str(args.output_root),
     ]
     started_at = time.monotonic()
-    proc = subprocess.Popen(cmd, cwd=ROOT, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-    service_log = ""
+    service_log_path = run_dir / "film-room-service.log"
+    service_log_handle = open_service_log(service_log_path, metadata)
+    proc = subprocess.Popen(cmd, cwd=ROOT, env=env, stdout=service_log_handle, stderr=subprocess.STDOUT, text=True)
     try:
         wait_ready(base_url, timeout_seconds=args.timeout)
         ready_elapsed_ms = int((time.monotonic() - started_at) * 1000)
@@ -361,6 +363,9 @@ def main() -> None:
             "provider": cold_response["provider"],
             "model": cold_response["model"],
             "billing_surface": "ChatGPT subscription via openai-codex Hermes CLI",
+            "output_root": str(args.output_root),
+            "skip_service_prewarm": args.skip_service_prewarm,
+            "timeout_seconds": args.timeout,
             "expected_r2_4_plan_hash": expected_plan_hash,
             "answer_plan_hash": answer["provenance"]["plan_hash"],
             "answer_document_hash": actual_document_hash,
@@ -386,6 +391,7 @@ def main() -> None:
                 "cold_response": str((run_dir / "film-room-cold-response.json").relative_to(ROOT)),
                 "replay_window": str((run_dir / "film-room-replay-window.json").relative_to(ROOT)),
                 "screenshot": str(screenshot_path.relative_to(ROOT)) if screenshot_path.exists() else None,
+                "service_log": str(service_log_path.relative_to(ROOT)),
             },
         }
         write_json(run_dir / "film-room-e2e.json", evidence, metadata)
@@ -397,9 +403,7 @@ def main() -> None:
         except subprocess.TimeoutExpired:
             proc.kill()
             proc.wait(timeout=10)
-        if proc.stdout:
-            service_log = proc.stdout.read()
-        write_log(run_dir / "film-room-service.log", service_log, metadata)
+        service_log_handle.close()
 
 
 if __name__ == "__main__":
