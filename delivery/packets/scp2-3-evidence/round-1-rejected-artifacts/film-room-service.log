@@ -1,0 +1,5 @@
+Workbench Alpha host service: http://127.0.0.1:57936
+Static root: apps/workbench-alpha/dist
+Output root: /private/tmp/scp2_3_film_probe
+hermes_diagnostic={"details": {"cwd": {"executable": true, "exists": true, "is_symlink": false, "path": "/Users/luisrevilla/code/priori"}, "hermes": {"executable": true, "exists": true, "is_symlink": true, "path": "/Users/luisrevilla/.local/bin/hermes"}, "python": {"executable": true, "exists": true, "is_symlink": true, "path": "/Users/luisrevilla/.local/src/hermes-agent/venv/bin/python3"}, "pythonpath_entries": 3, "subcommand": "interpret", "workshop_output_root": "<local-dev-path>"}, "event": "subprocess_start"}
+hermes_diagnostic={"details": {"returncode": 0, "stderr_prefix": "", "stdout_prefix": "{\"exit_code\": 0, \"ok\": true, \"stderr\": \"\", \"stdout\": \"{\\\"outcome\\\":\\\"expression\\\",\\\"expression\\\":{\\\"schema_version\\\":\\\"meaning_expression.v0\\\",\\\"expression_id\\\":\\\"regain_progressive_carry_controlled_pass_rate\\\",\\\"concept_identity\\\":\\\"regain", "subcommand": "interpret"}, "event": "subprocess_complete"}

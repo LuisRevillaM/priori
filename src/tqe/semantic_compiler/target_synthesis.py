@@ -135,7 +135,7 @@ def document_payload_for_expression(
     document: dict[str, Any],
 ) -> dict[str, Any]:
     match_ids = expression.population.match_ids or list(search.MATCH_IDS)
-    periods = expression.population.periods
+    periods = expression.population.periods or ["firstHalf", "secondHalf"]
     roles = expression.population.perspective_team_roles or ["home"]
     role_documents: dict[str, dict[str, Any]] = {}
     for role in roles:

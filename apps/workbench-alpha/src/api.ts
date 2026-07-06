@@ -7,6 +7,10 @@ import type {
   ErrorResponse,
   ExecutionProgressResponse,
   ExecutionResponse,
+  FilmRoomAskResponse,
+  FilmRoomBootstrapResponse,
+  FilmRoomReplayFrameResponse,
+  FilmRoomReplayWindowResponse,
   InspectResultResponse,
   InspectTimestampResponse,
   InterpretResponse,
@@ -107,6 +111,33 @@ export function coachInterpret(input: { query: string }): Promise<CoachInterpret
     method: "POST",
     body: JSON.stringify(input)
   });
+}
+
+export function filmRoomAsk(input: { text: string; context?: JsonObject | null }): Promise<FilmRoomAskResponse> {
+  return request<FilmRoomAskResponse>("FilmRoomAskResponse", "/api/film-room/ask", {
+    method: "POST",
+    body: JSON.stringify(input)
+  });
+}
+
+export function filmRoomBootstrap(): Promise<FilmRoomBootstrapResponse> {
+  return request<FilmRoomBootstrapResponse>("FilmRoomBootstrapResponse", "/api/film-room/bootstrap");
+}
+
+export function filmRoomReplayWindow(input: { replay_window_id: string }): Promise<FilmRoomReplayWindowResponse> {
+  const replayWindowId = encodeURIComponent(input.replay_window_id);
+  return request<FilmRoomReplayWindowResponse>("FilmRoomReplayWindowResponse", `/api/film-room/replay-window?replay_window_id=${replayWindowId}`);
+}
+
+export function filmRoomReplayFrame(input: {
+  replay_window_id: string;
+  frame_id: number;
+}): Promise<FilmRoomReplayFrameResponse> {
+  const replayWindowId = encodeURIComponent(input.replay_window_id);
+  return request<FilmRoomReplayFrameResponse>(
+    "FilmRoomReplayFrameResponse",
+    `/api/film-room/replay-frame?replay_window_id=${replayWindowId}&frame_id=${input.frame_id}`
+  );
 }
 
 export function fetchCoachCatalog(kind: string): Promise<CoachInterpretResponse> {

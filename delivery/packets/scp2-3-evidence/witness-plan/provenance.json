@@ -1,0 +1,63 @@
+{
+  "canonical_root": "data/canonical/v1",
+  "generated_by": "scripts/packets/r2_4_flagship_generator.py",
+  "generator_script_sha256": "5135fe682825d85ca1bb0951c59a2c1ff3c8e1ff89adb3a815518c5ca7e0560b",
+  "generator_summary": {
+    "elapsed_seconds": 358.377,
+    "long_execution": true,
+    "period_records": 28,
+    "plan_hash": "d8179a5a1af54ecdd45514e4fa3403b3ab515977fb79dd29b4a62f2ecfd9bb7e",
+    "rows": 14,
+    "table_hash": "a9b2d257c9e36995b237ce13555047eeaaf09218473d0c3de2f98c01ab18fa65",
+    "totals": {
+      "a_count": 1,
+      "b_count": 0,
+      "c_count": 2261,
+      "d1_count": 0,
+      "d2_count": 549,
+      "e_count": 0,
+      "fail_count": 0,
+      "lower_bound": 1,
+      "observed": 1,
+      "observed_denominator_count": 1,
+      "pass_count": 1,
+      "population_count": 2811,
+      "rate_lower_bound": 0.0003557452863749555,
+      "rate_observed": 1,
+      "rate_status": "PASS",
+      "rate_upper_bound": 1,
+      "unknown_count": 2810,
+      "upper_bound": 2811
+    }
+  },
+  "git_commit": "091b9d481e820b6525048547c9213276c20d9826",
+  "git_tree": "0fb59217f2663c60430dcfe147144da3e69d293b",
+  "local_sidecar_path": "/private/tmp/scp2-3-witness-plan-sidecar-20260706T070621Z.json",
+  "output_dir": "delivery/packets/scp2-3-evidence/witness-plan",
+  "outputs": {
+    "plan": {
+      "path": "delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_v0.json",
+      "sha256": "a49acd43897a420c5491f0a53795ffdceb3724b219800407b36fcec645be43bd",
+      "stable_hash": "d8179a5a1af54ecdd45514e4fa3403b3ab515977fb79dd29b4a62f2ecfd9bb7e"
+    },
+    "r2_4_generator_provenance": {
+      "path": "delivery/packets/scp2-3-evidence/witness-plan/r2_4_generator_provenance.json",
+      "sha256": "7ee02e3ef14790d45b033a7c4eed38c1df0982792c87d78aa21a0eee482418b5",
+      "stable_hash": "1acd0f1f218bab8d7965faf40bce8dbd354bc2ba427848a0c67a510251d493c1"
+    },
+    "table_json": {
+      "path": "delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json",
+      "sha256": "d904fdc94c0a78b74244e6809f8c559df6d8b21e559eaef552c8d84f8eb8d19e",
+      "stable_hash": "a9b2d257c9e36995b237ce13555047eeaaf09218473d0c3de2f98c01ab18fa65"
+    },
+    "table_markdown": {
+      "path": "delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.md",
+      "sha256": "2307aae9ba7d2f66e523210293595c87040d93c48e3dc83c78aecdf082247c21"
+    }
+  },
+  "produced_by": "scripts/packets/scp2_3_witness_plan_generator.py",
+  "producing_script_sha256": "b1bf6630bca27de5038106cd1a59fb53f557a834003272602295dd1aab86f346",
+  "raw_root": "data/raw/idsse/figshare-28196177-v1",
+  "run_started_at": "2026-07-06T07:06:21+00:00",
+  "schema_version": "scp2_3_witness_plan_provenance.v1"
+}

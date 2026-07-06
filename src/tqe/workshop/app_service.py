@@ -55,6 +55,7 @@ from tqe.workshop.m1_2 import (
     list_capabilities,
     read_json,
     read_handle,
+    replay_window_from_canonical,
     replay_artifact_path,
     retrieve_replay_window,
     submit_query_plan,
@@ -69,6 +70,14 @@ APPROVED_PLAN_PATH = Path("config/query-plans/ball_side_block_shift.ir.v1.json")
 CORRIDOR_PLAN_PATH = Path("config/query-plans/possession_corridor_availability.experimental.v1.json")
 HIGH_BYPASS_PLAN_PATH = Path("config/query-plans/high_bypass_completed_pass.experimental.v1.json")
 LINE_BREAK_SUPPORT_RESPONSE_PLAN_PATH = Path("config/query-plans/line_break_support_response.experimental.v1.json")
+FILM_ROOM_R2_4_PLAN_PATH = Path("delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_v0.json")
+FILM_ROOM_R2_4_TABLE_PATH = Path("delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json")
+FILM_ROOM_R2_2_PLAN_PATH = Path("delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json")
+FILM_ROOM_R2_2_TABLE_PATH = Path("delivery/packets/r2-2-flagship/fragile_retention_rate_table.json")
+FILM_ROOM_COUNTERATTACK_QUESTION = (
+    "After a regain, how often does the team progress the ball by carry and keep it with a controlled pass?"
+)
+FILM_ROOM_FRAGILE_RETENTION_QUESTION = "When a team faces the fragile condition, how often is possession retained?"
 MOMENT_ZERO_PAYLOAD_PATH = Path("apps/workbench-alpha/src/generated/moment-zero.json")
 MOMENT_LINE_BREAK_SUPPORTED_PAYLOAD_PATH = Path("apps/workbench-alpha/src/generated/moment-line-break-supported.json")
 MOMENT_HIGH_BYPASS_PAYLOAD_PATH = Path("apps/workbench-alpha/src/generated/moment-high-bypass.json")
@@ -95,6 +104,8 @@ DEMO_ACCESS_TOKEN = os.environ.get("DEMO_ACCESS_TOKEN", "").strip()
 DEMO_ACCESS_QUERY_TOKEN_ENABLED = os.environ.get("DEMO_ACCESS_QUERY_TOKEN_ENABLED", "").strip() == "1"
 WORKBENCH_PREWARM_EXECUTION_CACHE = os.environ.get("WORKBENCH_PREWARM_EXECUTION_CACHE", "").strip() == "1"
 WORKBENCH_PREWARM_RESULT_LIMIT = int(os.environ.get("WORKBENCH_PREWARM_RESULT_LIMIT", "3"))
+WORKBENCH_PREWARM_FILM_ROOM = os.environ.get("WORKBENCH_PREWARM_FILM_ROOM", "1").strip() != "0"
+WORKBENCH_FILM_ROOM_RESULT_LIMIT = int(os.environ.get("WORKBENCH_FILM_ROOM_RESULT_LIMIT", "25"))
 WORKBENCH_PREWARM_RECIPE_IDS = tuple(
     recipe_id.strip()
     for recipe_id in os.environ.get(
@@ -122,6 +133,9 @@ HERMES_MCP_TOOL_NAMES = {
 }
 N1E_JOB_THREADS: dict[str, threading.Thread] = {}
 N1E_JOB_THREADS_LOCK = threading.Lock()
+FILM_ROOM_PREWARMED_RESPONSES: dict[str, dict[str, Any]] = {}
+FILM_ROOM_PREWARM_RECORDS: list[dict[str, Any]] = []
+FILM_ROOM_REPLAY_INDEX: dict[str, dict[str, Any]] = {}
 N1F_CLARIFICATION_ANSWER: dict[str, Any] = {
     "match_ids": ["J03WOY"],
     "periods": ["firstHalf"],
@@ -358,7 +372,7 @@ class PitchResponse(WorkbenchResponseModel):
 class ReplayPayloadResponse(WorkbenchResponseModel):
     schema_version: str
     replay_window_id: str
-    source_kind: Literal["result", "target"]
+    source_kind: Literal["result", "target", "chain_record"]
     source_id: str
     match_id: str
     period: str
@@ -370,6 +384,119 @@ class ReplayPayloadResponse(WorkbenchResponseModel):
     canonical_sources: dict[str, str]
     pitch: PitchResponse
     frames: list[ReplayFrameResponse]
+
+
+class FilmRoomIntervalMetricResponse(WorkbenchResponseModel):
+    label: str
+    observed: float
+    lower: float
+    upper: float
+    unknown_count: int
+    source: dict[str, Any]
+
+
+class FilmRoomMomentResponse(WorkbenchResponseModel):
+    result_id: str
+    source_kind: Literal["result", "target", "chain_record"]
+    classification: str
+    match_id: str
+    period: str
+    anchor_frame_id: int
+    start_frame_id: int | None = None
+    end_frame_id: int | None = None
+    match_time_ms: int | None = None
+    requested_evidence: dict[str, Any]
+    replay_window_id: str | None = None
+    replay_start_frame_id: int | None = None
+    replay_end_frame_id: int | None = None
+    evidence_row: dict[str, Any] | None = None
+    unknown_reason: str | None = None
+    chain_status: str | None = None
+    chain_reason: str | None = None
+    evidence_overlay: dict[str, Any] = Field(default_factory=dict)
+
+
+class FilmRoomExecutionRecordResponse(WorkbenchResponseModel):
+    role: str
+    submit: dict[str, Any]
+    validation: dict[str, Any]
+    confirmation: dict[str, Any]
+    cache_before: dict[str, Any]
+    execution: dict[str, Any]
+    cache_after_execute: dict[str, Any]
+    draft_record: dict[str, Any]
+    bound_record: dict[str, Any]
+
+
+class FilmRoomProvenanceResponse(WorkbenchResponseModel):
+    plan_hash: str
+    synthesized_document_hash: str
+    expression_hash: str | None = None
+    certified_table_path: str | None = None
+    certified_table_hash: str | None = None
+    certified_plan_path: str | None = None
+    certified_period_records_hash: str | None = None
+    bound_plan_hashes: dict[str, str]
+    replay_window_id: str | None = None
+    canonical_sources: dict[str, str]
+    runtime_commit: str | None = None
+    tree: str | None = None
+
+
+class FilmRoomAnswerResponse(WorkbenchResponseModel):
+    status: Literal["answer_ready"]
+    compiled_chips: list[str]
+    document: dict[str, Any]
+    certified_evidence_rows: list[dict[str, Any]]
+    runtime_evidence_rows: list[dict[str, Any]]
+    evidence_rows_kind: Literal["certified", "runtime"]
+    interval_metric: FilmRoomIntervalMetricResponse | None = None
+    moments: list[FilmRoomMomentResponse]
+    moment_total_count: int
+    visible_moment_count: int
+    replay: ReplayPayloadResponse | None = None
+    executions: list[FilmRoomExecutionRecordResponse]
+    raw_evidence: dict[str, Any] = Field(default_factory=dict)
+    provenance: FilmRoomProvenanceResponse
+
+
+class FilmRoomAskResponse(WorkbenchResponseModel):
+    ok: Literal[True]
+    outcome: Literal["expression", "clarification_required", "understood_but_not_expressible", "unsupported_modality"]
+    request_text: str
+    provider: str
+    model: str
+    latency_ms: int
+    latency_breakdown_ms: dict[str, int]
+    hermes: dict[str, Any]
+    answer: FilmRoomAnswerResponse | None = None
+    clarification: dict[str, Any] | None = None
+    refusal: dict[str, Any] | None = None
+
+
+class FilmRoomBootstrapResponse(WorkbenchResponseModel):
+    ok: Literal[True]
+    provider: str
+    model: str
+    billing_surface: str
+    flagship_plan_hashes: dict[str, str | None]
+    prewarm_records: list[dict[str, Any]]
+    prewarmed_response: dict[str, Any] | None = None
+
+
+class FilmRoomReplayFrameResponse(WorkbenchResponseModel):
+    ok: Literal[True]
+    replay_window_id: str
+    frame_id: int
+    frame_sha256: str
+    canonical_sources: dict[str, str]
+    frame: ReplayFrameResponse
+
+
+class FilmRoomReplayWindowResponse(WorkbenchResponseModel):
+    ok: Literal[True]
+    replay_window_id: str
+    replay: ReplayPayloadResponse
 
 
 class InspectResultResponseEnvelope(WorkbenchResponseModel):
@@ -398,6 +525,10 @@ WORKBENCH_RESPONSE_MODELS: dict[str, type[BaseModel]] = {
     "ConfirmationResponse": ConfirmationResponseEnvelope,
     "ExecutionResponse": ExecutionResponseEnvelope,
     "ExecutionProgressResponse": ExecutionProgressResponse,
+    "FilmRoomBootstrapResponse": FilmRoomBootstrapResponse,
+    "FilmRoomAskResponse": FilmRoomAskResponse,
+    "FilmRoomReplayFrameResponse": FilmRoomReplayFrameResponse,
+    "FilmRoomReplayWindowResponse": FilmRoomReplayWindowResponse,
     "InspectResultResponse": InspectResultResponseEnvelope,
     "InspectTimestampResponse": InspectTimestampResponseEnvelope,
 }
@@ -2071,6 +2202,15 @@ def stable_json_sha256(payload: Any) -> str:
     return sha256(json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str).encode("utf-8")).hexdigest()
 
 
+def int_or_none(value: Any) -> int | None:
+    if value is None or isinstance(value, bool):
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def runtime_commit_identifier() -> str:
     for key in ("RENDER_GIT_COMMIT", "RENDER_COMMIT", "SOURCE_VERSION", "GIT_COMMIT"):
         value = os.environ.get(key, "").strip()
@@ -2086,6 +2226,21 @@ def runtime_commit_identifier() -> str:
             cwd=REPO_ROOT,
         )
     except Exception:  # noqa: BLE001 - commit metadata is useful but non-critical.
+        return "unknown"
+    return completed.stdout.strip() if completed.returncode == 0 and completed.stdout.strip() else "unknown"
+
+
+def git_tree_identifier() -> str:
+    try:
+        completed = subprocess.run(
+            ["git", "rev-parse", "HEAD^{tree}"],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=5,
+            cwd=REPO_ROOT,
+        )
+    except Exception:  # noqa: BLE001 - provenance metadata is useful but non-critical.
         return "unknown"
     return completed.stdout.strip() if completed.returncode == 0 and completed.stdout.strip() else "unknown"
 
@@ -2296,6 +2451,823 @@ def run_host_authority_pipeline(document: dict[str, Any], *, output_root: Path, 
         "execution_record": read_handle("executions", execution["execution_id"], output_root=output_root),
         "replay_record": read_handle("replay-windows", replay.replay_window_id, output_root=output_root),
     }
+
+
+def film_room_compile_context(payload: dict[str, Any]) -> Any:
+    from tqe.semantic_compiler.hermes_nl import HermesNLContext
+
+    context_payload = payload.get("context")
+    if isinstance(context_payload, dict) and context_payload:
+        return HermesNLContext.model_validate(context_payload)
+    return None
+
+
+def film_room_ask_request(payload: dict[str, Any], *, output_root: Path) -> dict[str, Any]:
+    from tqe.semantic_compiler.hermes_nl import (
+        ClarificationRequiredOutcome,
+        ExpressionOutcome,
+        UnderstoodButNotExpressibleOutcome,
+        UnsupportedModalityOutcome,
+        compile_nl_request,
+    )
+    from tqe.semantic_compiler.target_synthesis import synthesize_and_bind
+
+    text = str(payload.get("text") or payload.get("query") or "").strip()
+    if not text:
+        raise ValueError("text must be non-empty")
+    os.environ.setdefault("HERMES_HOME", str(HERMES_HOME))
+    os.environ.setdefault("HERMES_SCP2_2_PROVIDER", HERMES_PROVIDER)
+    os.environ.setdefault("HERMES_SCP2_2_MODEL", HERMES_MODEL)
+    started_at = time.monotonic()
+    hermes_started_at = time.monotonic()
+    outcome = compile_nl_request(text, context=film_room_compile_context(payload))
+    hermes_latency_ms = int((time.monotonic() - hermes_started_at) * 1000)
+    hermes_payload = outcome.model_dump(mode="json")
+    response: dict[str, Any] = {
+        "ok": True,
+        "outcome": hermes_payload["outcome"],
+        "request_text": text,
+        "provider": str(hermes_payload.get("transcript", {}).get("provider") or HERMES_PROVIDER),
+        "model": str(hermes_payload.get("transcript", {}).get("model") or HERMES_MODEL),
+        "latency_ms": int((time.monotonic() - started_at) * 1000),
+        "latency_breakdown_ms": {
+            "hermes": hermes_latency_ms,
+            "synthesis": 0,
+            "execution": 0,
+            "total": int((time.monotonic() - started_at) * 1000),
+        },
+        "hermes": hermes_payload,
+        "answer": None,
+        "clarification": None,
+        "refusal": None,
+    }
+    if isinstance(outcome, ClarificationRequiredOutcome):
+        response["clarification"] = hermes_payload
+        return validate_public_response("FilmRoomAskResponse", response)
+    if isinstance(outcome, (UnderstoodButNotExpressibleOutcome, UnsupportedModalityOutcome)):
+        response["refusal"] = hermes_payload
+        return validate_public_response("FilmRoomAskResponse", response)
+    if not isinstance(outcome, ExpressionOutcome):
+        raise CapabilityGap(f"unsupported Hermes outcome: {type(outcome).__name__}")
+    coverage_path = Path("generated/coverage-map.json")
+    coverage_rows = read_json(coverage_path) if coverage_path.exists() else None
+    synthesis_started_at = time.monotonic()
+    synthesized = synthesize_and_bind(outcome.expression, coverage_rows=coverage_rows)
+    synthesis_latency_ms = int((time.monotonic() - synthesis_started_at) * 1000)
+    execution_started_at = time.monotonic()
+    answer = film_room_answer_from_document(
+        synthesized["document"],
+        expression_payload=hermes_payload.get("expression_json") if isinstance(hermes_payload, dict) else None,
+        expression_hash=outcome.document_hash,
+        synthesized_document_hash=str(synthesized["document_hash"]),
+        output_root=output_root,
+    )
+    execution_latency_ms = int((time.monotonic() - execution_started_at) * 1000)
+    answer["compiled_chips"] = film_room_compiled_chips(hermes_payload.get("expression_json"), synthesized["document"])
+    response["answer"] = answer
+    response["latency_ms"] = int((time.monotonic() - started_at) * 1000)
+    response["latency_breakdown_ms"] = {
+        "hermes": hermes_latency_ms,
+        "synthesis": synthesis_latency_ms,
+        "execution": execution_latency_ms,
+        "total": int(response["latency_ms"]),
+    }
+    return validate_public_response("FilmRoomAskResponse", response)
+
+
+def film_room_answer_from_document(
+    document_payload: dict[str, Any],
+    *,
+    expression_payload: Any,
+    expression_hash: str | None,
+    synthesized_document_hash: str,
+    output_root: Path,
+) -> dict[str, Any]:
+    plan_hash = stable_hash(document_payload)
+    certified = film_room_certified_table_for_plan_hash(plan_hash)
+    executions = film_room_execute_document(document_payload, output_root=output_root)
+    replay_payload: dict[str, Any] | None = None
+    selected_replay_window_id: str | None = None
+    moments: list[dict[str, Any]] = []
+    seen_moments: set[tuple[str, str, int, str]] = set()
+    canonical_sources: dict[str, str] = {}
+    raw_rate_evidence_rows: list[dict[str, Any]] = []
+    for execution_record in executions:
+        rows = execution_record["execution"].get("results")
+        if not isinstance(rows, list):
+            continue
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            role = str(row.get("perspective_team_role") or execution_record["role"] or "")
+            requested_evidence = row.get("requested_evidence") if isinstance(row.get("requested_evidence"), dict) else {}
+            if requested_evidence:
+                raw_rate_evidence_rows.append(deepcopy(requested_evidence))
+            for chain_record in film_room_chain_population_records(requested_evidence, fallback=row):
+                if not isinstance(chain_record, dict):
+                    continue
+                match_id = str(chain_record.get("match_id") or row.get("match_id") or "")
+                period = str(chain_record.get("period") or row.get("period") or "")
+                anchor_frame_id = int(chain_record.get("anchor_frame_id") or row.get("anchor_frame_id") or 0)
+                source_kind = film_room_source_kind(chain_record, fallback=row)
+                result_id = str(
+                    chain_record.get("chain_id")
+                    or chain_record.get("anchor_id")
+                    or row.get("result_id")
+                    or stable_hash(chain_record)[:16]
+                )
+                moment_key = (
+                    match_id,
+                    period,
+                    anchor_frame_id,
+                    result_id,
+                )
+                if moment_key in seen_moments:
+                    continue
+                seen_moments.add(moment_key)
+                replay_meta = film_room_register_replay_window(
+                    chain_record,
+                    plan_hash=plan_hash,
+                    fallback_result_id=str(row.get("result_id") or ""),
+                    source_kind=source_kind,
+                )
+                if replay_payload is None and replay_meta["replay_window_id"]:
+                    replay_payload = ensure_film_room_replay_payload(
+                        str(replay_meta["replay_window_id"]),
+                        output_root=output_root,
+                    )
+                    selected_replay_window_id = str(replay_payload["replay_window_id"])
+                    canonical_sources = public_canonical_sources(replay_payload.get("canonical_sources"))
+                evidence_row = deepcopy(chain_record)
+                moments.append(
+                    {
+                        "result_id": result_id,
+                        "source_kind": source_kind,
+                        "classification": str(row.get("classification") or chain_record.get("chain_status") or ""),
+                        "match_id": match_id,
+                        "period": period,
+                        "anchor_frame_id": anchor_frame_id,
+                        "start_frame_id": int_or_none(chain_record.get("start_frame_id")),
+                        "end_frame_id": int_or_none(chain_record.get("end_frame_id")),
+                        "match_time_ms": (
+                            chain_record.get("match_time_ms")
+                            if isinstance(chain_record.get("match_time_ms"), int)
+                            else row.get("match_time_ms") if isinstance(row.get("match_time_ms"), int) else None
+                        ),
+                        "requested_evidence": deepcopy(chain_record),
+                        "replay_window_id": replay_meta["replay_window_id"],
+                        "replay_start_frame_id": replay_meta["replay_start_frame_id"],
+                        "replay_end_frame_id": replay_meta["replay_end_frame_id"],
+                        "evidence_row": evidence_row,
+                        "unknown_reason": film_room_unknown_reason(evidence_row, row),
+                        "chain_status": str(chain_record.get("chain_status")) if chain_record.get("chain_status") else None,
+                        "chain_reason": str(chain_record.get("chain_reason")) if chain_record.get("chain_reason") else None,
+                        "evidence_overlay": film_room_evidence_overlay(chain_record),
+                    }
+                )
+    runtime_evidence_rows = [
+        row
+        for row in raw_rate_evidence_rows
+        if isinstance(row, dict)
+    ]
+    interval_metric = film_room_interval_metric(certified.get("table") if certified else None) or film_room_interval_metric_from_evidence(
+        runtime_evidence_rows
+    )
+    bound_plan_hashes = {
+        str(record["role"]): str(record["execution"].get("bound_plan_hash") or record["bound_record"].get("bound_plan_hash"))
+        for record in executions
+    }
+    answer = {
+        "status": "answer_ready",
+        "compiled_chips": film_room_compiled_chips(expression_payload, document_payload),
+        "document": document_payload,
+        "certified_evidence_rows": certified.get("table", {}).get("rows", []) if certified else [],
+        "runtime_evidence_rows": runtime_evidence_rows,
+        "evidence_rows_kind": "certified" if certified else "runtime",
+        "interval_metric": interval_metric,
+        "moments": moments,
+        "moment_total_count": len(moments),
+        "visible_moment_count": len(moments),
+        "replay": replay_payload,
+        "executions": executions,
+        "raw_evidence": {
+            "rate_records": raw_rate_evidence_rows,
+            "certified_table": certified.get("table") if certified else None,
+            "moment_source": "rate.source_records" if any("source_records" in row for row in raw_rate_evidence_rows) else "execution.results",
+        },
+        "provenance": {
+            "plan_hash": plan_hash,
+            "synthesized_document_hash": synthesized_document_hash,
+            "expression_hash": expression_hash,
+            "certified_table_path": str(certified["table_path"]) if certified else None,
+            "certified_table_hash": certified["table_hash"] if certified else None,
+            "certified_plan_path": str(certified["plan_path"]) if certified else None,
+            "certified_period_records_hash": str(certified["table"].get("period_records_hash")) if certified else None,
+            "bound_plan_hashes": bound_plan_hashes,
+            "replay_window_id": selected_replay_window_id,
+            "canonical_sources": canonical_sources,
+            "runtime_commit": runtime_commit_identifier(),
+            "tree": git_tree_identifier(),
+        },
+    }
+    return FilmRoomAnswerResponse.model_validate(answer).model_dump(mode="json")
+
+
+def film_room_execute_document(document_payload: dict[str, Any], *, output_root: Path) -> list[dict[str, Any]]:
+    executions: list[dict[str, Any]] = []
+    for role, document in film_room_role_documents(document_payload).items():
+        plan_document = TacticalQueryDocument.model_validate(deepcopy(document))
+        source_label = f"film_room_{role}"
+        submitted = submit_query_plan(
+            SubmitQueryPlanRequest(plan_document=plan_document, source_label=source_label),
+            output_root=output_root,
+            caller_profile=CallerProfile.HOST_MANUAL,
+        )
+        validation = validate_query_plan(
+            ValidateQueryPlanRequest(draft_plan_id=submitted.draft_plan_id),
+            output_root=output_root,
+            caller_profile=CallerProfile.HOST_MANUAL,
+        )
+        if not validation.ok or not validation.bound_plan_id:
+            raise CapabilityGap(f"Film Room plan failed validation for {role}: {validation.issues}")
+        confirmation = host_confirm_bound_plan(
+            validation.bound_plan_id,
+            reviewer="film_room",
+            output_root=output_root,
+        )
+        execute_request = ExecuteQueryPlanRequest(
+            bound_plan_id=validation.bound_plan_id,
+            execution_authorization_id=confirmation.execution_authorization_id,
+            result_limit=WORKBENCH_FILM_ROOM_RESULT_LIMIT,
+        )
+        cache_before = execution_cache_status(execute_request.model_dump(mode="json"), output_root=output_root)
+        executed = cached_execute_query_plan(execute_request, output_root=output_root)
+        executions.append(
+            {
+                "role": role,
+                "submit": submitted.model_dump(mode="json"),
+                "validation": validation.model_dump(mode="json"),
+                "confirmation": confirmation.model_dump(mode="json"),
+                "cache_before": cache_before,
+                "execution": executed["execution"],
+                "cache_after_execute": executed["cache"],
+                "draft_record": read_handle("draft-plans", submitted.draft_plan_id, output_root=output_root),
+                "bound_record": read_handle("bound-plans", validation.bound_plan_id, output_root=output_root),
+            }
+        )
+    return [FilmRoomExecutionRecordResponse.model_validate(item).model_dump(mode="json") for item in executions]
+
+
+def film_room_role_documents(document_payload: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    if document_payload.get("schema_version") == "compiler_search_perspective_bundle.v1":
+        documents = document_payload.get("documents")
+        if not isinstance(documents, dict):
+            raise CapabilityGap("Film Room perspective bundle is missing role documents.")
+        return {str(role): deepcopy(document) for role, document in sorted(documents.items()) if isinstance(document, dict)}
+    role = str(document_payload.get("default_invocation", {}).get("perspective_team_role") or "single")
+    return {role: deepcopy(document_payload)}
+
+
+def film_room_replay_for_result(*, execution_id: str, result_id: str, output_root: Path) -> dict[str, Any]:
+    inspection = inspect_result(InspectResultRequest(execution_id=execution_id, result_id=result_id), output_root=output_root)
+    replay_window = retrieve_replay_window(
+        ReplayWindowRequest(execution_id=execution_id, result_id=result_id),
+        output_root=output_root,
+    )
+    replay = replay_payload(replay_window.replay_window_id, output_root=output_root)
+    return {
+        "inspection": inspection.model_dump(mode="json"),
+        "replay_window": replay_window.model_dump(mode="json"),
+        "replay": replay,
+    }
+
+
+def film_room_chain_population_records(requested_evidence: dict[str, Any], *, fallback: dict[str, Any]) -> list[dict[str, Any]]:
+    source_records = requested_evidence.get("source_records")
+    if isinstance(source_records, list):
+        records = [deepcopy(item) for item in source_records if isinstance(item, dict)]
+        if records:
+            return records
+    return [deepcopy(fallback)]
+
+
+def film_room_source_kind(record: dict[str, Any], *, fallback: dict[str, Any] | None = None) -> Literal["result", "target", "chain_record"]:
+    del fallback
+    if record.get("chain_id") or record.get("chain_status") is not None:
+        return "chain_record"
+    if any(key.startswith("stage_") for key in record):
+        return "chain_record"
+    if record.get("target_id"):
+        return "target"
+    return "result"
+
+
+def film_room_witness_frame_ids(record: dict[str, Any]) -> list[int]:
+    frame_ids: list[int] = []
+    for key, value in record.items():
+        if not isinstance(value, int):
+            continue
+        if key == "anchor_frame_id" or key.endswith("_frame_id") or key.endswith("_start_frame_id") or key.endswith("_end_frame_id"):
+            frame_ids.append(value)
+    return sorted(set(frame_ids))
+
+
+def film_room_register_replay_window(
+    record: dict[str, Any],
+    *,
+    plan_hash: str,
+    fallback_result_id: str,
+    source_kind: Literal["result", "target", "chain_record"],
+) -> dict[str, Any]:
+    match_id = str(record.get("match_id") or "")
+    period = str(record.get("period") or "")
+    anchor_frame_id = int(record.get("anchor_frame_id") or 0)
+    source_id = str(record.get("chain_id") or record.get("anchor_id") or fallback_result_id or stable_hash(record)[:16])
+    witness_frames = film_room_witness_frame_ids(record)
+    padding_frames = max(
+        50,
+        *[abs(frame_id - anchor_frame_id) + 25 for frame_id in witness_frames],
+    )
+    padding_seconds = padding_frames / 25.0
+    replay_window_id = "replay_" + stable_hash(
+        {
+            "plan_hash": plan_hash,
+            "source_id": source_id,
+            "source_kind": source_kind,
+            "match_id": match_id,
+            "period": period,
+            "anchor_frame_id": anchor_frame_id,
+            "padding_seconds": padding_seconds,
+        }
+    )[:16]
+    replay_start_frame_id = max(0, anchor_frame_id - padding_frames)
+    replay_end_frame_id = anchor_frame_id + padding_frames
+    FILM_ROOM_REPLAY_INDEX[replay_window_id] = {
+        "replay_window_id": replay_window_id,
+        "plan_hash": plan_hash,
+        "source_id": source_id,
+        "source_kind": source_kind,
+        "match_id": match_id,
+        "period": period,
+        "anchor_frame_id": anchor_frame_id,
+        "padding_seconds": padding_seconds,
+    }
+    return {
+        "replay_window_id": replay_window_id,
+        "replay_start_frame_id": replay_start_frame_id,
+        "replay_end_frame_id": replay_end_frame_id,
+    }
+
+
+def ensure_film_room_replay_payload(replay_window_id: str, *, output_root: Path) -> dict[str, Any]:
+    artifact = replay_artifact_path(replay_window_id, output_root=output_root)
+    if artifact.exists():
+        return replay_payload(replay_window_id, output_root=output_root)
+    meta = FILM_ROOM_REPLAY_INDEX.get(replay_window_id)
+    if not meta:
+        raise CapabilityGap(f"Unknown Film Room replay window: {replay_window_id}")
+    payload = replay_window_from_canonical(
+        replay_window_id=replay_window_id,
+        plan_path=Path(f"film_room_plan_{meta['plan_hash']}"),
+        source_id=str(meta["source_id"]),
+        source_kind=str(meta["source_kind"]),
+        match_id=str(meta["match_id"]),
+        period=str(meta["period"]),
+        anchor_frame_id=int(meta["anchor_frame_id"]),
+        padding_seconds=float(meta["padding_seconds"]),
+    )
+    artifact.parent.mkdir(parents=True, exist_ok=True)
+    write_json(artifact, payload)
+    return sanitize_replay_payload(payload)
+
+
+def film_room_replay_window_response(payload: dict[str, Any], *, output_root: Path) -> dict[str, Any]:
+    replay_window_id = str(payload.get("replay_window_id") or "").strip()
+    replay = ensure_film_room_replay_payload(replay_window_id, output_root=output_root)
+    response = {
+        "ok": True,
+        "replay_window_id": replay_window_id,
+        "replay": replay,
+    }
+    return validate_public_response("FilmRoomReplayWindowResponse", response)
+
+
+def film_room_evidence_overlay(record: dict[str, Any]) -> dict[str, Any]:
+    stage_labels: list[dict[str, Any]] = []
+    anchor_markers: list[dict[str, Any]] = []
+    for index in (1, 2, 3):
+        frame_id = int_or_none(record.get(f"stage_{index}_frame_id"))
+        if frame_id is None:
+            continue
+        status = str(record.get(f"stage_{index}_status") or "UNKNOWN")
+        player_id = record.get(f"stage_{index}_player_id")
+        if index == 1:
+            label = "regain"
+        elif index == 2:
+            distance = record.get("stage_2_minimum_numeric_value")
+            label = f"carry >= {distance:g}m" if isinstance(distance, (int, float)) else "carry"
+        else:
+            label = "pass"
+        stage_labels.append(
+            {
+                "stage": index,
+                "label": label,
+                "frame_id": frame_id,
+                "status": status,
+                "player_id": str(player_id) if player_id else None,
+            }
+        )
+        anchor_markers.append(
+            {
+                "stage": index,
+                "frame_id": frame_id,
+                "status": status,
+                "player_id": str(player_id) if player_id else None,
+            }
+        )
+    if not stage_labels:
+        anchor_frame_id = int_or_none(record.get("anchor_frame_id"))
+        if anchor_frame_id is not None:
+            status = str(
+                record.get("chain_status")
+                or record.get("rate_status")
+                or record.get("classification")
+                or "OBSERVED"
+            )
+            stage_labels.append(
+                {
+                    "stage": 0,
+                    "label": "observed anchor",
+                    "frame_id": anchor_frame_id,
+                    "status": status,
+                    "player_id": None,
+                }
+            )
+            anchor_markers.append(
+                {
+                    "stage": 0,
+                    "frame_id": anchor_frame_id,
+                    "status": status,
+                    "player_id": None,
+                }
+            )
+    carry_trails = []
+    stage_2_start = int_or_none(record.get("stage_2_start_frame_id") or record.get("stage_2_frame_id"))
+    stage_2_end = int_or_none(record.get("stage_2_end_frame_id"))
+    stage_2_player = record.get("stage_2_player_id")
+    if stage_2_start is not None and stage_2_end is not None:
+        carry_trails.append(
+            {
+                "start_frame_id": stage_2_start,
+                "end_frame_id": stage_2_end,
+                "player_id": str(stage_2_player) if stage_2_player else None,
+                "status": str(record.get("stage_2_status") or "UNKNOWN"),
+            }
+        )
+    unknown_reason = film_room_unknown_reason(record, record)
+    return {
+        "anchor_markers": anchor_markers,
+        "carry_trails": carry_trails,
+        "stage_labels": stage_labels,
+        "unknown": {
+            "is_unknown": str(record.get("chain_status") or "") == "UNKNOWN",
+            "reason": unknown_reason,
+        },
+    }
+
+
+def film_room_certified_table_for_plan_hash(plan_hash: str) -> dict[str, Any] | None:
+    for table_path, plan_path in (
+        (FILM_ROOM_R2_4_TABLE_PATH, FILM_ROOM_R2_4_PLAN_PATH),
+        (FILM_ROOM_R2_2_TABLE_PATH, FILM_ROOM_R2_2_PLAN_PATH),
+    ):
+        if not table_path.exists() or not plan_path.exists():
+            continue
+        table = read_json(table_path)
+        if str(table.get("plan_hash")) == plan_hash:
+            return {
+                "table": table,
+                "table_path": table_path,
+                "table_hash": file_sha256(table_path),
+                "plan_path": plan_path,
+            }
+    return None
+
+
+def film_room_certified_evidence_row(
+    table: dict[str, Any] | None,
+    *,
+    role: str,
+    match_id: str,
+    period: str,
+) -> dict[str, Any] | None:
+    if not table:
+        return None
+    for row in table.get("rows", []):
+        if not isinstance(row, dict):
+            continue
+        if str(row.get("audit_role")) != role or str(row.get("match_id")) != match_id:
+            continue
+        for period_record in row.get("periods", []):
+            if isinstance(period_record, dict) and str(period_record.get("period")) == period:
+                rate = period_record.get("rate")
+                if isinstance(rate, dict):
+                    return deepcopy(rate)
+                aggregate = period_record.get("aggregate")
+                if isinstance(aggregate, dict):
+                    return deepcopy(aggregate)
+        return deepcopy(row)
+    return None
+
+
+def film_room_unknown_reason(evidence_row: dict[str, Any] | None, row: dict[str, Any]) -> str | None:
+    if evidence_row:
+        chain_status = str(evidence_row.get("chain_status") or row.get("chain_status") or "")
+        chain_reason = evidence_row.get("chain_reason") or row.get("chain_reason")
+        if chain_status == "UNKNOWN" and chain_reason:
+            return str(chain_reason)
+        reason = evidence_row.get("constraint_opt_out_reason") or chain_reason
+        if reason:
+            return str(reason)
+        unknown = evidence_row.get("unknown_count")
+        if isinstance(unknown, int) and unknown > 0:
+            return f"{unknown} UNKNOWN records remain in the certified evidence row."
+    unknown_predicates = row.get("unknown_required_predicates")
+    if isinstance(unknown_predicates, list) and unknown_predicates:
+        return ", ".join(str(item) for item in unknown_predicates)
+    return None
+
+
+def film_room_interval_metric(table: dict[str, Any] | None) -> dict[str, Any] | None:
+    if not table:
+        return None
+    totals = table.get("totals") if isinstance(table.get("totals"), dict) else {}
+    if all(key in totals for key in ("rate_observed", "rate_lower_bound", "rate_upper_bound", "unknown_count")):
+        observed = totals["rate_observed"]
+        lower = totals["rate_lower_bound"]
+        upper = totals["rate_upper_bound"]
+        unknown_count = totals["unknown_count"]
+    elif all(key in totals for key in ("a_count", "b_count", "c_count", "d1_count", "d2_count")):
+        a = int(totals["a_count"])
+        b = int(totals["b_count"])
+        c = int(totals["c_count"])
+        d1 = int(totals["d1_count"])
+        d2 = int(totals["d2_count"])
+        observed_denominator = a + b
+        bound_denominator = a + b + c + d1 + d2
+        upper_denominator = a + b + c + d2
+        observed = a / observed_denominator if observed_denominator > 0 else None
+        lower = a / bound_denominator if bound_denominator > 0 else None
+        upper = (a + c + d2) / upper_denominator if upper_denominator > 0 else None
+        unknown_count = c + d1 + d2
+    else:
+        return None
+    if not all(isinstance(value, (int, float)) for value in (observed, lower, upper)):
+        return None
+    return FilmRoomIntervalMetricResponse.model_validate(
+        {
+            "label": str(table.get("question") or "Certified interval"),
+            "observed": float(observed),
+            "lower": float(lower),
+            "upper": float(upper),
+            "unknown_count": int(unknown_count),
+            "source": {
+                "evidence_kind": "certified",
+                "plan_hash": str(table.get("plan_hash")),
+                "period_records_hash": str(table.get("period_records_hash")),
+                "a_count": int(totals.get("a_count") or 0),
+                "b_count": int(totals.get("b_count") or 0),
+                "c_count": int(totals.get("c_count") or 0),
+                "d1_count": int(totals.get("d1_count") or 0),
+                "d2_count": int(totals.get("d2_count") or 0),
+                "e_count": int(totals.get("e_count") or 0),
+            },
+        }
+    ).model_dump(mode="json")
+
+
+def film_room_interval_metric_from_evidence(rows: list[dict[str, Any]]) -> dict[str, Any] | None:
+    for row in rows:
+        observed = row.get("observed")
+        lower = row.get("lower_bound")
+        upper = row.get("upper_bound")
+        unknown = row.get("unknown_count")
+        if not all(isinstance(value, (int, float)) for value in (observed, lower, upper, unknown)):
+            counted = film_room_rate_interval_from_counts(row)
+            if counted is None:
+                continue
+            observed = counted["observed"]
+            lower = counted["lower"]
+            upper = counted["upper"]
+            unknown = counted["unknown_count"]
+        if not all(isinstance(value, (int, float)) for value in (observed, lower, upper, unknown)):
+            continue
+        return FilmRoomIntervalMetricResponse.model_validate(
+            {
+                "label": str(row.get("population_expression") or "Runtime evidence interval"),
+                "observed": float(observed),
+                "lower": float(lower),
+                "upper": float(upper),
+                "unknown_count": int(unknown),
+                "source": {
+                    "evidence_kind": "runtime",
+                    "source": "execution_requested_evidence",
+                    "match_id": str(row.get("match_id") or ""),
+                    "period": str(row.get("period") or ""),
+                    "rate_status": str(row.get("rate_status") or ""),
+                    "a_count": int(row.get("a_count") or 0),
+                    "b_count": int(row.get("b_count") or 0),
+                    "c_count": int(row.get("c_count") or 0),
+                    "d1_count": int(row.get("d1_count") or 0),
+                    "d2_count": int(row.get("d2_count") or 0),
+                    "e_count": int(row.get("e_count") or 0),
+                },
+            }
+        ).model_dump(mode="json")
+    return None
+
+
+def film_room_rate_interval_from_counts(row: dict[str, Any]) -> dict[str, float | int] | None:
+    count_names = ("a_count", "b_count", "c_count", "d1_count", "d2_count")
+    if not all(isinstance(row.get(name), int) for name in count_names):
+        return None
+    a = int(row["a_count"])
+    b = int(row["b_count"])
+    c = int(row["c_count"])
+    d1 = int(row["d1_count"])
+    d2 = int(row["d2_count"])
+    observed_denominator = a + b
+    bound_denominator = a + b + c + d1 + d2
+    upper_denominator = a + b + c + d2
+    if observed_denominator <= 0 or bound_denominator <= 0:
+        return None
+    return {
+        "observed": a / observed_denominator,
+        "lower": a / bound_denominator,
+        "upper": (a + c + d2) / upper_denominator if upper_denominator > 0 else 0.0,
+        "unknown_count": c + d1 + d2,
+    }
+
+
+def film_room_compiled_chips(expression_payload: Any, document_payload: dict[str, Any]) -> list[str]:
+    chips: list[str] = []
+    if isinstance(expression_payload, dict):
+        for item in expression_payload.get("operator_applications", []) or []:
+            if isinstance(item, dict) and item.get("name"):
+                chips.append(str(item["name"]))
+    for document in film_room_role_documents(document_payload).values():
+        for node in document.get("draft_plan", {}).get("nodes", []):
+            if not isinstance(node, dict):
+                continue
+            if node.get("operator") and isinstance(node["operator"], dict):
+                name = str(node["operator"].get("name") or node.get("node_id"))
+            else:
+                name = str(node.get("catalog_ref") or node.get("node_id") or "")
+            if name and name not in chips:
+                chips.append(name)
+    return chips[:12]
+
+
+def film_room_replay_frame_response(payload: dict[str, Any], *, output_root: Path) -> dict[str, Any]:
+    replay_window_id = str(payload.get("replay_window_id") or "").strip()
+    frame_id = int(payload.get("frame_id"))
+    replay = ensure_film_room_replay_payload(replay_window_id, output_root=output_root)
+    frame = next((item for item in replay.get("frames", []) if int(item.get("frame_id")) == frame_id), None)
+    if not isinstance(frame, dict):
+        raise CapabilityGap(f"frame {frame_id} is not available in {replay_window_id}")
+    response = {
+        "ok": True,
+        "replay_window_id": replay_window_id,
+        "frame_id": frame_id,
+        "frame_sha256": stable_json_sha256(frame),
+        "canonical_sources": public_canonical_sources(replay.get("canonical_sources")),
+        "frame": frame,
+    }
+    return validate_public_response("FilmRoomReplayFrameResponse", response)
+
+
+def film_room_flagship_specs() -> list[dict[str, Any]]:
+    return [
+        {
+            "key": "fragile_retention",
+            "question": FILM_ROOM_FRAGILE_RETENTION_QUESTION,
+            "plan_path": FILM_ROOM_R2_2_PLAN_PATH,
+            "table_path": FILM_ROOM_R2_2_TABLE_PATH,
+        },
+        {
+            "key": "counterattack_sequence_rate",
+            "question": FILM_ROOM_COUNTERATTACK_QUESTION,
+            "plan_path": FILM_ROOM_R2_4_PLAN_PATH,
+            "table_path": FILM_ROOM_R2_4_TABLE_PATH,
+        },
+    ]
+
+
+def film_room_prewarmed_response(
+    *,
+    key: str,
+    question: str,
+    plan_path: Path,
+    output_root: Path,
+) -> dict[str, Any]:
+    started_at = time.monotonic()
+    document_payload = read_json(plan_path)
+    execution_started_at = time.monotonic()
+    answer = film_room_answer_from_document(
+        document_payload,
+        expression_payload=None,
+        expression_hash=None,
+        synthesized_document_hash=stable_hash(document_payload),
+        output_root=output_root,
+    )
+    execution_latency_ms = int((time.monotonic() - execution_started_at) * 1000)
+    response = {
+        "ok": True,
+        "outcome": "expression",
+        "request_text": question,
+        "provider": "prewarmed_committed_plan",
+        "model": "not_invoked",
+        "latency_ms": int((time.monotonic() - started_at) * 1000),
+        "latency_breakdown_ms": {
+            "hermes": 0,
+            "synthesis": 0,
+            "execution": execution_latency_ms,
+            "total": int((time.monotonic() - started_at) * 1000),
+        },
+        "hermes": {
+            "outcome": "expression",
+            "source": "prewarmed_committed_plan",
+            "flagship_key": key,
+            "billing_surface": "none for bootstrap render; live asks use ChatGPT subscription via openai-codex Hermes CLI",
+        },
+        "answer": answer,
+        "clarification": None,
+        "refusal": None,
+    }
+    return validate_public_response("FilmRoomAskResponse", response)
+
+
+def film_room_bootstrap_response(*, output_root: Path) -> dict[str, Any]:
+    if "counterattack_sequence_rate" not in FILM_ROOM_PREWARMED_RESPONSES and FILM_ROOM_R2_4_PLAN_PATH.exists():
+        FILM_ROOM_PREWARMED_RESPONSES["counterattack_sequence_rate"] = film_room_prewarmed_response(
+            key="counterattack_sequence_rate",
+            question=FILM_ROOM_COUNTERATTACK_QUESTION,
+            plan_path=FILM_ROOM_R2_4_PLAN_PATH,
+            output_root=output_root,
+        )
+    response = {
+        "ok": True,
+        "provider": HERMES_PROVIDER,
+        "model": HERMES_MODEL,
+        "billing_surface": "ChatGPT subscription via openai-codex Hermes CLI",
+        "flagship_plan_hashes": {
+            "fragile_retention": read_json(FILM_ROOM_R2_2_TABLE_PATH).get("plan_hash")
+            if FILM_ROOM_R2_2_TABLE_PATH.exists()
+            else None,
+            "counterattack_sequence_rate": read_json(FILM_ROOM_R2_4_TABLE_PATH).get("plan_hash")
+            if FILM_ROOM_R2_4_TABLE_PATH.exists()
+            else None,
+        },
+        "prewarm_records": FILM_ROOM_PREWARM_RECORDS,
+        "prewarmed_response": FILM_ROOM_PREWARMED_RESPONSES.get("counterattack_sequence_rate"),
+    }
+    return validate_public_response("FilmRoomBootstrapResponse", response)
+
+
+def prewarm_film_room_flagships(*, output_root: Path) -> None:
+    FILM_ROOM_PREWARM_RECORDS.clear()
+    for spec in film_room_flagship_specs():
+        plan_path = Path(spec["plan_path"])
+        if not plan_path.exists():
+            print(f"Film Room prewarm skipped missing plan: {plan_path}", flush=True)
+            continue
+        started_at = time.monotonic()
+        print(f"Prewarming Film Room flagship {plan_path}...", flush=True)
+        response = film_room_prewarmed_response(
+            key=str(spec["key"]),
+            question=str(spec["question"]),
+            plan_path=plan_path,
+            output_root=output_root,
+        )
+        FILM_ROOM_PREWARMED_RESPONSES[str(spec["key"])] = response
+        elapsed_ms = int((time.monotonic() - started_at) * 1000)
+        executions = response["answer"]["executions"] if isinstance(response.get("answer"), dict) else []
+        cache_states = ",".join(str(item["cache_after_execute"]["cache_status"]) for item in executions)
+        result_count = sum(int(item["execution"].get("returned_result_count") or 0) for item in executions)
+        FILM_ROOM_PREWARM_RECORDS.append(
+            {
+                "key": str(spec["key"]),
+                "plan": str(plan_path),
+                "elapsed_ms": elapsed_ms,
+                "cache_after_execute": [str(item["cache_after_execute"]["cache_status"]) for item in executions],
+                "returned_result_count": result_count,
+            }
+        )
+        print(
+            f"Prewarmed Film Room flagship {plan_path}: cache_statuses={cache_states} "
+            f"returned_results={result_count} elapsed_ms={elapsed_ms}",
+            flush=True,
+        )
 
 
 def n1e_job_root(output_root: Path) -> Path:
@@ -3224,7 +4196,12 @@ def public_canonical_sources(raw: Any) -> dict[str, str]:
     sources = raw if isinstance(raw, dict) else {}
     public: dict[str, str] = {}
     for key, value in sources.items():
-        public[str(key)] = f"canonical_source:{sha256(str(value).encode('utf-8')).hexdigest()[:16]}"
+        source_id = str(value)
+        public[str(key)] = (
+            source_id
+            if source_id.startswith("canonical_source:")
+            else f"canonical_source:{sha256(source_id.encode('utf-8')).hexdigest()[:16]}"
+        )
     return public
 
 
@@ -3862,6 +4839,30 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
         if parsed.path == "/api/bootstrap":
             self.send_json(self.bootstrap())
             return
+        if parsed.path == "/api/film-room/bootstrap":
+            self.send_json(film_room_bootstrap_response(output_root=self.server.output_root))
+            return
+        if parsed.path == "/api/film-room/replay-window":
+            query = parse_qs(parsed.query)
+            self.send_json(
+                film_room_replay_window_response(
+                    {"replay_window_id": (query.get("replay_window_id") or [""])[0]},
+                    output_root=self.server.output_root,
+                )
+            )
+            return
+        if parsed.path == "/api/film-room/replay-frame":
+            query = parse_qs(parsed.query)
+            self.send_json(
+                film_room_replay_frame_response(
+                    {
+                        "replay_window_id": (query.get("replay_window_id") or [""])[0],
+                        "frame_id": (query.get("frame_id") or ["0"])[0],
+                    },
+                    output_root=self.server.output_root,
+                )
+            )
+            return
         if parsed.path == "/api/matches":
             self.send_json(validate_public_response("MatchLibraryResponse", match_library()))
             return
@@ -3916,6 +4917,12 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
                         interpret_request(payload, output_root=self.server.output_root),
                     )
                 )
+            elif parsed.path == "/api/film-room/ask":
+                self.send_json(film_room_ask_request(payload, output_root=self.server.output_root))
+            elif parsed.path == "/api/film-room/replay-window":
+                self.send_json(film_room_replay_window_response(payload, output_root=self.server.output_root))
+            elif parsed.path == "/api/film-room/replay-frame":
+                self.send_json(film_room_replay_frame_response(payload, output_root=self.server.output_root))
             elif parsed.path == "/api/execution-cache-status":
                 self.send_json(execution_cache_status(payload, output_root=self.server.output_root))
             elif parsed.path == "/api/submit-validate":
@@ -4051,6 +5058,8 @@ def main() -> None:
             recipe_ids=WORKBENCH_PREWARM_RECIPE_IDS,
             result_limit=WORKBENCH_PREWARM_RESULT_LIMIT,
         )
+    if WORKBENCH_PREWARM_FILM_ROOM:
+        prewarm_film_room_flagships(output_root=args.output_root)
     server = WorkbenchServer(
         (args.host, args.port),
         WorkbenchHandler,

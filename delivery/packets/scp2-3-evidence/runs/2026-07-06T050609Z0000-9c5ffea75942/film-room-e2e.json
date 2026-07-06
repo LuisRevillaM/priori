@@ -1,0 +1,105 @@
+{
+  "answer_document_hash": "7c7ca1e114a6e605219c588dbf76e476a2401cc974c2414624561b5ac453a75f",
+  "answer_plan_hash": "7c7ca1e114a6e605219c588dbf76e476a2401cc974c2414624561b5ac453a75f",
+  "artifacts": {
+    "bootstrap": "delivery/packets/scp2-3-evidence/runs/2026-07-06T050609Z0000-9c5ffea75942/film-room-bootstrap.json",
+    "cold_response": "delivery/packets/scp2-3-evidence/runs/2026-07-06T050609Z0000-9c5ffea75942/film-room-cold-response.json",
+    "replay_window": "delivery/packets/scp2-3-evidence/runs/2026-07-06T050609Z0000-9c5ffea75942/film-room-replay-window.json",
+    "screenshot": "delivery/packets/scp2-3-evidence/runs/2026-07-06T050609Z0000-9c5ffea75942/film-room.png",
+    "service_log": "delivery/packets/scp2-3-evidence/runs/2026-07-06T050609Z0000-9c5ffea75942/film-room-service.log"
+  },
+  "ask": "After a regain, how often does the team progress the ball by carry and keep it with a controlled pass?",
+  "billing_surface": "ChatGPT subscription via openai-codex Hermes CLI",
+  "certified_table_path": null,
+  "evidence_metadata": {
+    "git_commit": "55a7a506a43d746b089dbc35a24f67ce27aca17a",
+    "git_tree": "2e420927c756f0c27ede9e06e9080ebde0b27422",
+    "produced_by": "scripts/packets/scp2_3_film_room_e2e.py",
+    "producing_script_sha256": "9c5ffea75942811f0594571047ff11aab6ec8da1b34dbdd1a796f78685db90ae",
+    "run_started_at": "2026-07-06T05:06:09+00:00",
+    "schema_version": "scp2_3.evidence_metadata.v1"
+  },
+  "expected_r2_4_plan_hash": "bf12768919f517f7b9412bd42622d2e4f262a6ceba6667319a597fae06921749",
+  "frame_checks": [
+    {
+      "entity_count": 23,
+      "frame_id": 121865,
+      "frame_sha256": "ab077c33b1c16c26fd1a4199c1e5c2adbc7c173ac739cf037609df1980a87f28"
+    },
+    {
+      "entity_count": 23,
+      "frame_id": 121915,
+      "frame_sha256": "6dbe759cf39fddc788c91064aa239b73f8c4fc3d98b42f1c92fdf2c4107c057a"
+    },
+    {
+      "entity_count": 23,
+      "frame_id": 121965,
+      "frame_sha256": "8b31ed86084cdc5aca2bafe161145f0924e89960d34f2f16dd79ce0570be0c15"
+    }
+  ],
+  "interval_metric": {
+    "label": "counterattack initiation completed chains over regain starts",
+    "lower": 0.008695652173913044,
+    "observed": 1.0,
+    "source": {
+      "a_count": 1,
+      "b_count": 0,
+      "c_count": 90,
+      "d1_count": 0,
+      "d2_count": 24,
+      "e_count": 0,
+      "match_id": "",
+      "period": "",
+      "rate_status": "PASS",
+      "source": "execution_requested_evidence"
+    },
+    "unknown_count": 114,
+    "upper": 1.0
+  },
+  "latency_ms": {
+    "bootstrap_prewarmed_fetch": 46,
+    "cold_ask_attribution": {
+      "execution": 359131,
+      "hermes": 72178,
+      "synthesis": 14,
+      "total": 431327
+    },
+    "cold_ask_total_observed": 431376,
+    "replay_window_fetch": 17,
+    "service_ready_including_startup_prewarm": 1034
+  },
+  "matches_r2_4_certified_table": false,
+  "model": "gpt-5.5",
+  "moment_total_count": 1,
+  "output_root": "/private/tmp/scp2-3-film-room-workshop-runs/2026-07-06T042038Z0000-a91271e75c6d",
+  "prewarm_records": [
+    {
+      "cache_after_execute": [
+        "HIT",
+        "HIT"
+      ],
+      "elapsed_ms": 81,
+      "key": "fragile_retention",
+      "plan": "delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json",
+      "returned_result_count": 40
+    },
+    {
+      "cache_after_execute": [
+        "HIT",
+        "HIT"
+      ],
+      "elapsed_ms": 125,
+      "key": "counterattack_sequence_rate",
+      "plan": "delivery/packets/r2-4-flagship/counterattack_initiation_v0.json",
+      "returned_result_count": 1
+    }
+  ],
+  "provider": "openai-codex",
+  "replay_window_id": "replay_81c406e111a32e9b",
+  "schema_version": "scp2_3.film_room_e2e.v2",
+  "skip_service_prewarm": false,
+  "synthesized_document_hash": "7c7ca1e114a6e605219c588dbf76e476a2401cc974c2414624561b5ac453a75f",
+  "timeout_seconds": 900,
+  "tree": "2e420927c756f0c27ede9e06e9080ebde0b27422",
+  "visible_moment_count": 1
+}

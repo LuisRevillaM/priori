@@ -4427,6 +4427,9 @@ def assemble_document(
     contract = target["target_contract"]
     predicates = predicates_for_contract(contract, build.field_sources)
     terminal_evidence_fields = terminal_output_fields(build)
+    requested_fields = [str(field) for field in contract.get("required_evidence", [])]
+    if build.terminal_entry == "operator:rate" and "source_records" in terminal_evidence_fields:
+        requested_fields.append("source_records")
     requested_evidence = [
         {
             "source": {
@@ -4437,8 +4440,8 @@ def assemble_document(
             "alias": field,
             "required": True,
         }
-        for field in contract.get("required_evidence", [])
-        if field in build.field_sources
+        for field in dict.fromkeys(requested_fields)
+        if field in terminal_evidence_fields or field in build.field_sources
     ]
     return document(
         target_id=target["target_id"],

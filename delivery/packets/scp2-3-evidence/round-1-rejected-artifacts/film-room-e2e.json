@@ -1,0 +1,41 @@
+{
+  "answer_document_hash": "2774bac2c47b22a5bf01225e9d22ca3e093615fe96e38a3b4fa84c937a8d4950",
+  "answer_plan_hash": "2774bac2c47b22a5bf01225e9d22ca3e093615fe96e38a3b4fa84c937a8d4950",
+  "ask": "After a regain, how often does the team progress the ball by carry and keep it with a controlled pass?",
+  "billing_surface": "ChatGPT subscription via openai-codex Hermes CLI",
+  "certified_table_path": null,
+  "expected_plan_hash": "bf12768919f517f7b9412bd42622d2e4f262a6ceba6667319a597fae06921749",
+  "frame_checks": [
+    {
+      "entity_count": 23,
+      "frame_id": 121865,
+      "frame_sha256": "ab077c33b1c16c26fd1a4199c1e5c2adbc7c173ac739cf037609df1980a87f28"
+    },
+    {
+      "entity_count": 23,
+      "frame_id": 121915,
+      "frame_sha256": "6dbe759cf39fddc788c91064aa239b73f8c4fc3d98b42f1c92fdf2c4107c057a"
+    },
+    {
+      "entity_count": 23,
+      "frame_id": 121965,
+      "frame_sha256": "8b31ed86084cdc5aca2bafe161145f0924e89960d34f2f16dd79ce0570be0c15"
+    }
+  ],
+  "latency_ms": {
+    "ask": 476640,
+    "prewarm": [],
+    "replay_sample_fetch": 321,
+    "service_ready_including_prewarm": 1036
+  },
+  "matches_r2_4_certified_table": false,
+  "model": "gpt-5.5",
+  "moment_count": 1,
+  "provider": "openai-codex",
+  "replay_window_id": "replay_3fb28073bcf5062b",
+  "schema_version": "scp2_3.film_room_e2e.v1",
+  "response_artifact": "delivery/packets/scp2-3-evidence/film-room-response.json",
+  "screenshot": "delivery/packets/scp2-3-evidence/film-room.png",
+  "screenshot_response_plan_hash": "3e231559c4ec2311a5a89738648f0640ffe8563d27eacea70f87bbd1928e7175",
+  "synthesized_document_hash": "2774bac2c47b22a5bf01225e9d22ca3e093615fe96e38a3b4fa84c937a8d4950"
+}

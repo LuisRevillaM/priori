@@ -7,6 +7,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest import mock
 
+from tqe.runtime.executor import RuntimeAnchor, evidence_value_for_anchor
 from tqe.runtime.binder import BindError, bind_document, bind_error_codes
 from tqe.runtime.ir import CatalogOutput, MissingDataSemantics, TacticalQueryDocument, TypedValue
 from tqe.runtime.operators.rate import (
@@ -86,8 +87,41 @@ def population_value(records: list[dict[str, object]]) -> RuntimeValue:
             ],
         ),
         raw_value=records,
-        frame_ids=[int(record["anchor_frame_id"]) for record in records],
         records=records,
+    )
+
+
+def rate_output_value(records: list[dict[str, object]]) -> RuntimeValue:
+    output = RATE_SIGNATURE.outputs[0]
+    return runtime_value_from_raw(
+        node_id="rate",
+        output=CatalogOutput(
+            name=output.name,
+            temporal_type=output.temporal_type,
+            payload_type=output.payload_type,
+            cardinality=output.cardinality,
+            unit=output.unit,
+            entity_scope=output.entity_scope,
+            missing_data_semantics=output.missing_data_semantics,
+            evidence_fields=list(output.evidence_fields),
+        ),
+        raw_value=records,
+        records=records,
+    )
+
+
+def runtime_anchor_for_record(record: dict[str, object]) -> RuntimeAnchor:
+    return RuntimeAnchor(
+        anchor_id=str(record["anchor_id"]),
+        semantic_key=str(record["anchor_id"]),
+        match_id=str(record["match_id"]),
+        period=str(record["period"]),
+        anchor_frame_id=int(record["anchor_frame_id"]),
+        source_node_id="sequence_pattern",
+        output_name="chain_records",
+        start_frame_id=int(record["start_frame_id"]),
+        end_frame_id=int(record["end_frame_id"]),
+        attributes=dict(record),
     )
 
 
@@ -362,6 +396,19 @@ class RateOperatorTests(unittest.TestCase):
         self.assertEqual(2, by_team["home"]["denominator_count_interval"]["population_count"])
         self.assertEqual(2, by_team["away"]["denominator_count_interval"]["population_count"])
         self.assertEqual(1, by_team["away"]["d2_count"])
+
+    def test_rate_record_projects_interval_to_source_chain_anchor(self) -> None:
+        records = [
+            rate_record(100, team_role="home", numerator_status="PASS", denominator_status="PASS"),
+            rate_record(110, team_role="home", numerator_status="FAIL", denominator_status="PASS"),
+        ]
+        [result] = run_rate(records)
+        anchor = runtime_anchor_for_record(records[0])
+
+        self.assertEqual(records, result["source_records"])
+        self.assertEqual(0.5, evidence_value_for_anchor(runtime_value=rate_output_value([result]), anchor=anchor, field="observed"))
+        self.assertEqual(0.5, evidence_value_for_anchor(runtime_value=rate_output_value([result]), anchor=anchor, field="lower_bound"))
+        self.assertEqual(0.5, evidence_value_for_anchor(runtime_value=rate_output_value([result]), anchor=anchor, field="upper_bound"))
 
     def test_bind_accepts_declared_flagship_rate(self) -> None:
         payload = car_payload()

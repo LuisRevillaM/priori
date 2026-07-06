@@ -5,6 +5,10 @@ import type {
   ErrorResponse as GeneratedErrorResponse,
   ExecutionProgressResponse as GeneratedExecutionProgressResponse,
   ExecutionResponse as GeneratedExecutionResponse,
+  FilmRoomAskResponse as GeneratedFilmRoomAskResponse,
+  FilmRoomBootstrapResponse as GeneratedFilmRoomBootstrapResponse,
+  FilmRoomReplayFrameResponse as GeneratedFilmRoomReplayFrameResponse,
+  FilmRoomReplayWindowResponse as GeneratedFilmRoomReplayWindowResponse,
   InspectResultResponse as GeneratedInspectResultResponse,
   InspectTimestampResponse as GeneratedInspectTimestampResponse,
   InterpretResponse as GeneratedInterpretResponse,
@@ -232,7 +236,7 @@ export type ReplayFrame = {
 export type ReplayPayload = {
   schema_version: string;
   replay_window_id: string;
-  source_kind: "result" | "target";
+  source_kind: "result" | "target" | "chain_record";
   source_id: string;
   match_id: string;
   period: string;
@@ -248,6 +252,103 @@ export type ReplayPayload = {
     coordinate_contract: string;
   };
   frames: ReplayFrame[];
+};
+
+export type FilmRoomIntervalMetric = {
+  label: string;
+  observed: number;
+  lower: number;
+  upper: number;
+  unknown_count: number;
+  source: JsonObject;
+};
+
+export type FilmRoomMoment = {
+  result_id: string;
+  source_kind: "result" | "target" | "chain_record";
+  classification: string;
+  match_id: string;
+  period: string;
+  anchor_frame_id: number;
+  start_frame_id?: number | null;
+  end_frame_id?: number | null;
+  match_time_ms?: number | null;
+  requested_evidence: JsonObject;
+  replay_window_id?: string | null;
+  replay_start_frame_id?: number | null;
+  replay_end_frame_id?: number | null;
+  evidence_row?: JsonObject | null;
+  unknown_reason?: string | null;
+  chain_status?: string | null;
+  chain_reason?: string | null;
+  evidence_overlay: JsonObject;
+};
+
+export type FilmRoomAskResponse = Omit<GeneratedFilmRoomAskResponse, "answer" | "hermes" | "clarification" | "refusal"> & {
+  ok: true;
+  outcome: "expression" | "clarification_required" | "understood_but_not_expressible" | "unsupported_modality";
+  request_text: string;
+  provider: string;
+  model: string;
+  latency_ms: number;
+  latency_breakdown_ms: Record<string, number>;
+  hermes: JsonObject;
+  clarification?: JsonObject | null;
+  refusal?: JsonObject | null;
+  answer?: {
+    status: "answer_ready";
+    compiled_chips: string[];
+    document: JsonObject;
+    certified_evidence_rows: JsonObject[];
+    runtime_evidence_rows: JsonObject[];
+    evidence_rows_kind: "certified" | "runtime";
+    interval_metric?: FilmRoomIntervalMetric | null;
+    moments: FilmRoomMoment[];
+    moment_total_count: number;
+    visible_moment_count: number;
+    replay?: ReplayPayload | null;
+    executions: JsonObject[];
+    raw_evidence: JsonObject;
+    provenance: {
+      plan_hash: string;
+      synthesized_document_hash: string;
+      expression_hash?: string | null;
+      certified_table_path?: string | null;
+      certified_table_hash?: string | null;
+      certified_plan_path?: string | null;
+      certified_period_records_hash?: string | null;
+      bound_plan_hashes: Record<string, string>;
+      replay_window_id?: string | null;
+      canonical_sources: Record<string, string>;
+      runtime_commit?: string | null;
+      tree?: string | null;
+    };
+  } | null;
+};
+
+export type FilmRoomBootstrapResponse = Omit<GeneratedFilmRoomBootstrapResponse, "prewarmed_response"> & {
+  ok: true;
+  provider: string;
+  model: string;
+  billing_surface: string;
+  flagship_plan_hashes: Record<string, string | null>;
+  prewarm_records: JsonObject[];
+  prewarmed_response?: FilmRoomAskResponse | null;
+};
+
+export type FilmRoomReplayFrameResponse = Omit<GeneratedFilmRoomReplayFrameResponse, "frame"> & {
+  ok: true;
+  replay_window_id: string;
+  frame_id: number;
+  frame_sha256: string;
+  canonical_sources: Record<string, string>;
+  frame: ReplayFrame;
+};
+
+export type FilmRoomReplayWindowResponse = Omit<GeneratedFilmRoomReplayWindowResponse, "replay"> & {
+  ok: true;
+  replay_window_id: string;
+  replay: ReplayPayload;
 };
 
 export type PredicateTrace = {

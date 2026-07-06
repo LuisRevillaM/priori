@@ -548,6 +548,1209 @@
     "title": "ExecutionResponseEnvelope",
     "type": "object"
   },
+  "FilmRoomAskResponse": {
+    "$defs": {
+      "FilmRoomAnswerResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "certified_evidence_rows": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Certified Evidence Rows",
+            "type": "array"
+          },
+          "compiled_chips": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Compiled Chips",
+            "type": "array"
+          },
+          "document": {
+            "additionalProperties": true,
+            "title": "Document",
+            "type": "object"
+          },
+          "evidence_rows_kind": {
+            "enum": [
+              "certified",
+              "runtime"
+            ],
+            "title": "Evidence Rows Kind",
+            "type": "string"
+          },
+          "executions": {
+            "items": {
+              "$ref": "#/$defs/FilmRoomExecutionRecordResponse"
+            },
+            "title": "Executions",
+            "type": "array"
+          },
+          "interval_metric": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/FilmRoomIntervalMetricResponse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "moment_total_count": {
+            "title": "Moment Total Count",
+            "type": "integer"
+          },
+          "moments": {
+            "items": {
+              "$ref": "#/$defs/FilmRoomMomentResponse"
+            },
+            "title": "Moments",
+            "type": "array"
+          },
+          "provenance": {
+            "$ref": "#/$defs/FilmRoomProvenanceResponse"
+          },
+          "raw_evidence": {
+            "additionalProperties": true,
+            "title": "Raw Evidence",
+            "type": "object"
+          },
+          "replay": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ReplayPayloadResponse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "runtime_evidence_rows": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Runtime Evidence Rows",
+            "type": "array"
+          },
+          "status": {
+            "const": "answer_ready",
+            "title": "Status",
+            "type": "string"
+          },
+          "visible_moment_count": {
+            "title": "Visible Moment Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "status",
+          "compiled_chips",
+          "document",
+          "certified_evidence_rows",
+          "runtime_evidence_rows",
+          "evidence_rows_kind",
+          "moments",
+          "moment_total_count",
+          "visible_moment_count",
+          "executions",
+          "provenance"
+        ],
+        "title": "FilmRoomAnswerResponse",
+        "type": "object"
+      },
+      "FilmRoomExecutionRecordResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "bound_record": {
+            "additionalProperties": true,
+            "title": "Bound Record",
+            "type": "object"
+          },
+          "cache_after_execute": {
+            "additionalProperties": true,
+            "title": "Cache After Execute",
+            "type": "object"
+          },
+          "cache_before": {
+            "additionalProperties": true,
+            "title": "Cache Before",
+            "type": "object"
+          },
+          "confirmation": {
+            "additionalProperties": true,
+            "title": "Confirmation",
+            "type": "object"
+          },
+          "draft_record": {
+            "additionalProperties": true,
+            "title": "Draft Record",
+            "type": "object"
+          },
+          "execution": {
+            "additionalProperties": true,
+            "title": "Execution",
+            "type": "object"
+          },
+          "role": {
+            "title": "Role",
+            "type": "string"
+          },
+          "submit": {
+            "additionalProperties": true,
+            "title": "Submit",
+            "type": "object"
+          },
+          "validation": {
+            "additionalProperties": true,
+            "title": "Validation",
+            "type": "object"
+          }
+        },
+        "required": [
+          "role",
+          "submit",
+          "validation",
+          "confirmation",
+          "cache_before",
+          "execution",
+          "cache_after_execute",
+          "draft_record",
+          "bound_record"
+        ],
+        "title": "FilmRoomExecutionRecordResponse",
+        "type": "object"
+      },
+      "FilmRoomIntervalMetricResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "lower": {
+            "title": "Lower",
+            "type": "number"
+          },
+          "observed": {
+            "title": "Observed",
+            "type": "number"
+          },
+          "source": {
+            "additionalProperties": true,
+            "title": "Source",
+            "type": "object"
+          },
+          "unknown_count": {
+            "title": "Unknown Count",
+            "type": "integer"
+          },
+          "upper": {
+            "title": "Upper",
+            "type": "number"
+          }
+        },
+        "required": [
+          "label",
+          "observed",
+          "lower",
+          "upper",
+          "unknown_count",
+          "source"
+        ],
+        "title": "FilmRoomIntervalMetricResponse",
+        "type": "object"
+      },
+      "FilmRoomMomentResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "anchor_frame_id": {
+            "title": "Anchor Frame Id",
+            "type": "integer"
+          },
+          "chain_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Chain Reason"
+          },
+          "chain_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Chain Status"
+          },
+          "classification": {
+            "title": "Classification",
+            "type": "string"
+          },
+          "end_frame_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "End Frame Id"
+          },
+          "evidence_overlay": {
+            "additionalProperties": true,
+            "title": "Evidence Overlay",
+            "type": "object"
+          },
+          "evidence_row": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Evidence Row"
+          },
+          "match_id": {
+            "title": "Match Id",
+            "type": "string"
+          },
+          "match_time_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Match Time Ms"
+          },
+          "period": {
+            "title": "Period",
+            "type": "string"
+          },
+          "replay_end_frame_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Replay End Frame Id"
+          },
+          "replay_start_frame_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Replay Start Frame Id"
+          },
+          "replay_window_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Replay Window Id"
+          },
+          "requested_evidence": {
+            "additionalProperties": true,
+            "title": "Requested Evidence",
+            "type": "object"
+          },
+          "result_id": {
+            "title": "Result Id",
+            "type": "string"
+          },
+          "source_kind": {
+            "enum": [
+              "result",
+              "target",
+              "chain_record"
+            ],
+            "title": "Source Kind",
+            "type": "string"
+          },
+          "start_frame_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Start Frame Id"
+          },
+          "unknown_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Unknown Reason"
+          }
+        },
+        "required": [
+          "result_id",
+          "source_kind",
+          "classification",
+          "match_id",
+          "period",
+          "anchor_frame_id",
+          "requested_evidence"
+        ],
+        "title": "FilmRoomMomentResponse",
+        "type": "object"
+      },
+      "FilmRoomProvenanceResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "bound_plan_hashes": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Bound Plan Hashes",
+            "type": "object"
+          },
+          "canonical_sources": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Canonical Sources",
+            "type": "object"
+          },
+          "certified_period_records_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Certified Period Records Hash"
+          },
+          "certified_plan_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Certified Plan Path"
+          },
+          "certified_table_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Certified Table Hash"
+          },
+          "certified_table_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Certified Table Path"
+          },
+          "expression_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Expression Hash"
+          },
+          "plan_hash": {
+            "title": "Plan Hash",
+            "type": "string"
+          },
+          "replay_window_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Replay Window Id"
+          },
+          "runtime_commit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Runtime Commit"
+          },
+          "synthesized_document_hash": {
+            "title": "Synthesized Document Hash",
+            "type": "string"
+          },
+          "tree": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Tree"
+          }
+        },
+        "required": [
+          "plan_hash",
+          "synthesized_document_hash",
+          "bound_plan_hashes",
+          "canonical_sources"
+        ],
+        "title": "FilmRoomProvenanceResponse",
+        "type": "object"
+      },
+      "PitchResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "coordinate_contract": {
+            "title": "Coordinate Contract",
+            "type": "string"
+          },
+          "length_m": {
+            "title": "Length M",
+            "type": "number"
+          },
+          "width_m": {
+            "title": "Width M",
+            "type": "number"
+          }
+        },
+        "required": [
+          "length_m",
+          "width_m",
+          "coordinate_contract"
+        ],
+        "title": "PitchResponse",
+        "type": "object"
+      },
+      "ReplayEntityResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "entity_id": {
+            "title": "Entity Id",
+            "type": "string"
+          },
+          "entity_type": {
+            "title": "Entity Type",
+            "type": "string"
+          },
+          "team_id": {
+            "title": "Team Id",
+            "type": "string"
+          },
+          "team_role": {
+            "title": "Team Role",
+            "type": "string"
+          },
+          "x_m": {
+            "title": "X M",
+            "type": "number"
+          },
+          "y_m": {
+            "title": "Y M",
+            "type": "number"
+          }
+        },
+        "required": [
+          "team_id",
+          "team_role",
+          "entity_id",
+          "entity_type",
+          "x_m",
+          "y_m"
+        ],
+        "title": "ReplayEntityResponse",
+        "type": "object"
+      },
+      "ReplayFrameResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "entities": {
+            "items": {
+              "$ref": "#/$defs/ReplayEntityResponse"
+            },
+            "title": "Entities",
+            "type": "array"
+          },
+          "frame_id": {
+            "title": "Frame Id",
+            "type": "integer"
+          },
+          "timestamp_utc": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Timestamp Utc"
+          }
+        },
+        "required": [
+          "frame_id",
+          "entities"
+        ],
+        "title": "ReplayFrameResponse",
+        "type": "object"
+      },
+      "ReplayPayloadResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "anchor_frame_id": {
+            "title": "Anchor Frame Id",
+            "type": "integer"
+          },
+          "canonical_sources": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Canonical Sources",
+            "type": "object"
+          },
+          "end_frame_id": {
+            "title": "End Frame Id",
+            "type": "integer"
+          },
+          "frame_rate_hz": {
+            "title": "Frame Rate Hz",
+            "type": "number"
+          },
+          "frames": {
+            "items": {
+              "$ref": "#/$defs/ReplayFrameResponse"
+            },
+            "title": "Frames",
+            "type": "array"
+          },
+          "generated_at": {
+            "title": "Generated At",
+            "type": "string"
+          },
+          "match_id": {
+            "title": "Match Id",
+            "type": "string"
+          },
+          "period": {
+            "title": "Period",
+            "type": "string"
+          },
+          "pitch": {
+            "$ref": "#/$defs/PitchResponse"
+          },
+          "replay_window_id": {
+            "title": "Replay Window Id",
+            "type": "string"
+          },
+          "schema_version": {
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "source_id": {
+            "title": "Source Id",
+            "type": "string"
+          },
+          "source_kind": {
+            "enum": [
+              "result",
+              "target",
+              "chain_record"
+            ],
+            "title": "Source Kind",
+            "type": "string"
+          },
+          "start_frame_id": {
+            "title": "Start Frame Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "schema_version",
+          "replay_window_id",
+          "source_kind",
+          "source_id",
+          "match_id",
+          "period",
+          "frame_rate_hz",
+          "start_frame_id",
+          "end_frame_id",
+          "anchor_frame_id",
+          "generated_at",
+          "canonical_sources",
+          "pitch",
+          "frames"
+        ],
+        "title": "ReplayPayloadResponse",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "answer": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/FilmRoomAnswerResponse"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null
+      },
+      "clarification": {
+        "anyOf": [
+          {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Clarification"
+      },
+      "hermes": {
+        "additionalProperties": true,
+        "title": "Hermes",
+        "type": "object"
+      },
+      "latency_breakdown_ms": {
+        "additionalProperties": {
+          "type": "integer"
+        },
+        "title": "Latency Breakdown Ms",
+        "type": "object"
+      },
+      "latency_ms": {
+        "title": "Latency Ms",
+        "type": "integer"
+      },
+      "model": {
+        "title": "Model",
+        "type": "string"
+      },
+      "ok": {
+        "const": true,
+        "title": "Ok",
+        "type": "boolean"
+      },
+      "outcome": {
+        "enum": [
+          "expression",
+          "clarification_required",
+          "understood_but_not_expressible",
+          "unsupported_modality"
+        ],
+        "title": "Outcome",
+        "type": "string"
+      },
+      "provider": {
+        "title": "Provider",
+        "type": "string"
+      },
+      "refusal": {
+        "anyOf": [
+          {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Refusal"
+      },
+      "request_text": {
+        "title": "Request Text",
+        "type": "string"
+      }
+    },
+    "required": [
+      "ok",
+      "outcome",
+      "request_text",
+      "provider",
+      "model",
+      "latency_ms",
+      "latency_breakdown_ms",
+      "hermes"
+    ],
+    "title": "FilmRoomAskResponse",
+    "type": "object"
+  },
+  "FilmRoomBootstrapResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "billing_surface": {
+        "title": "Billing Surface",
+        "type": "string"
+      },
+      "flagship_plan_hashes": {
+        "additionalProperties": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "title": "Flagship Plan Hashes",
+        "type": "object"
+      },
+      "model": {
+        "title": "Model",
+        "type": "string"
+      },
+      "ok": {
+        "const": true,
+        "title": "Ok",
+        "type": "boolean"
+      },
+      "prewarm_records": {
+        "items": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Prewarm Records",
+        "type": "array"
+      },
+      "prewarmed_response": {
+        "anyOf": [
+          {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Prewarmed Response"
+      },
+      "provider": {
+        "title": "Provider",
+        "type": "string"
+      }
+    },
+    "required": [
+      "ok",
+      "provider",
+      "model",
+      "billing_surface",
+      "flagship_plan_hashes",
+      "prewarm_records"
+    ],
+    "title": "FilmRoomBootstrapResponse",
+    "type": "object"
+  },
+  "FilmRoomReplayFrameResponse": {
+    "$defs": {
+      "ReplayEntityResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "entity_id": {
+            "title": "Entity Id",
+            "type": "string"
+          },
+          "entity_type": {
+            "title": "Entity Type",
+            "type": "string"
+          },
+          "team_id": {
+            "title": "Team Id",
+            "type": "string"
+          },
+          "team_role": {
+            "title": "Team Role",
+            "type": "string"
+          },
+          "x_m": {
+            "title": "X M",
+            "type": "number"
+          },
+          "y_m": {
+            "title": "Y M",
+            "type": "number"
+          }
+        },
+        "required": [
+          "team_id",
+          "team_role",
+          "entity_id",
+          "entity_type",
+          "x_m",
+          "y_m"
+        ],
+        "title": "ReplayEntityResponse",
+        "type": "object"
+      },
+      "ReplayFrameResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "entities": {
+            "items": {
+              "$ref": "#/$defs/ReplayEntityResponse"
+            },
+            "title": "Entities",
+            "type": "array"
+          },
+          "frame_id": {
+            "title": "Frame Id",
+            "type": "integer"
+          },
+          "timestamp_utc": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Timestamp Utc"
+          }
+        },
+        "required": [
+          "frame_id",
+          "entities"
+        ],
+        "title": "ReplayFrameResponse",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "canonical_sources": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "title": "Canonical Sources",
+        "type": "object"
+      },
+      "frame": {
+        "$ref": "#/$defs/ReplayFrameResponse"
+      },
+      "frame_id": {
+        "title": "Frame Id",
+        "type": "integer"
+      },
+      "frame_sha256": {
+        "title": "Frame Sha256",
+        "type": "string"
+      },
+      "ok": {
+        "const": true,
+        "title": "Ok",
+        "type": "boolean"
+      },
+      "replay_window_id": {
+        "title": "Replay Window Id",
+        "type": "string"
+      }
+    },
+    "required": [
+      "ok",
+      "replay_window_id",
+      "frame_id",
+      "frame_sha256",
+      "canonical_sources",
+      "frame"
+    ],
+    "title": "FilmRoomReplayFrameResponse",
+    "type": "object"
+  },
+  "FilmRoomReplayWindowResponse": {
+    "$defs": {
+      "PitchResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "coordinate_contract": {
+            "title": "Coordinate Contract",
+            "type": "string"
+          },
+          "length_m": {
+            "title": "Length M",
+            "type": "number"
+          },
+          "width_m": {
+            "title": "Width M",
+            "type": "number"
+          }
+        },
+        "required": [
+          "length_m",
+          "width_m",
+          "coordinate_contract"
+        ],
+        "title": "PitchResponse",
+        "type": "object"
+      },
+      "ReplayEntityResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "entity_id": {
+            "title": "Entity Id",
+            "type": "string"
+          },
+          "entity_type": {
+            "title": "Entity Type",
+            "type": "string"
+          },
+          "team_id": {
+            "title": "Team Id",
+            "type": "string"
+          },
+          "team_role": {
+            "title": "Team Role",
+            "type": "string"
+          },
+          "x_m": {
+            "title": "X M",
+            "type": "number"
+          },
+          "y_m": {
+            "title": "Y M",
+            "type": "number"
+          }
+        },
+        "required": [
+          "team_id",
+          "team_role",
+          "entity_id",
+          "entity_type",
+          "x_m",
+          "y_m"
+        ],
+        "title": "ReplayEntityResponse",
+        "type": "object"
+      },
+      "ReplayFrameResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "entities": {
+            "items": {
+              "$ref": "#/$defs/ReplayEntityResponse"
+            },
+            "title": "Entities",
+            "type": "array"
+          },
+          "frame_id": {
+            "title": "Frame Id",
+            "type": "integer"
+          },
+          "timestamp_utc": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Timestamp Utc"
+          }
+        },
+        "required": [
+          "frame_id",
+          "entities"
+        ],
+        "title": "ReplayFrameResponse",
+        "type": "object"
+      },
+      "ReplayPayloadResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "anchor_frame_id": {
+            "title": "Anchor Frame Id",
+            "type": "integer"
+          },
+          "canonical_sources": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Canonical Sources",
+            "type": "object"
+          },
+          "end_frame_id": {
+            "title": "End Frame Id",
+            "type": "integer"
+          },
+          "frame_rate_hz": {
+            "title": "Frame Rate Hz",
+            "type": "number"
+          },
+          "frames": {
+            "items": {
+              "$ref": "#/$defs/ReplayFrameResponse"
+            },
+            "title": "Frames",
+            "type": "array"
+          },
+          "generated_at": {
+            "title": "Generated At",
+            "type": "string"
+          },
+          "match_id": {
+            "title": "Match Id",
+            "type": "string"
+          },
+          "period": {
+            "title": "Period",
+            "type": "string"
+          },
+          "pitch": {
+            "$ref": "#/$defs/PitchResponse"
+          },
+          "replay_window_id": {
+            "title": "Replay Window Id",
+            "type": "string"
+          },
+          "schema_version": {
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "source_id": {
+            "title": "Source Id",
+            "type": "string"
+          },
+          "source_kind": {
+            "enum": [
+              "result",
+              "target",
+              "chain_record"
+            ],
+            "title": "Source Kind",
+            "type": "string"
+          },
+          "start_frame_id": {
+            "title": "Start Frame Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "schema_version",
+          "replay_window_id",
+          "source_kind",
+          "source_id",
+          "match_id",
+          "period",
+          "frame_rate_hz",
+          "start_frame_id",
+          "end_frame_id",
+          "anchor_frame_id",
+          "generated_at",
+          "canonical_sources",
+          "pitch",
+          "frames"
+        ],
+        "title": "ReplayPayloadResponse",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "ok": {
+        "const": true,
+        "title": "Ok",
+        "type": "boolean"
+      },
+      "replay": {
+        "$ref": "#/$defs/ReplayPayloadResponse"
+      },
+      "replay_window_id": {
+        "title": "Replay Window Id",
+        "type": "string"
+      }
+    },
+    "required": [
+      "ok",
+      "replay_window_id",
+      "replay"
+    ],
+    "title": "FilmRoomReplayWindowResponse",
+    "type": "object"
+  },
   "HealthResponse": {
     "additionalProperties": false,
     "properties": {
@@ -731,7 +1934,8 @@
           "source_kind": {
             "enum": [
               "result",
-              "target"
+              "target",
+              "chain_record"
             ],
             "title": "Source Kind",
             "type": "string"
@@ -949,7 +2153,8 @@
           "source_kind": {
             "enum": [
               "result",
-              "target"
+              "target",
+              "chain_record"
             ],
             "title": "Source Kind",
             "type": "string"
