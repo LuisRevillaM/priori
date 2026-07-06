@@ -1,0 +1,333 @@
+{
+  "acceptance": {
+    "all_executable_roles_byte_identical": true,
+    "declared_plan_set_count": 1,
+    "executable_plan_set_count": 1,
+    "refusal_fixture_count": 0
+  },
+  "cache_key_schema": {
+    "entry_validation": "Persistent entries are self-describing and are detected-never-served on preimage or output hash mismatch.",
+    "node_cache_key_schema_version": "perf1_node_cache_key.v1",
+    "runtime_code_epoch": "91ee36983199c6e25b26e6b71271f5234bcfa673cb3e19e1e4f052d61a321477",
+    "upstream_lineage": "Merkle lineage: each node cache-key preimage carries input source node ids, output names, and upstream cache keys."
+  },
+  "declared_plan_set": [
+    {
+      "kind": "scp2_1_committed_document",
+      "path": "delivery/packets/scp2-1-roundtrip/plans/scp2_1_fragile_window_join_count_v0.json",
+      "plan_set_id": "scp2_1_fragile_window_join_count_novel"
+    }
+  ],
+  "elapsed_ms": 86336.367,
+  "evidence_metadata": {
+    "git_branch": "packet/perf-1",
+    "git_commit": "25812730cc95b79c1ad6d79ba6214a4f640caeb5",
+    "git_tree": "3f4211a8b78bd65f486b00d41bf23f892691bae8",
+    "key_schema": {
+      "path": "delivery/packets/PERF-1-KEY-SCHEMA.md",
+      "sha256": "273517dc8be3f34e21bcfb86ccbe1678d81fddc94ba195a3420bc0e66c94dd5d"
+    },
+    "packet": {
+      "path": "delivery/packets/PERF-1-cold-ask-latency.md",
+      "sha256": "da1ad086a2ff5d6fc15f7ff3bc5589d45239a7cdf10fe3dbe49ea8c410867b11"
+    },
+    "produced_by": "scripts/packets/perf1_equivalence_harness.py",
+    "producing_script_sha256": "72254d3bd9962c7e76a398d69613616d1f75f1de2fce8e5bd7092ff750d366b1",
+    "run_dir": "delivery/packets/perf-1-evidence/runs/2026-07-06T195405Z0000-72254d3bd996",
+    "run_started_at": "2026-07-06T19:54:05+00:00",
+    "schema_version": "perf1.evidence_metadata.v1",
+    "script_args": {
+      "long_run_threshold_seconds": 300.0,
+      "plan_set": [
+        "scp2_1_fragile_window_join_count_novel"
+      ],
+      "workers": 4
+    }
+  },
+  "long_run_threshold_seconds": 300.0,
+  "parallel_period_execution_law": {
+    "deterministic_merge": "Worker completion order is discarded. Results merge by bound_plan.match_ids order, then bound_plan.periods order, then the existing runtime result sort law.",
+    "period_state_independence": "Each period task builds a fresh PeriodState for one match_id/period, reads only that scope's canonical/raw files, and returns serializable rows/traces/progress. No PeriodState object is shared across workers."
+  },
+  "plan_results": [
+    {
+      "all_roles_byte_identical": true,
+      "equivalence_payload_definition": "Canonical payload contains status, execution_id, plan hashes, execution_result_rows, and predicate traces. Runtime provenance and timing are excluded because cache/parallel execution intentionally change those measurements.",
+      "kind": "scp2_1_committed_document",
+      "plan_set_id": "scp2_1_fragile_window_join_count_novel",
+      "role_count": 1,
+      "roles": [
+        {
+          "bound_plan_hash": "c802588f053160c63d963ed3c9576c1c5dfce15add0ca0b508c9a7c6091e0d5a",
+          "cache_inventory": {
+            "entry_count": 12,
+            "root": "delivery/packets/perf-1-evidence/runs/2026-07-06T195405Z0000-72254d3bd996/node-cache/scp2_1_fragile_window_join_count_novel/single",
+            "sample_entries": [
+              "delivery/packets/perf-1-evidence/runs/2026-07-06T195405Z0000-72254d3bd996/node-cache/scp2_1_fragile_window_join_count_novel/single/23/2311d7b1002fc523e88522b27e7d90856f1a39b601d7d247187f1476dc462d74.json",
+              "delivery/packets/perf-1-evidence/runs/2026-07-06T195405Z0000-72254d3bd996/node-cache/scp2_1_fragile_window_join_count_novel/single/33/3315e6394aeec6e318e6db4c1a1b742a35e0eaf7cdbc4710ec7fa0e26e3d3336.json",
+              "delivery/packets/perf-1-evidence/runs/2026-07-06T195405Z0000-72254d3bd996/node-cache/scp2_1_fragile_window_join_count_novel/single/42/424dd075f923641f3e4c359aee62120aa6d7bcf2db376498b5533fae9a68c81f.json",
+              "delivery/packets/perf-1-evidence/runs/2026-07-06T195405Z0000-72254d3bd996/node-cache/scp2_1_fragile_window_join_count_novel/single/4d/4d19a20e2ef6afa9279a43caa2e7f8d7f762327a61094498430eb696bdb3d995.json",
+              "delivery/packets/perf-1-evidence/runs/2026-07-06T195405Z0000-72254d3bd996/node-cache/scp2_1_fragile_window_join_count_novel/single/60/602389dbcfc408de499ff4cc4a60a79c0b980caa36ebbdfad8c2669d7cc41142.json",
+              "delivery/packets/perf-1-evidence/runs/2026-07-06T195405Z0000-72254d3bd996/node-cache/scp2_1_fragile_window_join_count_novel/single/82/82611f7f91938086b8f44a582122835c0a595335e12ee055a44671fcf5ee062b.json",
+              "delivery/packets/perf-1-evidence/runs/2026-07-06T195405Z0000-72254d3bd996/node-cache/scp2_1_fragile_window_join_count_novel/single/87/870d660c0aae3ed2bea0f16a081e154101f614883f8b1679e07e9809bf84a6a3.json",
+              "delivery/packets/perf-1-evidence/runs/2026-07-06T195405Z0000-72254d3bd996/node-cache/scp2_1_fragile_window_join_count_novel/single/b0/b0bfedcbed94042f46cc68b6ef05c58e3d04ba8a476bf999cfe6d1de93c57300.json",
+              "delivery/packets/perf-1-evidence/runs/2026-07-06T195405Z0000-72254d3bd996/node-cache/scp2_1_fragile_window_join_count_novel/single/bc/bc25f8c083afc5b518983611935fa24398c58afa20cc920ae996f31ac97983d4.json",
+              "delivery/packets/perf-1-evidence/runs/2026-07-06T195405Z0000-72254d3bd996/node-cache/scp2_1_fragile_window_join_count_novel/single/da/daa77512d286d2f8a9339ae18e357a93317ea79a1a95b64525116a5b6cb739ce.json"
+            ],
+            "total_bytes": 11994414
+          },
+          "canonical_payload_sha256": {
+            "optimized_cold": "fe3f0ad3edba8cd38c97ca23615f0379c9fdd12cf30685a5e1a895dc3944bf6c",
+            "optimized_warm": "fe3f0ad3edba8cd38c97ca23615f0379c9fdd12cf30685a5e1a895dc3944bf6c",
+            "sequential": "fe3f0ad3edba8cd38c97ca23615f0379c9fdd12cf30685a5e1a895dc3944bf6c"
+          },
+          "optimized_cold_byte_identical_to_sequential": true,
+          "optimized_warm_byte_identical_to_sequential": true,
+          "plan_hash": "65cbc666a9536af4d558ceb66ae63d07f8dbbe8c58692bc62f7b3ae1fc170726",
+          "result_order_identical": true,
+          "role": "single",
+          "trace_order_identical": true,
+          "variant_summaries": {
+            "optimized_cold": {
+              "execution_id": "4cafa10e1f88a5dd",
+              "execution_parallelism": {
+                "backend": "process",
+                "merge_order": "bound_plan.match_ids order, then bound_plan.periods order, then existing result sort law",
+                "period_state_independence": "Each worker constructs a fresh PeriodState for one match_id/period, reading only scope-local canonical/raw files and returning serializable outputs; no PeriodState object is shared across workers.",
+                "workers": 4
+              },
+              "node_cache": {
+                "bypassed": 0,
+                "detected_never_served": 0,
+                "disabled": 0,
+                "enabled": true,
+                "hits": 4,
+                "local_hits": 4,
+                "misses": 14,
+                "persistent_hits": 0,
+                "persistent_store_rejected": 2,
+                "shared_hits": 0
+              },
+              "predicate_trace_count": 322,
+              "result_count": 13,
+              "status": "pass",
+              "timing_ms": {
+                "merge_apply_result_semantics_ms": 0.16,
+                "period_execution_ms": 18643.979,
+                "periods": [
+                  {
+                    "duration_ms": 15857.776,
+                    "match_id": "J03WOH",
+                    "node_count": 14,
+                    "period": "firstHalf",
+                    "runtime_node_count": 14
+                  },
+                  {
+                    "duration_ms": 17898.056,
+                    "match_id": "J03WOH",
+                    "node_count": 14,
+                    "period": "secondHalf",
+                    "runtime_node_count": 14
+                  }
+                ],
+                "schema_version": "perf1_execution_timing.v1",
+                "total_ms": 18647.301
+              }
+            },
+            "optimized_warm": {
+              "execution_id": "4cafa10e1f88a5dd",
+              "execution_parallelism": {
+                "backend": "process",
+                "merge_order": "bound_plan.match_ids order, then bound_plan.periods order, then existing result sort law",
+                "period_state_independence": "Each worker constructs a fresh PeriodState for one match_id/period, reading only scope-local canonical/raw files and returning serializable outputs; no PeriodState object is shared across workers.",
+                "workers": 4
+              },
+              "node_cache": {
+                "bypassed": 0,
+                "detected_never_served": 0,
+                "disabled": 0,
+                "enabled": true,
+                "hits": 16,
+                "local_hits": 4,
+                "misses": 2,
+                "persistent_hits": 12,
+                "persistent_store_rejected": 2,
+                "shared_hits": 0
+              },
+              "predicate_trace_count": 322,
+              "result_count": 13,
+              "status": "pass",
+              "timing_ms": {
+                "merge_apply_result_semantics_ms": 0.151,
+                "period_execution_ms": 11350.802,
+                "periods": [
+                  {
+                    "duration_ms": 8650.923,
+                    "match_id": "J03WOH",
+                    "node_count": 14,
+                    "period": "firstHalf",
+                    "runtime_node_count": 14
+                  },
+                  {
+                    "duration_ms": 10557.863,
+                    "match_id": "J03WOH",
+                    "node_count": 14,
+                    "period": "secondHalf",
+                    "runtime_node_count": 14
+                  }
+                ],
+                "schema_version": "perf1_execution_timing.v1",
+                "total_ms": 11354.072
+              }
+            },
+            "sequential": {
+              "execution_id": "4cafa10e1f88a5dd",
+              "execution_parallelism": {
+                "backend": "serial",
+                "merge_order": "bound_plan.match_ids order, then bound_plan.periods order, then existing result sort law",
+                "period_state_independence": "Each worker constructs a fresh PeriodState for one match_id/period, reading only scope-local canonical/raw files and returning serializable outputs; no PeriodState object is shared across workers.",
+                "workers": 1
+              },
+              "node_cache": {
+                "bypassed": 0,
+                "detected_never_served": 0,
+                "disabled": 18,
+                "enabled": false,
+                "hits": 0,
+                "local_hits": 0,
+                "misses": 0,
+                "persistent_hits": 0,
+                "persistent_store_rejected": 0,
+                "shared_hits": 0
+              },
+              "predicate_trace_count": 322,
+              "result_count": 13,
+              "status": "pass",
+              "timing_ms": {
+                "merge_apply_result_semantics_ms": 0.19,
+                "period_execution_ms": 56270.003,
+                "periods": [
+                  {
+                    "duration_ms": 26878.596,
+                    "match_id": "J03WOH",
+                    "node_count": 14,
+                    "period": "firstHalf",
+                    "runtime_node_count": 14
+                  },
+                  {
+                    "duration_ms": 29117.615,
+                    "match_id": "J03WOH",
+                    "node_count": 14,
+                    "period": "secondHalf",
+                    "runtime_node_count": 14
+                  }
+                ],
+                "schema_version": "perf1_execution_timing.v1",
+                "total_ms": 56273.13
+              }
+            }
+          }
+        }
+      ],
+      "source": {
+        "path": "delivery/packets/scp2-1-roundtrip/plans/scp2_1_fragile_window_join_count_v0.json",
+        "sha256": "0e2488ee7caa54b873a41df0c8235ccdd0b83b4a5ebf57aed6bd7bbc0af8a2a9",
+        "stable_hash": "d1783f841729cf541687e6411aae74c5c2ba2cbdd6e9e3b212f42349a637af2e"
+      }
+    }
+  ],
+  "schema_version": "perf1.equivalence_evidence.v1",
+  "timing_rows": [
+    {
+      "bind_ms": 5.059,
+      "exceeded_long_run_threshold": false,
+      "execute_external_ms": 56298.733,
+      "execute_total_ms": 56273.13,
+      "hermes_ms": null,
+      "long_run_threshold_seconds": 300.0,
+      "merge_apply_result_semantics_ms": 0.19,
+      "node_cache": {
+        "bypassed": 0,
+        "detected_never_served": 0,
+        "disabled": 18,
+        "enabled": false,
+        "hits": 0,
+        "local_hits": 0,
+        "misses": 0,
+        "persistent_hits": 0,
+        "persistent_store_rejected": 0,
+        "shared_hits": 0
+      },
+      "period_count": 2,
+      "period_execution_ms": 56270.003,
+      "plan_set_id": "scp2_1_fragile_window_join_count_novel",
+      "result_count": 13,
+      "role": "single",
+      "status": "pass",
+      "synthesis_ms": null,
+      "trace_count": 322,
+      "variant": "sequential"
+    },
+    {
+      "bind_ms": 5.059,
+      "exceeded_long_run_threshold": false,
+      "execute_external_ms": 18654.086,
+      "execute_total_ms": 18647.301,
+      "hermes_ms": null,
+      "long_run_threshold_seconds": 300.0,
+      "merge_apply_result_semantics_ms": 0.16,
+      "node_cache": {
+        "bypassed": 0,
+        "detected_never_served": 0,
+        "disabled": 0,
+        "enabled": true,
+        "hits": 4,
+        "local_hits": 4,
+        "misses": 14,
+        "persistent_hits": 0,
+        "persistent_store_rejected": 2,
+        "shared_hits": 0
+      },
+      "period_count": 2,
+      "period_execution_ms": 18643.979,
+      "plan_set_id": "scp2_1_fragile_window_join_count_novel",
+      "result_count": 13,
+      "role": "single",
+      "status": "pass",
+      "synthesis_ms": null,
+      "trace_count": 322,
+      "variant": "optimized_cold"
+    },
+    {
+      "bind_ms": 5.059,
+      "exceeded_long_run_threshold": false,
+      "execute_external_ms": 11360.593,
+      "execute_total_ms": 11354.072,
+      "hermes_ms": null,
+      "long_run_threshold_seconds": 300.0,
+      "merge_apply_result_semantics_ms": 0.151,
+      "node_cache": {
+        "bypassed": 0,
+        "detected_never_served": 0,
+        "disabled": 0,
+        "enabled": true,
+        "hits": 16,
+        "local_hits": 4,
+        "misses": 2,
+        "persistent_hits": 12,
+        "persistent_store_rejected": 2,
+        "shared_hits": 0
+      },
+      "period_count": 2,
+      "period_execution_ms": 11350.802,
+      "plan_set_id": "scp2_1_fragile_window_join_count_novel",
+      "result_count": 13,
+      "role": "single",
+      "status": "pass",
+      "synthesis_ms": null,
+      "trace_count": 322,
+      "variant": "optimized_warm"
+    }
+  ],
+  "workers": 4
+}

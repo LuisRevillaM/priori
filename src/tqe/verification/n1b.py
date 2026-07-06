@@ -242,6 +242,7 @@ def unknown_destination_entry_fixture() -> dict[str, Any]:
         defending_team_id="fixture_away",
         canonical_root=Path("."),
         raw_tracking=Path("."),
+        data_scope_manifest_entries=[],
         positions=pd.DataFrame(columns=["entity_type", "frame_id", "x_m", "y_m"]),
         frame_ids=np.array([100, 101, 102], dtype=int),
         ball_y=np.array([], dtype=float),

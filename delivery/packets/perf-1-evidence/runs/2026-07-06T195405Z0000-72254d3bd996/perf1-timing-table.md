@@ -1,0 +1,8 @@
+<!-- evidence_metadata: {"git_branch":"packet/perf-1","git_commit":"25812730cc95b79c1ad6d79ba6214a4f640caeb5","git_tree":"3f4211a8b78bd65f486b00d41bf23f892691bae8","key_schema":{"path":"delivery/packets/PERF-1-KEY-SCHEMA.md","sha256":"273517dc8be3f34e21bcfb86ccbe1678d81fddc94ba195a3420bc0e66c94dd5d"},"packet":{"path":"delivery/packets/PERF-1-cold-ask-latency.md","sha256":"da1ad086a2ff5d6fc15f7ff3bc5589d45239a7cdf10fe3dbe49ea8c410867b11"},"produced_by":"scripts/packets/perf1_equivalence_harness.py","producing_script_sha256":"72254d3bd9962c7e76a398d69613616d1f75f1de2fce8e5bd7092ff750d366b1","run_dir":"delivery/packets/perf-1-evidence/runs/2026-07-06T195405Z0000-72254d3bd996","run_started_at":"2026-07-06T19:54:05+00:00","schema_version":"perf1.evidence_metadata.v1","script_args":{"long_run_threshold_seconds":300.0,"plan_set":["scp2_1_fragile_window_join_count_novel"],"workers":4}} -->
+# PERF-1 Timing Table
+
+| plan_set_id | role | variant | hermes_ms | synthesis_ms | bind_ms | execute_external_ms | execute_total_ms | period_execution_ms | merge_apply_result_semantics_ms | period_count | result_count | persistent_hits | misses | detected_never_served | exceeded_long_run_threshold |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| scp2_1_fragile_window_join_count_novel | single | sequential |  |  | 5.059 | 56298.733 | 56273.130 | 56270.003 | 0.190 | 2 | 13 | 0 | 0 | 0 | False |
+| scp2_1_fragile_window_join_count_novel | single | optimized_cold |  |  | 5.059 | 18654.086 | 18647.301 | 18643.979 | 0.160 | 2 | 13 | 0 | 14 | 0 | False |
+| scp2_1_fragile_window_join_count_novel | single | optimized_warm |  |  | 5.059 | 11360.593 | 11354.072 | 11350.802 | 0.151 | 2 | 13 | 12 | 2 | 0 | False |

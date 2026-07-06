@@ -650,6 +650,7 @@ def fake_period_state() -> PeriodState:
         defending_team_id="away",
         canonical_root=Path("data/canonical/v1"),
         raw_tracking=Path("data/raw"),
+        data_scope_manifest_entries=[],
         positions=pd.DataFrame(),
         frame_ids=np.array([], dtype=int),
         ball_y=np.array([], dtype=float),

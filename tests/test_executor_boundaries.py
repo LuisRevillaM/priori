@@ -9,6 +9,8 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest import mock
 
+import numpy as np
+
 from tqe.runtime import executor
 from tqe.runtime.capabilities import (
     PRIMITIVE_IMPLEMENTATION_NAMES,
@@ -36,7 +38,7 @@ from tqe.runtime.ir import (
     Unit,
     UnknownEvidencePolicy,
 )
-from tqe.runtime.values import RuntimeValue
+from tqe.runtime.values import FrameSignal, RuntimeValue
 
 
 def write_data_manifest(path: Path, files: list[Path]) -> None:
@@ -214,35 +216,260 @@ class ExecutorRegistryBoundaryTests(unittest.TestCase):
                 bound_plan=minimal_bound_plan(max_relations_per_anchor=1),
             )
 
-    def test_shared_cache_key_changes_with_canonical_manifest_hash(self) -> None:
+    def test_perf1_cache_key_mutates_for_every_director_component(self) -> None:
         node = BoundCatalogNode(
             kind=NodeKind.PRIMITIVE,
             node_id="sample_node",
             catalog_ref="sample_capability",
             version="0.1.0",
             outputs=[],
-            resolved_parameters={},
+            resolved_parameters={"threshold": {"payload_type": "number", "value": 1.0, "unit": "metre"}},
         )
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            (root / "manifest.json").write_text('{"version": 1}\n', encoding="utf-8")
-            raw_tracking = root / "tracking.xml"
-            raw_tracking.write_text("<tracking />\n", encoding="utf-8")
-            state = SimpleNamespace(
-                canonical_root=root,
-                raw_tracking=raw_tracking,
-                match_id="synthetic",
-                period="firstHalf",
-                perspective_team_role="home",
-                defending_team_role="away",
-                params=SimpleNamespace(values={}),
-                canonical_data_manifest_hash="",
-            )
-            first = executor.shared_catalog_node_cache_key(state, node, "node-cache-key")
-            (root / "manifest.json").write_text('{"version": 2}\n', encoding="utf-8")
-            second = executor.shared_catalog_node_cache_key(state, node, "node-cache-key")
+        state = SimpleNamespace(
+            match_id="J03WOH",
+            period="firstHalf",
+            params=executor.RuntimeParameters(values={"analysis_rate_hz": 5}),
+            data_scope_manifest_entries=[
+                {"path": "positions/match_id=J03WOH/period=firstHalf.parquet", "size": 10, "sha256": "a"}
+            ],
+            perspective_team_role="home",
+            perspective_team_id="home-id",
+            defending_team_role="away",
+            defending_team_id="away-id",
+        )
+        upstream = [{"input_name": "source", "source_node_id": "source_node", "output_name": "anchors", "cache_key": "upstream-a"}]
+        base = executor.derive_node_cache_key(
+            node=node,
+            state=state,
+            upstream_lineage=upstream,
+            code_epoch="epoch-a",
+        )["cache_key"]
+        node_with_resolved_value_change = BoundCatalogNode(
+            kind=NodeKind.PRIMITIVE,
+            node_id="sample_node",
+            catalog_ref="sample_capability",
+            version="0.1.0",
+            outputs=[],
+            resolved_parameters={"threshold": {"payload_type": "number", "value": 2.0, "unit": "metre"}},
+        )
 
-        self.assertNotEqual(first, second)
+        cases = [
+            executor.derive_node_cache_key(
+                node=node,
+                state=state,
+                upstream_lineage=upstream,
+                cache_schema_version="perf1_node_cache_key.v2",
+                code_epoch="epoch-a",
+            )["cache_key"],
+            executor.derive_node_cache_key(
+                node=node,
+                state=state,
+                upstream_lineage=upstream,
+                code_epoch="epoch-b",
+            )["cache_key"],
+            executor.derive_node_cache_key(
+                node=node.model_copy(update={"version": "0.2.0"}),
+                state=state,
+                upstream_lineage=upstream,
+                code_epoch="epoch-a",
+            )["cache_key"],
+            executor.derive_node_cache_key(
+                node=node_with_resolved_value_change,
+                state=state,
+                upstream_lineage=upstream,
+                code_epoch="epoch-a",
+            )["cache_key"],
+            executor.derive_node_cache_key(
+                node=node,
+                state=state,
+                upstream_lineage=[{**upstream[0], "cache_key": "upstream-b"}],
+                code_epoch="epoch-a",
+            )["cache_key"],
+            executor.derive_node_cache_key(
+                node=node,
+                state=SimpleNamespace(
+                    **{
+                        **state.__dict__,
+                        "data_scope_manifest_entries": [
+                            {
+                                "path": "positions/match_id=J03WOH/period=firstHalf.parquet",
+                                "size": 10,
+                                "sha256": "b",
+                            }
+                        ],
+                    }
+                ),
+                upstream_lineage=upstream,
+                code_epoch="epoch-a",
+            )["cache_key"],
+            executor.derive_node_cache_key(
+                node=node,
+                state=SimpleNamespace(**{**state.__dict__, "match_id": "J03WOY"}),
+                upstream_lineage=upstream,
+                code_epoch="epoch-a",
+            )["cache_key"],
+            executor.derive_node_cache_key(
+                node=node,
+                state=SimpleNamespace(**{**state.__dict__, "period": "secondHalf"}),
+                upstream_lineage=upstream,
+                code_epoch="epoch-a",
+            )["cache_key"],
+            executor.derive_node_cache_key(
+                node=node,
+                state=SimpleNamespace(
+                    **{
+                        **state.__dict__,
+                        "params": executor.RuntimeParameters(values={"analysis_rate_hz": 10}),
+                    }
+                ),
+                upstream_lineage=upstream,
+                code_epoch="epoch-a",
+            )["cache_key"],
+            executor.derive_node_cache_key(
+                node=node,
+                state=SimpleNamespace(**{**state.__dict__, "perspective_team_role": "away"}),
+                upstream_lineage=upstream,
+                code_epoch="epoch-a",
+            )["cache_key"],
+        ]
+
+        self.assertEqual(len(cases), len(set(cases)))
+        self.assertTrue(all(item != base for item in cases))
+
+    def test_perf1_cache_key_canonicalizes_expanded_defaults(self) -> None:
+        first = BoundCatalogNode(
+            kind=NodeKind.PRIMITIVE,
+            node_id="node_a",
+            catalog_ref="sample_capability",
+            version="0.1.0",
+            outputs=[],
+            resolved_parameters={
+                "zeta": {"payload_type": "number", "value": 2.0, "unit": "metre"},
+                "alpha": {"payload_type": "number", "value": 1.0, "unit": "metre"},
+            },
+        )
+        second = BoundCatalogNode(
+            kind=NodeKind.PRIMITIVE,
+            node_id="node_b",
+            catalog_ref="sample_capability",
+            version="0.1.0",
+            outputs=[],
+            resolved_parameters={
+                "alpha": {"payload_type": "number", "value": 1.0, "unit": "metre"},
+                "zeta": {"payload_type": "number", "value": 2.0, "unit": "metre"},
+            },
+        )
+        state = SimpleNamespace(
+            match_id="J03WOH",
+            period="firstHalf",
+            params=executor.RuntimeParameters(values={"b": 2, "a": 1}),
+            data_scope_manifest_entries=[],
+            perspective_team_role="home",
+            perspective_team_id="home-id",
+            defending_team_role="away",
+            defending_team_id="away-id",
+        )
+
+        self.assertEqual(
+            executor.derive_node_cache_key(node=first, state=state, upstream_lineage=[], code_epoch="epoch")[
+                "cache_key"
+            ],
+            executor.derive_node_cache_key(node=second, state=state, upstream_lineage=[], code_epoch="epoch")[
+                "cache_key"
+            ],
+        )
+
+    def test_perf1_persistent_cache_detects_corrupt_output_without_serving(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            cache = executor.PersistentNodeOutputCache(Path(directory))
+            preimage = {
+                "cache_schema_version": executor.CACHE_SCHEMA_VERSION,
+                "code_epoch": "epoch",
+                "node_semantic_identity": {"catalog_ref": "sample"},
+                "upstream_lineage": [],
+                "data_scope": {"match_id": "J03WOH", "period": "firstHalf", "manifest_entries": []},
+                "perspective_bindings": {"perspective_team_role": "home"},
+            }
+            key = executor.stable_hash(preimage)
+            cache.store(key=key, preimage=preimage, output={"records": [{"value": 1}]})
+            path = cache.path_for(key)
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            payload["output"]["records"][0]["value"] = 2
+            path.write_text(json.dumps(payload, sort_keys=True) + "\n", encoding="utf-8")
+
+            output, status = cache.load(key=key, preimage=preimage)
+
+        self.assertIsNone(output)
+        self.assertEqual("detected_never_served", status)
+
+    def test_perf1_persistent_cache_detects_corrupt_preimage_without_serving(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            cache = executor.PersistentNodeOutputCache(Path(directory))
+            preimage = {
+                "cache_schema_version": executor.CACHE_SCHEMA_VERSION,
+                "code_epoch": "epoch",
+                "node_semantic_identity": {"catalog_ref": "sample"},
+                "upstream_lineage": [],
+                "data_scope": {"match_id": "J03WOH", "period": "firstHalf", "manifest_entries": []},
+                "perspective_bindings": {"perspective_team_role": "home"},
+            }
+            key = executor.stable_hash(preimage)
+            cache.store(key=key, preimage=preimage, output={"records": [{"value": 1}]})
+            path = cache.path_for(key)
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            payload["key_preimage"]["data_scope"]["period"] = "secondHalf"
+            path.write_text(json.dumps(payload, sort_keys=True) + "\n", encoding="utf-8")
+
+            output, status = cache.load(key=key, preimage=preimage)
+
+        self.assertIsNone(output)
+        self.assertEqual("detected_never_served", status)
+
+    def test_perf1_persistent_cache_round_trips_frame_signal_outputs(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            cache = executor.PersistentNodeOutputCache(Path(directory))
+            preimage = {
+                "cache_schema_version": executor.CACHE_SCHEMA_VERSION,
+                "code_epoch": "epoch",
+                "node_semantic_identity": {"catalog_ref": "sample"},
+                "upstream_lineage": [],
+                "data_scope": {"match_id": "J03WOH", "period": "firstHalf", "manifest_entries": []},
+                "perspective_bindings": {"perspective_team_role": "home"},
+            }
+            key = executor.stable_hash(preimage)
+            frame_signal = FrameSignal(
+                frame_ids=[10, 20],
+                values=["PASS", None],
+                unknown_mask=[False, True],
+                unit=Unit.NONE,
+                entity_scope=EntityScope.ANCHOR,
+            )
+            cache.store(key=key, preimage=preimage, output={"status": frame_signal})
+
+            output, status = cache.load(key=key, preimage=preimage)
+
+        self.assertEqual("persistent_hit", status)
+        self.assertIsInstance(output["status"], FrameSignal)
+        self.assertEqual(frame_signal, output["status"])
+
+    def test_perf1_encode_cache_output_rejects_ambiguous_containers(self) -> None:
+        with self.assertRaisesRegex(RuntimeError, "tuple"):
+            executor.encode_cache_output({"value": (1, 2)})
+        with self.assertRaisesRegex(RuntimeError, "ndarray"):
+            executor.encode_cache_output({"value": np.array([1, 2])})
+
+    def test_perf1_parallel_pool_falls_back_when_process_pool_is_unavailable(self) -> None:
+        with mock.patch.object(
+            executor.concurrent.futures,
+            "ProcessPoolExecutor",
+            side_effect=PermissionError("sysconf denied"),
+        ):
+            pool, backend = executor.period_worker_pool(2)
+        try:
+            self.assertEqual("thread_fallback_process_pool_unavailable", backend)
+            self.assertIsInstance(pool, executor.concurrent.futures.ThreadPoolExecutor)
+        finally:
+            pool.shutdown(wait=True)
 
     def test_canonical_data_manifest_uses_manifest_hash_without_default_content_hash(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

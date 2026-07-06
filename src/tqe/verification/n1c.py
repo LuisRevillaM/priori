@@ -289,6 +289,7 @@ def relation_destination_entry_tri_state_fixture() -> dict[str, Any]:
         defending_team_id="fixture_away",
         canonical_root=Path("."),
         raw_tracking=Path("."),
+        data_scope_manifest_entries=[],
         positions=pd.DataFrame(
             [
                 {
