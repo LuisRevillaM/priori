@@ -1,0 +1,247 @@
+<title>Entrelíneas — Film Room</title>
+<style>
+  :root{
+    --ink:#0B0F0D; --panel:#111814; --panel2:#0E1411; --turf:#1E3A2A; --turf-line:#3A5C46;
+    --chalk:#E8F2EA; --chalk-dim:#9FB3A6; --amber:#FFB13D; --amber-dim:#8A6524;
+    --unknown:#8B93A0; --fail:#6E4A45; --home:#5FB0FF; --away:#FF6E5E; --ball:#F5F0E6;
+    --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ink);color:var(--chalk);font-family:var(--sans);font-size:15px;line-height:1.5}
+  .frame{max-width:1180px;margin:0 auto;padding:20px 24px 48px}
+
+  header{display:flex;align-items:center;gap:16px;padding:10px 0 18px;border-bottom:1px solid #1C2620}
+  .wordmark{font-family:var(--mono);font-size:15px;letter-spacing:.18em;color:var(--chalk)}
+  .wordmark b{color:var(--amber);font-weight:600}
+  .spacer{flex:1}
+  .chip{font-family:var(--mono);font-size:12px;padding:5px 12px;border:1px solid #2A382F;border-radius:3px;color:var(--chalk-dim);background:var(--panel2)}
+  .chip.on{color:var(--chalk);border-color:#3A5C46}
+
+  /* ask thread */
+  .thread{display:flex;flex-direction:column;gap:10px;padding:18px 0}
+  .msg{max-width:720px;padding:10px 14px;border-radius:4px}
+  .msg.you{align-self:flex-start;background:#18231D;border:1px solid #24332A}
+  .msg.hermes{align-self:flex-start;background:var(--panel2);border:1px solid #1C2620;margin-left:26px}
+  .who{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--chalk-dim);margin-bottom:5px}
+  .msg.hermes .who{color:var(--amber)}
+  .compiled{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .stage{font-family:var(--mono);font-size:11.5px;padding:4px 9px;background:#152019;border:1px solid var(--turf-line);border-radius:3px;color:var(--chalk)}
+  .stage .arr{color:var(--amber)}
+  .refusal{border-left:3px solid var(--unknown);padding-left:11px;margin-top:8px;color:var(--chalk-dim);font-size:13.5px}
+  .refusal b{color:var(--chalk);font-weight:600}
+  .refusal .code{font-family:var(--mono);font-size:11px;color:var(--unknown)}
+  .askbar{display:flex;gap:10px;margin-top:4px}
+  .askbar input{flex:1;background:var(--panel2);border:1px solid #2A382F;border-radius:4px;color:var(--chalk);font-size:15px;padding:11px 14px;font-family:var(--sans)}
+  .askbar input::placeholder{color:#5C6E63}
+  .askbar button{background:var(--amber);color:#241A05;border:0;border-radius:4px;font-family:var(--mono);font-size:13px;letter-spacing:.06em;padding:0 20px;cursor:pointer}
+  .askbar button:focus-visible,.askbar input:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+
+  /* main split */
+  .split{display:grid;grid-template-columns:1fr 340px;gap:18px;margin-top:6px}
+  @media(max-width:920px){.split{grid-template-columns:1fr}}
+
+  /* pitch */
+  .stagebox{background:var(--panel);border:1px solid #1C2620;border-radius:6px;padding:14px}
+  .stagehead{display:flex;align-items:baseline;gap:12px;margin-bottom:10px}
+  .eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--chalk-dim)}
+  .momentname{font-size:14px;color:var(--chalk)}
+  .momentname .t{font-family:var(--mono);color:var(--amber)}
+  svg{display:block;width:100%;height:auto;border-radius:4px}
+  .controls{display:flex;align-items:center;gap:12px;margin-top:12px}
+  .play{width:34px;height:34px;border-radius:50%;border:1px solid var(--turf-line);background:#152019;color:var(--chalk);cursor:pointer;font-size:12px}
+  .scrub{flex:1;height:4px;background:#22302A;border-radius:2px;position:relative}
+  .scrub .fill{position:absolute;left:0;top:0;bottom:0;width:38%;background:var(--amber);border-radius:2px}
+  .scrub .dotmk{position:absolute;top:-3px;left:38%;width:10px;height:10px;border-radius:50%;background:var(--amber)}
+  .count{font-family:var(--mono);font-size:12px;color:var(--chalk-dim);font-variant-numeric:tabular-nums}
+
+  /* answer rail */
+  .rail{display:flex;flex-direction:column;gap:14px}
+  .card{background:var(--panel);border:1px solid #1C2620;border-radius:6px;padding:16px}
+  .bignum{font-family:var(--mono);font-size:44px;line-height:1;color:var(--chalk);font-variant-numeric:tabular-nums}
+  .bignum small{font-size:16px;color:var(--chalk-dim)}
+  .bounds{font-family:var(--mono);font-size:13px;color:var(--amber);margin-top:4px}
+  .ibar{height:8px;background:#22302A;border-radius:2px;position:relative;margin:12px 0 6px}
+  .ibar .range{position:absolute;top:0;bottom:0;left:28%;width:38%;background:var(--amber-dim);border-radius:2px}
+  .ibar .obs{position:absolute;top:-3px;left:44%;width:3px;height:14px;background:var(--amber);border-radius:1px}
+  .ibar-lab{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--chalk-dim)}
+  .partition{display:flex;gap:0;height:10px;border-radius:2px;overflow:hidden;margin-top:14px}
+  .partition i{display:block;height:100%}
+  .plegend{display:flex;gap:14px;margin-top:8px;font-family:var(--mono);font-size:11px;color:var(--chalk-dim);flex-wrap:wrap}
+  .plegend b{color:var(--chalk);font-weight:600}
+  .dotk{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px;vertical-align:0}
+  .unknote{margin-top:12px;font-size:12.5px;color:var(--unknown);border-top:1px dashed #24332A;padding-top:10px}
+
+  .film{display:flex;flex-direction:column;gap:8px}
+  .moment{display:flex;align-items:center;gap:12px;padding:8px 10px;background:var(--panel2);border:1px solid #1C2620;border-radius:4px;cursor:pointer}
+  .moment.on{border-color:var(--amber);background:#1A2016}
+  .mini{width:44px;height:30px;background:var(--turf);border-radius:2px;position:relative;flex:none}
+  .mini i{position:absolute;width:5px;height:5px;border-radius:50%}
+  .mlab{font-family:var(--mono);font-size:12px;color:var(--chalk);font-variant-numeric:tabular-nums}
+  .msub{font-size:11.5px;color:var(--chalk-dim)}
+  .prov{font-family:var(--mono);font-size:11px;color:var(--chalk-dim);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .prov .hash{color:var(--amber);font-size:10.5px}
+
+  /* notes */
+  .notes{margin-top:34px;border-top:1px solid #1C2620;padding-top:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}
+  .note h4{margin:0 0 6px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);font-weight:600}
+  .note p{margin:0;font-size:13px;color:var(--chalk-dim);max-width:34ch}
+
+  /* pitch animation */
+  .seq{animation-duration:9s;animation-iteration-count:infinite;animation-timing-function:ease-in-out}
+  @keyframes ballrun{0%,12%{transform:translate(0,0)}22%{transform:translate(30px,-14px)}46%{transform:translate(148px,-30px)}58%{transform:translate(148px,-30px)}74%{transform:translate(258px,8px)}100%{transform:translate(258px,8px)}}
+  @keyframes carrier{0%,12%{transform:translate(0,0)}22%{transform:translate(28px,-12px)}46%{transform:translate(146px,-28px)}100%{transform:translate(150px,-26px)}}
+  @keyframes receiver{0%,40%{transform:translate(0,0)}74%{transform:translate(36px,26px)}100%{transform:translate(36px,26px)}}
+  @keyframes loser{0%,12%{transform:translate(0,0)}30%{transform:translate(-24px,10px)}100%{transform:translate(-30px,12px)}}
+  @keyframes drawtrail{0%,14%{stroke-dashoffset:210}50%{stroke-dashoffset:60}72%,100%{stroke-dashoffset:0}}
+  @keyframes ringpulse{0%,10%{opacity:0}14%{opacity:.9}30%,100%{opacity:0}}
+  .b-run{animation-name:ballrun}.c-run{animation-name:carrier}.r-run{animation-name:receiver}.l-run{animation-name:loser}
+  .trail{stroke-dasharray:210;stroke-dashoffset:210;animation:drawtrail 9s ease-in-out infinite}
+  .ring{animation:ringpulse 9s ease-in-out infinite}
+  @media(prefers-reduced-motion:reduce){.seq,.trail,.ring{animation:none}.trail{stroke-dashoffset:0}}
+</style>
+
+<div class="frame">
+  <header>
+    <div class="wordmark">ENTRELÍNEAS <b>·</b> FILM ROOM</div>
+    <div class="spacer"></div>
+    <span class="chip on">ALL 7 MATCHES</span>
+    <span class="chip">J03WOH</span>
+    <span class="chip">HERMES v2</span>
+  </header>
+
+  <div class="thread">
+    <div class="msg you">
+      <div class="who">You</div>
+      After we win the ball back, how often do we actually progress it and keep it?
+    </div>
+    <div class="msg hermes">
+      <div class="who">Hermes — compiled &amp; certified</div>
+      Reading that as counter-attack initiation. Here is exactly what I measured:
+      <div class="compiled">
+        <span class="stage">regain</span>
+        <span class="stage"><span class="arr">→ ≤5.0s</span> carry ≥3.0m forward</span>
+        <span class="stage"><span class="arr">→ ≤4.0s</span> controlled pass</span>
+        <span class="stage">same possession · your perspective</span>
+      </div>
+    </div>
+    <div class="msg you">
+      <div class="who">You</div>
+      Which of our defenders shows the best body orientation on the turn?
+    </div>
+    <div class="msg hermes">
+      <div class="who">Hermes — honest refusal</div>
+      <div class="refusal">
+        <b>I understand the question, but I can't measure it yet.</b><br>
+        Body orientation needs pose data this tracking feed doesn't carry.
+        <span class="code">UNSUPPORTED_MODALITY · pose_estimation</span><br>
+        Nearest measurable: first-touch direction relative to pressure. Want that instead?
+      </div>
+    </div>
+    <div class="askbar">
+      <input type="text" placeholder="Ask the film anything…" aria-label="Ask a question">
+      <button type="button">ASK</button>
+    </div>
+  </div>
+
+  <div class="split">
+    <div class="stagebox">
+      <div class="stagehead">
+        <span class="eyebrow">Replay</span>
+        <span class="momentname">Moment 3 of 17 — regain <span class="t">63:12</span>, second half</span>
+      </div>
+      <svg viewBox="0 0 640 400" role="img" aria-label="2D pitch replay of a counter-attack: regain, forward carry, pass">
+        <rect x="0" y="0" width="640" height="400" fill="#1E3A2A"/>
+        <rect x="0" y="0" width="640" height="400" fill="url(#mow)" opacity=".35"/>
+        <defs>
+          <pattern id="mow" width="80" height="400" patternUnits="userSpaceOnUse">
+            <rect width="40" height="400" fill="#213F2E"/>
+          </pattern>
+        </defs>
+        <g stroke="#3A5C46" stroke-width="2" fill="none">
+          <rect x="14" y="14" width="612" height="372"/>
+          <line x1="320" y1="14" x2="320" y2="386"/>
+          <circle cx="320" cy="200" r="52"/>
+          <rect x="14" y="110" width="88" height="180"/>
+          <rect x="538" y="110" width="88" height="180"/>
+          <rect x="14" y="158" width="34" height="84"/>
+          <rect x="592" y="158" width="34" height="84"/>
+        </g>
+
+        <!-- evidence overlay: carry trail -->
+        <path class="trail" d="M 208 252 L 238 238 L 356 222" stroke="#FFB13D" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <circle class="ring" cx="208" cy="252" r="16" stroke="#FFB13D" stroke-width="2" fill="none"/>
+
+        <!-- away shape -->
+        <g fill="#FF6E5E">
+          <g class="seq l-run"><circle cx="196" cy="244" r="7"/></g>
+          <circle cx="150" cy="180" r="7"/><circle cx="255" cy="300" r="7"/>
+          <circle cx="300" cy="130" r="7"/><circle cx="380" cy="250" r="7"/>
+        </g>
+        <!-- home shape -->
+        <g fill="#5FB0FF">
+          <g class="seq c-run"><circle cx="206" cy="250" r="7"/></g>
+          <g class="seq r-run"><circle cx="330" cy="196" r="7"/></g>
+          <circle cx="120" cy="260" r="7"/><circle cx="180" cy="120" r="7"/><circle cx="255" cy="205" r="7"/>
+        </g>
+        <!-- ball -->
+        <g class="seq b-run"><circle cx="210" cy="255" r="4.5" fill="#F5F0E6" stroke="#0B0F0D" stroke-width="1"/></g>
+
+        <!-- stage labels -->
+        <g font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#E8F2EA" opacity=".85">
+          <text x="176" y="284">regain</text>
+          <text x="332" y="180">carry +11.2m</text>
+          <text x="452" y="238">pass ✓</text>
+        </g>
+      </svg>
+      <div class="controls">
+        <button class="play" type="button" aria-label="Play or pause">▶</button>
+        <div class="scrub" role="slider" aria-label="Timeline" aria-valuenow="38" aria-valuemin="0" aria-valuemax="100"><div class="fill"></div><div class="dotmk"></div></div>
+        <span class="count">63:09 · frame 94 812 · 25 fps</span>
+      </div>
+    </div>
+
+    <div class="rail">
+      <div class="card">
+        <div class="eyebrow">Initiation rate — all matches, your team</div>
+        <div class="bignum">41.2<small>%</small></div>
+        <div class="bounds">bounds 33.5 – 52.1 %</div>
+        <div class="ibar"><div class="range"></div><div class="obs"></div></div>
+        <div class="ibar-lab"><span>33.5</span><span>observed 41.2</span><span>52.1</span></div>
+        <div class="partition">
+          <i style="width:41%;background:#FFB13D"></i>
+          <i style="width:41%;background:#6E4A45"></i>
+          <i style="width:18%;background:#8B93A0"></i>
+        </g></div>
+        <div class="plegend">
+          <span><i class="dotk" style="background:#FFB13D"></i><b>69</b> completed</span>
+          <span><i class="dotk" style="background:#6E4A45"></i><b>68</b> broke down</span>
+          <span><i class="dotk" style="background:#8B93A0"></i><b>31</b> unknown</span>
+        </div>
+        <div class="unknote">31 of 168 regains end in windows the data can't fully see (period ends, coverage gaps). They widen the bounds — they are never dropped.</div>
+      </div>
+
+      <div class="card film">
+        <div class="eyebrow" style="margin-bottom:4px">Moments · 17 chains</div>
+        <div class="moment on"><div class="mini"><i style="background:#5FB0FF;left:12px;top:14px"></i><i style="background:#F5F0E6;left:20px;top:12px;width:3px;height:3px"></i></div><div><div class="mlab">63:12 · 2H</div><div class="msub">regain → +11.2m → pass, 6.8s</div></div></div>
+        <div class="moment"><div class="mini"><i style="background:#5FB0FF;left:24px;top:8px"></i><i style="background:#F5F0E6;left:30px;top:10px;width:3px;height:3px"></i></div><div><div class="mlab">17:44 · 1H</div><div class="msub">regain → +14.6m → pass, 5.1s</div></div></div>
+        <div class="moment"><div class="mini"><i style="background:#5FB0FF;left:8px;top:18px"></i><i style="background:#F5F0E6;left:14px;top:20px;width:3px;height:3px"></i></div><div><div class="mlab">31:05 · 1H</div><div class="msub">regain → +9.1m → pass, 7.9s</div></div></div>
+        <div class="moment"><div class="mini"><i style="background:#8B93A0;left:30px;top:12px"></i></div><div><div class="mlab">45:02 · 1H</div><div class="msub">unknown — window truncated at half-time</div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="prov">
+          <span>CERTIFIED PLAN</span><span class="hash">seq_regain_progress_keep_v0 · 47df4bcc…</span>
+          <span>reproduces on tree f0703cf</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <div class="note"><h4>The film is the interface</h4><p>The pitch replay is the hero, not a detail view. Every answer is something you can watch.</p></div>
+    <div class="note"><h4>Every number is a door</h4><p>The rate opens into its moments; a moment opens into the replay with the evidence drawn on the turf.</p></div>
+    <div class="note"><h4>Unknown is never hidden</h4><p>Bounds and the grey share are always beside the headline number. The interval is the brand.</p></div>
+    <div class="note"><h4>Refusals are answers</h4><p>When Hermes can't measure something, it says so, names the missing capability, and offers the nearest measurable question.</p></div>
+  </div>
+</div>
