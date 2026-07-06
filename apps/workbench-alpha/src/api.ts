@@ -8,7 +8,9 @@ import type {
   ExecutionProgressResponse,
   ExecutionResponse,
   FilmRoomAskResponse,
+  FilmRoomBootstrapResponse,
   FilmRoomReplayFrameResponse,
+  FilmRoomReplayWindowResponse,
   InspectResultResponse,
   InspectTimestampResponse,
   InterpretResponse,
@@ -116,6 +118,15 @@ export function filmRoomAsk(input: { text: string; context?: JsonObject | null }
     method: "POST",
     body: JSON.stringify(input)
   });
+}
+
+export function filmRoomBootstrap(): Promise<FilmRoomBootstrapResponse> {
+  return request<FilmRoomBootstrapResponse>("FilmRoomBootstrapResponse", "/api/film-room/bootstrap");
+}
+
+export function filmRoomReplayWindow(input: { replay_window_id: string }): Promise<FilmRoomReplayWindowResponse> {
+  const replayWindowId = encodeURIComponent(input.replay_window_id);
+  return request<FilmRoomReplayWindowResponse>("FilmRoomReplayWindowResponse", `/api/film-room/replay-window?replay_window_id=${replayWindowId}`);
 }
 
 export function filmRoomReplayFrame(input: {

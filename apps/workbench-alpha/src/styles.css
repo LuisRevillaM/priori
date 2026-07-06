@@ -139,6 +139,36 @@
   overflow: auto;
 }
 
+.refusalBubble strong,
+.refusalBubble span,
+.refusalBubble p {
+  display: block;
+}
+
+.refusalBubble strong {
+  color: #e8f2ea;
+}
+
+.refusalBubble span {
+  margin-top: 4px;
+  color: #8b93a0;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+}
+
+.refusalBubble p {
+  margin: 8px 0 0;
+}
+
+.refusalBubble button {
+  margin-top: 10px;
+  border: 1px solid #8b93a0;
+  background: #111814;
+  color: #e8f2ea;
+  border-radius: 4px;
+  padding: 7px 10px;
+}
+
 .readingRow {
   display: flex;
   flex-wrap: wrap;
@@ -177,6 +207,27 @@
   border-radius: 6px;
   background: #111814;
   overflow: hidden;
+}
+
+.stagehead {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 10px 12px;
+  border-bottom: 1px solid #243229;
+}
+
+.eyebrow {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0;
+  color: #9fb3a6;
+  text-transform: uppercase;
+}
+
+.momentname {
+  color: #d9e7dc;
+  font-size: 13px;
 }
 
 .stagebox svg {
@@ -225,6 +276,33 @@
   stroke-width: 1;
 }
 
+.carryTrail {
+  fill: none;
+  stroke: #ffb13d;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.5;
+}
+
+.anchorMarker {
+  fill: none;
+  stroke: #ffb13d;
+  stroke-width: 2;
+}
+
+.stageLabel,
+.unknownLabel {
+  fill: #e8f2ea;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+}
+
+.unknownOverlay {
+  fill: rgba(139, 147, 160, 0.26);
+  stroke: #8b93a0;
+  stroke-width: 1;
+}
+
 .filmControls {
   display: grid;
   grid-template-columns: auto minmax(120px, 1fr) auto auto;
@@ -243,7 +321,7 @@
 
 .provenanceStrip {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 1px;
   margin-top: 8px;
   border: 1px solid #243229;
@@ -277,11 +355,22 @@
 .filmPanelHeader {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 12px;
   color: #9fb3a6;
   font-size: 11px;
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   text-transform: uppercase;
+}
+
+.filmPanelHeader button {
+  border: 1px solid #3a5c46;
+  background: #0b0f0d;
+  color: #e8f2ea;
+  border-radius: 3px;
+  padding: 4px 7px;
+  font-size: 10px;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 }
 
 .metricValue {
@@ -298,29 +387,39 @@
   line-height: 1.35;
 }
 
-.partitionStrip {
-  position: relative;
-  height: 18px;
-  margin-top: 14px;
-  border: 1px solid #3a5c46;
-  border-radius: 3px;
-  background: #0b0f0d;
+.metricBoundsLine {
+  margin-top: 6px;
+  color: #ffb13d;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
 }
 
-.partitionRange,
-.partitionObserved {
+.intervalBar {
+  position: relative;
+  height: 8px;
+  margin-top: 14px;
+  border-radius: 2px;
+  background: #22302a;
+}
+
+.intervalRange,
+.intervalObserved {
   position: absolute;
   top: 0;
   bottom: 0;
 }
 
-.partitionRange {
+.intervalRange {
   background: #8a6524;
+  border-radius: 2px;
 }
 
-.partitionObserved {
-  width: 2px;
+.intervalObserved {
+  top: -3px;
+  bottom: -3px;
+  width: 3px;
   background: #ffb13d;
+  border-radius: 1px;
 }
 
 .metricBounds {
@@ -329,6 +428,62 @@
   margin-top: 6px;
   color: #9fb3a6;
   font-size: 11px;
+}
+
+.partitionStrip {
+  display: flex;
+  height: 10px;
+  margin-top: 12px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: #22302a;
+}
+
+.partitionStrip i {
+  display: block;
+  min-width: 0;
+}
+
+.partitionPass {
+  background: #ffb13d;
+}
+
+.partitionFail {
+  background: #6e4a45;
+}
+
+.partitionUnknown {
+  background: #8b93a0;
+}
+
+.partitionLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+  color: #9fb3a6;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+}
+
+.legendKey {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 5px;
+  border-radius: 2px;
+}
+
+.passKey {
+  background: #ffb13d;
+}
+
+.failKey {
+  background: #6e4a45;
+}
+
+.unknownKey {
+  background: #8b93a0;
 }
 
 .momentList {
@@ -351,6 +506,13 @@
   color: #d9e7dc;
   padding: 8px;
   text-align: left;
+}
+
+.momentItem small {
+  grid-column: 1 / -1;
+  color: #9fb3a6;
+  font-size: 11px;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 }
 
 .momentItem.selected {
@@ -377,6 +539,49 @@
   line-height: 1.4;
   margin: 10px 0 0;
   white-space: pre-wrap;
+}
+
+.evidenceSummary {
+  display: grid;
+  gap: 8px;
+  margin: 10px 0 0;
+}
+
+.evidenceSummary div {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 8px;
+  border-top: 1px solid #243229;
+  padding-top: 8px;
+}
+
+.evidenceSummary dt {
+  color: #8b93a0;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+}
+
+.evidenceSummary dd {
+  margin: 0;
+  color: #d9e7dc;
+  font-size: 12px;
+}
+
+.compiled {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.stage {
+  border: 1px solid #3a5c46;
+  border-radius: 3px;
+  background: #152019;
+  color: #e8f2ea;
+  padding: 4px 8px;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
 }
 
 @media (max-width: 900px) {

@@ -50,6 +50,7 @@ RATE_EVIDENCE_FIELDS = [
     "numerator_source_output_name",
     "denominator_source_node_id",
     "denominator_source_output_name",
+    "source_records",
 ]
 _BOUND_NOT_SUPPLIED = object()
 
@@ -497,6 +498,7 @@ def _result_record(
         "denominator_source_node_id": denominator_source_node_id,
         "denominator_source_output_name": denominator_source_output_name,
         "source_record_count": len(source_records),
+        "source_records": source_records,
     }
 
 

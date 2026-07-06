@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { assertIntervalMetric } from "../src/FilmRoom";
+import { assertIntervalMetric, filmRoomOutcomeClass, headerChipsFromResponse, refusalViewModel } from "../src/FilmRoom";
+import type { FilmRoomAskResponse } from "../src/types";
 
 const metric = assertIntervalMetric({
   label: "Certified interval",
@@ -37,5 +38,77 @@ assert.throws(
   /missing finite/,
   "a point estimate without bounds must be unrenderable"
 );
+
+const baseResponse = {
+  ok: true,
+  request_text: "How often?",
+  provider: "openai-codex",
+  model: "gpt-5.5",
+  latency_ms: 12,
+  latency_breakdown_ms: { hermes: 3, synthesis: 4, execution: 5, total: 12 },
+  hermes: {},
+  clarification: null,
+  refusal: null
+} satisfies Partial<FilmRoomAskResponse>;
+
+assert.equal(filmRoomOutcomeClass(null), "pending");
+assert.equal(
+  filmRoomOutcomeClass({
+    ...baseResponse,
+    outcome: "clarification_required",
+    clarification: { question: "Which reading?", readings: [], state: {} },
+    answer: null
+  } as FilmRoomAskResponse),
+  "clarification"
+);
+assert.equal(
+  filmRoomOutcomeClass({
+    ...baseResponse,
+    outcome: "understood_but_not_expressible",
+    refusal: { missing_capability: "concept:body_orientation", gap_code: "BODY_ORIENTATION", message: "Pose data is absent." },
+    answer: null
+  } as FilmRoomAskResponse),
+  "refusal"
+);
+
+const refusal = refusalViewModel({
+  missing_capability: "concept:body_orientation",
+  gap_code: "BODY_ORIENTATION",
+  message: "Pose data is absent."
+});
+assert.equal(refusal.missing, "concept:body_orientation");
+assert.equal(refusal.gapCode, "BODY_ORIENTATION");
+
+const chips = headerChipsFromResponse({
+  ...baseResponse,
+  outcome: "expression",
+  answer: {
+    status: "answer_ready",
+    compiled_chips: [],
+    document: {
+      documents: {
+        home: { default_invocation: { match_ids: ["J03WOY", "J03WPY"], perspective_team_role: "home" } }
+      }
+    },
+    certified_evidence_rows: [],
+    interval_metric: null,
+    moments: [],
+    moment_total_count: 0,
+    visible_moment_count: 0,
+    replay: null,
+    executions: [],
+    raw_evidence: {},
+    provenance: {
+      plan_hash: "abc",
+      synthesized_document_hash: "def",
+      bound_plan_hashes: {},
+      canonical_sources: {},
+      tree: "1234567890"
+    }
+  },
+  clarification: null,
+  refusal: null
+} as FilmRoomAskResponse);
+assert.deepEqual(chips, ["2 matches", "home perspective", "openai-codex · gpt-5.5", "tree 1234567"]);
 
 console.log("film room tests passed");

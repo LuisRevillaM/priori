@@ -6,7 +6,9 @@ import type {
   ExecutionProgressResponse as GeneratedExecutionProgressResponse,
   ExecutionResponse as GeneratedExecutionResponse,
   FilmRoomAskResponse as GeneratedFilmRoomAskResponse,
+  FilmRoomBootstrapResponse as GeneratedFilmRoomBootstrapResponse,
   FilmRoomReplayFrameResponse as GeneratedFilmRoomReplayFrameResponse,
+  FilmRoomReplayWindowResponse as GeneratedFilmRoomReplayWindowResponse,
   InspectResultResponse as GeneratedInspectResultResponse,
   InspectTimestampResponse as GeneratedInspectTimestampResponse,
   InterpretResponse as GeneratedInterpretResponse,
@@ -234,7 +236,7 @@ export type ReplayFrame = {
 export type ReplayPayload = {
   schema_version: string;
   replay_window_id: string;
-  source_kind: "result" | "target";
+  source_kind: "result" | "target" | "chain_record";
   source_id: string;
   match_id: string;
   period: string;
@@ -267,11 +269,18 @@ export type FilmRoomMoment = {
   match_id: string;
   period: string;
   anchor_frame_id: number;
+  start_frame_id?: number | null;
+  end_frame_id?: number | null;
   match_time_ms?: number | null;
   requested_evidence: JsonObject;
   replay_window_id?: string | null;
+  replay_start_frame_id?: number | null;
+  replay_end_frame_id?: number | null;
   evidence_row?: JsonObject | null;
   unknown_reason?: string | null;
+  chain_status?: string | null;
+  chain_reason?: string | null;
+  evidence_overlay: JsonObject;
 };
 
 export type FilmRoomAskResponse = Omit<GeneratedFilmRoomAskResponse, "answer" | "hermes" | "clarification" | "refusal"> & {
@@ -281,6 +290,7 @@ export type FilmRoomAskResponse = Omit<GeneratedFilmRoomAskResponse, "answer" | 
   provider: string;
   model: string;
   latency_ms: number;
+  latency_breakdown_ms: Record<string, number>;
   hermes: JsonObject;
   clarification?: JsonObject | null;
   refusal?: JsonObject | null;
@@ -291,8 +301,11 @@ export type FilmRoomAskResponse = Omit<GeneratedFilmRoomAskResponse, "answer" | 
     certified_evidence_rows: JsonObject[];
     interval_metric?: FilmRoomIntervalMetric | null;
     moments: FilmRoomMoment[];
+    moment_total_count: number;
+    visible_moment_count: number;
     replay?: ReplayPayload | null;
     executions: JsonObject[];
+    raw_evidence: JsonObject;
     provenance: {
       plan_hash: string;
       synthesized_document_hash: string;
@@ -305,8 +318,19 @@ export type FilmRoomAskResponse = Omit<GeneratedFilmRoomAskResponse, "answer" | 
       replay_window_id?: string | null;
       canonical_sources: Record<string, string>;
       runtime_commit?: string | null;
+      tree?: string | null;
     };
   } | null;
+};
+
+export type FilmRoomBootstrapResponse = Omit<GeneratedFilmRoomBootstrapResponse, "prewarmed_response"> & {
+  ok: true;
+  provider: string;
+  model: string;
+  billing_surface: string;
+  flagship_plan_hashes: Record<string, string | null>;
+  prewarm_records: JsonObject[];
+  prewarmed_response?: FilmRoomAskResponse | null;
 };
 
 export type FilmRoomReplayFrameResponse = Omit<GeneratedFilmRoomReplayFrameResponse, "frame"> & {
@@ -316,6 +340,12 @@ export type FilmRoomReplayFrameResponse = Omit<GeneratedFilmRoomReplayFrameRespo
   frame_sha256: string;
   canonical_sources: Record<string, string>;
   frame: ReplayFrame;
+};
+
+export type FilmRoomReplayWindowResponse = Omit<GeneratedFilmRoomReplayWindowResponse, "replay"> & {
+  ok: true;
+  replay_window_id: string;
+  replay: ReplayPayload;
 };
 
 export type PredicateTrace = {

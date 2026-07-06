@@ -594,6 +594,10 @@ export const apiSchemas = {
             ],
             "default": null
           },
+          "moment_total_count": {
+            "title": "Moment Total Count",
+            "type": "integer"
+          },
           "moments": {
             "items": {
               "$ref": "#/$defs/FilmRoomMomentResponse"
@@ -603,6 +607,11 @@ export const apiSchemas = {
           },
           "provenance": {
             "$ref": "#/$defs/FilmRoomProvenanceResponse"
+          },
+          "raw_evidence": {
+            "additionalProperties": true,
+            "title": "Raw Evidence",
+            "type": "object"
           },
           "replay": {
             "anyOf": [
@@ -619,6 +628,10 @@ export const apiSchemas = {
             "const": "answer_ready",
             "title": "Status",
             "type": "string"
+          },
+          "visible_moment_count": {
+            "title": "Visible Moment Count",
+            "type": "integer"
           }
         },
         "required": [
@@ -627,6 +640,8 @@ export const apiSchemas = {
           "document",
           "certified_evidence_rows",
           "moments",
+          "moment_total_count",
+          "visible_moment_count",
           "executions",
           "provenance"
         ],
@@ -742,9 +757,50 @@ export const apiSchemas = {
             "title": "Anchor Frame Id",
             "type": "integer"
           },
+          "chain_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Chain Reason"
+          },
+          "chain_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Chain Status"
+          },
           "classification": {
             "title": "Classification",
             "type": "string"
+          },
+          "end_frame_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "End Frame Id"
+          },
+          "evidence_overlay": {
+            "additionalProperties": true,
+            "title": "Evidence Overlay",
+            "type": "object"
           },
           "evidence_row": {
             "anyOf": [
@@ -779,6 +835,30 @@ export const apiSchemas = {
             "title": "Period",
             "type": "string"
           },
+          "replay_end_frame_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Replay End Frame Id"
+          },
+          "replay_start_frame_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Replay Start Frame Id"
+          },
           "replay_window_id": {
             "anyOf": [
               {
@@ -799,6 +879,18 @@ export const apiSchemas = {
           "result_id": {
             "title": "Result Id",
             "type": "string"
+          },
+          "start_frame_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Start Frame Id"
           },
           "unknown_reason": {
             "anyOf": [
@@ -932,6 +1024,18 @@ export const apiSchemas = {
           "synthesized_document_hash": {
             "title": "Synthesized Document Hash",
             "type": "string"
+          },
+          "tree": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Tree"
           }
         },
         "required": [
@@ -1099,7 +1203,8 @@ export const apiSchemas = {
           "source_kind": {
             "enum": [
               "result",
-              "target"
+              "target",
+              "chain_record"
             ],
             "title": "Source Kind",
             "type": "string"
@@ -1160,6 +1265,13 @@ export const apiSchemas = {
         "title": "Hermes",
         "type": "object"
       },
+      "latency_breakdown_ms": {
+        "additionalProperties": {
+          "type": "integer"
+        },
+        "title": "Latency Breakdown Ms",
+        "type": "object"
+      },
       "latency_ms": {
         "title": "Latency Ms",
         "type": "integer"
@@ -1212,9 +1324,77 @@ export const apiSchemas = {
       "provider",
       "model",
       "latency_ms",
+      "latency_breakdown_ms",
       "hermes"
     ],
     "title": "FilmRoomAskResponse",
+    "type": "object"
+  },
+  "FilmRoomBootstrapResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "billing_surface": {
+        "title": "Billing Surface",
+        "type": "string"
+      },
+      "flagship_plan_hashes": {
+        "additionalProperties": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "title": "Flagship Plan Hashes",
+        "type": "object"
+      },
+      "model": {
+        "title": "Model",
+        "type": "string"
+      },
+      "ok": {
+        "const": true,
+        "title": "Ok",
+        "type": "boolean"
+      },
+      "prewarm_records": {
+        "items": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Prewarm Records",
+        "type": "array"
+      },
+      "prewarmed_response": {
+        "anyOf": [
+          {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Prewarmed Response"
+      },
+      "provider": {
+        "title": "Provider",
+        "type": "string"
+      }
+    },
+    "required": [
+      "ok",
+      "provider",
+      "model",
+      "billing_surface",
+      "flagship_plan_hashes",
+      "prewarm_records"
+    ],
+    "title": "FilmRoomBootstrapResponse",
     "type": "object"
   },
   "FilmRoomReplayFrameResponse": {
@@ -1332,6 +1512,218 @@ export const apiSchemas = {
       "frame"
     ],
     "title": "FilmRoomReplayFrameResponse",
+    "type": "object"
+  },
+  "FilmRoomReplayWindowResponse": {
+    "$defs": {
+      "PitchResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "coordinate_contract": {
+            "title": "Coordinate Contract",
+            "type": "string"
+          },
+          "length_m": {
+            "title": "Length M",
+            "type": "number"
+          },
+          "width_m": {
+            "title": "Width M",
+            "type": "number"
+          }
+        },
+        "required": [
+          "length_m",
+          "width_m",
+          "coordinate_contract"
+        ],
+        "title": "PitchResponse",
+        "type": "object"
+      },
+      "ReplayEntityResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "entity_id": {
+            "title": "Entity Id",
+            "type": "string"
+          },
+          "entity_type": {
+            "title": "Entity Type",
+            "type": "string"
+          },
+          "team_id": {
+            "title": "Team Id",
+            "type": "string"
+          },
+          "team_role": {
+            "title": "Team Role",
+            "type": "string"
+          },
+          "x_m": {
+            "title": "X M",
+            "type": "number"
+          },
+          "y_m": {
+            "title": "Y M",
+            "type": "number"
+          }
+        },
+        "required": [
+          "team_id",
+          "team_role",
+          "entity_id",
+          "entity_type",
+          "x_m",
+          "y_m"
+        ],
+        "title": "ReplayEntityResponse",
+        "type": "object"
+      },
+      "ReplayFrameResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "entities": {
+            "items": {
+              "$ref": "#/$defs/ReplayEntityResponse"
+            },
+            "title": "Entities",
+            "type": "array"
+          },
+          "frame_id": {
+            "title": "Frame Id",
+            "type": "integer"
+          },
+          "timestamp_utc": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Timestamp Utc"
+          }
+        },
+        "required": [
+          "frame_id",
+          "entities"
+        ],
+        "title": "ReplayFrameResponse",
+        "type": "object"
+      },
+      "ReplayPayloadResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "anchor_frame_id": {
+            "title": "Anchor Frame Id",
+            "type": "integer"
+          },
+          "canonical_sources": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Canonical Sources",
+            "type": "object"
+          },
+          "end_frame_id": {
+            "title": "End Frame Id",
+            "type": "integer"
+          },
+          "frame_rate_hz": {
+            "title": "Frame Rate Hz",
+            "type": "number"
+          },
+          "frames": {
+            "items": {
+              "$ref": "#/$defs/ReplayFrameResponse"
+            },
+            "title": "Frames",
+            "type": "array"
+          },
+          "generated_at": {
+            "title": "Generated At",
+            "type": "string"
+          },
+          "match_id": {
+            "title": "Match Id",
+            "type": "string"
+          },
+          "period": {
+            "title": "Period",
+            "type": "string"
+          },
+          "pitch": {
+            "$ref": "#/$defs/PitchResponse"
+          },
+          "replay_window_id": {
+            "title": "Replay Window Id",
+            "type": "string"
+          },
+          "schema_version": {
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "source_id": {
+            "title": "Source Id",
+            "type": "string"
+          },
+          "source_kind": {
+            "enum": [
+              "result",
+              "target",
+              "chain_record"
+            ],
+            "title": "Source Kind",
+            "type": "string"
+          },
+          "start_frame_id": {
+            "title": "Start Frame Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "schema_version",
+          "replay_window_id",
+          "source_kind",
+          "source_id",
+          "match_id",
+          "period",
+          "frame_rate_hz",
+          "start_frame_id",
+          "end_frame_id",
+          "anchor_frame_id",
+          "generated_at",
+          "canonical_sources",
+          "pitch",
+          "frames"
+        ],
+        "title": "ReplayPayloadResponse",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "ok": {
+        "const": true,
+        "title": "Ok",
+        "type": "boolean"
+      },
+      "replay": {
+        "$ref": "#/$defs/ReplayPayloadResponse"
+      },
+      "replay_window_id": {
+        "title": "Replay Window Id",
+        "type": "string"
+      }
+    },
+    "required": [
+      "ok",
+      "replay_window_id",
+      "replay"
+    ],
+    "title": "FilmRoomReplayWindowResponse",
     "type": "object"
   },
   "HealthResponse": {
@@ -1517,7 +1909,8 @@ export const apiSchemas = {
           "source_kind": {
             "enum": [
               "result",
-              "target"
+              "target",
+              "chain_record"
             ],
             "title": "Source Kind",
             "type": "string"
@@ -1735,7 +2128,8 @@ export const apiSchemas = {
           "source_kind": {
             "enum": [
               "result",
-              "target"
+              "target",
+              "chain_record"
             ],
             "title": "Source Kind",
             "type": "string"
@@ -2498,7 +2892,9 @@ export type ErrorResponse = FromSchema<typeof apiSchemas["ErrorResponse"]>;
 export type ExecutionProgressResponse = FromSchema<typeof apiSchemas["ExecutionProgressResponse"]>;
 export type ExecutionResponse = FromSchema<typeof apiSchemas["ExecutionResponse"]>;
 export type FilmRoomAskResponse = FromSchema<typeof apiSchemas["FilmRoomAskResponse"]>;
+export type FilmRoomBootstrapResponse = FromSchema<typeof apiSchemas["FilmRoomBootstrapResponse"]>;
 export type FilmRoomReplayFrameResponse = FromSchema<typeof apiSchemas["FilmRoomReplayFrameResponse"]>;
+export type FilmRoomReplayWindowResponse = FromSchema<typeof apiSchemas["FilmRoomReplayWindowResponse"]>;
 export type HealthResponse = FromSchema<typeof apiSchemas["HealthResponse"]>;
 export type InspectResultResponse = FromSchema<typeof apiSchemas["InspectResultResponse"]>;
 export type InspectTimestampResponse = FromSchema<typeof apiSchemas["InspectTimestampResponse"]>;
