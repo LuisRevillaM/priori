@@ -1,0 +1,36 @@
+{
+ "evidence_metadata": {
+  "expression": "delivery/packets/r2-4-flagship/meaning-expressions/counterattack_initiation_sequence_rate.v0.json",
+  "grid": [
+   3.0
+  ],
+  "parameter": "carry_forward_progression_m",
+  "producing_script": "scripts/exam/threshold_sweep.py",
+  "producing_script_sha256": "df8eef00e5bac5f68fee0d9fb55bacdaf604f145019bdd8ad9dca7c610ac8dfd",
+  "run_started_at": "2026-07-06T21:49:01.586863+00:00"
+ },
+ "points": [
+  {
+   "document_hash": "d8179a5a1af54ecdd45514e4fa3403b3ab515977fb79dd29b4a62f2ecfd9bb7e",
+   "execution_ms": 114920.047,
+   "outcome": "executed",
+   "parameter_occurrences_set": 1,
+   "summary": [
+    {
+     "rate_rows": [],
+     "result_count": 0,
+     "role": "away",
+     "status": null
+    },
+    {
+     "rate_rows": [],
+     "result_count": 0,
+     "role": "home",
+     "status": null
+    }
+   ],
+   "synthesis_ms": 11.066,
+   "value": 3.0
+  }
+ ]
+}

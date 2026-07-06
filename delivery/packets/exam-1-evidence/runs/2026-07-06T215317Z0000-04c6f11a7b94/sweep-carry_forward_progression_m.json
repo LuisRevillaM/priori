@@ -1,0 +1,158 @@
+{
+ "evidence_metadata": {
+  "expression": "delivery/packets/r2-4-flagship/meaning-expressions/counterattack_initiation_sequence_rate.v0.json",
+  "grid": [
+   1.0,
+   2.0,
+   3.0,
+   5.0,
+   8.0
+  ],
+  "parameter": "carry_forward_progression_m",
+  "producing_script": "scripts/exam/threshold_sweep.py",
+  "producing_script_sha256": "04c6f11a7b942cda9474bb189f65a8f49721598e090f44bdde7b21eab093addb",
+  "run_started_at": "2026-07-06T21:53:18.827531+00:00"
+ },
+ "points": [
+  {
+   "document_hash": "d8179a5a1af54ecdd45514e4fa3403b3ab515977fb79dd29b4a62f2ecfd9bb7e",
+   "evidence_rows_kind": "certified",
+   "execution_ms": 481.786,
+   "interval_metric": {
+    "label": "After a regain, does the team progress the ball by carry and keep it with a controlled pass?",
+    "lower": 0.0003557452863749555,
+    "observed": 1.0,
+    "source": {
+     "a_count": 1,
+     "b_count": 0,
+     "c_count": 2261,
+     "d1_count": 0,
+     "d2_count": 549,
+     "e_count": 0,
+     "evidence_kind": "certified",
+     "period_records_hash": "3fb270eda29fc14f57746491881afacaee388f7799284ee9f6caf2bf74416afd",
+     "plan_hash": "d8179a5a1af54ecdd45514e4fa3403b3ab515977fb79dd29b4a62f2ecfd9bb7e"
+    },
+    "unknown_count": 2810,
+    "upper": 1.0
+   },
+   "moment_total_count": 115,
+   "outcome": "executed",
+   "parameter_occurrences_set": 1,
+   "synthesis_ms": 11.19,
+   "value": 1.0
+  },
+  {
+   "document_hash": "d8179a5a1af54ecdd45514e4fa3403b3ab515977fb79dd29b4a62f2ecfd9bb7e",
+   "evidence_rows_kind": "certified",
+   "execution_ms": 167.051,
+   "interval_metric": {
+    "label": "After a regain, does the team progress the ball by carry and keep it with a controlled pass?",
+    "lower": 0.0003557452863749555,
+    "observed": 1.0,
+    "source": {
+     "a_count": 1,
+     "b_count": 0,
+     "c_count": 2261,
+     "d1_count": 0,
+     "d2_count": 549,
+     "e_count": 0,
+     "evidence_kind": "certified",
+     "period_records_hash": "3fb270eda29fc14f57746491881afacaee388f7799284ee9f6caf2bf74416afd",
+     "plan_hash": "d8179a5a1af54ecdd45514e4fa3403b3ab515977fb79dd29b4a62f2ecfd9bb7e"
+    },
+    "unknown_count": 2810,
+    "upper": 1.0
+   },
+   "moment_total_count": 115,
+   "outcome": "executed",
+   "parameter_occurrences_set": 1,
+   "synthesis_ms": 11.475,
+   "value": 2.0
+  },
+  {
+   "document_hash": "d8179a5a1af54ecdd45514e4fa3403b3ab515977fb79dd29b4a62f2ecfd9bb7e",
+   "evidence_rows_kind": "certified",
+   "execution_ms": 154.994,
+   "interval_metric": {
+    "label": "After a regain, does the team progress the ball by carry and keep it with a controlled pass?",
+    "lower": 0.0003557452863749555,
+    "observed": 1.0,
+    "source": {
+     "a_count": 1,
+     "b_count": 0,
+     "c_count": 2261,
+     "d1_count": 0,
+     "d2_count": 549,
+     "e_count": 0,
+     "evidence_kind": "certified",
+     "period_records_hash": "3fb270eda29fc14f57746491881afacaee388f7799284ee9f6caf2bf74416afd",
+     "plan_hash": "d8179a5a1af54ecdd45514e4fa3403b3ab515977fb79dd29b4a62f2ecfd9bb7e"
+    },
+    "unknown_count": 2810,
+    "upper": 1.0
+   },
+   "moment_total_count": 115,
+   "outcome": "executed",
+   "parameter_occurrences_set": 1,
+   "synthesis_ms": 11.669,
+   "value": 3.0
+  },
+  {
+   "document_hash": "d8179a5a1af54ecdd45514e4fa3403b3ab515977fb79dd29b4a62f2ecfd9bb7e",
+   "evidence_rows_kind": "certified",
+   "execution_ms": 151.794,
+   "interval_metric": {
+    "label": "After a regain, does the team progress the ball by carry and keep it with a controlled pass?",
+    "lower": 0.0003557452863749555,
+    "observed": 1.0,
+    "source": {
+     "a_count": 1,
+     "b_count": 0,
+     "c_count": 2261,
+     "d1_count": 0,
+     "d2_count": 549,
+     "e_count": 0,
+     "evidence_kind": "certified",
+     "period_records_hash": "3fb270eda29fc14f57746491881afacaee388f7799284ee9f6caf2bf74416afd",
+     "plan_hash": "d8179a5a1af54ecdd45514e4fa3403b3ab515977fb79dd29b4a62f2ecfd9bb7e"
+    },
+    "unknown_count": 2810,
+    "upper": 1.0
+   },
+   "moment_total_count": 115,
+   "outcome": "executed",
+   "parameter_occurrences_set": 1,
+   "synthesis_ms": 24.973,
+   "value": 5.0
+  },
+  {
+   "document_hash": "d8179a5a1af54ecdd45514e4fa3403b3ab515977fb79dd29b4a62f2ecfd9bb7e",
+   "evidence_rows_kind": "certified",
+   "execution_ms": 167.83,
+   "interval_metric": {
+    "label": "After a regain, does the team progress the ball by carry and keep it with a controlled pass?",
+    "lower": 0.0003557452863749555,
+    "observed": 1.0,
+    "source": {
+     "a_count": 1,
+     "b_count": 0,
+     "c_count": 2261,
+     "d1_count": 0,
+     "d2_count": 549,
+     "e_count": 0,
+     "evidence_kind": "certified",
+     "period_records_hash": "3fb270eda29fc14f57746491881afacaee388f7799284ee9f6caf2bf74416afd",
+     "plan_hash": "d8179a5a1af54ecdd45514e4fa3403b3ab515977fb79dd29b4a62f2ecfd9bb7e"
+    },
+    "unknown_count": 2810,
+    "upper": 1.0
+   },
+   "moment_total_count": 115,
+   "outcome": "executed",
+   "parameter_occurrences_set": 1,
+   "synthesis_ms": 11.197,
+   "value": 8.0
+  }
+ ]
+}

@@ -23,9 +23,9 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT))
 
-from tqe.runtime.executor import TacticalQueryExecutor  # noqa: E402
 from tqe.semantic_compiler import meaning_expression as me  # noqa: E402
-from tqe.semantic_compiler import target_synthesis as ts  # noqa: E402
+from tqe.semantic_compiler.target_synthesis import synthesize_and_bind  # noqa: E402
+from tqe.workshop.app_service import film_room_answer_from_document  # noqa: E402
 
 
 def script_sha256() -> str:
@@ -71,10 +71,13 @@ def set_parameter(raw: dict[str, Any], target: str, value: float) -> tuple[dict[
     return mutated, hits
 
 
-def rate_summary(execution: Any) -> dict[str, Any]:
+def rate_summary_from_payload(execution: dict[str, Any]) -> dict[str, Any]:
     rows = []
-    for result in execution.results:
-        evidence = getattr(result, "evidence", None) or {}
+    inner = execution.get("execution", execution) if isinstance(execution.get("execution"), dict) else execution
+    for result in inner.get("results", []) or []:
+        evidence = result.get("evidence") if isinstance(result, dict) else None
+        if not isinstance(evidence, dict):
+            evidence = result if isinstance(result, dict) else {}
         if isinstance(evidence, dict) and any(k in evidence for k in ("observed", "lower_bound", "a_count")):
             rows.append(
                 {
@@ -86,14 +89,19 @@ def rate_summary(execution: Any) -> dict[str, Any]:
                     )
                 }
             )
-    return {"status": execution.status.value, "result_count": len(execution.results), "rate_rows": rows}
+    return {
+        "role": execution.get("role"),
+        "status": inner.get("execution_status", inner.get("status")),
+        "result_count": inner.get("total_result_count", len(inner.get("results", []) or [])),
+        "requested_evidence_failure_count": inner.get("requested_evidence_failure_count"),
+        "rate_rows": rows,
+    }
 
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
     raw = json.loads(Path(args.expression).read_text())
     grid = [float(v) for v in args.grid.split(",")]
     run_dir = ROOT / "delivery/packets/exam-1-evidence/runs" / f"{utc_stamp()}-{script_sha256()[:12]}"
-    cache_root = Path(args.cache_root) if args.cache_root else None
 
     points: list[dict[str, Any]] = []
     for value in grid:
@@ -108,21 +116,28 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             points.append({"value": value, "outcome": "refusal", "refusal": refusal.model_dump(mode="json")})
             continue
         started = time.perf_counter()
-        bound = ts.synthesize_and_bind(expression=expression)
+        synthesized = synthesize_and_bind(expression)
         synth_ms = (time.perf_counter() - started) * 1000.0
         started = time.perf_counter()
-        executor = TacticalQueryExecutor(enable_node_cache=True, node_cache_root=cache_root, parallel_workers=args.workers)
-        execution = executor.execute(bound.bound_plan)
+        answer = film_room_answer_from_document(
+            synthesized["document"],
+            expression_payload=mutated,
+            expression_hash=None,
+            synthesized_document_hash=str(synthesized["document_hash"]),
+            output_root=Path(args.output_root),
+        )
         exec_ms = (time.perf_counter() - started) * 1000.0
         points.append(
             {
                 "value": value,
                 "outcome": "executed",
                 "parameter_occurrences_set": hits,
-                "document_hash": bound.document_hash,
+                "document_hash": str(synthesized["document_hash"]),
                 "synthesis_ms": round(synth_ms, 3),
                 "execution_ms": round(exec_ms, 3),
-                "summary": rate_summary(execution),
+                "interval_metric": answer.get("interval_metric"),
+                "moment_total_count": answer.get("moment_total_count"),
+                "evidence_rows_kind": answer.get("evidence_rows_kind"),
             }
         )
 
@@ -146,7 +161,7 @@ def main() -> None:
     parser.add_argument("--expression", required=True)
     parser.add_argument("--parameter", required=True)
     parser.add_argument("--grid", required=True, help="comma-separated values")
-    parser.add_argument("--cache-root", default=None)
+    parser.add_argument("--output-root", default="artifacts/exam-output")
     parser.add_argument("--workers", type=int, default=4)
     args = parser.parse_args()
     print(json.dumps(run(args)))

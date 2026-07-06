@@ -1,0 +1,128 @@
+{
+ "evidence_metadata": {
+  "expression": "delivery/packets/r2-4-flagship/meaning-expressions/counterattack_initiation_sequence_rate.v0.json",
+  "grid": [
+   1.0,
+   2.0,
+   3.0,
+   5.0,
+   8.0
+  ],
+  "parameter": "carry_forward_progression_m",
+  "producing_script": "scripts/exam/threshold_sweep.py",
+  "producing_script_sha256": "453a3ab8df16d8ccb305b6bf6058cbbdcfc55526ef5cabff5dca8994c46854ca",
+  "run_started_at": "2026-07-06T21:50:26.487157+00:00"
+ },
+ "points": [
+  {
+   "document_hash": "d8179a5a1af54ecdd45514e4fa3403b3ab515977fb79dd29b4a62f2ecfd9bb7e",
+   "execution_ms": 118.178,
+   "outcome": "executed",
+   "parameter_occurrences_set": 1,
+   "summary": [
+    {
+     "rate_rows": [],
+     "result_count": 1,
+     "role": "away",
+     "status": null
+    },
+    {
+     "rate_rows": [],
+     "result_count": 0,
+     "role": "home",
+     "status": null
+    }
+   ],
+   "synthesis_ms": 11.633,
+   "value": 1.0
+  },
+  {
+   "document_hash": "d8179a5a1af54ecdd45514e4fa3403b3ab515977fb79dd29b4a62f2ecfd9bb7e",
+   "execution_ms": 102.682,
+   "outcome": "executed",
+   "parameter_occurrences_set": 1,
+   "summary": [
+    {
+     "rate_rows": [],
+     "result_count": 1,
+     "role": "away",
+     "status": null
+    },
+    {
+     "rate_rows": [],
+     "result_count": 0,
+     "role": "home",
+     "status": null
+    }
+   ],
+   "synthesis_ms": 10.839,
+   "value": 2.0
+  },
+  {
+   "document_hash": "d8179a5a1af54ecdd45514e4fa3403b3ab515977fb79dd29b4a62f2ecfd9bb7e",
+   "execution_ms": 92.144,
+   "outcome": "executed",
+   "parameter_occurrences_set": 1,
+   "summary": [
+    {
+     "rate_rows": [],
+     "result_count": 1,
+     "role": "away",
+     "status": null
+    },
+    {
+     "rate_rows": [],
+     "result_count": 0,
+     "role": "home",
+     "status": null
+    }
+   ],
+   "synthesis_ms": 10.551,
+   "value": 3.0
+  },
+  {
+   "document_hash": "d8179a5a1af54ecdd45514e4fa3403b3ab515977fb79dd29b4a62f2ecfd9bb7e",
+   "execution_ms": 104.66,
+   "outcome": "executed",
+   "parameter_occurrences_set": 1,
+   "summary": [
+    {
+     "rate_rows": [],
+     "result_count": 1,
+     "role": "away",
+     "status": null
+    },
+    {
+     "rate_rows": [],
+     "result_count": 0,
+     "role": "home",
+     "status": null
+    }
+   ],
+   "synthesis_ms": 10.678,
+   "value": 5.0
+  },
+  {
+   "document_hash": "d8179a5a1af54ecdd45514e4fa3403b3ab515977fb79dd29b4a62f2ecfd9bb7e",
+   "execution_ms": 104.137,
+   "outcome": "executed",
+   "parameter_occurrences_set": 1,
+   "summary": [
+    {
+     "rate_rows": [],
+     "result_count": 1,
+     "role": "away",
+     "status": null
+    },
+    {
+     "rate_rows": [],
+     "result_count": 0,
+     "role": "home",
+     "status": null
+    }
+   ],
+   "synthesis_ms": 10.725,
+   "value": 8.0
+  }
+ ]
+}
