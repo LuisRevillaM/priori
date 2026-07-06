@@ -510,6 +510,7 @@ class TacticalQueryExecutor:
                     "disabled": int(node_cache_summary.get("disabled", 0)),
                     "bypassed": int(node_cache_summary.get("bypassed", 0)),
                     "detected_never_served": int(node_cache_summary.get("detected_never_served", 0)),
+                    "persistent_store_rejected": int(node_cache_summary.get("persistent_store_rejected", 0)),
                 },
                 "execution_parallelism": {
                     "workers": self.parallel_workers,
@@ -833,11 +834,23 @@ class TacticalQueryExecutor:
                         state.node_output_cache[cache_key] = copy.deepcopy(state.signals[node.node_id])
                         if safe_shared_cache is not None:
                             safe_shared_cache[cache_key] = copy.deepcopy(state.signals[node.node_id])
-                        self.persistent_node_output_cache.store(
-                            key=cache_key,
-                            preimage=cache_preimage,
-                            output=copy.deepcopy(state.signals[node.node_id]),
-                        )
+                        try:
+                            self.persistent_node_output_cache.store(
+                                key=cache_key,
+                                preimage=cache_preimage,
+                                output=copy.deepcopy(state.signals[node.node_id]),
+                            )
+                        except RuntimeError as exc:
+                            state.node_cache_summary["persistent_store_rejected"] += 1
+                            self._record_progress(
+                                state,
+                                {
+                                    "event": "node_cache_store_rejected",
+                                    **progress_base,
+                                    "cache_key": cache_key,
+                                    "reason": str(exc),
+                                },
+                            )
                         cache_status = "miss"
                         state.node_cache_summary["miss"] += 1
                 else:
