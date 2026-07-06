@@ -127,22 +127,9 @@ claim boundaries.
 
 ## How The System Is Layered
 
-The current architecture source of truth is split across executable artifacts
-and ratified era records:
+The architecture source of truth is:
 
-- `semantic-registry/` for registered capability/passport facts.
-- `src/tqe/runtime/` and `src/tqe/semantic_compiler/` for executable runtime
-  and compiler behavior.
-- [docs/adr/0013-r1-operator-era.md](docs/adr/0013-r1-operator-era.md),
-  [docs/adr/0014-r2-aggregation-era.md](docs/adr/0014-r2-aggregation-era.md),
-  and [docs/adr/0015-scp2-bridge-era.md](docs/adr/0015-scp2-bridge-era.md)
-  for ratified era boundaries.
-- Current packet reports under `delivery/packets/` for evidence-backed changes.
-
-The former June 23 architecture brief is archived at
-[docs/archive/prune-1/architecture/TACTICAL_QUERY_ARCHITECTURE_AND_STANDARD_LIBRARY.md](docs/archive/prune-1/architecture/TACTICAL_QUERY_ARCHITECTURE_AND_STANDARD_LIBRARY.md).
-Its old path remains only as a pointer because its legacy operator grammar is
-not current composition guidance.
+- [docs/TACTICAL_QUERY_ARCHITECTURE_AND_STANDARD_LIBRARY.md](docs/TACTICAL_QUERY_ARCHITECTURE_AND_STANDARD_LIBRARY.md)
 
 The short version:
 
@@ -317,15 +304,11 @@ Recommended path for a new reader:
 1. Read this README.
 2. Read the case study — canonical text at [docs/CASE_STUDY.md](docs/CASE_STUDY.md),
    live interactive version at `/case-study`.
-3. Read the current era ADRs:
-   [0013](docs/adr/0013-r1-operator-era.md),
-   [0014](docs/adr/0014-r2-aggregation-era.md), and
-   [0015](docs/adr/0015-scp2-bridge-era.md).
+3. Read [docs/TACTICAL_QUERY_ARCHITECTURE_AND_STANDARD_LIBRARY.md](docs/TACTICAL_QUERY_ARCHITECTURE_AND_STANDARD_LIBRARY.md).
 4. Read [docs/data/idsse.md](docs/data/idsse.md).
-5. Inspect `semantic-registry/` for registered capability/passport facts.
-6. Inspect `src/tqe/runtime/` for the executable primitive/runtime layer.
-7. Inspect `src/tqe/verification/` for the gates that make the claims testable.
-8. Inspect `apps/workbench-alpha/src/` for the coach/workbench surfaces.
+5. Inspect `src/tqe/runtime/` for the executable primitive/runtime layer.
+6. Inspect `src/tqe/verification/` for the gates that make the claims testable.
+7. Inspect `apps/workbench-alpha/src/` for the coach/workbench surfaces.
 
 The repo is intentionally transparent about partial work and prior mistakes.
 Some artifacts are historical rather than current product code. The safest way

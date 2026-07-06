@@ -1,16 +1,3 @@
-# PRUNE-1 Quarantine Provenance
-
-Original path: `MILESTONES.md`
-
-Quarantined under PRUNE-1 after inventory commit `7a07dde`.
-
-Reason: stale M1-M6 top-level roadmap. Ongoing work is governed by
-`delivery/autonomous/afl_milestone_contract.yaml`, `delivery/status.yaml`, and
-`delivery/ledger.jsonl`. This file is preserved as historical evidence, not
-current guidance.
-
-Original content begins below.
-
 # Milestones
 
 > **Historical document (2026-07-01 note).** This is the original M1–M6

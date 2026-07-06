@@ -78,8 +78,8 @@ worktree is the faithful simulation.)
 
 ## Gates deliberately excluded from CI
 
-- `afl-time-to-arrival-verify` — fails on frozen-expectation drift; wire it in
-  after a deliberate re-freeze decision.
+- `afl-time-to-arrival-verify` — fails on frozen-expectation drift
+  (`KNOWN_ISSUES.md`); wire it in after a deliberate re-freeze decision.
 - `n1d-verify` — fails 2/15 checks by design since the AFL expansion moved
   past the N1D freeze pins; needs a fresh live rerun to re-pin.
 - All corpus-dependent capability verifiers (`m2a-s1a/b/c-verify`,

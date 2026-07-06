@@ -2,13 +2,9 @@ project: priori_tactical_evidence_demo
 state: IN_PROGRESS
 source_of_truth:
   charter: PROJECT_CHARTER.md
-  roadmap: delivery/autonomous/afl_milestone_contract.yaml
+  roadmap: MILESTONES.md
   current_milestone_spec: delivery/autonomous/afl_milestone_contract.yaml
-  current_state_snapshot: README.md
-  ledger: delivery/ledger.jsonl
-  historical_roadmap_archive: docs/archive/prune-1/top-level-state/MILESTONES.md
-  historical_state_archive: docs/archive/prune-1/top-level-state/CURRENT_STATE.md
-  historical_issues_archive: docs/archive/prune-1/top-level-state/KNOWN_ISSUES.md
+  current_state_snapshot: CURRENT_STATE.md
 last_updated: "2026-07-01"
 scope:
   dataset: IDSSE_DFL_PUBLIC
