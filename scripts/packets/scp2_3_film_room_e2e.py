@@ -224,12 +224,20 @@ def capture_screenshot(
     timeout_ms: int,
     metadata: dict[str, Any],
     select_unknown: bool = False,
+    select_trail: bool = False,
 ) -> None:
     unknown_script = """
-const unknownMoment = page.locator('.momentItem', { hasText: 'UNKNOWN' }).first();
+const unknownMoment = page.locator('.momentItem', { hasText: 'window_truncated' }).first();
 await unknownMoment.click();
 await page.waitForSelector('.unknownOverlay');
+await page.waitForSelector('.unknownLabel');
 """ if select_unknown else ""
+    trail_script = """
+const trailMoment = page.locator('.momentItem', { hasText: 'PASS' }).first();
+await trailMoment.click();
+await page.waitForSelector('.carryTrail');
+await page.waitForSelector('.stageLabel');
+""" if select_trail else ""
     script = f"""
 import {{ chromium }} from 'playwright';
 const browser = await chromium.launch({{ headless: true }});
@@ -239,6 +247,7 @@ await page.goto('{base_url}/film-room', {{ waitUntil: 'networkidle' }});
 await page.waitForSelector('.stagebox svg');
 await page.waitForSelector('.metricValue');
 {unknown_script}
+{trail_script}
 await page.screenshot({{ path: '{path.as_posix()}', fullPage: true }});
 await browser.close();
 """
@@ -291,12 +300,27 @@ def assert_chain_moments(response: dict[str, Any]) -> dict[str, Any]:
         if moment.get("chain_status") == "UNKNOWN"
         and ((moment.get("evidence_overlay") or {}).get("unknown") or {}).get("is_unknown") is True
     ]
+    truthful_unknown = [
+        moment
+        for moment in unknown
+        if str(((moment.get("evidence_overlay") or {}).get("unknown") or {}).get("reason") or "")
+        == str(moment.get("chain_reason") or "")
+    ]
+    truncated_unknown = [
+        moment
+        for moment in truthful_unknown
+        if "truncated" in str(moment.get("chain_reason") or "")
+    ]
     if not staged:
         raise AssertionError("no chain moment exercised stage-label overlays")
     if not trails:
         raise AssertionError("no chain moment exercised carry-trail overlays")
     if not unknown:
         raise AssertionError("no chain moment exercised UNKNOWN slate overlay")
+    if not truthful_unknown:
+        raise AssertionError("UNKNOWN slate reason did not render the chain reason")
+    if not truncated_unknown:
+        raise AssertionError("no UNKNOWN slate rendered a truncation reason")
     return {
         "moment_total_count": total,
         "visible_moment_count": visible,
@@ -307,6 +331,10 @@ def assert_chain_moments(response: dict[str, Any]) -> dict[str, Any]:
         "unknown_slate_count": len(unknown),
         "first_unknown_replay_window_id": unknown[0]["replay_window_id"],
         "first_unknown_chain_reason": unknown[0].get("chain_reason"),
+        "first_truncated_unknown_replay_window_id": truncated_unknown[0]["replay_window_id"],
+        "first_truncated_unknown_chain_reason": truncated_unknown[0].get("chain_reason"),
+        "first_stage_trail_replay_window_id": trails[0]["replay_window_id"],
+        "first_stage_trail_chain_status": trails[0].get("chain_status"),
     }
 
 
@@ -410,11 +438,16 @@ def main() -> None:
         replay_window = get_json(replay_window_url(base_url, replay_window_id), timeout=args.timeout)
         replay_fetch_elapsed_ms = int((time.monotonic() - replay_started) * 1000)
         write_json(run_dir / "film-room-replay-window.json", replay_window, metadata)
-        unknown_replay_window_id = str(cold_chain_checks["first_unknown_replay_window_id"])
+        unknown_replay_window_id = str(cold_chain_checks["first_truncated_unknown_replay_window_id"])
         unknown_replay_started = time.monotonic()
         unknown_replay_window = get_json(replay_window_url(base_url, unknown_replay_window_id), timeout=args.timeout)
         unknown_replay_fetch_elapsed_ms = int((time.monotonic() - unknown_replay_started) * 1000)
         write_json(run_dir / "film-room-unknown-replay-window.json", unknown_replay_window, metadata)
+        stage_trail_replay_window_id = str(cold_chain_checks["first_stage_trail_replay_window_id"])
+        stage_trail_replay_started = time.monotonic()
+        stage_trail_replay_window = get_json(replay_window_url(base_url, stage_trail_replay_window_id), timeout=args.timeout)
+        stage_trail_replay_fetch_elapsed_ms = int((time.monotonic() - stage_trail_replay_started) * 1000)
+        write_json(run_dir / "film-room-stage-trail-replay-window.json", stage_trail_replay_window, metadata)
         frame_checks = assert_canonical_frame_match(
             cold_response,
             replay_window["replay"],
@@ -424,6 +457,7 @@ def main() -> None:
 
         screenshot_path = run_dir / "film-room.png"
         unknown_screenshot_path = run_dir / "film-room-unknown.png"
+        stage_trail_screenshot_path = run_dir / "film-room-stage-trail.png"
         if not args.skip_screenshot:
             capture_screenshot(base_url, screenshot_path, timeout_ms=args.timeout * 1000, metadata=metadata)
             capture_screenshot(
@@ -432,6 +466,13 @@ def main() -> None:
                 timeout_ms=args.timeout * 1000,
                 metadata=metadata,
                 select_unknown=True,
+            )
+            capture_screenshot(
+                base_url,
+                stage_trail_screenshot_path,
+                timeout_ms=args.timeout * 1000,
+                metadata=metadata,
+                select_trail=True,
             )
 
         evidence = {
@@ -471,6 +512,7 @@ def main() -> None:
                 "cold_ask_attribution": cold_response["latency_breakdown_ms"],
                 "replay_window_fetch": replay_fetch_elapsed_ms,
                 "unknown_replay_window_fetch": unknown_replay_fetch_elapsed_ms,
+                "stage_trail_replay_window_fetch": stage_trail_replay_fetch_elapsed_ms,
             },
             "prewarm_records": bootstrap.get("prewarm_records", []),
             "artifacts": {
@@ -478,8 +520,12 @@ def main() -> None:
                 "cold_response": str((run_dir / "film-room-cold-response.json").relative_to(ROOT)),
                 "replay_window": str((run_dir / "film-room-replay-window.json").relative_to(ROOT)),
                 "unknown_replay_window": str((run_dir / "film-room-unknown-replay-window.json").relative_to(ROOT)),
+                "stage_trail_replay_window": str((run_dir / "film-room-stage-trail-replay-window.json").relative_to(ROOT)),
                 "screenshot": str(screenshot_path.relative_to(ROOT)) if screenshot_path.exists() else None,
                 "unknown_screenshot": str(unknown_screenshot_path.relative_to(ROOT)) if unknown_screenshot_path.exists() else None,
+                "stage_trail_screenshot": (
+                    str(stage_trail_screenshot_path.relative_to(ROOT)) if stage_trail_screenshot_path.exists() else None
+                ),
                 "service_log": str(service_log_path.relative_to(ROOT)),
             },
         }

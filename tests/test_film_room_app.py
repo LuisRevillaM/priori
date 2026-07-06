@@ -51,6 +51,7 @@ class FilmRoomAppTests(unittest.TestCase):
                 "anchor_frame_id": 100,
                 "chain_status": "UNKNOWN",
                 "chain_reason": "stage_3_window_truncated",
+                "constraint_opt_out_reason": "entity identity is not part of this team-level chain",
                 "stage_1_frame_id": 100,
                 "stage_1_status": "PASS",
                 "stage_2_frame_id": 130,

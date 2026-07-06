@@ -2982,7 +2982,11 @@ def film_room_certified_evidence_row(
 
 def film_room_unknown_reason(evidence_row: dict[str, Any] | None, row: dict[str, Any]) -> str | None:
     if evidence_row:
-        reason = evidence_row.get("constraint_opt_out_reason") or evidence_row.get("chain_reason")
+        chain_status = str(evidence_row.get("chain_status") or row.get("chain_status") or "")
+        chain_reason = evidence_row.get("chain_reason") or row.get("chain_reason")
+        if chain_status == "UNKNOWN" and chain_reason:
+            return str(chain_reason)
+        reason = evidence_row.get("constraint_opt_out_reason") or chain_reason
         if reason:
             return str(reason)
         unknown = evidence_row.get("unknown_count")
