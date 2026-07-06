@@ -2838,6 +2838,32 @@ def film_room_evidence_overlay(record: dict[str, Any]) -> dict[str, Any]:
                 "player_id": str(player_id) if player_id else None,
             }
         )
+    if not stage_labels:
+        anchor_frame_id = int_or_none(record.get("anchor_frame_id"))
+        if anchor_frame_id is not None:
+            status = str(
+                record.get("chain_status")
+                or record.get("rate_status")
+                or record.get("classification")
+                or "OBSERVED"
+            )
+            stage_labels.append(
+                {
+                    "stage": 0,
+                    "label": "observed anchor",
+                    "frame_id": anchor_frame_id,
+                    "status": status,
+                    "player_id": None,
+                }
+            )
+            anchor_markers.append(
+                {
+                    "stage": 0,
+                    "frame_id": anchor_frame_id,
+                    "status": status,
+                    "player_id": None,
+                }
+            )
     carry_trails = []
     stage_2_start = int_or_none(record.get("stage_2_start_frame_id") or record.get("stage_2_frame_id"))
     stage_2_end = int_or_none(record.get("stage_2_end_frame_id"))
