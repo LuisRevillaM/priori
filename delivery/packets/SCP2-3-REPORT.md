@@ -95,4 +95,12 @@ Long executions flagged:
 
 ## Full-Suite Table
 
-Pending final committed-tree run.
+Committed implementation tree: `45fa857`.
+
+| Command | Result | Notes |
+| --- | --- | --- |
+| `npm --prefix apps/workbench-alpha run test:contracts` | PASS | Generated API schemas/types are committed. |
+| `npm --prefix apps/workbench-alpha run test:fixtures` | PASS | No hardcoded tactical fixtures/canned replay frames found in frontend sources. |
+| `TMPDIR=/private/tmp npm --prefix apps/workbench-alpha run test:unit` | PASS | Film Room interval guard included. |
+| `npm --prefix apps/workbench-alpha run build` | PASS | Contract generation, `tsc --noEmit`, Vite build. |
+| `UV_CACHE_DIR=/private/tmp/uv-cache-priori make PYTHON=/Users/luisrevilla/code/priori/.venv/bin/python test` | PASS | 554 tests in `439.224s`; long run; attestation `VERIFIED`. |
