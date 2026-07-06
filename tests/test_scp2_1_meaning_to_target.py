@@ -26,6 +26,7 @@ from tqe.semantic_compiler.meaning_expression import (
     stable_expression_json,
 )
 from tqe.semantic_compiler.target_synthesis import (
+    document_payload_for_expression,
     synthesize_and_bind,
     synthesize_search_target,
     validate_correspondence_with_r1c_guard,
@@ -343,6 +344,33 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
 
         with self.assertRaisesRegex(search.SynthesisError, "No registered operator composition"):
             synthesize_and_bind(result.expression, coverage_rows=self.coverage_rows)
+
+    def test_empty_expression_periods_fall_back_to_canonical_periods(self) -> None:
+        payload = self.controlled_pass_variant_payload("settled_completed_pass_retained_control")
+        payload["population"]["periods"] = []
+        result = load_meaning_expression_result(payload, vocabulary=self.vocabulary)
+        self.assertEqual("accepted", result.outcome)
+        self.assertIsNotNone(result.expression)
+
+        document = document_payload_for_expression(
+            expression=result.expression,
+            document={
+                "default_invocation": {
+                    "schema_version": "1.0",
+                    "invocation_id": "fixture_probe",
+                    "match_ids": [],
+                    "periods": [],
+                    "perspective_team_role": "home",
+                    "parameters": {},
+                    "max_results": 20,
+                    "execution_mode": "execute",
+                }
+            },
+        )
+
+        self.assertEqual("compiler_search_perspective_bundle.v1", document["schema_version"])
+        for role_document in document["documents"].values():
+            self.assertEqual(["firstHalf", "secondHalf"], role_document["default_invocation"]["periods"])
 
     @staticmethod
     def controlled_pass_variant_payload(identity: str) -> dict:
