@@ -1,0 +1,120 @@
+{
+  "certified_runtime_equivalence": {
+    "cache_provenance": "This evidence script does not consult the execution cache; it compares committed certified partitions to the same declared rate partition shape consumed from runtime requested-evidence source summaries.",
+    "certified_metric": {
+      "label": "CERTIFIED interval (per regain start)",
+      "lower": 0.0003557452863749555,
+      "observed": 1.0,
+      "source": {
+        "a_count": 1,
+        "b_count": 0,
+        "c_count": 2261,
+        "d1_count": 0,
+        "d2_count": 549,
+        "denominator_label": "per regain start",
+        "denominator_status_field": "stage_1_status",
+        "e_count": 0,
+        "evidence_kind": "certified",
+        "period_records_hash": "3fb270eda29fc14f57746491881afacaee388f7799284ee9f6caf2bf74416afd",
+        "plan_hash": "d8179a5a1af54ecdd45514e4fa3403b3ab515977fb79dd29b4a62f2ecfd9bb7e",
+        "population_count": 2811,
+        "population_expression": "counterattack initiation completed chains over regain starts"
+      },
+      "unknown_count": 2810,
+      "upper": 1.0
+    },
+    "count_fields": [
+      "a_count",
+      "b_count",
+      "c_count",
+      "d1_count",
+      "d2_count",
+      "e_count",
+      "population_count"
+    ],
+    "counts_equal": true,
+    "runtime_metric_from_declared_partitions": {
+      "label": "RUNTIME EVIDENCE interval (per regain start)",
+      "lower": 0.0003557452863749555,
+      "observed": 1.0,
+      "source": {
+        "a_count": 1,
+        "b_count": 0,
+        "c_count": 2261,
+        "d1_count": 0,
+        "d2_count": 549,
+        "denominator_label": "per regain start",
+        "denominator_status_field": "stage_1_status",
+        "e_count": 0,
+        "evidence_kind": "runtime",
+        "partition_count": 28,
+        "population_count": 2811,
+        "population_expression": "counterattack initiation completed chains over regain starts",
+        "source": "execution_provenance_requested_evidence_sources"
+      },
+      "unknown_count": 2810,
+      "upper": 1.0
+    }
+  },
+  "denominator_declaration": {
+    "declared_denominator_label": "per regain start",
+    "declared_denominator_status_field": "stage_1_status",
+    "ratified_question": "per-regain rate",
+    "table_path": "delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json",
+    "table_sha256": "d904fdc94c0a78b74244e6809f8c559df6d8b21e559eaef552c8d84f8eb8d19e"
+  },
+  "evidence_metadata": {
+    "git_commit": "d69658c655bfe50dab2a54db9035f8258faadd9c",
+    "git_tree": "65de617c7f22c8f8c97fec5390b0195f854c2631",
+    "producing_script": "scripts/packets/seam1_evidence.py",
+    "producing_script_sha256": "1d70dc626a3fc1d7e954c35f87baa496ff42d69a198e2197ff26706c1f30d875",
+    "run_started_at": "2026-07-06T23:51:20.434154+00:00",
+    "schema_version": "seam1.evidence_metadata.v1"
+  },
+  "focused_tests": {
+    "command": [
+      "/Users/luisrevilla/code/priori/.venv/bin/python3",
+      "-m",
+      "unittest",
+      "tests.test_film_room_app",
+      "tests.test_scp2_1_meaning_to_target.SCP2MeaningToTargetTests.test_numeric_meaning_clause_must_match_executable_parameter_value",
+      "-v"
+    ],
+    "output_path": "delivery/packets/seam-1-evidence/runs/2026-07-06T235120Z0000-1d70dc626a3f/focused-tests.txt",
+    "returncode": 0
+  },
+  "numeric_clause_parameter_refusal": {
+    "mutation": "meaning_clauses carry_forward_progression_m value 3.0 -> 8.0; executable parameter remains 3.0",
+    "outcome": "refused",
+    "refusal": {
+      "gap_code": "MEANING_PARAMETER_MISMATCH",
+      "message": "Numeric meaning clause disagrees with the executable operator parameter: carry_forward_progression_m clause value 8.0 does not match stage_2_minimum_numeric_value value 3.0.",
+      "missing_capability": "numeric_clause_parameter_consistency",
+      "outcome": "understood_but_not_expressible",
+      "pack_sha256": "07cbbdfb7d5e6f947d9d5d343f68bcdc5dd6715b3b9fba9a4e1dc8f0fbe897ee",
+      "reference": "carry_forward_progression_m:8.0!=3.0",
+      "vocabulary_section": "meaning_clauses[1]"
+    }
+  },
+  "payload_contract": {
+    "doc_path": "docs/EXECUTION_PAYLOAD_CONTRACT.md",
+    "doc_sha256": "81a31a42612cd7a61edbb501b3816d52ed2beaa500459e8611f296996cdf7c0d",
+    "moment_total_count_definition": "number of distinct Film Room moment rows assembled for replay/overlay display; not the rate denominator and not a population count",
+    "ranked_response": {
+      "anchor_frame_id": 100,
+      "classification": "UNKNOWN",
+      "evidence_contract": {
+        "reason": "No requested-evidence values are projected for this returned row.",
+        "requested_evidence": "omitted",
+        "schema_version": "execute_result_evidence_contract.v1",
+        "side_channel": "inspect_result.requested_evidence; execution_record.rows for stored host records; execution.provenance.requested_evidence_sources for source-output summaries"
+      },
+      "match_id": "J03WOY",
+      "match_time_ms": null,
+      "period": "firstHalf",
+      "rank": 1,
+      "result_id": "seam1-contract-probe"
+    }
+  },
+  "root_cause": "Before SEAM-1, Film Room's runtime interval fallback read rate evidence from returned chain-result rows, so result ordering/result_limit could select one chain-group denominator while the certified path used the full declared R2-4 per-regain partition."
+}
