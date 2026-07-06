@@ -474,6 +474,7 @@ def synthetic_period_state() -> PeriodState:
         defending_team_id="away_team",
         canonical_root=Path("."),
         raw_tracking=Path("."),
+        data_scope_manifest_entries=[],
         positions=pd.DataFrame(),
         frame_ids=np.arange(100, 108, dtype=np.int64),
         ball_y=np.array([], dtype=float),

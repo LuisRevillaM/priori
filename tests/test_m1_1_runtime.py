@@ -19,7 +19,7 @@ from tqe.runtime.executor import (
     execution_result_rows,
     runtime_parameters,
 )
-from tqe.runtime.ir import EvaluationTarget, ExecutionMode, ExecutionStatus, PlanStatus, TacticalQueryDocument
+from tqe.runtime.ir import EvaluationTarget, ExecutionMode, ExecutionStatus, PlanStatus, TacticalQueryDocument, stable_hash
 from tqe.runtime.relations import evaluate_geometric_progressive_corridors
 
 from tests.support.canonical_data import requires_canonical_data
@@ -94,6 +94,28 @@ class M11RuntimeTests(unittest.TestCase):
             [result.result_id for result in second.results],
         )
         self.assertEqual(first.execution_id, second.execution_id)
+
+    def test_parallel_period_execution_matches_sequential_ordering(self) -> None:
+        bound = self.experimental_bound.model_copy(
+            update={
+                "match_ids": ["J03WOH"],
+                "periods": ["firstHalf", "secondHalf"],
+                "max_results": 20,
+            }
+        )
+        sequential = TacticalQueryExecutor(enable_node_cache=False, parallel_workers=1).execute(bound)
+        parallel_first = TacticalQueryExecutor(enable_node_cache=False, parallel_workers=2).execute(bound)
+        parallel_second = TacticalQueryExecutor(enable_node_cache=False, parallel_workers=2).execute(bound)
+
+        self.assertEqual(
+            execution_equivalence_hash(sequential),
+            execution_equivalence_hash(parallel_first),
+        )
+        self.assertEqual(
+            execution_equivalence_hash(parallel_first),
+            execution_equivalence_hash(parallel_second),
+        )
+        self.assertEqual(2, parallel_first.provenance["execution_parallelism"]["workers"])
 
     def test_runtime_emits_full_predicate_traces_for_results(self) -> None:
         result_ids = {result.result_id for result in self.execution.results}
@@ -420,6 +442,7 @@ def destination_entry_fixture_state(
         defending_team_id="away",
         canonical_root=Path("unused"),
         raw_tracking=Path("unused"),
+        data_scope_manifest_entries=[],
         positions=positions,
         frame_ids=np.array(frame_id_list),
         ball_y=np.array([ball_points.get(frame_id, np.nan) for frame_id in frame_id_list]),
@@ -427,6 +450,19 @@ def destination_entry_fixture_state(
         ball_alive=np.array([True for _ in frame_id_list]),
         defender_count=pd.Series(dtype="int64"),
         defender_centroid_y=pd.Series(dtype="float64"),
+    )
+
+
+def execution_equivalence_hash(execution) -> str:
+    return stable_hash(
+        {
+            "status": execution.status.value,
+            "rows": execution_result_rows(execution),
+            "predicate_traces": [
+                trace.model_dump(mode="json", exclude_none=True)
+                for trace in execution.predicate_traces
+            ],
+        }
     )
 
 

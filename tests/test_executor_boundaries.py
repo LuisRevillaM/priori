@@ -214,7 +214,7 @@ class ExecutorRegistryBoundaryTests(unittest.TestCase):
                 bound_plan=minimal_bound_plan(max_relations_per_anchor=1),
             )
 
-    def test_shared_cache_key_changes_with_canonical_manifest_hash(self) -> None:
+    def test_shared_cache_key_changes_with_scope_file_hash(self) -> None:
         node = BoundCatalogNode(
             kind=NodeKind.PRIMITIVE,
             node_id="sample_node",
@@ -228,21 +228,160 @@ class ExecutorRegistryBoundaryTests(unittest.TestCase):
             (root / "manifest.json").write_text('{"version": 1}\n', encoding="utf-8")
             raw_tracking = root / "tracking.xml"
             raw_tracking.write_text("<tracking />\n", encoding="utf-8")
-            state = SimpleNamespace(
-                canonical_root=root,
-                raw_tracking=raw_tracking,
-                match_id="synthetic",
-                period="firstHalf",
-                perspective_team_role="home",
-                defending_team_role="away",
-                params=SimpleNamespace(values={}),
-                canonical_data_manifest_hash="",
-            )
-            first = executor.shared_catalog_node_cache_key(state, node, "node-cache-key")
-            (root / "manifest.json").write_text('{"version": 2}\n', encoding="utf-8")
-            second = executor.shared_catalog_node_cache_key(state, node, "node-cache-key")
+            first = executor.shared_catalog_node_cache_key(scope_key_state(root, raw_tracking), node, "node-cache-key")
+            raw_tracking.write_text("<tracking version='2' />\n", encoding="utf-8")
+            second = executor.shared_catalog_node_cache_key(scope_key_state(root, raw_tracking), node, "node-cache-key")
 
         self.assertNotEqual(first, second)
+
+    def test_perf1_cache_key_mutates_for_every_director_component(self) -> None:
+        node = BoundCatalogNode(
+            kind=NodeKind.PRIMITIVE,
+            node_id="sample_node",
+            catalog_ref="sample_capability",
+            version="0.1.0",
+            outputs=[],
+            resolved_parameters={"threshold": {"payload_type": "number", "value": 1.0, "unit": "metre"}},
+        )
+        state = SimpleNamespace(
+            match_id="J03WOH",
+            period="firstHalf",
+            params=executor.RuntimeParameters(values={"analysis_rate_hz": 5}),
+            data_scope_manifest_entries=[
+                {"path": "positions/match_id=J03WOH/period=firstHalf.parquet", "size": 10, "sha256": "a"}
+            ],
+            perspective_team_role="home",
+            perspective_team_id="home-id",
+            defending_team_role="away",
+            defending_team_id="away-id",
+        )
+        upstream = [{"input_name": "source", "source_node_id": "source_node", "output_name": "anchors", "cache_key": "upstream-a"}]
+        base = executor.derive_node_cache_key(
+            node=node,
+            state=state,
+            upstream_lineage=upstream,
+            code_epoch="epoch-a",
+        )["cache_key"]
+
+        cases = [
+            executor.derive_node_cache_key(
+                node=node,
+                state=state,
+                upstream_lineage=upstream,
+                cache_schema_version="perf1_node_cache_key.v2",
+                code_epoch="epoch-a",
+            )["cache_key"],
+            executor.derive_node_cache_key(
+                node=node,
+                state=state,
+                upstream_lineage=upstream,
+                code_epoch="epoch-b",
+            )["cache_key"],
+            executor.derive_node_cache_key(
+                node=node.model_copy(update={"version": "0.2.0"}),
+                state=state,
+                upstream_lineage=upstream,
+                code_epoch="epoch-a",
+            )["cache_key"],
+            executor.derive_node_cache_key(
+                node=node,
+                state=state,
+                upstream_lineage=[{**upstream[0], "cache_key": "upstream-b"}],
+                code_epoch="epoch-a",
+            )["cache_key"],
+            executor.derive_node_cache_key(
+                node=node,
+                state=SimpleNamespace(
+                    **{
+                        **state.__dict__,
+                        "data_scope_manifest_entries": [
+                            {
+                                "path": "positions/match_id=J03WOH/period=firstHalf.parquet",
+                                "size": 10,
+                                "sha256": "b",
+                            }
+                        ],
+                    }
+                ),
+                upstream_lineage=upstream,
+                code_epoch="epoch-a",
+            )["cache_key"],
+            executor.derive_node_cache_key(
+                node=node,
+                state=SimpleNamespace(**{**state.__dict__, "perspective_team_role": "away"}),
+                upstream_lineage=upstream,
+                code_epoch="epoch-a",
+            )["cache_key"],
+        ]
+
+        self.assertEqual(len(cases), len(set(cases)))
+        self.assertTrue(all(item != base for item in cases))
+
+    def test_perf1_cache_key_canonicalizes_expanded_defaults(self) -> None:
+        first = BoundCatalogNode(
+            kind=NodeKind.PRIMITIVE,
+            node_id="node_a",
+            catalog_ref="sample_capability",
+            version="0.1.0",
+            outputs=[],
+            resolved_parameters={
+                "zeta": {"payload_type": "number", "value": 2.0, "unit": "metre"},
+                "alpha": {"payload_type": "number", "value": 1.0, "unit": "metre"},
+            },
+        )
+        second = BoundCatalogNode(
+            kind=NodeKind.PRIMITIVE,
+            node_id="node_b",
+            catalog_ref="sample_capability",
+            version="0.1.0",
+            outputs=[],
+            resolved_parameters={
+                "alpha": {"payload_type": "number", "value": 1.0, "unit": "metre"},
+                "zeta": {"payload_type": "number", "value": 2.0, "unit": "metre"},
+            },
+        )
+        state = SimpleNamespace(
+            match_id="J03WOH",
+            period="firstHalf",
+            params=executor.RuntimeParameters(values={"b": 2, "a": 1}),
+            data_scope_manifest_entries=[],
+            perspective_team_role="home",
+            perspective_team_id="home-id",
+            defending_team_role="away",
+            defending_team_id="away-id",
+        )
+
+        self.assertEqual(
+            executor.derive_node_cache_key(node=first, state=state, upstream_lineage=[], code_epoch="epoch")[
+                "cache_key"
+            ],
+            executor.derive_node_cache_key(node=second, state=state, upstream_lineage=[], code_epoch="epoch")[
+                "cache_key"
+            ],
+        )
+
+    def test_perf1_persistent_cache_detects_corrupt_output_without_serving(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            cache = executor.PersistentNodeOutputCache(Path(directory))
+            preimage = {
+                "cache_schema_version": executor.CACHE_SCHEMA_VERSION,
+                "code_epoch": "epoch",
+                "node_semantic_identity": {"catalog_ref": "sample"},
+                "upstream_lineage": [],
+                "data_scope": {"match_id": "J03WOH", "period": "firstHalf", "manifest_entries": []},
+                "perspective_bindings": {"perspective_team_role": "home"},
+            }
+            key = executor.stable_hash(preimage)
+            cache.store(key=key, preimage=preimage, output={"records": [{"value": 1}]})
+            path = cache.path_for(key)
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            payload["output"]["records"][0]["value"] = 2
+            path.write_text(json.dumps(payload, sort_keys=True) + "\n", encoding="utf-8")
+
+            output, status = cache.load(key=key, preimage=preimage)
+
+        self.assertIsNone(output)
+        self.assertEqual("detected_never_served", status)
 
     def test_canonical_data_manifest_uses_manifest_hash_without_default_content_hash(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -455,6 +594,19 @@ EXPECTED_SHARED_CAPABILITY_MENTIONS = {}
 
 
 EXPECTED_SHARED_HELPER_MENTION_COUNTS = {}
+
+
+def scope_key_state(root: Path, raw_tracking: Path) -> SimpleNamespace:
+    return SimpleNamespace(
+        canonical_root=root,
+        raw_tracking=raw_tracking,
+        match_id="synthetic",
+        period="firstHalf",
+        perspective_team_role="home",
+        defending_team_role="away",
+        params=SimpleNamespace(values={}),
+        canonical_data_manifest_hash="",
+    )
 
 
 def minimal_bound_plan(*, max_relations_per_anchor: int) -> BoundQueryPlan:

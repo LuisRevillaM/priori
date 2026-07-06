@@ -7,6 +7,7 @@ is deliberately keyed by primitive/operator catalog entries, not recipe IDs.
 from __future__ import annotations
 
 import copy
+import concurrent.futures
 import hashlib
 import json
 import math
@@ -16,6 +17,7 @@ from collections.abc import MutableMapping
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Callable
 
@@ -80,6 +82,8 @@ SUPPORTED_PREDICATE_OPERATORS = frozenset(
         "count_at_least",
     }
 )
+CACHE_SCHEMA_VERSION = "perf1_node_cache_key.v1"
+CACHE_ENTRY_SCHEMA_VERSION = "perf1_node_cache_entry.v1"
 
 
 @dataclass(frozen=True)
@@ -115,6 +119,7 @@ class PeriodState:
     defending_team_id: str
     canonical_root: Path
     raw_tracking: Path
+    data_scope_manifest_entries: list[dict[str, Any]]
     positions: pd.DataFrame
     frame_ids: np.ndarray
     ball_y: np.ndarray
@@ -131,6 +136,7 @@ class PeriodState:
     predicate_traces: list[PredicateTrace] = field(default_factory=list)
     lookup_cache: dict[tuple[Any, ...], Any] = field(default_factory=dict)
     node_output_cache: dict[str, dict[str, Any]] = field(default_factory=dict)
+    node_cache_keys: dict[str, str] = field(default_factory=dict)
     node_cache_summary: Counter[str] = field(default_factory=Counter)
     progress_events: list[dict[str, Any]] = field(default_factory=list)
 
@@ -158,6 +164,56 @@ class NodeExecutionResult:
     runtime_values: dict[str, RuntimeValue]
     warnings: list[str] = field(default_factory=list)
     provenance: dict[str, Any] = field(default_factory=dict)
+
+
+class PersistentNodeOutputCache:
+    """Self-describing disk cache for deterministic node outputs."""
+
+    def __init__(self, root: Path) -> None:
+        self.root = root
+        self.root.mkdir(parents=True, exist_ok=True)
+
+    def path_for(self, key: str) -> Path:
+        safe = "".join(char for char in key if char.isalnum()) or stable_hash(key)
+        return self.root / safe[:2] / f"{safe}.json"
+
+    def load(self, *, key: str, preimage: dict[str, Any]) -> tuple[dict[str, Any] | None, str]:
+        path = self.path_for(key)
+        if not path.exists():
+            return None, "persistent_miss"
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return None, "detected_never_served"
+        if payload.get("schema_version") != CACHE_ENTRY_SCHEMA_VERSION:
+            return None, "detected_never_served"
+        stored_preimage = payload.get("key_preimage")
+        output = payload.get("output")
+        if not isinstance(stored_preimage, dict) or not isinstance(output, dict):
+            return None, "detected_never_served"
+        if stable_hash(stored_preimage) != key or stored_preimage != preimage:
+            return None, "detected_never_served"
+        if payload.get("output_content_hash") != stable_hash(output):
+            return None, "detected_never_served"
+        return copy.deepcopy(output), "persistent_hit"
+
+    def store(self, *, key: str, preimage: dict[str, Any], output: dict[str, Any]) -> None:
+        path = self.path_for(key)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        payload = {
+            "schema_version": CACHE_ENTRY_SCHEMA_VERSION,
+            "cache_key": key,
+            "key_preimage": preimage,
+            "producing_code_epoch": preimage["code_epoch"],
+            "output_content_hash": stable_hash(output),
+            "output": output,
+        }
+        tmp_path = path.with_suffix(path.suffix + f".{os.getpid()}.tmp")
+        tmp_path.write_text(
+            json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=True) + "\n",
+            encoding="utf-8",
+        )
+        tmp_path.replace(path)
 
 
 class UndeclaredNodeParameterError(RuntimeError):
@@ -209,6 +265,8 @@ class TacticalQueryExecutor:
         compatibility_profile: str = GENERIC_EXECUTION_PROFILE,
         enable_node_cache: bool | None = None,
         shared_node_output_cache: MutableMapping[str, dict[str, Any]] | None = None,
+        node_cache_root: Path | None = None,
+        parallel_workers: int | None = None,
         progress_callback: Callable[[dict[str, Any]], None] | None = None,
         progress_log: bool | None = None,
     ) -> None:
@@ -224,6 +282,16 @@ class TacticalQueryExecutor:
             else enable_node_cache
         )
         self.shared_node_output_cache = shared_node_output_cache
+        self.persistent_node_output_cache = (
+            PersistentNodeOutputCache(node_cache_root)
+            if node_cache_root is not None
+            else default_persistent_node_output_cache()
+        )
+        self.parallel_workers = normalize_worker_count(
+            parallel_workers
+            if parallel_workers is not None
+            else os.environ.get("TQE_EXECUTION_WORKERS")
+        )
         self.progress_callback = progress_callback
         self.progress_log = (
             os.environ.get("TQE_PROGRESS_LOG") == "1"
@@ -282,24 +350,37 @@ class TacticalQueryExecutor:
         progress_events: list[dict[str, Any]] = []
         node_cache_summary: Counter[str] = Counter()
 
-        for match_id in bound_plan.match_ids:
+        if self.parallel_workers > 1 and len(bound_plan.match_ids) * len(bound_plan.periods) > 1:
             (
-                match_results,
-                match_traces,
-                match_runtime_value_count,
-                match_progress_events,
-                match_node_cache_summary,
-            ) = self._execute_match(
+                results,
+                trace_records,
+                runtime_value_count,
+                progress_events,
+                node_cache_summary,
+            ) = self._execute_periods_parallel(
                 bound_plan=bound_plan,
-                match_id=match_id,
                 params=params,
                 compatibility_profile=self.compatibility_profile,
             )
-            results.extend(match_results)
-            trace_records.extend(match_traces)
-            runtime_value_count += match_runtime_value_count
-            progress_events.extend(match_progress_events)
-            node_cache_summary.update(match_node_cache_summary)
+        else:
+            for match_id in bound_plan.match_ids:
+                (
+                    match_results,
+                    match_traces,
+                    match_runtime_value_count,
+                    match_progress_events,
+                    match_node_cache_summary,
+                ) = self._execute_match(
+                    bound_plan=bound_plan,
+                    match_id=match_id,
+                    params=params,
+                    compatibility_profile=self.compatibility_profile,
+                )
+                results.extend(match_results)
+                trace_records.extend(match_traces)
+                runtime_value_count += match_runtime_value_count
+                progress_events.extend(match_progress_events)
+                node_cache_summary.update(match_node_cache_summary)
 
         results, trace_records, unknown_policy_status = apply_result_semantics(
             results=results,
@@ -375,9 +456,21 @@ class TacticalQueryExecutor:
                     "hits": int(node_cache_summary.get("hit", 0)),
                     "local_hits": int(node_cache_summary.get("local_hit", 0)),
                     "shared_hits": int(node_cache_summary.get("shared_hit", 0)),
+                    "persistent_hits": int(node_cache_summary.get("persistent_hit", 0)),
                     "misses": int(node_cache_summary.get("miss", 0)),
                     "disabled": int(node_cache_summary.get("disabled", 0)),
                     "bypassed": int(node_cache_summary.get("bypassed", 0)),
+                    "detected_never_served": int(node_cache_summary.get("detected_never_served", 0)),
+                },
+                "execution_parallelism": {
+                    "workers": self.parallel_workers,
+                    "period_state_independence": (
+                        "Each worker constructs a fresh PeriodState for one "
+                        "match_id/period, reading only scope-local canonical/raw "
+                        "files and returning serializable outputs; no PeriodState "
+                        "object is shared across workers."
+                    ),
+                    "merge_order": "bound_plan.match_ids order, then bound_plan.periods order, then existing result sort law",
                 },
                 "progress_event_count": len(progress_events),
                 "progress_events": progress_events,
@@ -442,6 +535,74 @@ class TacticalQueryExecutor:
                     item["result_id"],
                 )
             )
+        return accepted, traces, runtime_value_count, progress_events, node_cache_summary
+
+    def _execute_periods_parallel(
+        self,
+        *,
+        bound_plan: BoundQueryPlan,
+        params: RuntimeParameters,
+        compatibility_profile: str,
+    ) -> tuple[list[dict[str, Any]], list[PredicateTrace], int, list[dict[str, Any]], Counter[str]]:
+        tasks: list[dict[str, Any]] = []
+        for match_index, match_id in enumerate(bound_plan.match_ids):
+            for period_index, period in enumerate(bound_plan.periods):
+                tasks.append(
+                    {
+                        "match_index": match_index,
+                        "period_index": period_index,
+                        "match_id": match_id,
+                        "period": period,
+                        "bound_plan": bound_plan.model_dump(mode="json"),
+                        "canonical_root": str(self.canonical_root),
+                        "raw_root": str(self.raw_root),
+                        "compatibility_profile": compatibility_profile,
+                        "enable_node_cache": self.enable_node_cache,
+                        "node_cache_root": None
+                        if self.persistent_node_output_cache is None
+                        else str(self.persistent_node_output_cache.root),
+                    }
+                )
+        worker_count = min(self.parallel_workers, len(tasks))
+        period_outputs: list[dict[str, Any]] = []
+        with concurrent.futures.ProcessPoolExecutor(max_workers=worker_count) as pool:
+            futures = [pool.submit(_execute_period_worker, task) for task in tasks]
+            for future in concurrent.futures.as_completed(futures):
+                period_outputs.append(future.result())
+
+        by_match_period = {
+            (int(item["match_index"]), int(item["period_index"])): item
+            for item in period_outputs
+        }
+        accepted: list[dict[str, Any]] = []
+        traces: list[PredicateTrace] = []
+        runtime_value_count = 0
+        progress_events: list[dict[str, Any]] = []
+        node_cache_summary: Counter[str] = Counter()
+        for match_index, _match_id in enumerate(bound_plan.match_ids):
+            match_results: list[dict[str, Any]] = []
+            match_traces: list[PredicateTrace] = []
+            for period_index, _period in enumerate(bound_plan.periods):
+                item = by_match_period[(match_index, period_index)]
+                match_results.extend(item["results"])
+                match_traces.extend(PredicateTrace.model_validate(trace) for trace in item["traces"])
+                runtime_value_count += int(item["runtime_value_count"])
+                progress_events.extend(item["progress_events"])
+                node_cache_summary.update(Counter(item["node_cache_summary"]))
+            if compatibility_profile == legacy_m1.LEGACY_M1_PARITY_PROFILE:
+                match_results.sort(key=legacy_m1.legacy_m1_result_key)
+            else:
+                match_results.sort(
+                    key=lambda result: (
+                        result["match_id"],
+                        result["period"],
+                        int(result["anchor_frame_id"]),
+                        result["classification"],
+                        result["result_id"],
+                    )
+                )
+            accepted.extend(match_results)
+            traces.extend(match_traces)
         return accepted, traces, runtime_value_count, progress_events, node_cache_summary
 
     def evaluate_target(
@@ -551,6 +712,14 @@ class TacticalQueryExecutor:
         self._record_progress(state, {"event": "node_start", **progress_base})
 
         cache_status = "bypassed"
+        derived_cache = derive_node_cache_key(
+            node=node,
+            state=state,
+            upstream_lineage=node_upstream_lineage(state, node),
+        )
+        cache_key = derived_cache["cache_key"]
+        cache_preimage = derived_cache["preimage"]
+        safe_shared_cache = self.shared_node_output_cache if isinstance(self.shared_node_output_cache, dict) else None
         if isinstance(node, BoundCatalogNode):
             if node.kind == NodeKind.RELATION:
                 implementation = self.relations.get(node.catalog_ref)
@@ -560,27 +729,56 @@ class TacticalQueryExecutor:
                 implementation = self.primitives.get(node.catalog_ref)
             if implementation is None:
                 raise RuntimeError(f"No primitive implementation for {node.catalog_ref}")
-            cache_key = catalog_node_cache_key(node)
             if self.enable_node_cache and profile == GENERIC_EXECUTION_PROFILE:
                 if cache_key in state.node_output_cache:
                     state.signals[node.node_id] = copy.deepcopy(state.node_output_cache[cache_key])
                     cache_status = "hit"
                     state.node_cache_summary["hit"] += 1
                     state.node_cache_summary["local_hit"] += 1
-                elif self.shared_node_output_cache is not None and (
-                    shared_cache_key := shared_catalog_node_cache_key(state, node, cache_key)
-                ) in self.shared_node_output_cache:
-                    state.signals[node.node_id] = copy.deepcopy(self.shared_node_output_cache[shared_cache_key])
+                elif safe_shared_cache is not None and cache_key in safe_shared_cache:
+                    state.signals[node.node_id] = copy.deepcopy(safe_shared_cache[cache_key])
                     state.node_output_cache[cache_key] = copy.deepcopy(state.signals[node.node_id])
                     cache_status = "shared_hit"
                     state.node_cache_summary["hit"] += 1
                     state.node_cache_summary["shared_hit"] += 1
+                elif self.persistent_node_output_cache is not None:
+                    output, persistent_status = self.persistent_node_output_cache.load(
+                        key=cache_key,
+                        preimage=cache_preimage,
+                    )
+                    if output is not None:
+                        state.signals[node.node_id] = output
+                        state.node_output_cache[cache_key] = copy.deepcopy(output)
+                        cache_status = "persistent_hit"
+                        state.node_cache_summary["hit"] += 1
+                        state.node_cache_summary["persistent_hit"] += 1
+                    else:
+                        if persistent_status == "detected_never_served":
+                            state.node_cache_summary["detected_never_served"] += 1
+                            self._record_progress(
+                                state,
+                                {
+                                    "event": "node_cache_detected_never_served",
+                                    **progress_base,
+                                    "cache_key": cache_key,
+                                },
+                            )
+                        implementation(state, node)
+                        state.node_output_cache[cache_key] = copy.deepcopy(state.signals[node.node_id])
+                        if safe_shared_cache is not None:
+                            safe_shared_cache[cache_key] = copy.deepcopy(state.signals[node.node_id])
+                        self.persistent_node_output_cache.store(
+                            key=cache_key,
+                            preimage=cache_preimage,
+                            output=copy.deepcopy(state.signals[node.node_id]),
+                        )
+                        cache_status = "miss"
+                        state.node_cache_summary["miss"] += 1
                 else:
                     implementation(state, node)
                     state.node_output_cache[cache_key] = copy.deepcopy(state.signals[node.node_id])
-                    if self.shared_node_output_cache is not None:
-                        shared_cache_key = shared_catalog_node_cache_key(state, node, cache_key)
-                        self.shared_node_output_cache[shared_cache_key] = copy.deepcopy(state.signals[node.node_id])
+                    if safe_shared_cache is not None:
+                        safe_shared_cache[cache_key] = copy.deepcopy(state.signals[node.node_id])
                     cache_status = "miss"
                     state.node_cache_summary["miss"] += 1
             else:
@@ -600,6 +798,7 @@ class TacticalQueryExecutor:
                 record_progress=self._record_progress,
             )
             if legacy_result is not None:
+                state.node_cache_keys[node.node_id] = cache_key
                 return legacy_result
             context = MatchContext(
                 match_id=state.match_id,
@@ -629,6 +828,7 @@ class TacticalQueryExecutor:
                 raw_outputs=state.signals.get(node.node_id, {}),
                 runtime_values=runtime_values,
             )
+        state.node_cache_keys[node.node_id] = cache_key
         self._record_progress(
             state,
             {
@@ -699,6 +899,12 @@ class TacticalQueryExecutor:
             defending_team_id=team_id(self.canonical_root, match_id, defending_role),
             canonical_root=self.canonical_root,
             raw_tracking=raw_tracking,
+            data_scope_manifest_entries=data_scope_manifest_entries(
+                canonical_root=self.canonical_root,
+                raw_tracking=raw_tracking,
+                match_id=match_id,
+                period=period,
+            ),
             canonical_data_manifest_hash=self.canonical_data_manifest_hash,
             positions=positions,
             frame_ids=frame_ids,
@@ -722,6 +928,47 @@ class TacticalQueryExecutor:
             )
 
 
+def _execute_period_worker(payload: dict[str, Any]) -> dict[str, Any]:
+    bound_plan = BoundQueryPlan.model_validate(payload["bound_plan"])
+    executor = TacticalQueryExecutor(
+        canonical_root=Path(payload["canonical_root"]),
+        raw_root=Path(payload["raw_root"]),
+        compatibility_profile=str(payload["compatibility_profile"]),
+        enable_node_cache=bool(payload["enable_node_cache"]),
+        node_cache_root=Path(payload["node_cache_root"]) if payload.get("node_cache_root") else None,
+        parallel_workers=1,
+    )
+    state = executor._execute_period(
+        bound_plan=bound_plan,
+        match_id=str(payload["match_id"]),
+        period=str(payload["period"]),
+        params=runtime_parameters(bound_plan),
+        compatibility_profile=str(payload["compatibility_profile"]),
+    )
+    if str(payload["compatibility_profile"]) == legacy_m1.LEGACY_M1_PARITY_PROFILE:
+        results = list(state.accepted)
+        traces = legacy_m1.accepted_predicate_traces(
+            state,
+            bound_plan=bound_plan,
+            compatibility_profile=str(payload["compatibility_profile"]),
+        )
+    else:
+        results, traces = emit_generic_results_from_rules(
+            state=state,
+            bound_plan=bound_plan,
+            compatibility_profile=str(payload["compatibility_profile"]),
+        )
+    return {
+        "match_index": int(payload["match_index"]),
+        "period_index": int(payload["period_index"]),
+        "results": results,
+        "traces": [trace.model_dump(mode="json", exclude_none=True) for trace in traces],
+        "runtime_value_count": sum(len(outputs) for outputs in state.runtime_values.values()),
+        "progress_events": state.progress_events,
+        "node_cache_summary": dict(state.node_cache_summary),
+    }
+
+
 def runtime_parameters(bound_plan: BoundQueryPlan) -> RuntimeParameters:
     values = {
         name: parameter.default.value
@@ -734,10 +981,38 @@ def runtime_parameters(bound_plan: BoundQueryPlan) -> RuntimeParameters:
     )
 
 
-def catalog_node_cache_key(node: BoundCatalogNode) -> str:
+def derive_node_cache_key(
+    *,
+    node: BoundPlanNode,
+    state: Any,
+    upstream_lineage: list[dict[str, Any]],
+    cache_schema_version: str = CACHE_SCHEMA_VERSION,
+    code_epoch: str | None = None,
+) -> dict[str, Any]:
+    preimage = {
+        "cache_schema_version": cache_schema_version,
+        "code_epoch": code_epoch or runtime_code_epoch(),
+        "node_semantic_identity": node_semantic_identity(node, state),
+        "upstream_lineage": upstream_lineage,
+        "data_scope": {
+            "match_id": str(state.match_id),
+            "period": str(state.period),
+            "manifest_entries": list(getattr(state, "data_scope_manifest_entries", [])),
+        },
+        "perspective_bindings": {
+            "perspective_team_role": str(state.perspective_team_role),
+            "perspective_team_id": str(getattr(state, "perspective_team_id", "")),
+            "defending_team_role": str(state.defending_team_role),
+            "defending_team_id": str(getattr(state, "defending_team_id", "")),
+        },
+    }
+    return {"cache_key": stable_hash(preimage), "preimage": preimage}
+
+
+def node_semantic_identity(node: BoundPlanNode, state: Any) -> dict[str, Any]:
     payload = node.model_dump(mode="json", exclude={"node_id"})
-    return stable_hash(
-        {
+    if isinstance(node, BoundCatalogNode):
+        family = {
             "kind": node.kind.value,
             "catalog_ref": node.catalog_ref,
             "version": node.version,
@@ -745,6 +1020,113 @@ def catalog_node_cache_key(node: BoundCatalogNode) -> str:
             "input_types": payload.get("input_types", {}),
             "outputs": payload.get("outputs", []),
             "resolved_parameters": payload.get("resolved_parameters", {}),
+        }
+    elif isinstance(node, BoundPredicateNode):
+        family = {
+            "kind": node.kind.value,
+            "operator": payload.get("operator", {}),
+            "input": payload.get("input", {}),
+            "input_type": payload.get("input_type", {}),
+            "compare": payload.get("compare"),
+            "duration": payload.get("duration"),
+            "output": payload.get("output", {}),
+        }
+    elif isinstance(node, BoundOperatorNode):
+        family = {
+            "kind": node.kind.value,
+            "operator": payload.get("operator", {}),
+            "inputs": payload.get("inputs", {}),
+            "input_types": payload.get("input_types", {}),
+            "outputs": payload.get("outputs", []),
+            "resolved_parameters": payload.get("resolved_parameters", {}),
+        }
+    else:
+        raise RuntimeError(f"Unsupported cache-key node {node}")
+    return {
+        **family,
+        "runtime_parameters_expanded_defaults": dict(sorted(state.params.values.items())),
+    }
+
+
+def node_upstream_lineage(state: PeriodState, node: BoundPlanNode) -> list[dict[str, Any]]:
+    if isinstance(node, BoundPredicateNode):
+        refs = {"input": node.input}
+    else:
+        refs = getattr(node, "inputs", {})
+    lineage: list[dict[str, Any]] = []
+    for input_name, ref in sorted(refs.items()):
+        source_node_id = ref.source_node_id
+        if source_node_id not in state.node_cache_keys:
+            raise RuntimeError(f"{node.node_id} input {input_name} references unexecuted node {source_node_id}")
+        lineage.append(
+            {
+                "input_name": input_name,
+                "source_node_id": source_node_id,
+                "output_name": ref.output_name,
+                "cache_key": state.node_cache_keys[source_node_id],
+            }
+        )
+    return lineage
+
+
+def catalog_node_cache_key(node: BoundCatalogNode) -> str:
+    state = synthetic_cache_state()
+    return derive_node_cache_key(node=node, state=state, upstream_lineage=[])["cache_key"]
+
+
+def synthetic_cache_state() -> Any:
+    return type(
+        "SyntheticCacheState",
+        (),
+        {
+            "match_id": "synthetic",
+            "period": "firstHalf",
+            "params": RuntimeParameters(values={}),
+            "data_scope_manifest_entries": [],
+            "perspective_team_role": "home",
+            "perspective_team_id": "",
+            "defending_team_role": "away",
+            "defending_team_id": "",
+        },
+    )()
+
+
+def normalize_worker_count(value: int | str | None) -> int:
+    if value is None or value == "":
+        return 1
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        return 1
+    return max(1, parsed)
+
+
+def default_persistent_node_output_cache() -> PersistentNodeOutputCache | None:
+    explicit = os.environ.get("TQE_NODE_CACHE_ROOT")
+    if explicit:
+        return PersistentNodeOutputCache(Path(explicit))
+    cache_root = os.environ.get("TQE_CACHE_ROOT")
+    if cache_root:
+        return PersistentNodeOutputCache(Path(cache_root) / "node-output")
+    return None
+
+
+@lru_cache(maxsize=1)
+def runtime_code_epoch() -> str:
+    root = Path(__file__).resolve().parent
+    entries: list[dict[str, str]] = []
+    for path in sorted(root.rglob("*.py")):
+        entries.append(
+            {
+                "path": path.relative_to(root).as_posix(),
+                "sha256": sha256_path(path),
+            }
+        )
+    return stable_hash(
+        {
+            "schema_version": "runtime_code_epoch.v1",
+            "source_root": "src/tqe/runtime",
+            "files": entries,
         }
     )
 
@@ -861,6 +1243,82 @@ def manifest_entry_path(entry: dict[str, Any], manifest_path: Path) -> Path:
     return repo_relative_path(value)
 
 
+def data_scope_manifest_entries(
+    *,
+    canonical_root: Path,
+    raw_tracking: Path,
+    match_id: str,
+    period: str,
+) -> list[dict[str, Any]]:
+    paths = [
+        canonical_root / "positions" / f"match_id={match_id}" / f"period={period}.parquet",
+        canonical_root / "frames" / f"match_id={match_id}" / f"period={period}.parquet",
+        canonical_root / "events" / f"match_id={match_id}.parquet",
+        canonical_root / "orientation.parquet",
+        canonical_root / "players.parquet",
+        canonical_root / "teams.parquet",
+        canonical_root / "matches.parquet",
+        raw_tracking,
+    ]
+    manifest_path = repo_relative_path(Path(os.environ.get("TQE_DATA_MANIFEST_PATH", str(DEFAULT_DATA_MANIFEST_PATH))))
+    manifest_entries = data_manifest_entry_index(str(manifest_path.resolve()), str(canonical_root.resolve()))
+    entries = [
+        manifest_or_file_entry(path=path, root=canonical_root, manifest_entries=manifest_entries)
+        for path in paths
+    ]
+    return sorted(entries, key=lambda item: item["path"])
+
+
+@lru_cache(maxsize=16)
+def data_manifest_entry_index(manifest_path_str: str, canonical_root_str: str) -> dict[str, dict[str, Any]]:
+    manifest_path = Path(manifest_path_str)
+    canonical_root = Path(canonical_root_str)
+    if not manifest_path.is_file():
+        return {}
+    try:
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    entries: dict[str, dict[str, Any]] = {}
+    for entry in payload.get("files", []):
+        entry_path = manifest_entry_path(entry, manifest_path)
+        try:
+            relative = entry_path.resolve().relative_to(canonical_root).as_posix()
+        except ValueError:
+            continue
+        entries[relative] = {
+            "path": entry_path.as_posix(),
+            "size": int(entry.get("size", -1)),
+            "sha256": str(entry.get("sha256") or ""),
+        }
+    return entries
+
+
+def manifest_or_file_entry(
+    *,
+    path: Path,
+    root: Path,
+    manifest_entries: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    try:
+        relative = path.resolve().relative_to(root.resolve()).as_posix()
+    except ValueError:
+        relative = path.as_posix()
+    if relative in manifest_entries:
+        entry = dict(manifest_entries[relative])
+        entry["path"] = relative
+        entry["source"] = "data_manifest"
+        return entry
+    exists = path.exists()
+    return {
+        "path": relative,
+        "source": "file_stat_sha256",
+        "exists": exists,
+        "size": path.stat().st_size if exists else None,
+        "sha256": sha256_path(path) if exists and path.is_file() else None,
+    }
+
+
 def sha256_path(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -882,24 +1340,18 @@ def file_content_hash(path: Path, *, schema_version: str) -> str:
 
 
 def shared_catalog_node_cache_key(state: PeriodState, node: BoundCatalogNode, node_cache_key: str) -> str:
-    manifest_hash = getattr(state, "canonical_data_manifest_hash", None)
-    if not manifest_hash:
-        manifest_hash = canonical_data_manifest_hash(state.canonical_root)
-    return stable_hash(
-        {
-            "schema_version": "shared_catalog_node_output_cache.v1",
-            "canonical_root": str(state.canonical_root.resolve()),
-            "canonical_data_manifest_hash": manifest_hash,
-            "raw_tracking": str(state.raw_tracking.resolve()),
-            "match_id": state.match_id,
-            "period": state.period,
-            "perspective_team_role": state.perspective_team_role,
-            "defending_team_role": state.defending_team_role,
-            "runtime_parameters": state.params.values,
-            "catalog_ref": node.catalog_ref,
-            "catalog_node_cache_key": node_cache_key,
-        }
-    )
+    if not getattr(state, "data_scope_manifest_entries", None):
+        state.data_scope_manifest_entries = data_scope_manifest_entries(
+            canonical_root=state.canonical_root,
+            raw_tracking=state.raw_tracking,
+            match_id=state.match_id,
+            period=state.period,
+        )
+    return derive_node_cache_key(
+        node=node,
+        state=state,
+        upstream_lineage=[],
+    )["cache_key"]
 
 
 def evaluate_target_in_state(
