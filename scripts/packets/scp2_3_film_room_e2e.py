@@ -28,7 +28,7 @@ from tqe.workshop.app_service import stable_json_sha256  # noqa: E402
 from tqe.workshop.m1_2 import replay_window_from_canonical  # noqa: E402
 
 FLAGSHIP_ASK = "After a regain, how often does the team progress the ball by carry and keep it with a controlled pass?"
-TABLE_PATH = ROOT / "delivery/packets/r2-4-flagship/counterattack_initiation_table.json"
+TABLE_PATH = ROOT / "delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json"
 EVIDENCE_DIR = ROOT / "delivery/packets/scp2-3-evidence"
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 

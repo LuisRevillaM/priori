@@ -627,8 +627,7 @@
                   "numerator_source_node_id",
                   "numerator_source_output_name",
                   "denominator_source_node_id",
-                  "denominator_source_output_name",
-                  "source_records"
+                  "denominator_source_output_name"
                 ],
                 "missing_data_semantics": "unknown",
                 "name": "rate_records",
@@ -953,15 +952,6 @@
           {
             "alias": "denominator_source_output_name",
             "field": "denominator_source_output_name",
-            "required": true,
-            "source": {
-              "output_name": "rate_records",
-              "source_node_id": "rate"
-            }
-          },
-          {
-            "alias": "source_records",
-            "field": "source_records",
             "required": true,
             "source": {
               "output_name": "rate_records",
@@ -1625,8 +1615,7 @@
                   "numerator_source_node_id",
                   "numerator_source_output_name",
                   "denominator_source_node_id",
-                  "denominator_source_output_name",
-                  "source_records"
+                  "denominator_source_output_name"
                 ],
                 "missing_data_semantics": "unknown",
                 "name": "rate_records",
@@ -1951,15 +1940,6 @@
           {
             "alias": "denominator_source_output_name",
             "field": "denominator_source_output_name",
-            "required": true,
-            "source": {
-              "output_name": "rate_records",
-              "source_node_id": "rate"
-            }
-          },
-          {
-            "alias": "source_records",
-            "field": "source_records",
             "required": true,
             "source": {
               "output_name": "rate_records",
