@@ -1,0 +1,31 @@
+{"evidence_metadata": {"git_commit": "7048fae69f6a4537a7c89eb10f3958464024c971", "git_tree": "74942a51f47a45d7437da6dfcf14486e3e810e21", "produced_by": "scripts/packets/scp2_3_film_room_e2e.py", "producing_script_sha256": "06516dd4e3d510dd4bc90a0cbeaf2ebdb2750c854fe6db753b6028dd90b1c399", "run_started_at": "2026-07-06T07:38:46+00:00", "schema_version": "scp2_3.evidence_metadata.v1"}}
+Prewarming Film Room flagship delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json...
+Prewarmed Film Room flagship delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json: cache_statuses=MISS,MISS returned_results=40 elapsed_ms=470436
+Prewarming Film Room flagship delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_v0.json...
+Prewarmed Film Room flagship delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_v0.json: cache_statuses=MISS,MISS returned_results=1 elapsed_ms=352080
+Workbench Alpha host service: http://127.0.0.1:64175
+Static root: apps/workbench-alpha/dist
+Output root: /private/tmp/scp2-3-film-room-workshop-runs/2026-07-06T073846Z0000-06516dd4e3d5
+hermes_diagnostic={"details": {"cwd": {"executable": true, "exists": true, "is_symlink": false, "path": "/Users/luisrevilla/code/priori"}, "hermes": {"executable": true, "exists": true, "is_symlink": true, "path": "/Users/luisrevilla/.local/bin/hermes"}, "python": {"executable": true, "exists": true, "is_symlink": true, "path": "/Users/luisrevilla/.local/src/hermes-agent/venv/bin/python3"}, "pythonpath_entries": 3, "subcommand": "interpret", "workshop_output_root": "<local-dev-path>"}, "event": "subprocess_start"}
+hermes_diagnostic={"details": {"returncode": 0, "stderr_prefix": "", "stdout_prefix": "{\"exit_code\": 0, \"ok\": true, \"stderr\": \"\", \"stdout\": \"{\\\"outcome\\\":\\\"expression\\\",\\\"expression\\\":{\\\"schema_version\\\":\\\"meaning_expression.v0\\\",\\\"expression_id\\\":\\\"after_regain_progressive_carry_controlled_pass_rate\\\",\\\"concept_identity\\\":\\\"", "subcommand": "interpret"}, "event": "subprocess_complete"}
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 65059)
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py", line 697, in process_request_thread
+    self.finish_request(request, client_address)
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py", line 766, in __init__
+    self.handle()
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/server.py", line 436, in handle
+    self.handle_one_request()
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/server.py", line 424, in handle_one_request
+    method()
+  File "/Users/luisrevilla/code/priori/src/tqe/workshop/app_service.py", line 4847, in do_GET
+    self.send_json(
+  File "/Users/luisrevilla/code/priori/src/tqe/workshop/app_service.py", line 4603, in send_json
+    self.wfile.write(body)
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py", line 845, in write
+    self._sock.sendall(b)
+BrokenPipeError: [Errno 32] Broken pipe
+----------------------------------------

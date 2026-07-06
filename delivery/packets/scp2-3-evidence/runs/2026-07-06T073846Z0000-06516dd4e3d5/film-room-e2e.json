@@ -1,0 +1,149 @@
+{
+  "answer_document_hash": "67394d1afe4468e6e0d8d4a2d6f926c7206649bcca0c0c1945acc166b3c7fa23",
+  "answer_plan_hash": "67394d1afe4468e6e0d8d4a2d6f926c7206649bcca0c0c1945acc166b3c7fa23",
+  "artifacts": {
+    "bootstrap": "delivery/packets/scp2-3-evidence/runs/2026-07-06T073846Z0000-06516dd4e3d5/film-room-bootstrap.json",
+    "cold_response": "delivery/packets/scp2-3-evidence/runs/2026-07-06T073846Z0000-06516dd4e3d5/film-room-cold-response.json",
+    "replay_window": "delivery/packets/scp2-3-evidence/runs/2026-07-06T073846Z0000-06516dd4e3d5/film-room-replay-window.json",
+    "screenshot": "delivery/packets/scp2-3-evidence/runs/2026-07-06T073846Z0000-06516dd4e3d5/film-room.png",
+    "service_log": "delivery/packets/scp2-3-evidence/runs/2026-07-06T073846Z0000-06516dd4e3d5/film-room-service.log",
+    "stage_trail_replay_window": "delivery/packets/scp2-3-evidence/runs/2026-07-06T073846Z0000-06516dd4e3d5/film-room-stage-trail-replay-window.json",
+    "stage_trail_screenshot": "delivery/packets/scp2-3-evidence/runs/2026-07-06T073846Z0000-06516dd4e3d5/film-room-stage-trail.png",
+    "unknown_replay_window": "delivery/packets/scp2-3-evidence/runs/2026-07-06T073846Z0000-06516dd4e3d5/film-room-unknown-replay-window.json",
+    "unknown_screenshot": "delivery/packets/scp2-3-evidence/runs/2026-07-06T073846Z0000-06516dd4e3d5/film-room-unknown.png"
+  },
+  "ask": "After a regain, how often does the team progress the ball by carry and keep it with a controlled pass?",
+  "billing_surface": "ChatGPT subscription via openai-codex Hermes CLI",
+  "cache_provenance": {
+    "output_root": "/private/tmp/scp2-3-film-room-workshop-runs/2026-07-06T073846Z0000-06516dd4e3d5",
+    "output_root_preexisting_at_start": false,
+    "service_prewarm_enabled": true
+  },
+  "certified_table_path": null,
+  "chain_moment_checks": {
+    "bootstrap": {
+      "carry_trail_count": 1,
+      "chain_record_count": 115,
+      "first_stage_trail_chain_status": "PASS",
+      "first_stage_trail_replay_window_id": "replay_3527f27009230f2d",
+      "first_truncated_unknown_chain_reason": "stage_2_window_truncated",
+      "first_truncated_unknown_replay_window_id": "replay_4f459a027b295d1e",
+      "first_unknown_chain_reason": "stage_1_unknown",
+      "first_unknown_replay_window_id": "replay_0e2ba8014f63667a",
+      "moment_total_count": 115,
+      "stage_overlay_count": 1,
+      "unique_replay_window_count": 115,
+      "unknown_slate_count": 114,
+      "visible_moment_count": 115
+    },
+    "cold": {
+      "carry_trail_count": 1,
+      "chain_record_count": 115,
+      "first_stage_trail_chain_status": "PASS",
+      "first_stage_trail_replay_window_id": "replay_cea6381c34697dbf",
+      "first_truncated_unknown_chain_reason": "stage_2_window_truncated",
+      "first_truncated_unknown_replay_window_id": "replay_3723174155b5488f",
+      "first_unknown_chain_reason": "stage_1_unknown",
+      "first_unknown_replay_window_id": "replay_99d036f9cd4bf2bc",
+      "moment_total_count": 115,
+      "stage_overlay_count": 1,
+      "unique_replay_window_count": 115,
+      "unknown_slate_count": 114,
+      "visible_moment_count": 115
+    }
+  },
+  "evidence_metadata": {
+    "git_commit": "7048fae69f6a4537a7c89eb10f3958464024c971",
+    "git_tree": "74942a51f47a45d7437da6dfcf14486e3e810e21",
+    "produced_by": "scripts/packets/scp2_3_film_room_e2e.py",
+    "producing_script_sha256": "06516dd4e3d510dd4bc90a0cbeaf2ebdb2750c854fe6db753b6028dd90b1c399",
+    "run_started_at": "2026-07-06T07:38:46+00:00",
+    "schema_version": "scp2_3.evidence_metadata.v1"
+  },
+  "expected_r2_4_plan_hash": "d8179a5a1af54ecdd45514e4fa3403b3ab515977fb79dd29b4a62f2ecfd9bb7e",
+  "frame_checks": [
+    {
+      "entity_count": 23,
+      "frame_id": 100200,
+      "frame_sha256": "36174bb503efb992907633e780f2585b57d757626c070f245ae1b506b3a6c402"
+    },
+    {
+      "entity_count": 23,
+      "frame_id": 100250,
+      "frame_sha256": "2bbb7f86123366b1a28243942138beb01cfb8e554e8b904f23b43f2ae7664426"
+    },
+    {
+      "entity_count": 23,
+      "frame_id": 100300,
+      "frame_sha256": "9e29773448489c7d28fab3ec6d0f153319ef12d1a561f206fa54fbcfca1d4775"
+    }
+  ],
+  "interval_metric": {
+    "label": "counterattack initiation completed chains over regain starts",
+    "lower": 0.008695652173913044,
+    "observed": 1.0,
+    "source": {
+      "a_count": 1,
+      "b_count": 0,
+      "c_count": 90,
+      "d1_count": 0,
+      "d2_count": 24,
+      "e_count": 0,
+      "evidence_kind": "runtime",
+      "match_id": "",
+      "period": "",
+      "rate_status": "PASS",
+      "source": "execution_requested_evidence"
+    },
+    "unknown_count": 114,
+    "upper": 1.0
+  },
+  "latency_ms": {
+    "bootstrap_prewarmed_fetch": 103,
+    "cold_ask_attribution": {
+      "execution": 354073,
+      "hermes": 75069,
+      "synthesis": 12,
+      "total": 429156
+    },
+    "cold_ask_total_observed": 429272,
+    "replay_window_fetch": 15,
+    "service_ready_including_startup_prewarm": 823582,
+    "stage_trail_replay_window_fetch": 321,
+    "unknown_replay_window_fetch": 263
+  },
+  "matches_r2_4_certified_table": false,
+  "model": "gpt-5.5",
+  "moment_total_count": 115,
+  "output_root": "/private/tmp/scp2-3-film-room-workshop-runs/2026-07-06T073846Z0000-06516dd4e3d5",
+  "prewarm_records": [
+    {
+      "cache_after_execute": [
+        "MISS",
+        "MISS"
+      ],
+      "elapsed_ms": 470436,
+      "key": "fragile_retention",
+      "plan": "delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json",
+      "returned_result_count": 40
+    },
+    {
+      "cache_after_execute": [
+        "MISS",
+        "MISS"
+      ],
+      "elapsed_ms": 352080,
+      "key": "counterattack_sequence_rate",
+      "plan": "delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_v0.json",
+      "returned_result_count": 1
+    }
+  ],
+  "provider": "openai-codex",
+  "replay_window_id": "replay_99d036f9cd4bf2bc",
+  "schema_version": "scp2_3.film_room_e2e.v2",
+  "skip_service_prewarm": false,
+  "synthesized_document_hash": "67394d1afe4468e6e0d8d4a2d6f926c7206649bcca0c0c1945acc166b3c7fa23",
+  "timeout_seconds": 1200,
+  "tree": "74942a51f47a45d7437da6dfcf14486e3e810e21",
+  "visible_moment_count": 115
+}
