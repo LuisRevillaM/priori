@@ -1,7 +1,7 @@
 {
-  "canonical_manifest_hash": "e1fad3b9489ff86c173e81eed450b5b686730976d94da07eb195e34084eacff5",
+  "canonical_manifest_hash": "bc5d6d4b74e5915b3f5627ea74e0ceb24739f96dae1150f91bcb0c90d696ba41",
   "flagship_plan": "delivery/packets/r2-4-flagship/counterattack_initiation_v0.json",
-  "flagship_plan_hash": "bf12768919f517f7b9412bd42622d2e4f262a6ceba6667319a597fae06921749",
+  "flagship_plan_hash": "d8179a5a1af54ecdd45514e4fa3403b3ab515977fb79dd29b4a62f2ecfd9bb7e",
   "generated_by": "scripts/packets/r2_4_flagship_generator.py",
   "long_execution_threshold_seconds": 300.0,
   "meaning_expression": "delivery/packets/r2-4-flagship/meaning-expressions/counterattack_initiation_sequence_rate.v0.json",
@@ -9,7 +9,7 @@
   "period_record_count": 28,
   "period_records_hash": "3fb270eda29fc14f57746491881afacaee388f7799284ee9f6caf2bf74416afd",
   "schema_version": "r2_4_flagship_provenance.v1",
-  "synthesized_sequence_rate_document_hash": "bf12768919f517f7b9412bd42622d2e4f262a6ceba6667319a597fae06921749",
+  "synthesized_sequence_rate_document_hash": "d8179a5a1af54ecdd45514e4fa3403b3ab515977fb79dd29b4a62f2ecfd9bb7e",
   "table": "delivery/packets/r2-4-flagship/counterattack_initiation_table.json",
-  "table_hash": "49bf6720be24f417b179d17abfe2e4ee9231ce2fcab55194109697fa17def411"
+  "table_hash": "c74b84174b21dd943df058712e24bdbae428cb7ea7288d814be721960b2e1491"
 }

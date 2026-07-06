@@ -18,7 +18,7 @@
   "period_record_count": 28,
   "period_records_hash": "3fb270eda29fc14f57746491881afacaee388f7799284ee9f6caf2bf74416afd",
   "plan": "delivery/packets/r2-4-flagship/counterattack_initiation_v0.json",
-  "plan_hash": "bf12768919f517f7b9412bd42622d2e4f262a6ceba6667319a597fae06921749",
+  "plan_hash": "d8179a5a1af54ecdd45514e4fa3403b3ab515977fb79dd29b4a62f2ecfd9bb7e",
   "question": "After a regain, does the team progress the ball by carry and keep it with a controlled pass?",
   "rate_node_id": "rate",
   "role_order": [
@@ -3417,7 +3417,7 @@
   ],
   "schema_version": "r2_4_counterattack_initiation_table.v1",
   "sequence_node_id": "sequence_pattern",
-  "synthesized_sequence_rate_document_hash": "bf12768919f517f7b9412bd42622d2e4f262a6ceba6667319a597fae06921749",
+  "synthesized_sequence_rate_document_hash": "d8179a5a1af54ecdd45514e4fa3403b3ab515977fb79dd29b4a62f2ecfd9bb7e",
   "totals": {
     "a_count": 1,
     "b_count": 0,

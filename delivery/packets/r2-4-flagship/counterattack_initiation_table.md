@@ -1,7 +1,7 @@
 # R2-4 Flagship Counterattack Initiation
 
 Plan: `delivery/packets/r2-4-flagship/counterattack_initiation_v0.json`
-Plan hash: `bf12768919f517f7b9412bd42622d2e4f262a6ceba6667319a597fae06921749`
+Plan hash: `d8179a5a1af54ecdd45514e4fa3403b3ab515977fb79dd29b4a62f2ecfd9bb7e`
 
 | Role | Match | Chains | Lower | Upper | Population | Unknown | Rate | Rate Lower | Rate Upper | A | B | C | D1 | D2 | E |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
