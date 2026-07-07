@@ -83,7 +83,7 @@ def free_port() -> int:
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM):
         pass
-    probe_root = Path(os.environ.get("TMPDIR", "/private/tmp")) / "deploy1-port-probe"
+    probe_root = Path("/private/tmp/deploy1-port-probe")
     probe_root.mkdir(parents=True, exist_ok=True)
     server = WorkbenchServer(
         ("127.0.0.1", 0),
@@ -168,8 +168,7 @@ def run_oracle(run_dir: Path, *, base_url: str, demo_token: str | None) -> dict[
     return record
 
 
-def run_local_public_service_oracles(run_dir: Path, *, demo_token: str) -> dict[str, Any]:
-    port = free_port()
+def run_local_public_service_oracles(run_dir: Path, *, demo_token: str, port: int) -> dict[str, Any]:
     base_url = f"http://127.0.0.1:{port}"
     output_root = run_dir / "service-output-root"
     cache_root = run_dir / "service-cache"
@@ -295,6 +294,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--demo-token", default="deploy1-local-demo-token")
+    parser.add_argument("--port", type=int, default=18765)
     args = parser.parse_args(argv)
     script_path = Path(__file__).resolve()
     script_sha = file_sha256(script_path)
@@ -303,7 +303,7 @@ def main(argv: list[str] | None = None) -> int:
         "schema_version": "deploy1.evidence.v1",
         "evidence_metadata": metadata(script_path, script_sha, run_dir),
         "focused_python_tests": run_focused_tests(run_dir),
-        "local_public_mode_oracles": run_local_public_service_oracles(run_dir, demo_token=args.demo_token),
+        "local_public_mode_oracles": run_local_public_service_oracles(run_dir, demo_token=args.demo_token, port=args.port),
     }
     oracle_records = payload["local_public_mode_oracles"]
     status = "PASS" if (
