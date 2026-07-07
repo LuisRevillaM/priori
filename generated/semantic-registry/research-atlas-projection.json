@@ -5221,10 +5221,10 @@
   },
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "39d7f416dba5e7664bdccb56e650911e249e757dc8dead479fa0acd2127d888f",
+    "baseline_artifact_revision": "3aeed956dbdc0829d0df3f24a99a0bd06a4627876d8235a7e772222015e145f6",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "6271474ac29e7ce7dc1a4b729b906867e56af5f0164ccfabd335242ec8bf05ca",
+    "lock_hash": "ed9d081cdc3f01fc2dbd383b5b9b8532ace5ce8df65e23a8d62065b9c258147b",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",

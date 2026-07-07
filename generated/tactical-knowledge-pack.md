@@ -1,7 +1,7 @@
 # Tactical Knowledge Pack
 
 Version: `m1.2-s2i-a.0`
-SHA-256: `07cbbdfb7d5e6f947d9d5d343f68bcdc5dd6715b3b9fba9a4e1dc8f0fbe897ee`
+SHA-256: `6b8821a462bd30c03ea4ebd65fefd2e33fc951ffc7f789f9cd577689c306177a`
 Generated: `reproducible_from_source_hashes`
 
 ## Architecture
@@ -228,7 +228,7 @@ Composition constraint kinds:
 - `generated/tactical-query-plan.types.ts`: `5c027189c9b5f314bc62fd765656e30aeaebe163add038320f74cca932627ceb`
 - `src/tqe/runtime/binder.py`: `dbf680cc9a115b6039870eeff00c3c5d851296532ccd2d2465226f5ae2f0f40f`
 - `src/tqe/runtime/catalog.py`: `374140666a0e610f4279c6ac89f6ce4219be55cd165151beac3f63f3f7ae7519`
-- `src/tqe/runtime/executor.py`: `edf4a75e60ced589935d00dfbfd7e34a2dd6b190f658ad1bc08b702800798483`
+- `src/tqe/runtime/executor.py`: `8ef82b68e84650b46e2e3a7f63ea9edb4d0a677eba980b042fa327f1616f8e5f`
 - `src/tqe/runtime/ir.py`: `33e4885a6ad75afa7b4e9df96b72eba43c49b92b24ac67c8d2979d0bde13eedd`
 - `src/tqe/runtime/operators/__init__.py`: `1d2d394ef971040862981964e221370b17d56daaefb6090c6d8047383a005c14`
 - `src/tqe/runtime/operators/aggregate_over.py`: `1f883d7035795e97ad4ff12a78ce13deda417c857fc18244758e095608aa1b64`
@@ -243,4 +243,4 @@ Composition constraint kinds:
 - `src/tqe/verification/m1_2_gate_s2i.py`: `9397f1a8a6b11e28d1f0bb48105a44dfae9a2c49ca61ff44413108f1d85ce125`
 - `src/tqe/workshop/hermes_s2.py`: `ae2bb93b3444749d8fd131075e29404141e517820faf103fb58de2ebafcb1591`
 - `src/tqe/workshop/knowledge_pack.py`: `ff3ee2e2780e4535e40bad327fce72d98a6c0b25194de8287337e52b3d8d919a`
-- `src/tqe/workshop/m1_2.py`: `481097c94dfe922a2e8e6322263e7124841c028601ae78d0608145acca65266c`
+- `src/tqe/workshop/m1_2.py`: `6b79d2d6390f32e9348440bd9e38defaa59922e7844d714dedc2cb94862245cb`
