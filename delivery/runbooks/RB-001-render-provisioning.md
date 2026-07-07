@@ -8,7 +8,9 @@ a verification; bring back the artifacts listed at the end.
    codex/afl08-passport-loop. Render reads render.yaml and proposes
    `entrelineas-film-room`. Approve. Verify: the service appears with
    a 10GB disk attached.
-2. Service → Environment → add secret env var DEMO_ACCESS_TOKEN =
+2. Service → Environment → set WORKBENCH_HERMES_ENABLED=1 (the
+   deliberate-enable switch for live asks; leave 0/absent to ship
+   gallery-only) and add secret env var DEMO_ACCESS_TOKEN =
    (generate: `openssl rand -hex 16` — keep it; it is your live-ask
    demo switch). Verify: var shows as set.
 3. Build or select the DEPLOY-1 demo bundle produced by

@@ -73,12 +73,24 @@ def main() -> int:
         boot = json.loads(raw)
         moments = (boot.get("answer") or {}).get("moments") or []
         if moments and moments[0].get("replay_window_id"):
-            status, resp = post(
-                f"{base}/api/film-room/replay-frame",
-                {"replay_window_id": moments[0]["replay_window_id"], "frame_index": 0},
+            window_id = moments[0]["replay_window_id"]
+            status, win = post(
+                f"{base}/api/film-room/replay-window",
+                {"replay_window_id": window_id},
                 timeout=30,
             )
-            check("replay_frame_serves", status == 200 and resp.get("ok", True) is not False)
+            replay = win.get("replay") or win.get("window") or win
+            frames = replay.get("frames") or []
+            first = frames[0].get("frame_id") if frames and isinstance(frames[0], dict) else replay.get("anchor_frame_id")
+            if first is None:
+                check("replay_frame_serves", False, f"no frame ids in window payload keys={list(win)[:6]}")
+            else:
+                status, resp = post(
+                    f"{base}/api/film-room/replay-frame",
+                    {"replay_window_id": window_id, "frame_id": int(first)},
+                    timeout=30,
+                )
+                check("replay_frame_serves", status == 200 and resp.get("ok", True) is not False)
         else:
             print("SKIP replay_frame_serves — no ready moments")
     except Exception as e:
