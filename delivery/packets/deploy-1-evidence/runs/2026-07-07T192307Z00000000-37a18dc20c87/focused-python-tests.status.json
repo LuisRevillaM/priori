@@ -1,0 +1,15 @@
+{
+  "command": [
+    ".venv/bin/python",
+    "-m",
+    "unittest",
+    "-v",
+    "tests.test_deploy1_public_mode"
+  ],
+  "duration_ms": 653,
+  "flagged_over_5_minutes": false,
+  "output_path": "delivery/packets/deploy-1-evidence/runs/2026-07-07T192307Z00000000-37a18dc20c87/focused-python-tests.txt",
+  "return_code": 1,
+  "status": "FAIL",
+  "timeout_seconds": 240
+}

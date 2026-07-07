@@ -1,0 +1,10 @@
+test_provisioning_rejects_cache_hash_mismatch (tests.test_deploy1_public_mode.Deploy1PublicModeTests.test_provisioning_rejects_cache_hash_mismatch) ... ok
+test_public_mode_live_ask_with_token_degrades_when_hermes_absent (tests.test_deploy1_public_mode.Deploy1PublicModeTests.test_public_mode_live_ask_with_token_degrades_when_hermes_absent) ... ok
+test_public_mode_live_ask_with_token_reaches_handler (tests.test_deploy1_public_mode.Deploy1PublicModeTests.test_public_mode_live_ask_with_token_reaches_handler) ... ok
+test_public_mode_live_ask_without_token_is_demo_token_required (tests.test_deploy1_public_mode.Deploy1PublicModeTests.test_public_mode_live_ask_without_token_is_demo_token_required) ... ok
+test_public_mode_serves_gallery_and_bootstrap_without_demo_token (tests.test_deploy1_public_mode.Deploy1PublicModeTests.test_public_mode_serves_gallery_and_bootstrap_without_demo_token) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 4.567s
+
+OK

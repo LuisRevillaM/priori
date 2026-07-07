@@ -1,0 +1,7 @@
+PASS film_room_page
+PASS bootstrap_honest
+SKIP replay_frame_serves — no ready moments
+PASS ask_gated_without_token
+PASS ask_with_token_typed
+
+ORACLE PASS
