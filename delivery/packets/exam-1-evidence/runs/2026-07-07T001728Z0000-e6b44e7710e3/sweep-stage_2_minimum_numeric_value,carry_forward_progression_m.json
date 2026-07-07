@@ -1,0 +1,112 @@
+{
+ "evidence_metadata": {
+  "expression": "delivery/packets/r2-4-flagship/meaning-expressions/counterattack_initiation_sequence_rate.v0.json",
+  "grid": [
+   2.0,
+   3.0,
+   5.0
+  ],
+  "parameter": "stage_2_minimum_numeric_value,carry_forward_progression_m",
+  "producing_script": "scripts/exam/threshold_sweep.py",
+  "producing_script_sha256": "e6b44e7710e397e7dafff1bec8e05201bf38ca493b49ffe487cebbad3112f958",
+  "run_started_at": "2026-07-07T00:29:29.996538+00:00"
+ },
+ "points": [
+  {
+   "document_hash": "ccca5099a8a7cf11cbbfa3191e53640405a043f615e6b17a79002dbfa4384b02",
+   "evidence_rows_kind": "runtime",
+   "execution_ms": 359308.023,
+   "interval_metric": {
+    "label": "RUNTIME EVIDENCE interval (per regain start)",
+    "lower": 0.0003557452863749555,
+    "observed": 1.0,
+    "source": {
+     "a_count": 1,
+     "b_count": 0,
+     "c_count": 2261,
+     "d1_count": 0,
+     "d2_count": 549,
+     "denominator_label": "per regain start",
+     "denominator_status_field": "stage_1_status",
+     "e_count": 0,
+     "evidence_kind": "runtime",
+     "partition_count": 28,
+     "population_count": 2811,
+     "population_expression": "counterattack initiation completed chains over regain starts",
+     "source": "execution_provenance_requested_evidence_sources"
+    },
+    "unknown_count": 2810,
+    "upper": 1.0
+   },
+   "moment_total_count": 115,
+   "outcome": "executed",
+   "parameter_occurrences_set": 5,
+   "synthesis_ms": 11.92,
+   "value": 2.0
+  },
+  {
+   "document_hash": "d8179a5a1af54ecdd45514e4fa3403b3ab515977fb79dd29b4a62f2ecfd9bb7e",
+   "evidence_rows_kind": "certified",
+   "execution_ms": 206.115,
+   "interval_metric": {
+    "label": "CERTIFIED interval (per regain start)",
+    "lower": 0.0003557452863749555,
+    "observed": 1.0,
+    "source": {
+     "a_count": 1,
+     "b_count": 0,
+     "c_count": 2261,
+     "d1_count": 0,
+     "d2_count": 549,
+     "denominator_label": "per regain start",
+     "denominator_status_field": "stage_1_status",
+     "e_count": 0,
+     "evidence_kind": "certified",
+     "period_records_hash": "3fb270eda29fc14f57746491881afacaee388f7799284ee9f6caf2bf74416afd",
+     "plan_hash": "d8179a5a1af54ecdd45514e4fa3403b3ab515977fb79dd29b4a62f2ecfd9bb7e",
+     "population_count": 2811,
+     "population_expression": "counterattack initiation completed chains over regain starts"
+    },
+    "unknown_count": 2810,
+    "upper": 1.0
+   },
+   "moment_total_count": 115,
+   "outcome": "executed",
+   "parameter_occurrences_set": 5,
+   "synthesis_ms": 12.489,
+   "value": 3.0
+  },
+  {
+   "document_hash": "90d1508ae27d54fc56a9a6349f32312bbdf23b5c7d0d4b3d2f3bfbf0e38cdf91",
+   "evidence_rows_kind": "runtime",
+   "execution_ms": 361663.033,
+   "interval_metric": {
+    "label": "RUNTIME EVIDENCE interval (per regain start)",
+    "lower": 0.0003557452863749555,
+    "observed": 1.0,
+    "source": {
+     "a_count": 1,
+     "b_count": 0,
+     "c_count": 2261,
+     "d1_count": 0,
+     "d2_count": 549,
+     "denominator_label": "per regain start",
+     "denominator_status_field": "stage_1_status",
+     "e_count": 0,
+     "evidence_kind": "runtime",
+     "partition_count": 28,
+     "population_count": 2811,
+     "population_expression": "counterattack initiation completed chains over regain starts",
+     "source": "execution_provenance_requested_evidence_sources"
+    },
+    "unknown_count": 2810,
+    "upper": 1.0
+   },
+   "moment_total_count": 115,
+   "outcome": "executed",
+   "parameter_occurrences_set": 5,
+   "synthesis_ms": 12.524,
+   "value": 5.0
+  }
+ ]
+}

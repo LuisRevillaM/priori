@@ -1,13 +1,18 @@
 from __future__ import annotations
 
 import unittest
+import json
+from pathlib import Path
 
 from tqe.workshop.app_service import (
     film_room_evidence_overlay,
+    film_room_interval_metric,
+    film_room_interval_metric_from_evidence,
     film_room_register_replay_window,
     film_room_source_kind,
     public_canonical_sources,
 )
+from tqe.workshop.m1_2 import rank_result
 
 
 class FilmRoomAppTests(unittest.TestCase):
@@ -101,6 +106,49 @@ class FilmRoomAppTests(unittest.TestCase):
         first = public_canonical_sources({"frames": "/canonical/frames.parquet"})
         second = public_canonical_sources(first)
         self.assertEqual(first, second)
+
+    def test_counterattack_certified_and_runtime_interval_helpers_use_same_declared_denominator(self) -> None:
+        table = json.loads(
+            Path("delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        runtime_rows = [
+            {**period_record["rate"], "audit_role": row["audit_role"]}
+            for row in table["rows"]
+            for period_record in row["periods"]
+        ]
+
+        certified = film_room_interval_metric(table)
+        runtime = film_room_interval_metric_from_evidence(runtime_rows)
+
+        self.assertIsNotNone(certified)
+        self.assertIsNotNone(runtime)
+        assert certified is not None and runtime is not None
+        self.assertEqual("per regain start", certified["source"]["denominator_label"])
+        self.assertEqual(certified["source"]["denominator_label"], runtime["source"]["denominator_label"])
+        for key in ("a_count", "b_count", "c_count", "d1_count", "d2_count", "e_count"):
+            self.assertEqual(certified["source"][key], runtime["source"][key])
+        self.assertEqual(certified["observed"], runtime["observed"])
+        self.assertEqual(certified["lower"], runtime["lower"])
+        self.assertEqual(certified["upper"], runtime["upper"])
+
+    def test_ranked_execute_response_replaces_empty_requested_evidence_with_contract(self) -> None:
+        ranked = rank_result(
+            {
+                "result_id": "result-1",
+                "classification": "UNKNOWN",
+                "match_id": "J03WOY",
+                "period": "firstHalf",
+                "anchor_frame_id": 100,
+                "requested_evidence": {},
+            },
+            rank=1,
+        )
+
+        self.assertNotIn("requested_evidence", ranked)
+        self.assertEqual("execute_result_evidence_contract.v1", ranked["evidence_contract"]["schema_version"])
+        self.assertIn("inspect_result.requested_evidence", ranked["evidence_contract"]["side_channel"])
 
 
 if __name__ == "__main__":

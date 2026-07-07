@@ -1,0 +1,13 @@
+test_anchor_only_moment_gets_observed_overlay_marker (tests.test_film_room_app.FilmRoomAppTests.test_anchor_only_moment_gets_observed_overlay_marker) ... ok
+test_canonical_source_ids_are_idempotent (tests.test_film_room_app.FilmRoomAppTests.test_canonical_source_ids_are_idempotent) ... ok
+test_chain_record_overlay_uses_stage_witnesses_and_unknown_slate (tests.test_film_room_app.FilmRoomAppTests.test_chain_record_overlay_uses_stage_witnesses_and_unknown_slate) ... ok
+test_counterattack_certified_and_runtime_interval_helpers_use_same_declared_denominator (tests.test_film_room_app.FilmRoomAppTests.test_counterattack_certified_and_runtime_interval_helpers_use_same_declared_denominator) ... ok
+test_ranked_execute_response_replaces_empty_requested_evidence_with_contract (tests.test_film_room_app.FilmRoomAppTests.test_ranked_execute_response_replaces_empty_requested_evidence_with_contract) ... ok
+test_replay_window_padding_is_derived_from_witness_frames (tests.test_film_room_app.FilmRoomAppTests.test_replay_window_padding_is_derived_from_witness_frames) ... ok
+test_source_kind_is_derived_from_record_shape (tests.test_film_room_app.FilmRoomAppTests.test_source_kind_is_derived_from_record_shape) ... ok
+test_numeric_meaning_clause_must_match_executable_parameter_value (tests.test_scp2_1_meaning_to_target.SCP2MeaningToTargetTests.test_numeric_meaning_clause_must_match_executable_parameter_value) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.017s
+
+OK

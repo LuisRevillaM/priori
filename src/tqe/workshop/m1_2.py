@@ -1847,7 +1847,7 @@ def rank_result(row: dict[str, Any], *, rank: int) -> dict[str, Any]:
     match_id = str(row["match_id"])
     period = str(row["period"])
     anchor_frame_id = int(row["anchor_frame_id"])
-    return {
+    payload = {
         "rank": rank,
         "result_id": str(row["result_id"]),
         "classification": str(row["classification"]),
@@ -1855,8 +1855,18 @@ def rank_result(row: dict[str, Any], *, rank: int) -> dict[str, Any]:
         "period": period,
         "anchor_frame_id": anchor_frame_id,
         "match_time_ms": canonical_match_time_ms(match_id, period, anchor_frame_id),
-        "requested_evidence": row.get("requested_evidence", {}),
     }
+    requested_evidence = row.get("requested_evidence")
+    if isinstance(requested_evidence, dict) and requested_evidence:
+        payload["requested_evidence"] = requested_evidence
+    else:
+        payload["evidence_contract"] = {
+            "schema_version": "execute_result_evidence_contract.v1",
+            "requested_evidence": "omitted",
+            "reason": "No requested-evidence values are projected for this returned row.",
+            "side_channel": "inspect_result.requested_evidence; execution_record.rows for stored host records; execution.provenance.requested_evidence_sources for source-output summaries",
+        }
+    return payload
 
 
 def result_row_with_context(row: dict[str, Any]) -> dict[str, Any]:

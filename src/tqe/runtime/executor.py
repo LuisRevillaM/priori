@@ -394,6 +394,7 @@ class TacticalQueryExecutor:
         runtime_value_count = 0
         progress_events: list[dict[str, Any]] = []
         node_cache_summary: Counter[str] = Counter()
+        requested_evidence_sources: list[dict[str, Any]] = []
 
         period_execution_started = time.perf_counter()
         if self.parallel_workers > 1 and len(bound_plan.match_ids) * len(bound_plan.periods) > 1:
@@ -403,6 +404,7 @@ class TacticalQueryExecutor:
                 runtime_value_count,
                 progress_events,
                 node_cache_summary,
+                requested_evidence_sources,
             ) = self._execute_periods_parallel(
                 bound_plan=bound_plan,
                 params=params,
@@ -416,6 +418,7 @@ class TacticalQueryExecutor:
                     match_runtime_value_count,
                     match_progress_events,
                     match_node_cache_summary,
+                    match_requested_evidence_sources,
                 ) = self._execute_match(
                     bound_plan=bound_plan,
                     match_id=match_id,
@@ -427,6 +430,7 @@ class TacticalQueryExecutor:
                 runtime_value_count += match_runtime_value_count
                 progress_events.extend(match_progress_events)
                 node_cache_summary.update(match_node_cache_summary)
+                requested_evidence_sources.extend(match_requested_evidence_sources)
         period_execution_ms = elapsed_ms(period_execution_started)
 
         merge_started = time.perf_counter()
@@ -529,6 +533,7 @@ class TacticalQueryExecutor:
                 "unknown_trace_count": sum(1 for trace in trace_records if trace.status == "UNKNOWN"),
                 "requested_evidence_failure_count": len(evidence_failures),
                 "requested_evidence_failures": evidence_failures[:20],
+                "requested_evidence_sources": requested_evidence_sources,
                 "runtime_trace_hash": stable_hash(trace_payload),
             },
             timing_ms={
@@ -547,12 +552,13 @@ class TacticalQueryExecutor:
         match_id: str,
         params: RuntimeParameters,
         compatibility_profile: str,
-    ) -> tuple[list[dict[str, Any]], list[PredicateTrace], int, list[dict[str, Any]], Counter[str]]:
+    ) -> tuple[list[dict[str, Any]], list[PredicateTrace], int, list[dict[str, Any]], Counter[str], list[dict[str, Any]]]:
         accepted: list[dict[str, Any]] = []
         traces: list[PredicateTrace] = []
         runtime_value_count = 0
         progress_events: list[dict[str, Any]] = []
         node_cache_summary: Counter[str] = Counter()
+        requested_evidence_sources: list[dict[str, Any]] = []
         for period in bound_plan.periods:
             state = self._execute_period(
                 bound_plan=bound_plan,
@@ -581,6 +587,9 @@ class TacticalQueryExecutor:
             runtime_value_count += sum(len(outputs) for outputs in state.runtime_values.values())
             progress_events.extend(state.progress_events)
             node_cache_summary.update(state.node_cache_summary)
+            requested_evidence_sources.extend(
+                requested_evidence_source_snapshots(state=state, bound_plan=bound_plan)
+            )
         if compatibility_profile == legacy_m1.LEGACY_M1_PARITY_PROFILE:
             accepted.sort(key=legacy_m1.legacy_m1_result_key)
         else:
@@ -593,7 +602,7 @@ class TacticalQueryExecutor:
                     item["result_id"],
                 )
             )
-        return accepted, traces, runtime_value_count, progress_events, node_cache_summary
+        return accepted, traces, runtime_value_count, progress_events, node_cache_summary, requested_evidence_sources
 
     def _execute_periods_parallel(
         self,
@@ -601,7 +610,7 @@ class TacticalQueryExecutor:
         bound_plan: BoundQueryPlan,
         params: RuntimeParameters,
         compatibility_profile: str,
-    ) -> tuple[list[dict[str, Any]], list[PredicateTrace], int, list[dict[str, Any]], Counter[str]]:
+    ) -> tuple[list[dict[str, Any]], list[PredicateTrace], int, list[dict[str, Any]], Counter[str], list[dict[str, Any]]]:
         tasks: list[dict[str, Any]] = []
         for match_index, match_id in enumerate(bound_plan.match_ids):
             for period_index, period in enumerate(bound_plan.periods):
@@ -644,6 +653,7 @@ class TacticalQueryExecutor:
             }
         ]
         node_cache_summary: Counter[str] = Counter()
+        requested_evidence_sources: list[dict[str, Any]] = []
         for match_index, _match_id in enumerate(bound_plan.match_ids):
             match_results: list[dict[str, Any]] = []
             match_traces: list[PredicateTrace] = []
@@ -654,6 +664,7 @@ class TacticalQueryExecutor:
                 runtime_value_count += int(item["runtime_value_count"])
                 progress_events.extend(item["progress_events"])
                 node_cache_summary.update(Counter(item["node_cache_summary"]))
+                requested_evidence_sources.extend(item.get("requested_evidence_sources", []))
             if compatibility_profile == legacy_m1.LEGACY_M1_PARITY_PROFILE:
                 match_results.sort(key=legacy_m1.legacy_m1_result_key)
             else:
@@ -668,7 +679,7 @@ class TacticalQueryExecutor:
                 )
             accepted.extend(match_results)
             traces.extend(match_traces)
-        return accepted, traces, runtime_value_count, progress_events, node_cache_summary
+        return accepted, traces, runtime_value_count, progress_events, node_cache_summary, requested_evidence_sources
 
     def evaluate_target(
         self,
@@ -1045,6 +1056,10 @@ def _execute_period_worker(payload: dict[str, Any]) -> dict[str, Any]:
         "runtime_value_count": sum(len(outputs) for outputs in state.runtime_values.values()),
         "progress_events": state.progress_events,
         "node_cache_summary": dict(state.node_cache_summary),
+        "requested_evidence_sources": requested_evidence_source_snapshots(
+            state=state,
+            bound_plan=bound_plan,
+        ),
     }
 
 
@@ -1983,6 +1998,71 @@ def runtime_records(value: RuntimeValue) -> list[dict[str, Any]]:
     if isinstance(value.value, list) and all(isinstance(item, dict) for item in value.value):
         return value.value
     return []
+
+
+def requested_evidence_source_snapshots(
+    *,
+    state: PeriodState,
+    bound_plan: BoundQueryPlan,
+) -> list[dict[str, Any]]:
+    source_aliases: dict[tuple[str, str], list[str]] = defaultdict(list)
+    for request in bound_plan.requested_evidence:
+        key = (request.source.source_node_id, request.source.output_name)
+        alias = request.alias or f"{request.source.source_node_id}.{request.field}"
+        if alias not in source_aliases[key]:
+            source_aliases[key].append(alias)
+    snapshots: list[dict[str, Any]] = []
+    for (source_node_id, output_name), aliases in sorted(source_aliases.items()):
+        runtime_value = state.runtime_values.get(source_node_id, {}).get(output_name)
+        if runtime_value is None:
+            continue
+        records = runtime_records(runtime_value)
+        if not records:
+            continue
+        snapshots.append(
+            {
+                "schema_version": "runtime_requested_evidence_source.v1",
+                "match_id": state.match_id,
+                "period": state.period,
+                "perspective_team_role": state.perspective_team_role,
+                "source_node_id": source_node_id,
+                "output_name": output_name,
+                "requested_aliases": sorted(aliases),
+                "record_count": len(records),
+                "records": [public_runtime_source_record(record) for record in records],
+            }
+        )
+    return snapshots
+
+
+def public_runtime_source_record(record: dict[str, Any]) -> dict[str, Any]:
+    public: dict[str, Any] = {}
+    for key, value in sorted(record.items()):
+        if key == "source_records":
+            source_records = [item for item in value if isinstance(item, dict)] if isinstance(value, list) else []
+            public["source_record_count"] = len(source_records)
+            public["source_records_hash"] = stable_hash(public_runtime_json_value(source_records))
+            public["source_records_contract"] = "omitted_from_execution_response; use result replay/inspection for per-moment witnesses"
+            continue
+        public[key] = public_runtime_json_value(value)
+    public["record_hash"] = stable_hash(public)
+    return public
+
+
+def public_runtime_json_value(value: Any) -> Any:
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return value
+    if isinstance(value, dict):
+        return {str(key): public_runtime_json_value(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [public_runtime_json_value(item) for item in value]
+    if isinstance(value, tuple):
+        return [public_runtime_json_value(item) for item in value]
+    if hasattr(value, "model_dump"):
+        return public_runtime_json_value(value.model_dump(mode="json"))
+    if hasattr(value, "tolist"):
+        return public_runtime_json_value(value.tolist())
+    return repr(value)
 
 
 def runtime_frame_values(value: RuntimeValue) -> list[Any]:

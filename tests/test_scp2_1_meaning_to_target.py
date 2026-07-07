@@ -329,6 +329,23 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
             ]
             self.assertIn("source_records", {item["field"] for item in rate_requests})
 
+    def test_numeric_meaning_clause_must_match_executable_parameter_value(self) -> None:
+        payload = json.loads(
+            (R2_4_FIXTURE_DIR / "counterattack_initiation_sequence_rate.v0.json").read_text(encoding="utf-8")
+        )
+        for clause in payload["meaning_clauses"]:
+            if clause.get("field") == "carry_forward_progression_m":
+                clause["value"] = 8.0
+
+        result = load_meaning_expression_result(payload, vocabulary=self.vocabulary)
+
+        self.assertEqual("refused", result.outcome)
+        self.assertIsNotNone(result.refusal)
+        assert result.refusal is not None
+        self.assertEqual("MEANING_PARAMETER_MISMATCH", result.refusal.gap_code)
+        self.assertEqual("numeric_clause_parameter_consistency", result.refusal.missing_capability)
+        self.assertIn("carry_forward_progression_m", result.refusal.reference)
+
     def test_recipe_id_does_not_bypass_search_with_exact_plan_ref(self) -> None:
         pack = json.loads(Path("generated/tactical-knowledge-pack.json").read_text(encoding="utf-8"))
         recipe = next(

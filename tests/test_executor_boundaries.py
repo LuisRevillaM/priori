@@ -57,6 +57,26 @@ def write_data_manifest(path: Path, files: list[Path]) -> None:
 
 
 class ExecutorRegistryBoundaryTests(unittest.TestCase):
+    def test_public_runtime_source_record_is_json_safe_for_non_json_values(self) -> None:
+        class NonJsonValue:
+            def __repr__(self) -> str:
+                return "NonJsonValue()"
+
+        public = executor.public_runtime_source_record(
+            {
+                "relation_id": "rate-1",
+                "a_count": 1,
+                "b_count": 0,
+                "source_records": [{"vector": np.array([1, 2])}],
+                "legacy_series_like": NonJsonValue(),
+            }
+        )
+
+        json.dumps(public, sort_keys=True)
+        self.assertEqual(1, public["source_record_count"])
+        self.assertEqual("NonJsonValue()", public["legacy_series_like"])
+        self.assertTrue(public["record_hash"])
+
     def test_capability_registry_matches_catalog_without_legacy_noop_debt(self) -> None:
         catalog = default_catalog()
         catalog_primitives = {entry.name for entry in catalog.primitives}

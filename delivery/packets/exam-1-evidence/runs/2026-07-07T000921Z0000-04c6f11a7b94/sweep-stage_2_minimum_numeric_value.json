@@ -1,0 +1,74 @@
+{
+ "evidence_metadata": {
+  "expression": "delivery/packets/r2-4-flagship/meaning-expressions/counterattack_initiation_sequence_rate.v0.json",
+  "grid": [
+   2.0,
+   3.0,
+   5.0
+  ],
+  "parameter": "stage_2_minimum_numeric_value",
+  "producing_script": "scripts/exam/threshold_sweep.py",
+  "producing_script_sha256": "04c6f11a7b942cda9474bb189f65a8f49721598e090f44bdde7b21eab093addb",
+  "run_started_at": "2026-07-07T00:15:48.345212+00:00"
+ },
+ "points": [
+  {
+   "outcome": "refusal",
+   "refusal": {
+    "gap_code": "MEANING_PARAMETER_MISMATCH",
+    "message": "Numeric meaning clause disagrees with the executable operator parameter: carry_forward_progression_m clause value 3.0 does not match stage_2_minimum_numeric_value value 2.0.",
+    "missing_capability": "numeric_clause_parameter_consistency",
+    "outcome": "understood_but_not_expressible",
+    "pack_sha256": "07cbbdfb7d5e6f947d9d5d343f68bcdc5dd6715b3b9fba9a4e1dc8f0fbe897ee",
+    "reference": "carry_forward_progression_m:3.0!=2.0",
+    "vocabulary_section": "meaning_clauses[1]"
+   },
+   "value": 2.0
+  },
+  {
+   "document_hash": "d8179a5a1af54ecdd45514e4fa3403b3ab515977fb79dd29b4a62f2ecfd9bb7e",
+   "evidence_rows_kind": "certified",
+   "execution_ms": 386928.902,
+   "interval_metric": {
+    "label": "CERTIFIED interval (per regain start)",
+    "lower": 0.0003557452863749555,
+    "observed": 1.0,
+    "source": {
+     "a_count": 1,
+     "b_count": 0,
+     "c_count": 2261,
+     "d1_count": 0,
+     "d2_count": 549,
+     "denominator_label": "per regain start",
+     "denominator_status_field": "stage_1_status",
+     "e_count": 0,
+     "evidence_kind": "certified",
+     "period_records_hash": "3fb270eda29fc14f57746491881afacaee388f7799284ee9f6caf2bf74416afd",
+     "plan_hash": "d8179a5a1af54ecdd45514e4fa3403b3ab515977fb79dd29b4a62f2ecfd9bb7e",
+     "population_count": 2811,
+     "population_expression": "counterattack initiation completed chains over regain starts"
+    },
+    "unknown_count": 2810,
+    "upper": 1.0
+   },
+   "moment_total_count": 115,
+   "outcome": "executed",
+   "parameter_occurrences_set": 4,
+   "synthesis_ms": 11.111,
+   "value": 3.0
+  },
+  {
+   "outcome": "refusal",
+   "refusal": {
+    "gap_code": "MEANING_PARAMETER_MISMATCH",
+    "message": "Numeric meaning clause disagrees with the executable operator parameter: carry_forward_progression_m clause value 3.0 does not match stage_2_minimum_numeric_value value 5.0.",
+    "missing_capability": "numeric_clause_parameter_consistency",
+    "outcome": "understood_but_not_expressible",
+    "pack_sha256": "07cbbdfb7d5e6f947d9d5d343f68bcdc5dd6715b3b9fba9a4e1dc8f0fbe897ee",
+    "reference": "carry_forward_progression_m:3.0!=5.0",
+    "vocabulary_section": "meaning_clauses[1]"
+   },
+   "value": 5.0
+  }
+ ]
+}

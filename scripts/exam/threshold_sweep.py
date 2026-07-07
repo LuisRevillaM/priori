@@ -105,9 +105,13 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
     points: list[dict[str, Any]] = []
     for value in grid:
-        mutated, hits = set_parameter(raw, args.parameter, value)
-        if hits == 0:
-            raise RuntimeError(f"parameter {args.parameter} not found in expression")
+        mutated = raw
+        hits = 0
+        for target in args.parameter.split(","):
+            mutated, target_hits = set_parameter(mutated, target.strip(), value)
+            if target_hits == 0:
+                raise RuntimeError(f"parameter {target} not found in expression")
+            hits += target_hits
         expression = me.MeaningExpressionV0.model_validate(mutated)
         refusal = me.first_vocabulary_refusal(
             expression=expression, vocabulary=me.load_pack_vocabulary()
@@ -159,7 +163,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--expression", required=True)
-    parser.add_argument("--parameter", required=True)
+    parser.add_argument("--parameter", required=True, help="comma-separated coherent set: every listed parameter/field is set to the value (e.g. operator param + its describing clause field)")
     parser.add_argument("--grid", required=True, help="comma-separated values")
     parser.add_argument("--output-root", default="artifacts/exam-output")
     parser.add_argument("--workers", type=int, default=4)

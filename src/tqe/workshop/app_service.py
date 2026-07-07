@@ -423,6 +423,7 @@ class FilmRoomExecutionRecordResponse(WorkbenchResponseModel):
     confirmation: dict[str, Any]
     cache_before: dict[str, Any]
     execution: dict[str, Any]
+    runtime_evidence_sources: list[dict[str, Any]] = Field(default_factory=list)
     cache_after_execute: dict[str, Any]
     draft_record: dict[str, Any]
     bound_record: dict[str, Any]
@@ -2630,8 +2631,11 @@ def film_room_answer_from_document(
         for row in raw_rate_evidence_rows
         if isinstance(row, dict)
     ]
-    interval_metric = film_room_interval_metric(certified.get("table") if certified else None) or film_room_interval_metric_from_evidence(
-        runtime_evidence_rows
+    runtime_rate_source_rows = film_room_runtime_rate_source_rows(executions)
+    interval_metric = (
+        film_room_interval_metric(certified.get("table") if certified else None)
+        or film_room_interval_metric_from_evidence(runtime_rate_source_rows)
+        or film_room_interval_metric_from_legacy_evidence(runtime_evidence_rows)
     )
     bound_plan_hashes = {
         str(record["role"]): str(record["execution"].get("bound_plan_hash") or record["bound_record"].get("bound_plan_hash"))
@@ -2651,9 +2655,15 @@ def film_room_answer_from_document(
         "replay": replay_payload,
         "executions": executions,
         "raw_evidence": {
-            "rate_records": raw_rate_evidence_rows,
+            "rate_records": runtime_rate_source_rows or raw_rate_evidence_rows,
+            "returned_rate_records": raw_rate_evidence_rows,
+            "runtime_rate_source_rows": runtime_rate_source_rows,
             "certified_table": certified.get("table") if certified else None,
             "moment_source": "rate.source_records" if any("source_records" in row for row in raw_rate_evidence_rows) else "execution.results",
+            "interval_source_contract": (
+                "Film Room interval metrics use certified table totals when the document hash matches a committed table; "
+                "otherwise they use execution.provenance.requested_evidence_sources rate_records summaries, not returned result order."
+            ),
         },
         "provenance": {
             "plan_hash": plan_hash,
@@ -2702,6 +2712,13 @@ def film_room_execute_document(document_payload: dict[str, Any], *, output_root:
         )
         cache_before = execution_cache_status(execute_request.model_dump(mode="json"), output_root=output_root)
         executed = cached_execute_query_plan(execute_request, output_root=output_root)
+        execution_record = read_handle("executions", str(executed["execution"]["execution_id"]), output_root=output_root)
+        provenance = execution_record.get("execution", {}).get("provenance", {})
+        runtime_evidence_sources = (
+            provenance.get("requested_evidence_sources")
+            if isinstance(provenance, dict) and isinstance(provenance.get("requested_evidence_sources"), list)
+            else []
+        )
         executions.append(
             {
                 "role": role,
@@ -2710,6 +2727,7 @@ def film_room_execute_document(document_payload: dict[str, Any], *, output_root:
                 "confirmation": confirmation.model_dump(mode="json"),
                 "cache_before": cache_before,
                 "execution": executed["execution"],
+                "runtime_evidence_sources": runtime_evidence_sources,
                 "cache_after_execute": executed["cache"],
                 "draft_record": read_handle("draft-plans", submitted.draft_plan_id, output_root=output_root),
                 "bound_record": read_handle("bound-plans", validation.bound_plan_id, output_root=output_root),
@@ -2998,6 +3016,34 @@ def film_room_unknown_reason(evidence_row: dict[str, Any] | None, row: dict[str,
     return None
 
 
+def film_room_runtime_rate_source_rows(executions: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for execution_record in executions:
+        role = str(execution_record.get("role") or "")
+        for source in execution_record.get("runtime_evidence_sources", []) or []:
+            if not isinstance(source, dict):
+                continue
+            if str(source.get("output_name") or "") != "rate_records":
+                continue
+            for record in source.get("records", []) or []:
+                if not isinstance(record, dict):
+                    continue
+                row = deepcopy(record)
+                row.setdefault("audit_role", role)
+                row.setdefault("match_id", source.get("match_id"))
+                row.setdefault("period", source.get("period"))
+                row.setdefault("perspective_team_role", source.get("perspective_team_role"))
+                row["_runtime_source"] = {
+                    "schema_version": source.get("schema_version"),
+                    "source_node_id": source.get("source_node_id"),
+                    "output_name": source.get("output_name"),
+                    "record_count": source.get("record_count"),
+                    "requested_aliases": source.get("requested_aliases"),
+                }
+                rows.append(row)
+    return rows
+
+
 def film_room_interval_metric(table: dict[str, Any] | None) -> dict[str, Any] | None:
     if not table:
         return None
@@ -3026,7 +3072,7 @@ def film_room_interval_metric(table: dict[str, Any] | None) -> dict[str, Any] | 
         return None
     return FilmRoomIntervalMetricResponse.model_validate(
         {
-            "label": str(table.get("question") or "Certified interval"),
+            "label": film_room_interval_label("certified", table=table),
             "observed": float(observed),
             "lower": float(lower),
             "upper": float(upper),
@@ -3035,55 +3081,181 @@ def film_room_interval_metric(table: dict[str, Any] | None) -> dict[str, Any] | 
                 "evidence_kind": "certified",
                 "plan_hash": str(table.get("plan_hash")),
                 "period_records_hash": str(table.get("period_records_hash")),
+                "denominator_status_field": film_room_declared_denominator_field(table=table),
+                "denominator_label": film_room_declared_denominator_label(table=table),
+                "population_expression": film_room_declared_population_expression(table=table),
                 "a_count": int(totals.get("a_count") or 0),
                 "b_count": int(totals.get("b_count") or 0),
                 "c_count": int(totals.get("c_count") or 0),
                 "d1_count": int(totals.get("d1_count") or 0),
                 "d2_count": int(totals.get("d2_count") or 0),
                 "e_count": int(totals.get("e_count") or 0),
+                "population_count": int(totals.get("population_count") or 0),
             },
         }
     ).model_dump(mode="json")
 
 
 def film_room_interval_metric_from_evidence(rows: list[dict[str, Any]]) -> dict[str, Any] | None:
+    rate_rows = film_room_distinct_rate_rows(rows)
+    if not rate_rows:
+        return None
+    totals = {
+        name: sum(int(row.get(name) or 0) for row in rate_rows)
+        for name in ("a_count", "b_count", "c_count", "d1_count", "d2_count", "e_count")
+    }
+    counted = film_room_rate_interval_from_counts(totals)
+    if counted is None:
+        return None
+    first = rate_rows[0]
+    return FilmRoomIntervalMetricResponse.model_validate(
+        {
+            "label": film_room_interval_label("runtime", row=first),
+            "observed": float(counted["observed"]),
+            "lower": float(counted["lower"]),
+            "upper": float(counted["upper"]),
+            "unknown_count": int(counted["unknown_count"]),
+            "source": {
+                "evidence_kind": "runtime",
+                "source": "execution_provenance_requested_evidence_sources",
+                "partition_count": len(rate_rows),
+                "denominator_status_field": film_room_declared_denominator_field(row=first),
+                "denominator_label": film_room_declared_denominator_label(row=first),
+                "population_expression": film_room_declared_population_expression(row=first),
+                "a_count": totals["a_count"],
+                "b_count": totals["b_count"],
+                "c_count": totals["c_count"],
+                "d1_count": totals["d1_count"],
+                "d2_count": totals["d2_count"],
+                "e_count": totals["e_count"],
+                "population_count": sum(totals.values()),
+            },
+        }
+    ).model_dump(mode="json")
+
+
+def film_room_distinct_rate_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    distinct: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, str, str, str, str]] = set()
     for row in rows:
-        observed = row.get("observed")
-        lower = row.get("lower_bound")
-        upper = row.get("upper_bound")
-        unknown = row.get("unknown_count")
-        if not all(isinstance(value, (int, float)) for value in (observed, lower, upper, unknown)):
-            counted = film_room_rate_interval_from_counts(row)
-            if counted is None:
-                continue
-            observed = counted["observed"]
-            lower = counted["lower"]
-            upper = counted["upper"]
-            unknown = counted["unknown_count"]
-        if not all(isinstance(value, (int, float)) for value in (observed, lower, upper, unknown)):
+        if not film_room_has_rate_counts(row):
             continue
-        return FilmRoomIntervalMetricResponse.model_validate(
-            {
-                "label": str(row.get("population_expression") or "Runtime evidence interval"),
-                "observed": float(observed),
-                "lower": float(lower),
-                "upper": float(upper),
-                "unknown_count": int(unknown),
-                "source": {
-                    "evidence_kind": "runtime",
-                    "source": "execution_requested_evidence",
-                    "match_id": str(row.get("match_id") or ""),
-                    "period": str(row.get("period") or ""),
-                    "rate_status": str(row.get("rate_status") or ""),
-                    "a_count": int(row.get("a_count") or 0),
-                    "b_count": int(row.get("b_count") or 0),
-                    "c_count": int(row.get("c_count") or 0),
-                    "d1_count": int(row.get("d1_count") or 0),
-                    "d2_count": int(row.get("d2_count") or 0),
-                    "e_count": int(row.get("e_count") or 0),
-                },
-            }
-        ).model_dump(mode="json")
+        key = (
+            str(row.get("audit_role") or row.get("perspective_team_role") or ""),
+            str(row.get("match_id") or ""),
+            str(row.get("period") or ""),
+            stable_hash(row.get("group_key") if isinstance(row.get("group_key"), dict) else {}),
+            str(row.get("denominator_status_field") or ""),
+            str(row.get("numerator_status_field") or ""),
+        )
+        if key in seen:
+            continue
+        seen.add(key)
+        distinct.append(row)
+    return distinct
+
+
+def film_room_has_rate_counts(row: dict[str, Any]) -> bool:
+    return all(isinstance(row.get(name), int) for name in ("a_count", "b_count", "c_count", "d1_count", "d2_count"))
+
+
+def film_room_rate_count_payload(row: dict[str, Any]) -> dict[str, Any]:
+    return {
+        key: row.get(key)
+        for key in (
+            "a_count",
+            "b_count",
+            "c_count",
+            "d1_count",
+            "d2_count",
+            "e_count",
+            "group_key",
+            "match_id",
+            "period",
+            "audit_role",
+        )
+    }
+
+
+def film_room_interval_label(kind: Literal["certified", "runtime"], *, table: dict[str, Any] | None = None, row: dict[str, Any] | None = None) -> str:
+    prefix = "CERTIFIED" if kind == "certified" else "RUNTIME EVIDENCE"
+    return f"{prefix} interval ({film_room_declared_denominator_label(table=table, row=row)})"
+
+
+def film_room_declared_denominator_field(*, table: dict[str, Any] | None = None, row: dict[str, Any] | None = None) -> str:
+    if row and row.get("denominator_status_field"):
+        return str(row["denominator_status_field"])
+    if table:
+        for item in table.get("rows", []) or []:
+            if isinstance(item, dict) and item.get("denominator_status_field"):
+                return str(item["denominator_status_field"])
+    return ""
+
+
+def film_room_declared_population_expression(*, table: dict[str, Any] | None = None, row: dict[str, Any] | None = None) -> str:
+    if row and row.get("population_expression"):
+        return str(row["population_expression"])
+    if table:
+        for item in table.get("rows", []) or []:
+            if isinstance(item, dict) and item.get("population_expression"):
+                return str(item["population_expression"])
+    return ""
+
+
+def film_room_declared_denominator_label(*, table: dict[str, Any] | None = None, row: dict[str, Any] | None = None) -> str:
+    field = film_room_declared_denominator_field(table=table, row=row)
+    population_expression = film_room_declared_population_expression(table=table, row=row)
+    if field == "stage_1_status":
+        return "per regain start"
+    if population_expression:
+        return f"per {population_expression}"
+    if field:
+        return f"per {field} PASS denominator"
+    return "declared denominator"
+
+
+def film_room_legacy_single_rate_interval(row: dict[str, Any]) -> dict[str, Any] | None:
+    observed = row.get("observed")
+    lower = row.get("lower_bound")
+    upper = row.get("upper_bound")
+    unknown = row.get("unknown_count")
+    if not all(isinstance(value, (int, float)) for value in (observed, lower, upper, unknown)):
+        return None
+    return FilmRoomIntervalMetricResponse.model_validate(
+        {
+            "label": film_room_interval_label("runtime", row=row),
+            "observed": float(observed),
+            "lower": float(lower),
+            "upper": float(upper),
+            "unknown_count": int(unknown),
+            "source": {
+                "evidence_kind": "runtime",
+                "source": "execution_requested_evidence",
+                "match_id": str(row.get("match_id") or ""),
+                "period": str(row.get("period") or ""),
+                "rate_status": str(row.get("rate_status") or ""),
+                "denominator_status_field": film_room_declared_denominator_field(row=row),
+                "denominator_label": film_room_declared_denominator_label(row=row),
+                "population_expression": film_room_declared_population_expression(row=row),
+                "a_count": int(row.get("a_count") or 0),
+                "b_count": int(row.get("b_count") or 0),
+                "c_count": int(row.get("c_count") or 0),
+                "d1_count": int(row.get("d1_count") or 0),
+                "d2_count": int(row.get("d2_count") or 0),
+                "e_count": int(row.get("e_count") or 0),
+            },
+        }
+    ).model_dump(mode="json")
+
+
+def film_room_interval_metric_from_legacy_evidence(rows: list[dict[str, Any]]) -> dict[str, Any] | None:
+    for row in rows:
+        counted = film_room_rate_interval_from_counts(row)
+        if counted is not None:
+            return film_room_interval_metric_from_evidence([row])
+        legacy = film_room_legacy_single_rate_interval(row)
+        if legacy is not None:
+            return legacy
     return None
 
 
@@ -4227,8 +4399,8 @@ def cache_request_identity(request: ExecuteQueryPlanRequest, *, output_root: Pat
     invocation = document.get("default_invocation") if isinstance(document, dict) else {}
     return {
         "schema_version": "1.0",
-        "runtime_version": "workbench_beta1c1_required_evidence_cache_v3",
-        "execution_contract": "required_evidence_complete_v1",
+        "runtime_version": "workbench_beta1c1_required_evidence_cache_v4",
+        "execution_contract": "required_evidence_complete_v2_with_source_summaries",
         "canonical_data_hash": canonical_data_hash(),
         "bound_plan_hash": bound_record.get("bound_plan_hash"),
         "scope": {
