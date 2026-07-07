@@ -1,5 +1,12 @@
 # PLAN — Entrelíneas
 
+THE LOOP TARGET (one line, every cycle closes distance to it): a
+coach uploads their match film and asks it questions in plain
+football language, forever. Weekly business rhythm once Gate 1
+closes: ship the loop, process more film, one new coach/team demo per
+week — their questions become vocabulary demand-evidence, their film
+narrows the intervals.
+
 Vision (owner's words, durable): **make the film queryable** — a
 pipeline that turns a given game into data you can query freely, with
 deep soccer meaning, every answer a certified result or an honest
