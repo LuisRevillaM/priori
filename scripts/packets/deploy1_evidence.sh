@@ -81,6 +81,7 @@ path.write_text(json.dumps({
     "output_path": output_path,
 }, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 PY
+  set +e
   return "$rc"
 }
 
