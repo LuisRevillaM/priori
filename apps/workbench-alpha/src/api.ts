@@ -26,6 +26,22 @@ type ApiSchemaName = keyof typeof apiSchemas;
 const ajv = new Ajv({ allErrors: true, strict: false });
 const validators = new Map<ApiSchemaName, ValidateFunction>();
 
+export class WorkbenchApiError extends Error {
+  errorCode: string;
+  details: JsonObject;
+  status: number;
+  path: string;
+
+  constructor(payload: ErrorResponse, status: number, path: string) {
+    super(payload.message || payload.error_code || `Request failed: ${path}`);
+    this.name = "WorkbenchApiError";
+    this.errorCode = payload.error_code;
+    this.details = payload.details ?? {};
+    this.status = status;
+    this.path = path;
+  }
+}
+
 function validatorFor(schemaName: ApiSchemaName) {
   const cached = validators.get(schemaName);
   if (cached) return cached;
@@ -54,8 +70,7 @@ async function request<T>(schemaName: ApiSchemaName, path: string, options: Requ
   const payload = (await parseJsonResponse(path, response)) as T & { ok?: boolean; message?: string; error_code?: string };
   if (!response.ok || payload.ok === false) {
     const errorPayload = assertValidResponse<ErrorResponse>("ErrorResponse", payload);
-    const message = errorPayload.message ?? errorPayload.error_code ?? `Request failed: ${path}`;
-    throw new Error(message);
+    throw new WorkbenchApiError(errorPayload, response.status, path);
   }
   return assertValidResponse<T>(schemaName, payload);
 }

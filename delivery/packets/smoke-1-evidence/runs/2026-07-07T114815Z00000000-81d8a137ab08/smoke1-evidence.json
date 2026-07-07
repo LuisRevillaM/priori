@@ -1,0 +1,60 @@
+{
+  "evidence_metadata": {
+    "git_branch": "packet/smoke-1",
+    "git_commit": "f396f22fa729f0777e025d24c037a32402e99b46",
+    "git_tree": "635188190f448f075449139413b4d954ddc80914",
+    "produced_by": "scripts/packets/smoke1_evidence.py",
+    "producing_script_sha256": "81d8a137ab085feb6572176ab0b10c0458ca1e4b186fb0d8c4a6f0da0dbc7095",
+    "run_dir": "delivery/packets/smoke-1-evidence/runs/2026-07-07T114815Z00000000-81d8a137ab08",
+    "run_started_at": "2026-07-07T11:48:15+00:00",
+    "schema_version": "smoke1.evidence_metadata.v1"
+  },
+  "focused_python_tests": {
+    "command": [
+      "/Users/luisrevilla/code/priori/.venv/bin/python",
+      "-m",
+      "unittest",
+      "-v",
+      "tests.test_smoke1_honest_errors",
+      "tests.test_scp2_2_hermes_nl"
+    ],
+    "duration_ms": 1883.465,
+    "output_path": "delivery/packets/smoke-1-evidence/runs/2026-07-07T114815Z00000000-81d8a137ab08/focused-python-tests.txt",
+    "return_code": 0,
+    "status": "PASS"
+  },
+  "focused_ui_tests": {
+    "command": [
+      "npm",
+      "--prefix",
+      "apps/workbench-alpha",
+      "run",
+      "test:unit"
+    ],
+    "duration_ms": 1932.935,
+    "output_path": "delivery/packets/smoke-1-evidence/runs/2026-07-07T114815Z00000000-81d8a137ab08/focused-ui-tests.txt",
+    "return_code": 0,
+    "status": "PASS"
+  },
+  "owner_ask": {
+    "attempt_count": 1,
+    "attempt_limit": 1,
+    "cache_provenance": "Each owner-ask attempt uses a fresh run-local output_root under the evidence directory. No persistent execution-cache path is configured by this script; Hermes model calls remain live subscription-billed through openai-codex.",
+    "records": [
+      {
+        "attempt": 1,
+        "billing_surface": "ChatGPT subscription via openai-codex Hermes CLI",
+        "duration_ms": 222188.151,
+        "exception_message": "Hermes output is not valid JSON: Expecting ',' delimiter: line 1 column 14520 (char 14519)",
+        "exception_type": "HermesNLModelOutputError",
+        "output_root": "delivery/packets/smoke-1-evidence/runs/2026-07-07T114815Z00000000-81d8a137ab08/owner-ask-output-root-attempt-1",
+        "question": "When the ball carrier is pressed and no support arrives, how often does his team keep the ball?",
+        "status": "ERROR",
+        "subscription_billed": true,
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/luisrevilla/code/priori/src/tqe/semantic_compiler/hermes_nl.py\", line 835, in parse_hermes_completion\n    payload = json.loads(text)\n              ^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/__init__.py\", line 346, in loads\n    return _default_decoder.decode(s)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/decoder.py\", line 338, in decode\n    obj, end = self.raw_decode(s, idx=_w(s, 0).end())\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/decoder.py\", line 354, in raw_decode\n    obj, end = self.scan_once(s, idx)\n               ^^^^^^^^^^^^^^^^^^^^^^\njson.decoder.JSONDecodeError: Expecting ',' delimiter: line 1 column 14520 (char 14519)\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"/Users/luisrevilla/code/priori/src/tqe/semantic_compiler/hermes_nl.py\", line 315, in compile_nl_request\n    outcome = parse_hermes_completion(raw_completion, transcript=transcript, vocabulary=vocabulary)\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/luisrevilla/code/priori/src/tqe/semantic_compiler/hermes_nl.py\", line 842, in parse_hermes_completion\n    raise HermesNLModelOutputError(\ntqe.semantic_compiler.hermes_nl.HermesNLModelOutputError: Hermes output is not valid JSON: Expecting ',' delimiter: line 1 column 14520 (char 14519)\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"/Users/luisrevilla/code/priori/scripts/packets/smoke1_evidence.py\", line 160, in run_owner_ask\n    response = film_room_ask_request({\"text\": OWNER_ASK}, output_root=output_root)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/luisrevilla/code/priori/src/tqe/workshop/app_service.py\", line 2558, in film_room_ask_request\n    outcome = compile_nl_request(text, context=film_room_compile_context(payload))\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/luisrevilla/code/priori/src/tqe/semantic_compiler/hermes_nl.py\", line 351, in compile_nl_request\n    raise HermesNLModelOutputError(\ntqe.semantic_compiler.hermes_nl.HermesNLModelOutputError: Hermes output is not valid JSON: Expecting ',' delimiter: line 1 column 14520 (char 14519)\n"
+      }
+    ]
+  },
+  "schema_version": "smoke1.evidence.v1",
+  "status": "FAIL"
+}

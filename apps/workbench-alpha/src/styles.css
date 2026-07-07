@@ -169,6 +169,21 @@
   padding: 7px 10px;
 }
 
+.filmErrorBubble.schemaError {
+  background: #1b1810;
+  color: #f0d98d;
+}
+
+.filmErrorBubble.truncationError {
+  background: #141a24;
+  color: #b9d7ff;
+}
+
+.filmErrorBubble.internalError {
+  background: #211317;
+  color: #ffb3c0;
+}
+
 .readingRow {
   display: flex;
   flex-wrap: wrap;

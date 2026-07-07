@@ -167,6 +167,31 @@ class SCP2HermesNLTests(unittest.TestCase):
         self.assertEqual(1, outcome.transcript.invocation["repair_attempt_count"])
         self.assertEqual(1, len(outcome.transcript.invocation["rejected_attempts"]))
 
+    def test_truncated_model_json_routes_to_typed_refusal_after_bounded_repair(self) -> None:
+        truncated = '{"outcome":"expression","expression":{"expression_id":"cut_off"'
+        invoker = FakeInvoker(truncated, truncated, truncated)
+
+        outcome = compile_nl_request("show a large composed answer", invoker=invoker)
+
+        self.assertEqual("understood_but_not_expressible", outcome.outcome)
+        self.assertEqual("MODEL_OUTPUT_TRUNCATED", outcome.gap_code)
+        self.assertEqual("model_output_completion", outcome.missing_capability)
+        self.assertEqual(3, len(invoker.prompts))
+        self.assertIn("MODEL_OUTPUT_TRUNCATED", invoker.prompts[1])
+        self.assertEqual(
+            "MODEL_OUTPUT_TRUNCATED",
+            outcome.transcript.invocation["rejected_attempts"][-1]["error_code"],
+        )
+
+    def test_long_delimiter_json_error_routes_to_truncated_refusal(self) -> None:
+        long_cut = '{"items":[' + ('{"a":1},' * 1800) + "]"
+        invoker = FakeInvoker(long_cut, long_cut, long_cut)
+
+        outcome = compile_nl_request("show another large composed answer", invoker=invoker)
+
+        self.assertEqual("understood_but_not_expressible", outcome.outcome)
+        self.assertEqual("MODEL_OUTPUT_TRUNCATED", outcome.gap_code)
+
     def test_multi_turn_clarification_state_resumes_without_reasking_model(self) -> None:
         controlled = self.fixture_payload("fragile_possession_state_known.v0.json")
         sequence = self.fixture_payload("fragile_window_join_count_novel.v0.json")
