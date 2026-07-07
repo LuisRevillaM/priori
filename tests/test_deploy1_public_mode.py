@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -152,6 +153,30 @@ class Deploy1PublicModeTests(unittest.TestCase):
         self.assertEqual("ASKS_DISABLED", body["error_code"])
         self.assertEqual("hermes_auth_missing", body["details"]["reason"])
         ask_request.assert_not_called()
+
+    def test_public_mode_live_ask_timeout_is_typed_internal_error(self) -> None:
+        def slow_ask(_payload: dict[str, object], *, output_root: Path) -> dict[str, object]:
+            time.sleep(0.2)
+            return {"ok": True}
+
+        with (
+            patch("tqe.workshop.app_service.TQE_PUBLIC_MODE", True),
+            patch("tqe.workshop.app_service.DEMO_ACCESS_TOKEN", "secret"),
+            patch("tqe.workshop.app_service.TQE_PUBLIC_ASK_TIMEOUT_SECONDS", 0.01),
+            patch("tqe.workshop.app_service.film_room_ask_disabled_reason", return_value=None),
+            patch("tqe.workshop.app_service.film_room_ask_request", side_effect=slow_ask),
+        ):
+            status, body = self.request(
+                "POST",
+                "/api/film-room/ask",
+                payload={"text": "Show controlled passes.", "demo_token": "secret"},
+            )
+
+        self.assertEqual(500, status)
+        self.assertIsInstance(body, dict)
+        self.assertEqual(False, body["ok"])
+        self.assertEqual("INTERNAL_ERROR", body["error_code"])
+        self.assertEqual("public_ask_timeout", body["details"]["reason"])
 
     def test_provisioning_rejects_cache_hash_mismatch(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

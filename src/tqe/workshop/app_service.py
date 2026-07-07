@@ -12,6 +12,7 @@ import base64
 import json
 import mimetypes
 import os
+import queue
 import re
 import shutil
 import sqlite3
@@ -104,6 +105,7 @@ N1E_RESULT_LIMIT = int(os.environ.get("N1E_RESULT_LIMIT", "25"))
 DEMO_ACCESS_TOKEN = os.environ.get("DEMO_ACCESS_TOKEN", "").strip()
 DEMO_ACCESS_QUERY_TOKEN_ENABLED = os.environ.get("DEMO_ACCESS_QUERY_TOKEN_ENABLED", "").strip() == "1"
 TQE_PUBLIC_MODE = os.environ.get("TQE_PUBLIC_MODE", "").strip() == "1"
+TQE_PUBLIC_ASK_TIMEOUT_SECONDS = float(os.environ.get("TQE_PUBLIC_ASK_TIMEOUT_SECONDS", "120"))
 WORKBENCH_PREWARM_EXECUTION_CACHE = os.environ.get("WORKBENCH_PREWARM_EXECUTION_CACHE", "").strip() == "1"
 WORKBENCH_PREWARM_RESULT_LIMIT = int(os.environ.get("WORKBENCH_PREWARM_RESULT_LIMIT", "3"))
 WORKBENCH_PREWARM_FILM_ROOM = os.environ.get("WORKBENCH_PREWARM_FILM_ROOM", "1").strip() != "0"
@@ -2667,6 +2669,60 @@ def film_room_ask_request(payload: dict[str, Any], *, output_root: Path) -> dict
         "total": int(response["latency_ms"]),
     }
     return validate_public_response("FilmRoomAskResponse", response)
+
+
+def public_film_room_ask_with_timeout(payload: dict[str, Any], *, output_root: Path) -> tuple[dict[str, Any], HTTPStatus]:
+    result_queue: queue.Queue[tuple[str, Any]] = queue.Queue(maxsize=1)
+
+    def run() -> None:
+        try:
+            result_queue.put(("response", film_room_ask_request(payload, output_root=output_root)))
+        except Exception as exc:  # noqa: BLE001 - transported to request thread for typed rendering.
+            result_queue.put(("exception", exc))
+
+    worker = threading.Thread(target=run, name="public-film-room-ask", daemon=True)
+    worker.start()
+    try:
+        kind, value = result_queue.get(timeout=TQE_PUBLIC_ASK_TIMEOUT_SECONDS)
+    except queue.Empty:
+        timeout = TimeoutError(f"public Film Room ask exceeded {TQE_PUBLIC_ASK_TIMEOUT_SECONDS:g}s")
+        correlation_id = log_internal_error(timeout, path="/api/film-room/ask")
+        return (
+            error_response(
+                "INTERNAL_ERROR",
+                public_error_message("INTERNAL_ERROR"),
+                details={
+                    "correlation_id": correlation_id,
+                    "reason": "public_ask_timeout",
+                    "timeout_seconds": TQE_PUBLIC_ASK_TIMEOUT_SECONDS,
+                },
+            ),
+            HTTPStatus.INTERNAL_SERVER_ERROR,
+        )
+    if kind == "response":
+        return value, HTTPStatus.OK
+    exc = value
+    if type(exc).__name__ == "HermesNLAccessError":
+        return (
+            error_response(
+                "ASKS_DISABLED",
+                public_error_message("ASKS_DISABLED"),
+                details={"reason": "hermes_access_error", "message": str(exc)},
+            ),
+            HTTPStatus.SERVICE_UNAVAILABLE,
+        )
+    if isinstance(exc, CapabilityGap):
+        code = stable_tool_error_code(exc)
+        return error_response(code, public_error_message(code)), HTTPStatus.FORBIDDEN
+    correlation_id = log_internal_error(exc, path="/api/film-room/ask")
+    return (
+        error_response(
+            "INTERNAL_ERROR",
+            public_error_message("INTERNAL_ERROR"),
+            details={"correlation_id": correlation_id},
+        ),
+        HTTPStatus.INTERNAL_SERVER_ERROR,
+    )
 
 
 def film_room_answer_from_document(
@@ -5405,7 +5461,11 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
                         self.send_asks_disabled(disabled_reason)
                         return
                 validate_film_room_ask_payload(payload)
-                self.send_json(film_room_ask_request(payload, output_root=self.server.output_root))
+                if TQE_PUBLIC_MODE:
+                    response, status = public_film_room_ask_with_timeout(payload, output_root=self.server.output_root)
+                    self.send_json(response, status)
+                else:
+                    self.send_json(film_room_ask_request(payload, output_root=self.server.output_root))
             elif parsed.path == "/api/film-room/replay-window":
                 validate_film_room_replay_window_payload(payload)
                 self.send_json(film_room_replay_window_response(payload, output_root=self.server.output_root))
