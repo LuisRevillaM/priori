@@ -54,6 +54,14 @@ def relative(path: Path) -> str:
     return path.resolve().relative_to(ROOT).as_posix()
 
 
+def evidence_path(path: Path) -> str:
+    resolved = path.resolve()
+    try:
+        return resolved.relative_to(ROOT).as_posix()
+    except ValueError:
+        return str(resolved)
+
+
 def write_json_once(path: Path, payload: dict[str, Any]) -> None:
     if path.exists():
         raise RuntimeError(f"refusing to overwrite evidence file: {path}")
@@ -139,25 +147,26 @@ def run_focused_tests(run_dir: Path) -> dict[str, Any]:
     }
 
 
-def start_public_service(run_dir: Path, *, demo_token: str) -> tuple[Any, threading.Thread, str]:
+def start_public_service(run_dir: Path, *, demo_token: str) -> tuple[Any, threading.Thread, str, Path, Path]:
+    scratch_root = Path("/private/tmp/deploy1-evidence-scratch") / run_dir.name
+    output_root = scratch_root / "service-output-root"
+    cache_root = scratch_root / "service-cache"
     os.environ["TMPDIR"] = "/private/tmp"
     os.environ["TQE_PUBLIC_MODE"] = "1"
     os.environ["DEMO_ACCESS_TOKEN"] = demo_token
     os.environ["WORKBENCH_HERMES_ENABLED"] = "1"
     os.environ["WORKBENCH_PREWARM_FILM_ROOM"] = "1"
-    os.environ["TQE_RUNTIME_ROOT"] = str(run_dir / "service-output-root")
-    os.environ["TQE_CACHE_ROOT"] = str(run_dir / "service-cache")
-    os.environ["TQE_NODE_CACHE_ROOT"] = str(run_dir / "service-cache/node-output")
+    os.environ["TQE_RUNTIME_ROOT"] = str(output_root)
+    os.environ["TQE_CACHE_ROOT"] = str(cache_root)
+    os.environ["TQE_NODE_CACHE_ROOT"] = str(cache_root / "node-output")
     os.environ.setdefault("HERMES_HOME", str(Path.home() / ".hermes-priori"))
     os.environ.setdefault("WORKBENCH_HERMES_PROVIDER", "openai-codex")
     os.environ.setdefault("WORKBENCH_HERMES_MODEL", "gpt-5.5")
 
     from tqe.workshop import app_service
 
-    output_root = run_dir / "service-output-root"
-    cache_root = run_dir / "service-cache"
-    output_root.mkdir()
-    cache_root.mkdir()
+    output_root.mkdir(parents=True)
+    cache_root.mkdir(parents=True)
     server = app_service.WorkbenchServer(
         ("127.0.0.1", 0),
         app_service.WorkbenchHandler,
@@ -167,7 +176,7 @@ def start_public_service(run_dir: Path, *, demo_token: str) -> tuple[Any, thread
     app_service.start_film_room_prewarm_thread(output_root=output_root)
     thread = threading.Thread(target=server.serve_forever, name="deploy1-local-public-service", daemon=True)
     thread.start()
-    return server, thread, f"http://127.0.0.1:{server.server_port}"
+    return server, thread, f"http://127.0.0.1:{server.server_port}", output_root, cache_root
 
 
 def metadata(script_path: Path, script_sha: str, run_dir: Path) -> dict[str, Any]:
@@ -220,7 +229,7 @@ def main(argv: list[str] | None = None) -> int:
     server = None
     thread = None
     try:
-        server, thread, base_url = start_public_service(run_dir, demo_token=args.demo_token)
+        server, thread, base_url, output_root, cache_root = start_public_service(run_dir, demo_token=args.demo_token)
         without_token = run_oracle(run_dir, base_url=base_url, demo_token=None)
         with_token = run_oracle(run_dir, base_url=base_url, demo_token=args.demo_token)
     finally:
@@ -237,14 +246,14 @@ def main(argv: list[str] | None = None) -> int:
         "focused_python_tests": focused,
         "local_public_mode_oracles": {
             "base_url": base_url,
-            "output_root": relative(run_dir / "service-output-root"),
-            "cache_root": relative(run_dir / "service-cache"),
+            "output_root": evidence_path(output_root),
+            "cache_root": evidence_path(cache_root),
             "health": {"status": "PASS", "served_in_process": True},
             "oracle_without_token": without_token,
             "oracle_with_token": with_token,
             "cache_provenance": (
                 "The local public-mode service used run-local TQE_RUNTIME_ROOT, TQE_CACHE_ROOT, "
-                "and TQE_NODE_CACHE_ROOT under this evidence directory. The with-token oracle may "
+                "and TQE_NODE_CACHE_ROOT under /private/tmp scratch named for this evidence run. The with-token oracle may "
                 "invoke Hermes live through the ChatGPT subscription; the without-token oracle must "
                 "be answered by the public gate before any model call."
             ),
