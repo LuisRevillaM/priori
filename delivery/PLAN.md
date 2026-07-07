@@ -33,11 +33,23 @@ never presented as observation; the query-fidelity table states
 per-question what survives broadcast-grade tracking.
 Entry: Gate 1 passed. Work: INT-0 (vision coords through the
 canonical port), INT-1 (fidelity table), upload runbook + queue.
-Kill/pivot rules: if vision-grade UNKNOWN share makes flagship
-queries vacuous on real footage, pivot to permission-tracking-data
-pilots (clubs with existing tracking exports) while the insist path
-(better ball/team models) runs as investment; the pivot is a recorded
-option, not a failure.
+Response ladder if vision-grade UNKNOWN share makes flagship queries
+vacuous on real footage (amended 2026-07-07 after the owner caught a
+vision drift in the original rule): (1) PRIMARY: the insist path —
+invest in the models (ball detection, team identity); it is
+investment, not physics, the validated ladder cost ~$5/match, and our
+tri-state engine is uniquely able to ship value from partially
+decoded footage while the intervals narrow — the fidelity table
+becomes the improvement scoreboard, not a verdict. (2) BRIDGE, never
+foundation: where a specific pilot happens to own tracking exports,
+ingest them through the canonical port opportunistically — but the
+chosen pilot segment (college, academies) has video, not tracking, so
+this is a supplement, not a strategy. (3) Abandoning the footage
+pipeline is an OWNER-level vision decision, never a steward pivot:
+footage is the universal substrate of football, the pipeline is the
+data-independence moat ("we can't depend on anybody to be our data
+provider"), and the underserved market is exactly where tracking does
+not exist.
 
 ### GATE 3 — depth program (post-pilot, unsequenced)
 More film → narrower intervals; vocabulary growth by demand evidence
