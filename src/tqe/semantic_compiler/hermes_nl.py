@@ -908,6 +908,17 @@ def is_truncated_json_decode_error(text: str, exc: json.JSONDecodeError) -> bool
     stripped = text.rstrip()
     if not stripped:
         return False
+    if len(stripped) >= 12_000 and exc.msg.startswith(
+        (
+            "Expecting ',' delimiter",
+            "Expecting value",
+            "Expecting property name",
+            "Unterminated string",
+        )
+    ):
+        return True
+    if exc.msg.startswith("Expecting ',' delimiter") and exc.pos >= max(0, len(stripped) - 256):
+        return True
     if exc.pos >= max(0, len(stripped) - 4):
         return True
     if exc.msg.startswith("Unterminated string"):

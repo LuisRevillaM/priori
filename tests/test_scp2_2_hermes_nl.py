@@ -183,6 +183,15 @@ class SCP2HermesNLTests(unittest.TestCase):
             outcome.transcript.invocation["rejected_attempts"][-1]["error_code"],
         )
 
+    def test_long_delimiter_json_error_routes_to_truncated_refusal(self) -> None:
+        long_cut = '{"items":[' + ('{"a":1},' * 1800) + "]"
+        invoker = FakeInvoker(long_cut, long_cut, long_cut)
+
+        outcome = compile_nl_request("show another large composed answer", invoker=invoker)
+
+        self.assertEqual("understood_but_not_expressible", outcome.outcome)
+        self.assertEqual("MODEL_OUTPUT_TRUNCATED", outcome.gap_code)
+
     def test_multi_turn_clarification_state_resumes_without_reasking_model(self) -> None:
         controlled = self.fixture_payload("fragile_possession_state_known.v0.json")
         sequence = self.fixture_payload("fragile_window_join_count_novel.v0.json")
