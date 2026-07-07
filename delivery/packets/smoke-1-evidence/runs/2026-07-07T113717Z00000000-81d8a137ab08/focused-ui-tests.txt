@@ -1,0 +1,12 @@
+
+> entrelineas-workbench-alpha@0.1.0 test:unit
+> tsx tests/api.test.ts && tsx tests/geometry.test.ts && tsx tests/playback.test.ts && tsx tests/presentation.test.ts && tsx tests/workbenchState.test.ts && tsx tests/overlay.test.ts && tsx tests/momentZero.test.ts && tsx tests/filmRoom.test.ts
+
+api tests passed
+pitch geometry tests passed
+playback tests passed
+presentation tests passed
+workbenchState tests passed
+overlay tests passed
+moment zero tests passed
+film room tests passed

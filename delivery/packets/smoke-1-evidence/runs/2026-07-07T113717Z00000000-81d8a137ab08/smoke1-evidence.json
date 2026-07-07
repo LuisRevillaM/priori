@@ -1,0 +1,90 @@
+{
+  "evidence_metadata": {
+    "git_branch": "packet/smoke-1",
+    "git_commit": "058c2d6e586d95475ba6f80e0f2206a771e2e030",
+    "git_tree": "63ef06e46171a46bdc1af29ee4e3bc09ec883665",
+    "produced_by": "scripts/packets/smoke1_evidence.py",
+    "producing_script_sha256": "81d8a137ab085feb6572176ab0b10c0458ca1e4b186fb0d8c4a6f0da0dbc7095",
+    "run_dir": "delivery/packets/smoke-1-evidence/runs/2026-07-07T113717Z00000000-81d8a137ab08",
+    "run_started_at": "2026-07-07T11:37:17+00:00",
+    "schema_version": "smoke1.evidence_metadata.v1"
+  },
+  "focused_python_tests": {
+    "command": [
+      "/Users/luisrevilla/code/priori/.venv/bin/python",
+      "-m",
+      "unittest",
+      "-v",
+      "tests.test_smoke1_honest_errors",
+      "tests.test_scp2_2_hermes_nl"
+    ],
+    "duration_ms": 1874.187,
+    "output_path": "delivery/packets/smoke-1-evidence/runs/2026-07-07T113717Z00000000-81d8a137ab08/focused-python-tests.txt",
+    "return_code": 0,
+    "status": "PASS"
+  },
+  "focused_ui_tests": {
+    "command": [
+      "npm",
+      "--prefix",
+      "apps/workbench-alpha",
+      "run",
+      "test:unit"
+    ],
+    "duration_ms": 1874.074,
+    "output_path": "delivery/packets/smoke-1-evidence/runs/2026-07-07T113717Z00000000-81d8a137ab08/focused-ui-tests.txt",
+    "return_code": 0,
+    "status": "PASS"
+  },
+  "owner_ask": {
+    "attempt_count": 1,
+    "attempt_limit": 1,
+    "cache_provenance": "Each owner-ask attempt uses a fresh run-local output_root under the evidence directory. No persistent execution-cache path is configured by this script; Hermes model calls remain live subscription-billed through openai-codex.",
+    "records": [
+      {
+        "attempt": 1,
+        "billing_surface": "ChatGPT subscription via openai-codex Hermes CLI",
+        "duration_ms": 77801.517,
+        "output_root": "delivery/packets/smoke-1-evidence/runs/2026-07-07T113717Z00000000-81d8a137ab08/owner-ask-output-root-attempt-1",
+        "question": "When the ball carrier is pressed and no support arrives, how often does his team keep the ball?",
+        "response": {
+          "has_answer": false,
+          "has_refusal": true,
+          "latency_breakdown_ms": {
+            "execution": 0,
+            "hermes": 77777,
+            "synthesis": 2,
+            "total": 77782
+          },
+          "latency_ms": 77782,
+          "model": "gpt-5.5",
+          "moment_total_count": null,
+          "ok": true,
+          "outcome": "understood_but_not_expressible",
+          "provider": "openai-codex",
+          "refusal_gap": "TARGET_SYNTHESIS_UNSATISFIED",
+          "refusal_missing_capability": "registered_operator_composition",
+          "synthesis_error": {
+            "details": {
+              "attempted_operator_compositions": [
+                {
+                  "constraint_kind": "rate",
+                  "denominator_composition_hash": "09dc5143f9d0be8093c181107ddab510dd8fe8e075586c7169494b1e89a3a109",
+                  "message": "rate numerator and denominator compositions must be the same source relation.",
+                  "numerator_composition_hash": "3563b483d4b8e036ca26840ae4ad6d2626e1b46ce93e001db49695bd4b89acd2",
+                  "taxonomy": "missing_constraint"
+                }
+              ]
+            },
+            "message": "No registered operator composition satisfied the target contract.",
+            "taxonomy": "missing_constraint"
+          }
+        },
+        "status": "PASS",
+        "subscription_billed": true
+      }
+    ]
+  },
+  "schema_version": "smoke1.evidence.v1",
+  "status": "PASS"
+}
