@@ -144,6 +144,7 @@ def run_command(args: list[str], *, output_path: Path, timeout: int, env: dict[s
 def run_focused_tests(run_dir: Path) -> dict[str, Any]:
     env = dict(os.environ)
     env["PYTHONPATH"] = str(SRC)
+    env["TMPDIR"] = "/private/tmp"
     return run_command(
         [sys.executable, "-m", "unittest", "-v", *FOCUSED_TESTS],
         output_path=run_dir / "focused-python-tests.txt",
@@ -178,6 +179,7 @@ def run_local_public_service_oracles(run_dir: Path, *, demo_token: str, port: in
     env.update(
         {
             "PYTHONPATH": str(SRC),
+            "TMPDIR": "/private/tmp",
             "HOST": "127.0.0.1",
             "PORT": str(port),
             "TQE_PUBLIC_MODE": "1",
