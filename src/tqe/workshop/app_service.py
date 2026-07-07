@@ -103,6 +103,7 @@ N1E_RUN_TOKEN = os.environ.get("N1E_RUN_TOKEN", "").strip()
 N1E_RESULT_LIMIT = int(os.environ.get("N1E_RESULT_LIMIT", "25"))
 DEMO_ACCESS_TOKEN = os.environ.get("DEMO_ACCESS_TOKEN", "").strip()
 DEMO_ACCESS_QUERY_TOKEN_ENABLED = os.environ.get("DEMO_ACCESS_QUERY_TOKEN_ENABLED", "").strip() == "1"
+TQE_PUBLIC_MODE = os.environ.get("TQE_PUBLIC_MODE", "").strip() == "1"
 WORKBENCH_PREWARM_EXECUTION_CACHE = os.environ.get("WORKBENCH_PREWARM_EXECUTION_CACHE", "").strip() == "1"
 WORKBENCH_PREWARM_RESULT_LIMIT = int(os.environ.get("WORKBENCH_PREWARM_RESULT_LIMIT", "3"))
 WORKBENCH_PREWARM_FILM_ROOM = os.environ.get("WORKBENCH_PREWARM_FILM_ROOM", "1").strip() != "0"
@@ -136,6 +137,14 @@ N1E_JOB_THREADS: dict[str, threading.Thread] = {}
 N1E_JOB_THREADS_LOCK = threading.Lock()
 FILM_ROOM_PREWARMED_RESPONSES: dict[str, dict[str, Any]] = {}
 FILM_ROOM_PREWARM_RECORDS: list[dict[str, Any]] = []
+FILM_ROOM_PREWARM_LOCK = threading.Lock()
+FILM_ROOM_PREWARM_STATE: dict[str, Any] = {
+    "state": "warming",
+    "started_at": None,
+    "completed_at": None,
+    "items": [],
+    "last_error": None,
+}
 FILM_ROOM_REPLAY_INDEX: dict[str, dict[str, Any]] = {}
 N1F_CLARIFICATION_ANSWER: dict[str, Any] = {
     "match_ids": ["J03WOY"],
@@ -478,12 +487,16 @@ class FilmRoomAskResponse(WorkbenchResponseModel):
 
 class FilmRoomBootstrapResponse(WorkbenchResponseModel):
     ok: Literal[True]
+    state: Literal["ready", "warming"]
     provider: str
     model: str
     billing_surface: str
     flagship_plan_hashes: dict[str, str | None]
     prewarm_records: list[dict[str, Any]]
+    warming: dict[str, Any] | None = None
     prewarmed_response: dict[str, Any] | None = None
+    answer: dict[str, Any] | None = None
+    provenance: dict[str, Any] | None = None
 
 
 class FilmRoomReplayFrameResponse(WorkbenchResponseModel):
@@ -697,6 +710,8 @@ def error_response(code: str, message: str, *, details: dict[str, Any] | None = 
 
 PUBLIC_ERROR_MESSAGES = {
     "REQUEST_SCHEMA_INVALID": "Request payload does not match the API contract.",
+    "DEMO_TOKEN_REQUIRED": "Demo token is required for public live asks.",
+    "ASKS_DISABLED": "Live asks are disabled in this environment.",
     "MODEL_OUTPUT_TRUNCATED": "The model answer was cut off before it produced complete JSON.",
     "UNKNOWN_HANDLE": "Requested handle is unavailable.",
     "NO_REPLAY_WINDOW": "No replay window is available for that request.",
@@ -2536,6 +2551,26 @@ def film_room_compile_context(payload: dict[str, Any]) -> Any:
     return None
 
 
+def film_room_ask_disabled_reason() -> dict[str, str] | None:
+    if not hermes_enabled():
+        return {
+            "reason": "workbench_hermes_disabled",
+            "message": "WORKBENCH_HERMES_ENABLED is not set to 1.",
+        }
+    hermes_path = shutil.which("hermes")
+    if not hermes_path:
+        return {
+            "reason": "hermes_executable_missing",
+            "message": "The Hermes executable is not available in this runtime.",
+        }
+    if HERMES_PROVIDER == "openai-codex" and not (HERMES_HOME / "auth.json").exists():
+        return {
+            "reason": "hermes_auth_missing",
+            "message": f"Hermes auth was not found at {HERMES_HOME / 'auth.json'}.",
+        }
+    return None
+
+
 def film_room_ask_request(payload: dict[str, Any], *, output_root: Path) -> dict[str, Any]:
     from tqe.semantic_compiler.hermes_nl import (
         ClarificationRequiredOutcome,
@@ -3477,67 +3512,190 @@ def film_room_prewarmed_response(
     return validate_public_response("FilmRoomAskResponse", response)
 
 
+def utc_iso_seconds() -> str:
+    return datetime.now(UTC).replace(microsecond=0).isoformat()
+
+
+def film_room_flagship_plan_hashes() -> dict[str, str | None]:
+    return {
+        "fragile_retention": read_json(FILM_ROOM_R2_2_TABLE_PATH).get("plan_hash")
+        if FILM_ROOM_R2_2_TABLE_PATH.exists()
+        else None,
+        "counterattack_sequence_rate": read_json(FILM_ROOM_R2_4_TABLE_PATH).get("plan_hash")
+        if FILM_ROOM_R2_4_TABLE_PATH.exists()
+        else None,
+    }
+
+
+def film_room_prewarm_warming_payload() -> dict[str, Any]:
+    with FILM_ROOM_PREWARM_LOCK:
+        state = deepcopy(FILM_ROOM_PREWARM_STATE)
+        records = deepcopy(FILM_ROOM_PREWARM_RECORDS)
+    if not state.get("started_at"):
+        state["started_at"] = utc_iso_seconds()
+    return {
+        "state": "warming",
+        "started_at": state.get("started_at"),
+        "completed_at": state.get("completed_at"),
+        "items": state.get("items") or [
+            {
+                "key": str(spec["key"]),
+                "plan": str(spec["plan_path"]),
+                "status": "queued",
+            }
+            for spec in film_room_flagship_specs()
+        ],
+        "prewarm_records": records,
+        "last_error": state.get("last_error"),
+    }
+
+
 def film_room_bootstrap_response(*, output_root: Path) -> dict[str, Any]:
-    if "counterattack_sequence_rate" not in FILM_ROOM_PREWARMED_RESPONSES and FILM_ROOM_R2_4_PLAN_PATH.exists():
-        FILM_ROOM_PREWARMED_RESPONSES["counterattack_sequence_rate"] = film_room_prewarmed_response(
-            key="counterattack_sequence_rate",
-            question=FILM_ROOM_COUNTERATTACK_QUESTION,
-            plan_path=FILM_ROOM_R2_4_PLAN_PATH,
-            output_root=output_root,
-        )
+    with FILM_ROOM_PREWARM_LOCK:
+        prewarmed = deepcopy(FILM_ROOM_PREWARMED_RESPONSES.get("counterattack_sequence_rate"))
+        records = deepcopy(FILM_ROOM_PREWARM_RECORDS)
+    state = "ready" if isinstance(prewarmed, dict) and isinstance(prewarmed.get("answer"), dict) else "warming"
+    answer = prewarmed.get("answer") if isinstance(prewarmed, dict) else None
+    provenance = answer.get("provenance") if isinstance(answer, dict) else None
     response = {
         "ok": True,
+        "state": state,
         "provider": HERMES_PROVIDER,
         "model": HERMES_MODEL,
         "billing_surface": "ChatGPT subscription via openai-codex Hermes CLI",
-        "flagship_plan_hashes": {
-            "fragile_retention": read_json(FILM_ROOM_R2_2_TABLE_PATH).get("plan_hash")
-            if FILM_ROOM_R2_2_TABLE_PATH.exists()
-            else None,
-            "counterattack_sequence_rate": read_json(FILM_ROOM_R2_4_TABLE_PATH).get("plan_hash")
-            if FILM_ROOM_R2_4_TABLE_PATH.exists()
-            else None,
-        },
-        "prewarm_records": FILM_ROOM_PREWARM_RECORDS,
-        "prewarmed_response": FILM_ROOM_PREWARMED_RESPONSES.get("counterattack_sequence_rate"),
+        "flagship_plan_hashes": film_room_flagship_plan_hashes(),
+        "prewarm_records": records,
+        "warming": film_room_prewarm_warming_payload() if state == "warming" else None,
+        "prewarmed_response": prewarmed,
+        "answer": answer,
+        "provenance": provenance,
     }
     return validate_public_response("FilmRoomBootstrapResponse", response)
 
 
 def prewarm_film_room_flagships(*, output_root: Path) -> None:
-    FILM_ROOM_PREWARM_RECORDS.clear()
+    started_at_iso = utc_iso_seconds()
+    with FILM_ROOM_PREWARM_LOCK:
+        FILM_ROOM_PREWARMED_RESPONSES.clear()
+        FILM_ROOM_PREWARM_RECORDS.clear()
+        FILM_ROOM_PREWARM_STATE.update(
+            {
+                "state": "warming",
+                "started_at": started_at_iso,
+                "completed_at": None,
+                "items": [
+                    {"key": str(spec["key"]), "plan": str(spec["plan_path"]), "status": "queued"}
+                    for spec in film_room_flagship_specs()
+                ],
+                "last_error": None,
+            }
+        )
     for spec in film_room_flagship_specs():
         plan_path = Path(spec["plan_path"])
         if not plan_path.exists():
             print(f"Film Room prewarm skipped missing plan: {plan_path}", flush=True)
+            with FILM_ROOM_PREWARM_LOCK:
+                for item in FILM_ROOM_PREWARM_STATE["items"]:
+                    if item.get("key") == str(spec["key"]):
+                        item["status"] = "missing_plan"
             continue
         started_at = time.monotonic()
         print(f"Prewarming Film Room flagship {plan_path}...", flush=True)
+        with FILM_ROOM_PREWARM_LOCK:
+            for item in FILM_ROOM_PREWARM_STATE["items"]:
+                if item.get("key") == str(spec["key"]):
+                    item["status"] = "running"
         response = film_room_prewarmed_response(
             key=str(spec["key"]),
             question=str(spec["question"]),
             plan_path=plan_path,
             output_root=output_root,
         )
-        FILM_ROOM_PREWARMED_RESPONSES[str(spec["key"])] = response
         elapsed_ms = int((time.monotonic() - started_at) * 1000)
         executions = response["answer"]["executions"] if isinstance(response.get("answer"), dict) else []
         cache_states = ",".join(str(item["cache_after_execute"]["cache_status"]) for item in executions)
         result_count = sum(int(item["execution"].get("returned_result_count") or 0) for item in executions)
-        FILM_ROOM_PREWARM_RECORDS.append(
-            {
-                "key": str(spec["key"]),
-                "plan": str(plan_path),
-                "elapsed_ms": elapsed_ms,
-                "cache_after_execute": [str(item["cache_after_execute"]["cache_status"]) for item in executions],
-                "returned_result_count": result_count,
-            }
-        )
+        record = {
+            "key": str(spec["key"]),
+            "plan": str(plan_path),
+            "elapsed_ms": elapsed_ms,
+            "cache_after_execute": [str(item["cache_after_execute"]["cache_status"]) for item in executions],
+            "returned_result_count": result_count,
+        }
+        with FILM_ROOM_PREWARM_LOCK:
+            FILM_ROOM_PREWARMED_RESPONSES[str(spec["key"])] = response
+            FILM_ROOM_PREWARM_RECORDS.append(record)
+            for item in FILM_ROOM_PREWARM_STATE["items"]:
+                if item.get("key") == str(spec["key"]):
+                    item["status"] = "ready"
+                    item["elapsed_ms"] = elapsed_ms
         print(
             f"Prewarmed Film Room flagship {plan_path}: cache_statuses={cache_states} "
             f"returned_results={result_count} elapsed_ms={elapsed_ms}",
             flush=True,
         )
+    with FILM_ROOM_PREWARM_LOCK:
+        FILM_ROOM_PREWARM_STATE.update(
+            {
+                "state": "ready",
+                "completed_at": utc_iso_seconds(),
+                "last_error": None,
+            }
+        )
+
+
+def prewarm_film_room_flagships_safely(*, output_root: Path) -> None:
+    try:
+        prewarm_film_room_flagships(output_root=output_root)
+        print("Film Room prewarm complete.", flush=True)
+    except Exception as exc:  # noqa: BLE001 - background prewarm must not kill the bound service.
+        print(
+            json.dumps(
+                {
+                    "event": "film_room_prewarm_failed",
+                    "error_type": type(exc).__name__,
+                    "message": str(exc),
+                    "traceback": traceback.format_exc(),
+                },
+                sort_keys=True,
+            ),
+            file=sys.stderr,
+            flush=True,
+        )
+        with FILM_ROOM_PREWARM_LOCK:
+            FILM_ROOM_PREWARM_STATE.update(
+                {
+                    "state": "warming",
+                    "last_error": {
+                        "error_type": type(exc).__name__,
+                        "message": str(exc),
+                    },
+                }
+            )
+
+
+def start_film_room_prewarm_thread(*, output_root: Path) -> threading.Thread:
+    with FILM_ROOM_PREWARM_LOCK:
+        FILM_ROOM_PREWARM_STATE.update(
+            {
+                "state": "warming",
+                "started_at": utc_iso_seconds(),
+                "completed_at": None,
+                "items": [
+                    {"key": str(spec["key"]), "plan": str(spec["plan_path"]), "status": "queued"}
+                    for spec in film_room_flagship_specs()
+                ],
+                "last_error": None,
+            }
+        )
+    thread = threading.Thread(
+        target=prewarm_film_room_flagships_safely,
+        kwargs={"output_root": output_root},
+        name="film-room-prewarm",
+        daemon=True,
+    )
+    thread.start()
+    return thread
 
 
 def n1e_job_root(output_root: Path) -> Path:
@@ -4899,6 +5057,30 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def send_demo_token_required(self) -> None:
+        self.send_json(
+            error_response(
+                "DEMO_TOKEN_REQUIRED",
+                public_error_message("DEMO_TOKEN_REQUIRED"),
+                details={
+                    "public_mode": True,
+                    "token_source": "demo_token body field, X-Demo-Access-Token header, Authorization bearer, or demo cookie",
+                    "configured": bool(DEMO_ACCESS_TOKEN),
+                },
+            ),
+            HTTPStatus.UNAUTHORIZED,
+        )
+
+    def send_asks_disabled(self, details: dict[str, Any]) -> None:
+        self.send_json(
+            error_response(
+                "ASKS_DISABLED",
+                public_error_message("ASKS_DISABLED"),
+                details=details,
+            ),
+            HTTPStatus.SERVICE_UNAVAILABLE,
+        )
+
     def send_static(self, path: str) -> None:
         route = path if path != "/" else "/index.html"
         relative = route.lstrip("/")
@@ -4964,6 +5146,13 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
             _username, separator, password = decoded.partition(":")
             return bool(separator) and password == DEMO_ACCESS_TOKEN
         return False
+
+    def public_film_room_ask_allowed(self, parsed: Any, payload: dict[str, Any]) -> bool:
+        if not DEMO_ACCESS_TOKEN:
+            return False
+        if str(payload.get("demo_token") or "") == DEMO_ACCESS_TOKEN:
+            return True
+        return self.demo_access_allowed(parsed)
 
     def n1e_access_allowed(self) -> bool:
         if not N1E_RUNNER_ENABLED or not N1E_RUN_TOKEN:
@@ -5108,7 +5297,7 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
             return
         if self.redirect_with_demo_cookie(parsed):
             return
-        if not self.demo_access_allowed(parsed):
+        if not TQE_PUBLIC_MODE and not self.demo_access_allowed(parsed):
             self.send_demo_auth_required()
             return
         if parsed.path == "/api/health":
@@ -5176,7 +5365,7 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
         if parsed.path.startswith("/api/n1f/"):
             self.handle_n1f_post(parsed)
             return
-        if not self.demo_access_allowed(parsed):
+        if not TQE_PUBLIC_MODE and not self.demo_access_allowed(parsed):
             self.send_demo_auth_required()
             return
         try:
@@ -5207,6 +5396,14 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
                     )
                 )
             elif parsed.path == "/api/film-room/ask":
+                if TQE_PUBLIC_MODE:
+                    if not self.public_film_room_ask_allowed(parsed, payload):
+                        self.send_demo_token_required()
+                        return
+                    disabled_reason = film_room_ask_disabled_reason()
+                    if disabled_reason:
+                        self.send_asks_disabled(disabled_reason)
+                        return
                 validate_film_room_ask_payload(payload)
                 self.send_json(film_room_ask_request(payload, output_root=self.server.output_root))
             elif parsed.path == "/api/film-room/replay-window":
@@ -5300,6 +5497,14 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
                 HTTPStatus.FORBIDDEN,
             )
         except Exception as exc:
+            if TQE_PUBLIC_MODE and type(exc).__name__ == "HermesNLAccessError":
+                self.send_asks_disabled(
+                    {
+                        "reason": "hermes_access_error",
+                        "message": str(exc),
+                    }
+                )
+                return
             correlation_id = log_internal_error(exc, path=parsed.path)
             self.send_json(
                 error_response(
@@ -5378,20 +5583,37 @@ def main() -> None:
     parser.add_argument("--static-root", type=Path, default=DEFAULT_STATIC_ROOT)
     parser.add_argument("--output-root", type=Path, default=DEFAULT_WORKSHOP_ROOT)
     args = parser.parse_args()
-    if WORKBENCH_PREWARM_EXECUTION_CACHE:
-        prewarm_execution_cache(
-            output_root=args.output_root,
-            recipe_ids=WORKBENCH_PREWARM_RECIPE_IDS,
-            result_limit=WORKBENCH_PREWARM_RESULT_LIMIT,
-        )
-    if WORKBENCH_PREWARM_FILM_ROOM:
-        prewarm_film_room_flagships(output_root=args.output_root)
     server = WorkbenchServer(
         (args.host, args.port),
         WorkbenchHandler,
         static_root=args.static_root,
         output_root=args.output_root,
     )
+    if WORKBENCH_PREWARM_EXECUTION_CACHE:
+        threading.Thread(
+            target=prewarm_execution_cache,
+            kwargs={
+                "output_root": args.output_root,
+                "recipe_ids": WORKBENCH_PREWARM_RECIPE_IDS,
+                "result_limit": WORKBENCH_PREWARM_RESULT_LIMIT,
+            },
+            name="execution-cache-prewarm",
+            daemon=True,
+        ).start()
+    if WORKBENCH_PREWARM_FILM_ROOM:
+        start_film_room_prewarm_thread(output_root=args.output_root)
+    else:
+        with FILM_ROOM_PREWARM_LOCK:
+            FILM_ROOM_PREWARM_STATE.update(
+                {
+                    "state": "warming",
+                    "started_at": utc_iso_seconds(),
+                    "items": [
+                        {"key": str(spec["key"]), "plan": str(spec["plan_path"]), "status": "disabled"}
+                        for spec in film_room_flagship_specs()
+                    ],
+                }
+            )
     print(f"Workbench Alpha host service: http://{args.host}:{args.port}")
     print(f"Static root: {args.static_root}")
     print(f"Output root: {args.output_root}")

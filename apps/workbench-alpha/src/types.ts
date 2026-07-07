@@ -328,12 +328,16 @@ export type FilmRoomAskResponse = Omit<GeneratedFilmRoomAskResponse, "answer" | 
 
 export type FilmRoomBootstrapResponse = Omit<GeneratedFilmRoomBootstrapResponse, "prewarmed_response"> & {
   ok: true;
+  state: "ready" | "warming";
   provider: string;
   model: string;
   billing_surface: string;
   flagship_plan_hashes: Record<string, string | null>;
   prewarm_records: JsonObject[];
+  warming?: JsonObject | null;
   prewarmed_response?: FilmRoomAskResponse | null;
+  answer?: FilmRoomAskResponse["answer"] | null;
+  provenance?: JsonObject | null;
 };
 
 export type FilmRoomReplayFrameResponse = Omit<GeneratedFilmRoomReplayFrameResponse, "frame"> & {

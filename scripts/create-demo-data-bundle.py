@@ -7,6 +7,7 @@ import argparse
 import gzip
 import hashlib
 import json
+import os
 import shutil
 import subprocess
 import tarfile
@@ -27,6 +28,19 @@ def main() -> int:
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
     parser.add_argument("--attribution", type=Path, default=DEFAULT_ATTRIBUTION)
     parser.add_argument("--knowledge-pack", type=Path, default=Path("generated/tactical-knowledge-pack.json"))
+    parser.add_argument(
+        "--cache-root",
+        type=Path,
+        default=Path(os.environ["TQE_CACHE_ROOT"]) if os.environ.get("TQE_CACHE_ROOT") else Path("artifacts/cloud-alpha/cache"),
+        help="Optional warmed execution-cache root to include when present.",
+    )
+    parser.add_argument(
+        "--node-cache-root",
+        type=Path,
+        default=Path(os.environ["TQE_NODE_CACHE_ROOT"]) if os.environ.get("TQE_NODE_CACHE_ROOT") else None,
+        help="Optional warmed node-output cache root; defaults to <cache-root>/node-output.",
+    )
+    parser.add_argument("--runtime-root", type=Path, default=Path(os.environ.get("TQE_RUNTIME_ROOT", "artifacts/cloud-alpha/runtime")))
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     args = parser.parse_args()
 
@@ -38,14 +52,22 @@ def main() -> int:
     manifest_path = output_dir / f"{bundle_id}.manifest.json"
 
     with tempfile.TemporaryDirectory(prefix="entrelineas-bundle-") as temp_dir:
-        staging = Path(temp_dir) / "dataset"
+        staging_parent = Path(temp_dir)
+        staging = staging_parent / "dataset"
         files = stage_dataset(
             dataset_root=args.dataset_root,
             staging_root=staging,
             manifest=manifest,
             attribution_path=args.attribution,
         )
-        create_archive(staging.parent, archive_path)
+        cache_files = stage_warmed_caches(
+            staging_parent=staging_parent,
+            cache_root=args.cache_root,
+            node_cache_root=args.node_cache_root or args.cache_root / "node-output",
+            runtime_root=args.runtime_root,
+        )
+        files.extend(cache_files)
+        create_archive(staging_parent, archive_path)
     bundle_manifest = build_bundle_manifest(
         manifest=manifest,
         files=files,
@@ -78,6 +100,47 @@ def stage_dataset(
     if attribution_path.exists():
         destination = staging_root / "ATTRIBUTION.md"
         files.append(copy_required_file(attribution_path, destination, "ATTRIBUTION.md"))
+    return files
+
+
+def stage_warmed_caches(
+    *,
+    staging_parent: Path,
+    cache_root: Path,
+    node_cache_root: Path,
+    runtime_root: Path,
+) -> list[dict[str, Any]]:
+    files: list[dict[str, Any]] = []
+    staged_paths: set[Path] = set()
+    if cache_root.exists():
+        files.extend(stage_tree(cache_root, staging_parent / "cache", "cache", staged_paths=staged_paths))
+    if node_cache_root.exists() and node_cache_root.resolve() != (cache_root / "node-output").resolve():
+        files.extend(stage_tree(node_cache_root, staging_parent / "cache" / "node-output", "cache/node-output", staged_paths=staged_paths))
+    if runtime_root.exists():
+        files.extend(
+            stage_tree(
+                runtime_root / "execution-cache",
+                staging_parent / "runtime" / "execution-cache",
+                "runtime/execution-cache",
+                staged_paths=staged_paths,
+            )
+        )
+    return files
+
+
+def stage_tree(source_root: Path, destination_root: Path, logical_prefix: str, *, staged_paths: set[Path]) -> list[dict[str, Any]]:
+    if not source_root.exists() or not source_root.is_dir():
+        return []
+    files: list[dict[str, Any]] = []
+    for source in sorted(path for path in source_root.rglob("*") if path.is_file()):
+        relative = source.relative_to(source_root)
+        destination = destination_root / relative
+        resolved = destination.resolve()
+        if resolved in staged_paths:
+            continue
+        staged_paths.add(resolved)
+        logical_path = f"{logical_prefix}/{relative.as_posix()}"
+        files.append(copy_required_file(source, destination, logical_path))
     return files
 
 

@@ -1369,6 +1369,19 @@ export const apiSchemas = {
   "FilmRoomBootstrapResponse": {
     "additionalProperties": false,
     "properties": {
+      "answer": {
+        "anyOf": [
+          {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Answer"
+      },
       "billing_surface": {
         "title": "Billing Surface",
         "type": "string"
@@ -1417,13 +1430,48 @@ export const apiSchemas = {
         "default": null,
         "title": "Prewarmed Response"
       },
+      "provenance": {
+        "anyOf": [
+          {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Provenance"
+      },
       "provider": {
         "title": "Provider",
         "type": "string"
+      },
+      "state": {
+        "enum": [
+          "ready",
+          "warming"
+        ],
+        "title": "State",
+        "type": "string"
+      },
+      "warming": {
+        "anyOf": [
+          {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Warming"
       }
     },
     "required": [
       "ok",
+      "state",
       "provider",
       "model",
       "billing_surface",

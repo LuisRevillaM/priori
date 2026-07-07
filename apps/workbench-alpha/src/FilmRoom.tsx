@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { WorkbenchApiError, filmRoomAsk, filmRoomBootstrap, filmRoomReplayFrame, filmRoomReplayWindow } from "./api";
-import type { FilmRoomAskResponse, FilmRoomIntervalMetric, FilmRoomMoment, JsonObject, ReplayEntity, ReplayFrame, ReplayPayload } from "./types";
+import type { FilmRoomAskResponse, FilmRoomBootstrapResponse, FilmRoomIntervalMetric, FilmRoomMoment, JsonObject, ReplayEntity, ReplayFrame, ReplayPayload } from "./types";
 
 const FLAGSHIP_ASK = "After a regain, how often does the team progress the ball by carry and keep it with a controlled pass?";
 
@@ -104,7 +104,7 @@ export type FilmRoomErrorView = {
   code: string;
   message: string;
   detail: string;
-  tone: "schema" | "truncation" | "internal" | "generic";
+  tone: "schema" | "truncation" | "internal" | "gate" | "disabled" | "generic";
 };
 
 export function filmRoomErrorViewModel(error: unknown): FilmRoomErrorView {
@@ -140,6 +140,24 @@ export function filmRoomErrorViewModel(error: unknown): FilmRoomErrorView {
       tone: "internal"
     };
   }
+  if (code === "DEMO_TOKEN_REQUIRED") {
+    return {
+      title: "Demo token required",
+      code,
+      message: "Live asks are gated in public mode.",
+      detail: String(details.token_source ?? ""),
+      tone: "gate"
+    };
+  }
+  if (code === "ASKS_DISABLED") {
+    return {
+      title: "Live asks disabled",
+      code,
+      message: "The gallery is available, but model-backed asks are not connected in this runtime.",
+      detail: String(details.reason ?? details.message ?? ""),
+      tone: "disabled"
+    };
+  }
   const message = error instanceof Error ? error.message : String(payload.message ?? error ?? "Request failed.");
   return {
     title: "Request failed",
@@ -148,6 +166,25 @@ export function filmRoomErrorViewModel(error: unknown): FilmRoomErrorView {
     detail: "",
     tone: "generic"
   };
+}
+
+export function filmRoomBootstrapWarmingMessage(payload: FilmRoomBootstrapResponse | null): string | null {
+  if (!payload || payload.state !== "warming") return null;
+  const warming = asRecord(payload.warming);
+  const items = asArray(warming.items).map(asRecord);
+  const running = items.filter((item) => String(item.status ?? "") === "running");
+  const queued = items.filter((item) => String(item.status ?? "") === "queued");
+  const labels = (running.length ? running : queued.length ? queued : items)
+    .map((item) => String(item.key ?? "film-room-plan").replaceAll("_", " "))
+    .slice(0, 3);
+  const subject = labels.length ? labels.join(", ") : "committed Film Room plans";
+  return `Warming ${subject}.`;
+}
+
+function demoTokenFromBrowser() {
+  if (typeof window === "undefined") return null;
+  const params = new URLSearchParams(window.location.search);
+  return params.get("demo_token") || params.get("access_token") || window.localStorage.getItem("demo_token");
 }
 
 export function headerChipsFromResponse(response: FilmRoomAskResponse | null): string[] {
@@ -439,11 +476,13 @@ function AskThread({
   response,
   error,
   loading,
+  warming,
   onClarify
 }: {
   response: FilmRoomAskResponse | null;
   error: FilmRoomErrorView | null;
   loading: boolean;
+  warming: string | null;
   onClarify: (state: JsonObject, answer: string) => void;
 }) {
   const clarification = asRecord(response?.clarification);
@@ -453,7 +492,7 @@ function AskThread({
   return (
     <section className="askThread">
       <div className="bubble userBubble">{response?.request_text ?? FLAGSHIP_ASK}</div>
-      {loading ? <div className="bubble hermesBubble">Loading prewarmed film...</div> : null}
+      {loading ? <div className="bubble hermesBubble">{warming ?? "Loading prewarmed film..."}</div> : null}
       {outcomeClass === "answer" && response?.answer ? (
         <div className="bubble hermesBubble">
           <div>
@@ -532,6 +571,7 @@ export function FilmRoom() {
   const [error, setError] = useState<FilmRoomErrorView | null>(null);
   const [busy, setBusy] = useState(false);
   const [loadingBootstrap, setLoadingBootstrap] = useState(true);
+  const [bootstrapWarming, setBootstrapWarming] = useState<string | null>(null);
   const [selectedMoment, setSelectedMoment] = useState(0);
   const [frameIndex, setFrameIndex] = useState(0);
   const moments = response?.answer?.moments ?? [];
@@ -545,7 +585,8 @@ export function FilmRoom() {
     setBusy(true);
     setError(null);
     try {
-      const next = await filmRoomAsk({ text: query, context });
+      const demo_token = demoTokenFromBrowser();
+      const next = await filmRoomAsk({ text: query, context, demo_token });
       setResponse(next);
       setReplay(next.answer?.replay ?? null);
       setSelectedMoment(0);
@@ -564,21 +605,34 @@ export function FilmRoom() {
 
   useEffect(() => {
     let alive = true;
-    filmRoomBootstrap()
+    let timer: number | undefined;
+    const load = () => {
+      filmRoomBootstrap()
       .then((payload) => {
         if (!alive) return;
+        const warming = filmRoomBootstrapWarmingMessage(payload);
+        setBootstrapWarming(warming);
+        if (payload.state === "warming") {
+          timer = window.setTimeout(load, 2000);
+          return;
+        }
         const prewarmed = payload.prewarmed_response ?? null;
         setResponse(prewarmed);
         setReplay(prewarmed?.answer?.replay ?? null);
+        setLoadingBootstrap(false);
       })
       .catch((event) => {
         if (alive) setError(filmRoomErrorViewModel(event));
+        if (alive) setLoadingBootstrap(false);
       })
       .finally(() => {
-        if (alive) setLoadingBootstrap(false);
+        if (alive && !timer) setLoadingBootstrap(false);
       });
+    };
+    load();
     return () => {
       alive = false;
+      if (timer) window.clearTimeout(timer);
     };
   }, []);
 
@@ -615,6 +669,7 @@ export function FilmRoom() {
         response={response}
         error={error}
         loading={loadingBootstrap}
+        warming={bootstrapWarming}
         onClarify={(pending, answer) => void submit({ pending_clarification: pending, answer })}
       />
 
