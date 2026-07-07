@@ -184,6 +184,16 @@
   color: #ffb3c0;
 }
 
+.filmErrorBubble.gateError {
+  background: #171911;
+  color: #d8ef9f;
+}
+
+.filmErrorBubble.disabledError {
+  background: #19151f;
+  color: #d7c3ff;
+}
+
 .readingRow {
   display: flex;
   flex-wrap: wrap;

@@ -1,23 +1,27 @@
 services:
   - type: web
-    name: priori-integrated-alpha
+    name: entrelineas-film-room
     runtime: docker
     plan: starter
     dockerfilePath: ./Dockerfile
-    healthCheckPath: /healthz
+    healthCheckPath: /film-room
     disk:
-      name: priori-integrated-alpha-data
+      name: entrelineas-film-room-data
       mountPath: /var/data
-      sizeGB: 20
+      sizeGB: 10
     envVars:
       - key: HOST
         value: 0.0.0.0
+      - key: TQE_PUBLIC_MODE
+        value: "1"
       - key: WORKBENCH_HERMES_ENABLED
         value: "1"
       - key: HOME
         value: /var/data
       - key: HERMES_HOME
         value: /var/data/hermes-home
+      - key: HERMES_AUTH_SECRET_FILE
+        value: /etc/secrets/hermes/auth.json
       - key: HERMES_AGENT_SOURCE
         value: /opt/hermes-agent
       - key: CODEX_HOME

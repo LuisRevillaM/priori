@@ -1,0 +1,17 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/luisrevilla/code/priori/src/tqe/workshop/app_service.py", line 5624, in <module>
+    main()
+  File "/Users/luisrevilla/code/priori/src/tqe/workshop/app_service.py", line 5586, in main
+    server = WorkbenchServer(
+             ^^^^^^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/src/tqe/workshop/app_service.py", line 5013, in __init__
+    super().__init__(server_address, request_handler)
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+PermissionError: [Errno 1] Operation not permitted

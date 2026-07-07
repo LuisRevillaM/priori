@@ -1,0 +1,74 @@
+{
+  "evidence_metadata": {
+    "git_branch": "packet/deploy-1",
+    "git_commit": "cb4cf97bd08a381964c70f253808e0bc1ff68229",
+    "git_tree": "b44ac83ba68ce6b4f2b35a459ecc549163a71bf8",
+    "oracle_path": "delivery/oracles/DEPLOY-1/deploy_smoke.py",
+    "oracle_sha256": "9aead6611095a41c9ddcf9b7525dd8fcb85c186d20add691a7f6dbbc5e4b8f3f",
+    "produced_by": "src/tqe/verification/deploy1_evidence.py",
+    "producing_script_sha256": "1c0cb6cb1f92637ffe365bd7e478b7fbb2b39dd0948999612bdc1a7a08fa7ae0",
+    "run_dir": "delivery/packets/deploy-1-evidence/runs/2026-07-07T193655Z00000000-1c0cb6cb1f92",
+    "run_started_at": "2026-07-07T19:38:59+00:00",
+    "schema_version": "deploy1.evidence_metadata.v1"
+  },
+  "focused_python_tests": {
+    "command": [
+      "in-process-unittest",
+      "tests.test_deploy1_public_mode"
+    ],
+    "duration_ms": 3163.024,
+    "errors": 0,
+    "failures": 0,
+    "flagged_over_5_minutes": false,
+    "output_path": "delivery/packets/deploy-1-evidence/runs/2026-07-07T193655Z00000000-1c0cb6cb1f92/focused-python-tests.txt",
+    "return_code": 0,
+    "status": "PASS",
+    "tests_run": 6
+  },
+  "local_public_mode_oracles": {
+    "base_url": "http://127.0.0.1:51042",
+    "cache_provenance": "The local public-mode service used run-local TQE_RUNTIME_ROOT, TQE_CACHE_ROOT, and TQE_NODE_CACHE_ROOT under this evidence directory. The with-token oracle may invoke Hermes live through the ChatGPT subscription; the without-token oracle must be answered by the public gate before any model call.",
+    "cache_root": "delivery/packets/deploy-1-evidence/runs/2026-07-07T193655Z00000000-1c0cb6cb1f92/service-cache",
+    "health": {
+      "served_in_process": true,
+      "status": "PASS"
+    },
+    "oracle_with_token": {
+      "billing_surface": "ChatGPT subscription via openai-codex Hermes CLI for the oracle live ask",
+      "command": [
+        "/Users/luisrevilla/code/priori/.venv/bin/python",
+        "/Users/luisrevilla/code/priori/delivery/oracles/DEPLOY-1/deploy_smoke.py",
+        "--base-url",
+        "http://127.0.0.1:51042",
+        "--demo-token",
+        "deploy1-local-demo-token"
+      ],
+      "demo_token_supplied": true,
+      "duration_ms": 120139.682,
+      "flagged_over_5_minutes": false,
+      "output_path": "delivery/packets/deploy-1-evidence/runs/2026-07-07T193655Z00000000-1c0cb6cb1f92/oracle-with-token.txt",
+      "return_code": 0,
+      "status": "PASS",
+      "subscription_billed": true
+    },
+    "oracle_without_token": {
+      "billing_surface": "No live model call expected; public gate must answer before Hermes.",
+      "command": [
+        "/Users/luisrevilla/code/priori/.venv/bin/python",
+        "/Users/luisrevilla/code/priori/delivery/oracles/DEPLOY-1/deploy_smoke.py",
+        "--base-url",
+        "http://127.0.0.1:51042"
+      ],
+      "demo_token_supplied": false,
+      "duration_ms": 74.459,
+      "flagged_over_5_minutes": false,
+      "output_path": "delivery/packets/deploy-1-evidence/runs/2026-07-07T193655Z00000000-1c0cb6cb1f92/oracle-without-token.txt",
+      "return_code": 0,
+      "status": "PASS",
+      "subscription_billed": false
+    },
+    "output_root": "delivery/packets/deploy-1-evidence/runs/2026-07-07T193655Z00000000-1c0cb6cb1f92/service-output-root"
+  },
+  "schema_version": "deploy1.evidence.v1",
+  "status": "PASS"
+}

@@ -10,9 +10,17 @@ export WORKBENCH_HERMES_PROVIDER="${WORKBENCH_HERMES_PROVIDER:-openai-codex}"
 export WORKBENCH_HERMES_MODEL="${WORKBENCH_HERMES_MODEL:-gpt-5.5}"
 export WORKBENCH_HERMES_TOOLSET="${WORKBENCH_HERMES_TOOLSET:-mcp-priori_tactical}"
 export WORKBENCH_HERMES_PYTHON="${WORKBENCH_HERMES_PYTHON:-/opt/hermes-agent/venv/bin/python}"
+export HERMES_AUTH_SECRET_FILE="${HERMES_AUTH_SECRET_FILE:-/etc/secrets/hermes/auth.json}"
 
 mkdir -p "$HERMES_HOME" "$CODEX_HOME"
 chmod 700 "$HERMES_HOME" "$CODEX_HOME" 2>/dev/null || true
+
+if [[ -f "$HERMES_AUTH_SECRET_FILE" ]]; then
+  install -m 600 "$HERMES_AUTH_SECRET_FILE" "$HERMES_HOME/auth.json"
+  echo "hermes_auth_secret_status=installed"
+else
+  echo "hermes_auth_secret_status=absent"
+fi
 
 if [[ -n "${CODEX_AUTH_JSON_B64:-}" && ! -f "$CODEX_AUTH_FILE" ]]; then
   tmp_auth="$(mktemp)"

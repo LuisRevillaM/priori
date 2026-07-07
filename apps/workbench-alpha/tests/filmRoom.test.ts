@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import {
   assertIntervalMetric,
   chainStatusLabel,
+  filmRoomBootstrapWarmingMessage,
   filmRoomErrorViewModel,
   filmRoomOutcomeClass,
   headerChipsFromResponse,
@@ -138,6 +139,53 @@ assert.deepEqual(
     detail: "correlation err_abc123def456",
     tone: "internal"
   }
+);
+assert.deepEqual(
+  filmRoomErrorViewModel({
+    error_code: "DEMO_TOKEN_REQUIRED",
+    details: { token_source: "demo_token body field" }
+  }),
+  {
+    title: "Demo token required",
+    code: "DEMO_TOKEN_REQUIRED",
+    message: "Live asks are gated in public mode.",
+    detail: "demo_token body field",
+    tone: "gate"
+  }
+);
+assert.deepEqual(
+  filmRoomErrorViewModel({
+    error_code: "ASKS_DISABLED",
+    details: { reason: "hermes_auth_missing" }
+  }),
+  {
+    title: "Live asks disabled",
+    code: "ASKS_DISABLED",
+    message: "The gallery is available, but model-backed asks are not connected in this runtime.",
+    detail: "hermes_auth_missing",
+    tone: "disabled"
+  }
+);
+assert.equal(
+  filmRoomBootstrapWarmingMessage({
+    ok: true,
+    state: "warming",
+    provider: "openai-codex",
+    model: "gpt-5.5",
+    billing_surface: "subscription",
+    flagship_plan_hashes: {},
+    prewarm_records: [],
+    warming: {
+      items: [
+        { key: "fragile_retention", status: "ready" },
+        { key: "counterattack_sequence_rate", status: "running" }
+      ]
+    },
+    prewarmed_response: null,
+    answer: null,
+    provenance: null
+  }),
+  "Warming counterattack sequence rate."
 );
 
 const chips = headerChipsFromResponse({

@@ -1,0 +1,90 @@
+test_provisioning_rejects_cache_hash_mismatch (tests.test_deploy1_public_mode.Deploy1PublicModeTests.test_provisioning_rejects_cache_hash_mismatch) ... ok
+test_public_mode_live_ask_with_token_degrades_when_hermes_absent (tests.test_deploy1_public_mode.Deploy1PublicModeTests.test_public_mode_live_ask_with_token_degrades_when_hermes_absent) ... ERROR
+test_public_mode_live_ask_with_token_reaches_handler (tests.test_deploy1_public_mode.Deploy1PublicModeTests.test_public_mode_live_ask_with_token_reaches_handler) ... ERROR
+test_public_mode_live_ask_without_token_is_demo_token_required (tests.test_deploy1_public_mode.Deploy1PublicModeTests.test_public_mode_live_ask_without_token_is_demo_token_required) ... ERROR
+test_public_mode_serves_gallery_and_bootstrap_without_demo_token (tests.test_deploy1_public_mode.Deploy1PublicModeTests.test_public_mode_serves_gallery_and_bootstrap_without_demo_token) ... ERROR
+
+======================================================================
+ERROR: test_public_mode_live_ask_with_token_degrades_when_hermes_absent (tests.test_deploy1_public_mode.Deploy1PublicModeTests.test_public_mode_live_ask_with_token_degrades_when_hermes_absent)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/luisrevilla/code/priori/tests/test_deploy1_public_mode.py", line 143, in test_public_mode_live_ask_with_token_degrades_when_hermes_absent
+    status, body = self.request(
+                   ^^^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/tests/test_deploy1_public_mode.py", line 47, in request
+    server = WorkbenchServer(
+             ^^^^^^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/src/tqe/workshop/app_service.py", line 5013, in __init__
+    super().__init__(server_address, request_handler)
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_public_mode_live_ask_with_token_reaches_handler (tests.test_deploy1_public_mode.Deploy1PublicModeTests.test_public_mode_live_ask_with_token_reaches_handler)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/luisrevilla/code/priori/tests/test_deploy1_public_mode.py", line 122, in test_public_mode_live_ask_with_token_reaches_handler
+    status, body = self.request(
+                   ^^^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/tests/test_deploy1_public_mode.py", line 47, in request
+    server = WorkbenchServer(
+             ^^^^^^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/src/tqe/workshop/app_service.py", line 5013, in __init__
+    super().__init__(server_address, request_handler)
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_public_mode_live_ask_without_token_is_demo_token_required (tests.test_deploy1_public_mode.Deploy1PublicModeTests.test_public_mode_live_ask_without_token_is_demo_token_required)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/luisrevilla/code/priori/tests/test_deploy1_public_mode.py", line 92, in test_public_mode_live_ask_without_token_is_demo_token_required
+    status, body = self.request("POST", "/api/film-room/ask", payload={"text": "Show controlled passes."})
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/tests/test_deploy1_public_mode.py", line 47, in request
+    server = WorkbenchServer(
+             ^^^^^^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/src/tqe/workshop/app_service.py", line 5013, in __init__
+    super().__init__(server_address, request_handler)
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_public_mode_serves_gallery_and_bootstrap_without_demo_token (tests.test_deploy1_public_mode.Deploy1PublicModeTests.test_public_mode_serves_gallery_and_bootstrap_without_demo_token)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/luisrevilla/code/priori/tests/test_deploy1_public_mode.py", line 75, in test_public_mode_serves_gallery_and_bootstrap_without_demo_token
+    page_status, page_body = self.request("GET", "/film-room")
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/tests/test_deploy1_public_mode.py", line 47, in request
+    server = WorkbenchServer(
+             ^^^^^^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/src/tqe/workshop/app_service.py", line 5013, in __init__
+    super().__init__(server_address, request_handler)
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+PermissionError: [Errno 1] Operation not permitted
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.057s
+
+FAILED (errors=4)

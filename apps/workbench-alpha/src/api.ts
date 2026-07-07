@@ -128,7 +128,7 @@ export function coachInterpret(input: { query: string }): Promise<CoachInterpret
   });
 }
 
-export function filmRoomAsk(input: { text: string; context?: JsonObject | null }): Promise<FilmRoomAskResponse> {
+export function filmRoomAsk(input: { text: string; context?: JsonObject | null; demo_token?: string | null }): Promise<FilmRoomAskResponse> {
   return request<FilmRoomAskResponse>("FilmRoomAskResponse", "/api/film-room/ask", {
     method: "POST",
     body: JSON.stringify(input)

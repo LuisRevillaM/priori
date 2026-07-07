@@ -26,6 +26,8 @@ from typing import Any
 def main() -> int:
     parser = argparse.ArgumentParser(description="Provision Entrelíneas demo data for cloud Workbench.")
     parser.add_argument("--dataset-root", type=Path, default=Path("/var/data/dataset"))
+    parser.add_argument("--cache-root", type=Path, default=Path(os.environ.get("TQE_CACHE_ROOT", "/var/data/cache")))
+    parser.add_argument("--runtime-root", type=Path, default=Path(os.environ.get("TQE_RUNTIME_ROOT", "/var/data/runtime")))
     parser.add_argument("--manifest", type=Path, default=Path("config/deploy/demo-data-manifest.json"))
     parser.add_argument("--bundle-manifest", type=Path, default=Path(os.environ.get("TQE_DATA_BUNDLE_MANIFEST", "")) if os.environ.get("TQE_DATA_BUNDLE_MANIFEST") else None)
     parser.add_argument("--bundle-url", default=os.environ.get("TQE_DATA_BUNDLE_URL", ""))
@@ -34,13 +36,27 @@ def main() -> int:
 
     manifest = read_json(args.manifest)
     args.dataset_root.mkdir(parents=True, exist_ok=True)
+    args.cache_root.mkdir(parents=True, exist_ok=True)
+    args.runtime_root.mkdir(parents=True, exist_ok=True)
     bundle_manifest = read_json(args.bundle_manifest) if args.bundle_manifest else {}
-    if dataset_satisfies_manifest(args.dataset_root, manifest, bundle_manifest):
+    if dataset_satisfies_manifest(args.dataset_root, manifest, bundle_manifest, cache_root=args.cache_root, runtime_root=args.runtime_root):
         print("Demo data already satisfies manifest.")
         return 0
     if not args.bundle_url:
         print("Demo data is missing and TQE_DATA_BUNDLE_URL is not configured.")
-        print(json.dumps(missing_report(args.dataset_root, manifest), indent=2, sort_keys=True))
+        print(
+            json.dumps(
+                missing_report(
+                    args.dataset_root,
+                    manifest,
+                    bundle_manifest,
+                    cache_root=args.cache_root,
+                    runtime_root=args.runtime_root,
+                ),
+                indent=2,
+                sort_keys=True,
+            )
+        )
         return 1
 
     with tempfile.TemporaryDirectory(prefix="entrelineas-demo-data-") as temp_dir:
@@ -58,10 +74,28 @@ def main() -> int:
         staged = temp_path / "dataset"
         source = unpacked / "dataset" if (unpacked / "dataset").exists() else unpacked
         shutil.move(str(source), staged)
-        if not dataset_satisfies_manifest(staged, manifest, bundle_manifest):
-            print(json.dumps(missing_report(staged, manifest, bundle_manifest), indent=2, sort_keys=True))
+        staged_cache = unpacked / "cache"
+        staged_runtime = unpacked / "runtime"
+        if not dataset_satisfies_manifest(
+            staged,
+            manifest,
+            bundle_manifest,
+            cache_root=staged_cache,
+            runtime_root=staged_runtime,
+        ):
+            print(
+                json.dumps(
+                    missing_report(staged, manifest, bundle_manifest, cache_root=staged_cache, runtime_root=staged_runtime),
+                    indent=2,
+                    sort_keys=True,
+                )
+            )
             raise SystemExit("Downloaded data bundle does not satisfy manifest.")
         replace_tree(staged, args.dataset_root)
+        if staged_cache.exists():
+            replace_tree(staged_cache, args.cache_root)
+        if staged_runtime.exists():
+            replace_tree(staged_runtime, args.runtime_root)
     print("Demo data provisioned and verified.")
     return 0
 
@@ -75,7 +109,14 @@ def read_json(path: Path | None) -> dict[str, Any]:
     return payload if isinstance(payload, dict) else {}
 
 
-def dataset_satisfies_manifest(dataset_root: Path, manifest: dict[str, Any], bundle_manifest: dict[str, Any] | None = None) -> bool:
+def dataset_satisfies_manifest(
+    dataset_root: Path,
+    manifest: dict[str, Any],
+    bundle_manifest: dict[str, Any] | None = None,
+    *,
+    cache_root: Path | None = None,
+    runtime_root: Path | None = None,
+) -> bool:
     required = [str(path) for path in manifest.get("required_paths") or []]
     raw_required = [str(path) for path in manifest.get("required_raw_paths") or []]
     present = all((dataset_root / "canonical" / "v1" / path).exists() for path in required) and all(
@@ -90,22 +131,42 @@ def dataset_satisfies_manifest(dataset_root: Path, manifest: dict[str, Any], bun
             expected = str(record.get("sha256") or "")
             if not relative or not expected:
                 continue
-            path = dataset_root / relative
+            path = bundle_record_path(
+                relative,
+                dataset_root=dataset_root,
+                cache_root=cache_root,
+                runtime_root=runtime_root,
+            )
             if not path.exists() or file_sha256(path) != expected:
                 return False
     return True
 
 
-def missing_report(dataset_root: Path, manifest: dict[str, Any], bundle_manifest: dict[str, Any] | None = None) -> dict[str, Any]:
+def missing_report(
+    dataset_root: Path,
+    manifest: dict[str, Any],
+    bundle_manifest: dict[str, Any] | None = None,
+    *,
+    cache_root: Path | None = None,
+    runtime_root: Path | None = None,
+) -> dict[str, Any]:
     required = [str(path) for path in manifest.get("required_paths") or []]
     raw_required = [str(path) for path in manifest.get("required_raw_paths") or []]
     hash_mismatches = []
+    missing_bundle_files = []
     if bundle_manifest:
         for record in bundle_manifest.get("files") or []:
             relative = str(record.get("path") or "")
             expected = str(record.get("sha256") or "")
-            path = dataset_root / relative
-            if relative and expected and path.exists():
+            path = bundle_record_path(
+                relative,
+                dataset_root=dataset_root,
+                cache_root=cache_root,
+                runtime_root=runtime_root,
+            )
+            if relative and expected and not path.exists():
+                missing_bundle_files.append(relative)
+            elif relative and expected and path.exists():
                 actual = file_sha256(path)
                 if actual != expected:
                     hash_mismatches.append({"path": relative, "expected": expected, "actual": actual})
@@ -119,8 +180,23 @@ def missing_report(dataset_root: Path, manifest: dict[str, Any], bundle_manifest
             for path in raw_required
             if not (dataset_root / "raw" / "idsse" / "figshare-28196177-v1" / path).exists()
         ],
+        "missing_bundle_files": missing_bundle_files,
         "hash_mismatches": hash_mismatches,
     }
+
+
+def bundle_record_path(
+    relative: str,
+    *,
+    dataset_root: Path,
+    cache_root: Path | None,
+    runtime_root: Path | None,
+) -> Path:
+    if relative.startswith("cache/"):
+        return (cache_root or dataset_root.parent / "cache") / relative.removeprefix("cache/")
+    if relative.startswith("runtime/"):
+        return (runtime_root or dataset_root.parent / "runtime") / relative.removeprefix("runtime/")
+    return dataset_root / relative
 
 
 def download(url: str, destination: Path) -> None:
