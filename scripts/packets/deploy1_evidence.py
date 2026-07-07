@@ -21,6 +21,8 @@ SRC = ROOT / "src"
 EVIDENCE_ROOT = ROOT / "delivery/packets/deploy-1-evidence/runs"
 ORACLE = ROOT / "delivery/oracles/DEPLOY-1/deploy_smoke.py"
 FOCUSED_TESTS = ["tests.test_deploy1_public_mode"]
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
 
 
 def utc_stamp() -> str:
@@ -77,9 +79,22 @@ def make_run_dir(script_sha: str) -> Path:
 
 
 def free_port() -> int:
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        sock.bind(("127.0.0.1", 0))
-        return int(sock.getsockname()[1])
+    from tqe.workshop.app_service import WorkbenchHandler, WorkbenchServer
+
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM):
+        pass
+    probe_root = Path(os.environ.get("TMPDIR", "/private/tmp")) / "deploy1-port-probe"
+    probe_root.mkdir(parents=True, exist_ok=True)
+    server = WorkbenchServer(
+        ("127.0.0.1", 0),
+        WorkbenchHandler,
+        static_root=probe_root,
+        output_root=probe_root,
+    )
+    try:
+        return int(server.server_port)
+    finally:
+        server.server_close()
 
 
 def wait_for_health(port: int, *, timeout_seconds: float) -> dict[str, Any]:
