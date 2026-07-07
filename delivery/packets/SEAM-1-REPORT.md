@@ -75,7 +75,7 @@ final report relies on the run above.
 
 The full suite exceeded five minutes and was flagged during the run.
 
-One prior full-suite run on `d15b566` before the JSON-safety repair failed in
+One prior full-suite run before `89813c1` failed in
 279.921s because the new source-summary hash tried to hash a legacy runtime row
 containing a pandas `Series`. `public_runtime_source_record` now normalizes
 public values before hashing, and
