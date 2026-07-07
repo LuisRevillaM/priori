@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { filmRoomAsk, filmRoomBootstrap, filmRoomReplayFrame, filmRoomReplayWindow } from "./api";
+import { WorkbenchApiError, filmRoomAsk, filmRoomBootstrap, filmRoomReplayFrame, filmRoomReplayWindow } from "./api";
 import type { FilmRoomAskResponse, FilmRoomIntervalMetric, FilmRoomMoment, JsonObject, ReplayEntity, ReplayFrame, ReplayPayload } from "./types";
 
 const FLAGSHIP_ASK = "After a regain, how often does the team progress the ball by carry and keep it with a controlled pass?";
@@ -74,6 +74,14 @@ export function filmRoomOutcomeClass(response: FilmRoomAskResponse | null) {
 
 export function refusalViewModel(refusal: unknown) {
   const payload = asRecord(refusal);
+  if (payload.gap_code === "MODEL_OUTPUT_TRUNCATED") {
+    return {
+      missing: "Model answer got cut off",
+      gapCode: "MODEL_OUTPUT_TRUNCATED",
+      message: "The model's answer got cut off. Retry the ask.",
+      nearest: ""
+    };
+  }
   const missing = String(payload.missing_capability ?? payload.modality ?? "unnamed capability");
   const gapCode = String(payload.gap_code ?? payload.outcome ?? "CAPABILITY_GAP");
   const message = String(payload.message ?? "I understand the question, but I cannot measure it yet.");
@@ -88,6 +96,57 @@ export function refusalViewModel(refusal: unknown) {
         : nearest && typeof nearest === "object"
           ? String(asRecord(nearest).label ?? asRecord(nearest).question ?? "")
           : ""
+  };
+}
+
+export type FilmRoomErrorView = {
+  title: string;
+  code: string;
+  message: string;
+  detail: string;
+  tone: "schema" | "truncation" | "internal" | "generic";
+};
+
+export function filmRoomErrorViewModel(error: unknown): FilmRoomErrorView {
+  const apiError = error instanceof WorkbenchApiError ? error : null;
+  const payload = apiError ? { error_code: apiError.errorCode, details: apiError.details, message: apiError.message } : asRecord(error);
+  const code = String(payload.error_code ?? payload.gap_code ?? "REQUEST_FAILED");
+  const details = asRecord(payload.details);
+  if (code === "REQUEST_SCHEMA_INVALID") {
+    return {
+      title: "Couldn't understand the request",
+      code,
+      message: "The request body did not match the Film Room API contract.",
+      detail: String(details.expected ?? details.reason ?? "Expected a JSON object with the required fields."),
+      tone: "schema"
+    };
+  }
+  if (code === "MODEL_OUTPUT_TRUNCATED") {
+    return {
+      title: "The model's answer got cut off",
+      code,
+      message: "Retry the ask; the model stopped before it produced complete JSON.",
+      detail: String(details.reason ?? "No request changes are needed."),
+      tone: "truncation"
+    };
+  }
+  if (code === "INTERNAL_ERROR") {
+    const correlationId = String(details.correlation_id ?? "not recorded");
+    return {
+      title: "Something broke on our side",
+      code,
+      message: "The server logged a traceback for this failure.",
+      detail: `correlation ${correlationId}`,
+      tone: "internal"
+    };
+  }
+  const message = error instanceof Error ? error.message : String(payload.message ?? error ?? "Request failed.");
+  return {
+    title: "Request failed",
+    code,
+    message,
+    detail: "",
+    tone: "generic"
   };
 }
 
@@ -383,7 +442,7 @@ function AskThread({
   onClarify
 }: {
   response: FilmRoomAskResponse | null;
-  error: string | null;
+  error: FilmRoomErrorView | null;
   loading: boolean;
   onClarify: (state: JsonObject, answer: string) => void;
 }) {
@@ -431,7 +490,14 @@ function AskThread({
           {refusal.nearest ? <button type="button">{refusal.nearest}</button> : null}
         </div>
       ) : null}
-      {error ? <div className="bubble refusalBubble">{error}</div> : null}
+      {error ? (
+        <div className={`bubble refusalBubble filmErrorBubble ${error.tone}Error`}>
+          <strong>{error.title}</strong>
+          <span>{error.code}</span>
+          <p>{error.message}</p>
+          {error.detail ? <p>{error.detail}</p> : null}
+        </div>
+      ) : null}
     </section>
   );
 }
@@ -463,7 +529,7 @@ export function FilmRoom() {
   const [query, setQuery] = useState(FLAGSHIP_ASK);
   const [response, setResponse] = useState<FilmRoomAskResponse | null>(null);
   const [replay, setReplay] = useState<ReplayPayload | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<FilmRoomErrorView | null>(null);
   const [busy, setBusy] = useState(false);
   const [loadingBootstrap, setLoadingBootstrap] = useState(true);
   const [selectedMoment, setSelectedMoment] = useState(0);
@@ -490,7 +556,7 @@ export function FilmRoom() {
         await filmRoomReplayFrame({ replay_window_id: replayWindowId, frame_id: firstFrame.frame_id });
       }
     } catch (event) {
-      setError(event instanceof Error ? event.message : String(event));
+      setError(filmRoomErrorViewModel(event));
     } finally {
       setBusy(false);
     }
@@ -506,7 +572,7 @@ export function FilmRoom() {
         setReplay(prewarmed?.answer?.replay ?? null);
       })
       .catch((event) => {
-        if (alive) setError(event instanceof Error ? event.message : String(event));
+        if (alive) setError(filmRoomErrorViewModel(event));
       })
       .finally(() => {
         if (alive) setLoadingBootstrap(false);
@@ -527,7 +593,7 @@ export function FilmRoom() {
         setFrameIndex(0);
       })
       .catch((event) => {
-        if (alive) setError(event instanceof Error ? event.message : String(event));
+        if (alive) setError(filmRoomErrorViewModel(event));
       });
     return () => {
       alive = false;

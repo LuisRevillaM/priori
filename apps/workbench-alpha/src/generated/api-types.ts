@@ -703,6 +703,14 @@ export const apiSchemas = {
             "title": "Role",
             "type": "string"
           },
+          "runtime_evidence_sources": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Runtime Evidence Sources",
+            "type": "array"
+          },
           "submit": {
             "additionalProperties": true,
             "title": "Submit",

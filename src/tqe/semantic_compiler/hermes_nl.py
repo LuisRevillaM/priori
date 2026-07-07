@@ -30,6 +30,7 @@ DEFAULT_PROVIDER = "openai-codex"
 DEFAULT_MODEL = "gpt-5.5"
 DEFAULT_TOOLSET = "mcp-priori_tactical"
 MAX_MODEL_REPAIR_ATTEMPTS = 2
+DEFAULT_SCP2_2_MAX_OUTPUT_TOKENS = 32768
 CERTIFIED_FEW_SHOT_PATHS = (
     Path("delivery/packets/scp2-1-roundtrip/meaning-expressions/fragile_possession_state_known.v0.json"),
     Path("delivery/packets/scp2-1-roundtrip/meaning-expressions/fragile_window_join_count_novel.v0.json"),
@@ -71,6 +72,10 @@ class HermesNLModelOutputError(ValueError):
         super().__init__(message)
         self.raw_completion = raw_completion
         self.rejected_attempts = rejected_attempts or []
+
+
+class HermesNLModelOutputTruncatedError(HermesNLModelOutputError):
+    """Raised when Hermes appears to have been cut off before closing JSON."""
 
 
 class HermesNLClarificationSelectionError(ValueError):
@@ -218,12 +223,24 @@ class HermesCompletionInvoker(Protocol):
         """Return raw model completion text from the real configured model path."""
 
 
+def scp2_2_max_output_tokens() -> int:
+    raw = os.environ.get("HERMES_SCP2_2_MAX_OUTPUT_TOKENS")
+    if raw is None:
+        return DEFAULT_SCP2_2_MAX_OUTPUT_TOKENS
+    try:
+        parsed = int(raw)
+    except ValueError:
+        return DEFAULT_SCP2_2_MAX_OUTPUT_TOKENS
+    return parsed if parsed > 0 else DEFAULT_SCP2_2_MAX_OUTPUT_TOKENS
+
+
 @dataclass(frozen=True)
 class WorkshopHermesInvoker:
     provider: str = DEFAULT_PROVIDER
     model: str = DEFAULT_MODEL
     toolset: str = DEFAULT_TOOLSET
     timeout_seconds: int = 180
+    max_output_tokens: int = DEFAULT_SCP2_2_MAX_OUTPUT_TOKENS
     output_root: Path | None = None
 
     def invoke(self, prompt: str) -> str:
@@ -242,6 +259,8 @@ class WorkshopHermesInvoker:
                 self.model,
                 "--toolset",
                 self.toolset,
+                "--max-output-tokens",
+                str(self.max_output_tokens),
                 "--prompt",
                 prompt,
             ],
@@ -275,6 +294,7 @@ def compile_nl_request(
     active_invoker = invoker or WorkshopHermesInvoker(
         provider=os.environ.get("HERMES_SCP2_2_PROVIDER", DEFAULT_PROVIDER),
         model=os.environ.get("HERMES_SCP2_2_MODEL", DEFAULT_MODEL),
+        max_output_tokens=scp2_2_max_output_tokens(),
     )
     raw_completion = active_invoker.invoke(prompt)
     rejected_attempts: list[dict[str, str]] = []
@@ -288,11 +308,44 @@ def compile_nl_request(
                 "request_text": text,
                 "repair_attempt_count": len(rejected_attempts),
                 "rejected_attempts": list(rejected_attempts),
+                "max_output_tokens": getattr(active_invoker, "max_output_tokens", None),
             },
         )
         try:
             outcome = parse_hermes_completion(raw_completion, transcript=transcript, vocabulary=vocabulary)
             return outcome
+        except HermesNLModelOutputTruncatedError as exc:
+            rejected_attempt = {
+                "completion_hash": stable_hash({"completion": raw_completion}),
+                "error_code": "MODEL_OUTPUT_TRUNCATED",
+                "error": str(exc),
+            }
+            if attempt_index >= MAX_MODEL_REPAIR_ATTEMPTS:
+                return model_output_truncated_refusal(
+                    transcript=transcript_for(
+                        projection=projection,
+                        raw_completion=raw_completion,
+                        provider=active_invoker.provider,
+                        model=active_invoker.model,
+                        invocation={
+                            "request_text": text,
+                            "repair_attempt_count": len(rejected_attempts),
+                            "rejected_attempts": [*rejected_attempts, rejected_attempt],
+                            "max_output_tokens": getattr(active_invoker, "max_output_tokens", None),
+                        },
+                    )
+                )
+            rejected_attempts.append(rejected_attempt)
+            raw_completion = active_invoker.invoke(
+                render_truncation_prompt(
+                    projection,
+                    text=text,
+                    context=context,
+                    rejected_completion=raw_completion,
+                    validation_error=str(exc),
+                    repair_attempt=len(rejected_attempts),
+                )
+            )
         except HermesNLModelOutputError as exc:
             if attempt_index >= MAX_MODEL_REPAIR_ATTEMPTS:
                 raise HermesNLModelOutputError(
@@ -734,14 +787,63 @@ def render_repair_prompt(
     )
 
 
+def render_truncation_prompt(
+    projection: PromptProjection,
+    *,
+    text: str,
+    context: HermesNLContext | None,
+    rejected_completion: str,
+    validation_error: str,
+    repair_attempt: int,
+) -> str:
+    request = {
+        "request_text": text,
+        "pending_clarification": (
+            context.pending_clarification.model_dump(mode="json", exclude_none=True)
+            if context and context.pending_clarification
+            else None
+        ),
+        "answer": context.answer if context else None,
+    }
+    repair_payload = {
+        "repair_attempt": repair_attempt,
+        "error_code": "MODEL_OUTPUT_TRUNCATED",
+        "request": request,
+        "cut_off_output_hash": stable_hash({"completion": rejected_completion}),
+        "validation_error": validation_error,
+    }
+    return (
+        projection.prompt
+        + "\nThe previous final JSON was cut off before it closed. Treat this as MODEL_OUTPUT_TRUNCATED.\n"
+        + "Return the COMPLETE allowed JSON object for the same request from the beginning, not a fragment. "
+        + "If the complete object is too large to emit safely, emit understood_but_not_expressible with "
+        + "gap_code MODEL_OUTPUT_TRUNCATED, missing_capability model_output_completion, and a retry message.\n"
+        + "TRUNCATION_REPAIR_INPUT:\n"
+        + json.dumps(repair_payload, indent=2, sort_keys=True)
+        + "\nReturn only one complete JSON object. No prose before or after it.\n"
+    )
+
+
 def parse_hermes_completion(
     raw_completion: str,
     *,
     transcript: TranscriptEvidence,
     vocabulary: PackVocabulary,
 ) -> HermesOutcome:
+    text = strip_json_fence(raw_completion)
     try:
-        payload = json.loads(strip_json_fence(raw_completion))
+        payload = json.loads(text)
+    except json.JSONDecodeError as exc:
+        if is_truncated_json_decode_error(text, exc):
+            raise HermesNLModelOutputTruncatedError(
+                f"Hermes output JSON appears truncated at end-of-output: {exc}",
+                raw_completion=raw_completion,
+            ) from exc
+        raise HermesNLModelOutputError(
+            f"Hermes output is not valid JSON: {exc}",
+            raw_completion=raw_completion,
+        ) from exc
+    try:
         parsed = MODEL_OUTPUT_ADAPTER.validate_python(payload)
     except Exception as exc:  # noqa: BLE001
         raise HermesNLModelOutputError(
@@ -798,6 +900,31 @@ def parse_hermes_completion(
         modality=parsed.modality,
         gap_code=parsed.gap_code,
         message=parsed.message,
+        transcript=transcript,
+    )
+
+
+def is_truncated_json_decode_error(text: str, exc: json.JSONDecodeError) -> bool:
+    stripped = text.rstrip()
+    if not stripped:
+        return False
+    if exc.pos >= max(0, len(stripped) - 4):
+        return True
+    if exc.msg.startswith("Unterminated string"):
+        return not stripped.endswith(("}", "]"))
+    if exc.msg.startswith("Expecting") and not stripped.endswith(("}", "]")):
+        open_braces = stripped.count("{") - stripped.count("}")
+        open_brackets = stripped.count("[") - stripped.count("]")
+        return open_braces > 0 or open_brackets > 0
+    return False
+
+
+def model_output_truncated_refusal(*, transcript: TranscriptEvidence) -> UnderstoodButNotExpressibleOutcome:
+    return UnderstoodButNotExpressibleOutcome(
+        outcome="understood_but_not_expressible",
+        gap_code="MODEL_OUTPUT_TRUNCATED",
+        missing_capability="model_output_completion",
+        message="The model's answer got cut off before it produced complete JSON. Retry the ask.",
         transcript=transcript,
     )
 

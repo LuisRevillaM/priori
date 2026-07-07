@@ -19,6 +19,7 @@ import subprocess
 import sys
 import threading
 import time
+import traceback
 import uuid
 from copy import deepcopy
 from datetime import UTC, datetime
@@ -696,6 +697,7 @@ def error_response(code: str, message: str, *, details: dict[str, Any] | None = 
 
 PUBLIC_ERROR_MESSAGES = {
     "REQUEST_SCHEMA_INVALID": "Request payload does not match the API contract.",
+    "MODEL_OUTPUT_TRUNCATED": "The model answer was cut off before it produced complete JSON.",
     "UNKNOWN_HANDLE": "Requested handle is unavailable.",
     "NO_REPLAY_WINDOW": "No replay window is available for that request.",
     "EXECUTION_NOT_CONFIRMED": "Execution requires host-generated confirmation authorization.",
@@ -703,6 +705,77 @@ PUBLIC_ERROR_MESSAGES = {
     "PLAN_NOT_FOUND": "Requested plan was not found.",
     "INTERNAL_ERROR": "Internal host service error.",
 }
+
+
+class RequestSchemaError(ValueError):
+    """Raised only while decoding or validating an inbound request payload."""
+
+    def __init__(self, message: str, *, details: dict[str, Any] | None = None) -> None:
+        super().__init__(message)
+        self.details = details or {}
+
+
+def request_schema_error(exc: Exception, *, expected: str) -> RequestSchemaError:
+    return RequestSchemaError(str(exc), details={"expected": expected, "reason": str(exc)})
+
+
+def require_request_payload(value: Any) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise RequestSchemaError(
+            "request body must be a JSON object",
+            details={"expected": "JSON object request body"},
+        )
+    return value
+
+
+def validate_request(factory: Any, *, expected: str) -> Any:
+    try:
+        return factory()
+    except (KeyError, TypeError, ValueError, ValidationError) as exc:
+        raise request_schema_error(exc, expected=expected) from exc
+
+
+def validate_film_room_ask_payload(payload: dict[str, Any]) -> None:
+    def parse() -> None:
+        text = str(payload.get("text") or payload.get("query") or "").strip()
+        if not text:
+            raise ValueError("text must be non-empty")
+        film_room_compile_context(payload)
+
+    validate_request(parse, expected='JSON object with non-empty "text" and optional "context"')
+
+
+def validate_film_room_replay_window_payload(payload: dict[str, Any]) -> None:
+    def parse() -> None:
+        replay_window_id = str(payload.get("replay_window_id") or "").strip()
+        if not replay_window_id:
+            raise ValueError("replay_window_id must be non-empty")
+
+    validate_request(parse, expected='JSON object with non-empty "replay_window_id"')
+
+
+def validate_film_room_replay_frame_payload(payload: dict[str, Any]) -> None:
+    def parse() -> None:
+        replay_window_id = str(payload.get("replay_window_id") or "").strip()
+        if not replay_window_id:
+            raise ValueError("replay_window_id must be non-empty")
+        int(payload.get("frame_id"))
+
+    validate_request(parse, expected='JSON object with "replay_window_id" and integer "frame_id"')
+
+
+def log_internal_error(exc: Exception, *, path: str) -> str:
+    correlation_id = f"err_{uuid.uuid4().hex[:12]}"
+    payload = {
+        "event": "workbench_internal_error",
+        "correlation_id": correlation_id,
+        "path": path,
+        "exception_type": type(exc).__name__,
+        "message": str(exc),
+        "traceback": "".join(traceback.format_exception(type(exc), exc, exc.__traceback__)),
+    }
+    print(json.dumps(payload, sort_keys=True), file=sys.stderr, flush=True)
+    return correlation_id
 
 
 def public_error_message(code: str) -> str:
@@ -2471,6 +2544,7 @@ def film_room_ask_request(payload: dict[str, Any], *, output_root: Path) -> dict
         UnsupportedModalityOutcome,
         compile_nl_request,
     )
+    from scripts.coverage_map.compiler_search_reachability import SynthesisError
     from tqe.semantic_compiler.target_synthesis import synthesize_and_bind
 
     text = str(payload.get("text") or payload.get("query") or "").strip()
@@ -2513,7 +2587,31 @@ def film_room_ask_request(payload: dict[str, Any], *, output_root: Path) -> dict
     coverage_path = Path("generated/coverage-map.json")
     coverage_rows = read_json(coverage_path) if coverage_path.exists() else None
     synthesis_started_at = time.monotonic()
-    synthesized = synthesize_and_bind(outcome.expression, coverage_rows=coverage_rows)
+    try:
+        synthesized = synthesize_and_bind(outcome.expression, coverage_rows=coverage_rows)
+    except SynthesisError as exc:
+        synthesis_latency_ms = int((time.monotonic() - synthesis_started_at) * 1000)
+        response["outcome"] = "understood_but_not_expressible"
+        response["refusal"] = {
+            "outcome": "understood_but_not_expressible",
+            "gap_code": "TARGET_SYNTHESIS_UNSATISFIED",
+            "missing_capability": "registered_operator_composition",
+            "message": "I understood the ask, but the current compiler cannot synthesize a registered operator composition for it.",
+            "synthesis_error": {
+                "taxonomy": exc.taxonomy,
+                "message": exc.message,
+                "details": exc.details,
+            },
+            "transcript": hermes_payload.get("transcript"),
+        }
+        response["latency_ms"] = int((time.monotonic() - started_at) * 1000)
+        response["latency_breakdown_ms"] = {
+            "hermes": hermes_latency_ms,
+            "synthesis": synthesis_latency_ms,
+            "execution": 0,
+            "total": int(response["latency_ms"]),
+        }
+        return validate_public_response("FilmRoomAskResponse", response)
     synthesis_latency_ms = int((time.monotonic() - synthesis_started_at) * 1000)
     execution_started_at = time.monotonic()
     answer = film_room_answer_from_document(
@@ -4836,6 +4934,14 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
             return {}
         return json.loads(self.rfile.read(length).decode("utf-8"))
 
+    def read_request_payload(self) -> dict[str, Any]:
+        try:
+            return require_request_payload(self.read_body())
+        except (json.JSONDecodeError, UnicodeDecodeError, RequestSchemaError) as exc:
+            if isinstance(exc, RequestSchemaError):
+                raise
+            raise request_schema_error(exc, expected="valid JSON object request body") from exc
+
     def demo_access_allowed(self, parsed: Any) -> bool:
         if not DEMO_ACCESS_TOKEN:
             return True
@@ -5074,7 +5180,18 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
             self.send_demo_auth_required()
             return
         try:
-            payload = self.read_body()
+            payload = self.read_request_payload()
+        except RequestSchemaError as exc:
+            self.send_json(
+                error_response(
+                    "REQUEST_SCHEMA_INVALID",
+                    public_error_message("REQUEST_SCHEMA_INVALID"),
+                    details=exc.details,
+                ),
+                HTTPStatus.BAD_REQUEST,
+            )
+            return
+        try:
             if parsed.path == "/api/coach/interpret":
                 self.send_json(
                     validate_public_response(
@@ -5090,15 +5207,26 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
                     )
                 )
             elif parsed.path == "/api/film-room/ask":
+                validate_film_room_ask_payload(payload)
                 self.send_json(film_room_ask_request(payload, output_root=self.server.output_root))
             elif parsed.path == "/api/film-room/replay-window":
+                validate_film_room_replay_window_payload(payload)
                 self.send_json(film_room_replay_window_response(payload, output_root=self.server.output_root))
             elif parsed.path == "/api/film-room/replay-frame":
+                validate_film_room_replay_frame_payload(payload)
                 self.send_json(film_room_replay_frame_response(payload, output_root=self.server.output_root))
             elif parsed.path == "/api/execution-cache-status":
+                validate_request(
+                    lambda: ExecuteQueryPlanRequest.model_validate(payload),
+                    expected='JSON object with "bound_plan_id" and "execution_authorization_id"',
+                )
                 self.send_json(execution_cache_status(payload, output_root=self.server.output_root))
             elif parsed.path == "/api/submit-validate":
-                plan_document = host_owned_plan_document(payload["plan_document"])
+                plan_document_payload = validate_request(
+                    lambda: payload["plan_document"],
+                    expected='JSON object with "plan_document"',
+                )
+                plan_document = host_owned_plan_document(plan_document_payload)
                 submitted = submit_query_plan(
                     SubmitQueryPlanRequest(plan_document=plan_document, source_label="workbench_alpha"),
                     output_root=self.server.output_root,
@@ -5118,29 +5246,50 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
                     )
                 )
             elif parsed.path == "/api/confirm":
+                bound_plan_id = validate_request(
+                    lambda: str(payload["bound_plan_id"]),
+                    expected='JSON object with "bound_plan_id"',
+                )
                 confirmation: HostConfirmationResponse = host_confirm_bound_plan(
-                    str(payload["bound_plan_id"]),
+                    bound_plan_id,
                     reviewer=str(payload.get("reviewer") or "workbench_alpha_host"),
                     output_root=self.server.output_root,
                 )
                 self.send_json(ok({"confirmation": confirmation.model_dump(mode="json")}))
             elif parsed.path == "/api/execute":
+                request = validate_request(
+                    lambda: ExecuteQueryPlanRequest.model_validate(payload),
+                    expected='JSON object with "bound_plan_id" and "execution_authorization_id"',
+                )
                 executed = cached_execute_query_plan(
-                    ExecuteQueryPlanRequest.model_validate(payload),
+                    request,
                     output_root=self.server.output_root,
                 )
                 self.send_json(validate_public_response("ExecutionResponse", ok(executed)))
             elif parsed.path == "/api/inspect-result":
+                validate_request(
+                    lambda: InspectResultRequest.model_validate(
+                        {"execution_id": payload.get("execution_id"), "result_id": payload.get("result_id")}
+                    ),
+                    expected='JSON object with "execution_id" and "result_id"',
+                )
                 self.send_json(result_with_replay(payload, output_root=self.server.output_root))
             elif parsed.path == "/api/inspect-timestamp":
+                validate_request(
+                    lambda: InspectNonMatchRequest.model_validate(
+                        {"execution_id": payload.get("execution_id"), "target": payload.get("target")}
+                    ),
+                    expected='JSON object with "execution_id" and "target"',
+                )
                 self.send_json(timestamp_inspection(payload, output_root=self.server.output_root))
             else:
                 self.send_json(error_response("NOT_FOUND", f"Unknown endpoint: {parsed.path}"), HTTPStatus.NOT_FOUND)
-        except (KeyError, ValueError, ValidationError):
+        except RequestSchemaError as exc:
             self.send_json(
                 error_response(
                     "REQUEST_SCHEMA_INVALID",
                     public_error_message("REQUEST_SCHEMA_INVALID"),
+                    details=exc.details,
                 ),
                 HTTPStatus.BAD_REQUEST,
             )
@@ -5150,9 +5299,14 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
                 error_response(code, public_error_message(code)),
                 HTTPStatus.FORBIDDEN,
             )
-        except Exception:
+        except Exception as exc:
+            correlation_id = log_internal_error(exc, path=parsed.path)
             self.send_json(
-                error_response("INTERNAL_ERROR", public_error_message("INTERNAL_ERROR")),
+                error_response(
+                    "INTERNAL_ERROR",
+                    public_error_message("INTERNAL_ERROR"),
+                    details={"correlation_id": correlation_id},
+                ),
                 HTTPStatus.INTERNAL_SERVER_ERROR,
             )
 

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import {
   assertIntervalMetric,
   chainStatusLabel,
+  filmRoomErrorViewModel,
   filmRoomOutcomeClass,
   headerChipsFromResponse,
   intervalHeadline,
@@ -90,6 +91,54 @@ const refusal = refusalViewModel({
 });
 assert.equal(refusal.missing, "concept:body_orientation");
 assert.equal(refusal.gapCode, "BODY_ORIENTATION");
+
+const truncationRefusal = refusalViewModel({
+  missing_capability: "model_output_completion",
+  gap_code: "MODEL_OUTPUT_TRUNCATED",
+  message: "cut off"
+});
+assert.equal(truncationRefusal.missing, "Model answer got cut off");
+assert.equal(truncationRefusal.message, "The model's answer got cut off. Retry the ask.");
+
+assert.deepEqual(
+  filmRoomErrorViewModel({
+    error_code: "REQUEST_SCHEMA_INVALID",
+    details: { expected: "JSON object with non-empty text" }
+  }),
+  {
+    title: "Couldn't understand the request",
+    code: "REQUEST_SCHEMA_INVALID",
+    message: "The request body did not match the Film Room API contract.",
+    detail: "JSON object with non-empty text",
+    tone: "schema"
+  }
+);
+assert.deepEqual(
+  filmRoomErrorViewModel({
+    error_code: "MODEL_OUTPUT_TRUNCATED",
+    details: { reason: "end-of-output JSON parse" }
+  }),
+  {
+    title: "The model's answer got cut off",
+    code: "MODEL_OUTPUT_TRUNCATED",
+    message: "Retry the ask; the model stopped before it produced complete JSON.",
+    detail: "end-of-output JSON parse",
+    tone: "truncation"
+  }
+);
+assert.deepEqual(
+  filmRoomErrorViewModel({
+    error_code: "INTERNAL_ERROR",
+    details: { correlation_id: "err_abc123def456" }
+  }),
+  {
+    title: "Something broke on our side",
+    code: "INTERNAL_ERROR",
+    message: "The server logged a traceback for this failure.",
+    detail: "correlation err_abc123def456",
+    tone: "internal"
+  }
+);
 
 const chips = headerChipsFromResponse({
   ...baseResponse,

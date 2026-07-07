@@ -55,6 +55,7 @@ def main(argv: list[str] | None = None) -> int:
     interpret.add_argument("--toolset", default=EXPECTED_TOOLSET)
     interpret.add_argument("--provider", required=True)
     interpret.add_argument("--model", required=True)
+    interpret.add_argument("--max-output-tokens", type=int, default=None)
     interpret.add_argument("--prompt", required=True)
 
     args = parser.parse_args(argv)
@@ -66,7 +67,13 @@ def main(argv: list[str] | None = None) -> int:
         if not surface["safe"]:
             emit_json({"ok": False, "error_code": "UNSAFE_TOOL_SURFACE", "surface": surface})
             return 2
-        result = run_hermes_agent(args.prompt, provider=args.provider, model=args.model, toolset=args.toolset)
+        result = run_hermes_agent(
+            args.prompt,
+            provider=args.provider,
+            model=args.model,
+            toolset=args.toolset,
+            max_output_tokens=args.max_output_tokens,
+        )
         emit_json({"ok": result["exit_code"] == 0, "surface": surface, **result})
         return 0 if result["exit_code"] == 0 else 1
     raise AssertionError(f"Unhandled command: {args.command}")
@@ -119,26 +126,126 @@ def model_visible_tool_names(toolset: str) -> set[str]:
     return names
 
 
-def run_hermes_agent(prompt: str, *, provider: str, model: str, toolset: str) -> dict[str, Any]:
+def run_hermes_agent(
+    prompt: str,
+    *,
+    provider: str,
+    model: str,
+    toolset: str,
+    max_output_tokens: int | None = None,
+) -> dict[str, Any]:
     os.environ["HERMES_YOLO_MODE"] = "1"
     os.environ["HERMES_ACCEPT_HOOKS"] = "1"
     with open(os.devnull, "w", encoding="utf-8") as devnull:
         with redirect_stdout(devnull), redirect_stderr(devnull):
             try:
-                from hermes_cli.oneshot import _run_agent
+                if max_output_tokens is None:
+                    from hermes_cli.oneshot import _run_agent
 
-                response = _run_agent(
-                    prompt,
-                    model=model,
-                    provider=provider,
-                    toolsets=[toolset],
-                    use_config_toolsets=False,
-                )
+                    response = _run_agent(
+                        prompt,
+                        model=model,
+                        provider=provider,
+                        toolsets=[toolset],
+                        use_config_toolsets=False,
+                    )
+                else:
+                    response = _run_agent_with_max_output_tokens(
+                        prompt,
+                        model=model,
+                        provider=provider,
+                        toolsets=[toolset],
+                        max_output_tokens=max_output_tokens,
+                    )
             except BaseException as exc:  # noqa: BLE001
                 return {"exit_code": 1, "stdout": "", "stderr": str(exc)}
     if not (response or "").strip():
         return {"exit_code": 1, "stdout": "", "stderr": "Hermes produced no final response."}
     return {"exit_code": 0, "stdout": response, "stderr": ""}
+
+
+def _run_agent_with_max_output_tokens(
+    prompt: str,
+    *,
+    model: str,
+    provider: str,
+    toolsets: object,
+    max_output_tokens: int,
+) -> str:
+    from hermes_cli.config import load_config
+    from hermes_cli.fallback_config import get_fallback_chain
+    from hermes_cli.models import detect_provider_for_model
+    from hermes_cli.oneshot import (
+        _create_session_db_for_oneshot,
+        _normalize_toolsets,
+        _oneshot_clarify_callback,
+    )
+    from hermes_cli.runtime_provider import resolve_runtime_provider
+    from run_agent import AIAgent
+
+    cfg = load_config()
+    model_cfg = cfg.get("model") or {}
+    if isinstance(model_cfg, str):
+        cfg_model = model_cfg
+    else:
+        cfg_model = model_cfg.get("default") or model_cfg.get("model") or ""
+    env_model = os.getenv("HERMES_INFERENCE_MODEL", "").strip()
+    effective_model = (model or "").strip() or env_model or cfg_model
+
+    effective_provider = (provider or "").strip() or None
+    explicit_base_url_from_alias: str | None = None
+    if effective_provider is None and (model or env_model):
+        explicit_model = (model or "").strip() or env_model
+        if explicit_model:
+            try:
+                from hermes_cli import model_switch as _ms
+
+                _ms._ensure_direct_aliases()
+                direct = _ms.DIRECT_ALIASES.get(explicit_model.strip().lower())
+            except Exception:
+                direct = None
+            if direct is not None:
+                effective_model = direct.model
+                effective_provider = direct.provider
+                if direct.base_url:
+                    explicit_base_url_from_alias = direct.base_url.rstrip("/")
+            else:
+                cfg_provider = ""
+                if isinstance(model_cfg, dict):
+                    cfg_provider = str(model_cfg.get("provider") or "").strip().lower()
+                current_provider = (
+                    cfg_provider
+                    or os.getenv("HERMES_INFERENCE_PROVIDER", "").strip().lower()
+                    or "auto"
+                )
+                detected = detect_provider_for_model(explicit_model, current_provider)
+                if detected:
+                    effective_provider, effective_model = detected
+
+    runtime = resolve_runtime_provider(
+        requested=effective_provider,
+        target_model=effective_model or None,
+        explicit_base_url=explicit_base_url_from_alias,
+    )
+    agent = AIAgent(
+        api_key=runtime.get("api_key"),
+        base_url=runtime.get("base_url"),
+        provider=runtime.get("provider"),
+        api_mode=runtime.get("api_mode"),
+        model=effective_model,
+        enabled_toolsets=_normalize_toolsets(toolsets),
+        quiet_mode=True,
+        platform="cli",
+        session_db=_create_session_db_for_oneshot(),
+        credential_pool=runtime.get("credential_pool"),
+        fallback_model=get_fallback_chain(cfg) or None,
+        clarify_callback=_oneshot_clarify_callback,
+        max_tokens=max_output_tokens,
+    )
+    agent.suppress_status_output = True
+    agent.stream_delta_callback = None
+    agent.tool_gen_callback = None
+    return agent.chat(prompt) or ""
 
 
 def emit_json(payload: dict[str, Any]) -> None:
