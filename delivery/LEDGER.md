@@ -33,3 +33,9 @@
 - Executor sandbox cannot bind sockets or resolve external DNS;
   deploy packets state this up front and route live verification to
   the director (DEPLOY-1B).
+- Render deploy truths learned the hard way (DEPLOY-2 saga): boot
+  execution prewarm dead at 2GB (retired, not tuned); memory proofs
+  must state headroom, never graze (zero-headroom local pass died
+  live); provisioning must stage on the persistent disk, never
+  ephemeral /tmp (2GB limit; caused a Size eviction + outage,
+  restored by rollback).
