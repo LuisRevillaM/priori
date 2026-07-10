@@ -910,7 +910,8 @@ export const apiSchemas = {
             "enum": [
               "result",
               "target",
-              "chain_record"
+              "chain_record",
+              "certified_table_partition"
             ],
             "title": "Source Kind",
             "type": "string"
@@ -1240,7 +1241,8 @@ export const apiSchemas = {
             "enum": [
               "result",
               "target",
-              "chain_record"
+              "chain_record",
+              "certified_table_partition"
             ],
             "title": "Source Kind",
             "type": "string"
@@ -1757,7 +1759,8 @@ export const apiSchemas = {
             "enum": [
               "result",
               "target",
-              "chain_record"
+              "chain_record",
+              "certified_table_partition"
             ],
             "title": "Source Kind",
             "type": "string"
@@ -1994,7 +1997,8 @@ export const apiSchemas = {
             "enum": [
               "result",
               "target",
-              "chain_record"
+              "chain_record",
+              "certified_table_partition"
             ],
             "title": "Source Kind",
             "type": "string"
@@ -2213,7 +2217,8 @@ export const apiSchemas = {
             "enum": [
               "result",
               "target",
-              "chain_record"
+              "chain_record",
+              "certified_table_partition"
             ],
             "title": "Source Kind",
             "type": "string"

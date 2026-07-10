@@ -60,8 +60,17 @@ export function intervalHeadline(metric: FilmRoomIntervalMetric | null | undefin
 
 export function chainStatusLabel(moment: FilmRoomMoment | null | undefined) {
   if (!moment) return "no chain selected";
+  if (moment.source_kind === "certified_table_partition") {
+    return "certified partition · no chain witness";
+  }
   if (typeof moment.chain_status === "string" && moment.chain_status.length > 0) return moment.chain_status;
   return "chain_status not emitted";
+}
+
+export function momentCollectionLabel(moments: FilmRoomMoment[], total: number) {
+  return moments.some((moment) => moment.source_kind === "certified_table_partition")
+    ? `${total} certified table partition previews`
+    : `${total} chain moments`;
 }
 
 export function filmRoomOutcomeClass(response: FilmRoomAskResponse | null) {
@@ -435,7 +444,7 @@ function MomentList({
   return (
     <section className="filmPanel">
       <div className="filmPanelHeader">
-        <span>Moments · {total} chains</span>
+        <span>{momentCollectionLabel(moments, total)}</span>
         <span>{moments.length} shown</span>
       </div>
       <div className="momentList">
@@ -496,7 +505,8 @@ function AskThread({
       {outcomeClass === "answer" && response?.answer ? (
         <div className="bubble hermesBubble">
           <div>
-            {response.answer.moment_total_count} chain moments · plan {response.answer.provenance.plan_hash.slice(0, 12)}
+            {momentCollectionLabel(response.answer.moments, response.answer.moment_total_count)} · plan{" "}
+            {response.answer.provenance.plan_hash.slice(0, 12)}
           </div>
           <div className="compiled">
             {response.answer.compiled_chips.map((chip) => (
@@ -544,6 +554,7 @@ function AskThread({
 function EvidencePanel({ moment, response }: { moment: FilmRoomMoment | null | undefined; response: FilmRoomAskResponse | null }) {
   const [showRaw, setShowRaw] = useState(false);
   const overlay = asRecord(moment?.evidence_overlay);
+  const isPartitionPreview = moment?.source_kind === "certified_table_partition";
   return (
     <section className="filmPanel notesPanel">
       <div className="filmPanelHeader">
@@ -554,8 +565,12 @@ function EvidencePanel({ moment, response }: { moment: FilmRoomMoment | null | u
         <pre>{JSON.stringify(moment?.evidence_row ?? response?.answer?.raw_evidence ?? {}, null, 2)}</pre>
       ) : (
         <dl className="evidenceSummary">
-          <div><dt>chain</dt><dd>{chainStatusLabel(moment)}</dd></div>
+          <div><dt>{isPartitionPreview ? "record" : "chain"}</dt><dd>{chainStatusLabel(moment)}</dd></div>
           <div><dt>reason</dt><dd>{moment?.chain_reason ?? moment?.unknown_reason ?? "observed"}</dd></div>
+          <div>
+            <dt>replay</dt>
+            <dd>{isPartitionPreview ? "period-open preview; not a certified chain witness" : "witness window"}</dd>
+          </div>
           <div><dt>window</dt><dd>{moment?.replay_start_frame_id ?? "-"} - {moment?.replay_end_frame_id ?? "-"}</dd></div>
           <div><dt>overlays</dt><dd>{asArray(overlay.stage_labels).length} stages · {asArray(overlay.carry_trails).length} trails</dd></div>
         </dl>

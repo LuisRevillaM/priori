@@ -16,6 +16,8 @@ services:
         value: "1"
       - key: WORKBENCH_HERMES_ENABLED
         value: "1"
+      - key: WORKBENCH_PREWARM_FILM_ROOM
+        value: "0"
       - key: HOME
         value: /var/data
       - key: HERMES_HOME

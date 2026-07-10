@@ -7,6 +7,7 @@ import {
   filmRoomOutcomeClass,
   headerChipsFromResponse,
   intervalHeadline,
+  momentCollectionLabel,
   refusalViewModel
 } from "../src/FilmRoom";
 import type { FilmRoomAskResponse } from "../src/types";
@@ -250,6 +251,23 @@ assert.equal(
     evidence_overlay: {}
   }),
   "UNKNOWN"
+);
+
+const partitionPreview = {
+  result_id: "certified-partition-1",
+  source_kind: "certified_table_partition" as const,
+  classification: "CERTIFIED_TABLE_RATE_PARTITION",
+  match_id: "J03WOY",
+  period: "secondHalf",
+  anchor_frame_id: 100000,
+  requested_evidence: {},
+  chain_status: null,
+  evidence_overlay: {}
+};
+assert.equal(chainStatusLabel(partitionPreview), "certified partition · no chain witness");
+assert.equal(
+  momentCollectionLabel([partitionPreview], 1),
+  "1 certified table partition previews"
 );
 
 console.log("film room tests passed");
