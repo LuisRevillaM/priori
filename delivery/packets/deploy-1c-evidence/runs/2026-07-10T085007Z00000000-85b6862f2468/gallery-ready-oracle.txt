@@ -1,0 +1,3 @@
+evidence_metadata={"git_branch":"packet/deploy-1c","git_commit":"d495ea998fe29259e9d4d538f2ba66416011bc70","git_tree":"394049064ded24e42ced2247514e22d916b4b247","oracle_path":"delivery/oracles/DEPLOY-1C/gallery_ready.py","oracle_sha256":"a3ef8770f86fea8762ace34a8675f3e9410809d77b68837b4e3d450a10f03d3c","packet_base":"9eef466","produced_by":"scripts/packets/deploy1c_evidence.py","producing_script_sha256":"85b6862f2468ff0621e3162123ed371983897568d432f77f39e4eddc12ca55a9","run_dir":"delivery/packets/deploy-1c-evidence/runs/2026-07-10T085007Z00000000-85b6862f2468","run_started_at":"2026-07-10T08:50:07+00:00","schema_version":"deploy1c.evidence_metadata.v1"}
+PASS state=ready | interval=PASS | moment=PASS
+ORACLE PASS

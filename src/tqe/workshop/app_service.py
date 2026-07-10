@@ -381,10 +381,18 @@ class PitchResponse(WorkbenchResponseModel):
     coordinate_contract: str
 
 
+FilmRoomSourceKind = Literal[
+    "result",
+    "target",
+    "chain_record",
+    "certified_table_partition",
+]
+
+
 class ReplayPayloadResponse(WorkbenchResponseModel):
     schema_version: str
     replay_window_id: str
-    source_kind: Literal["result", "target", "chain_record"]
+    source_kind: FilmRoomSourceKind
     source_id: str
     match_id: str
     period: str
@@ -409,7 +417,7 @@ class FilmRoomIntervalMetricResponse(WorkbenchResponseModel):
 
 class FilmRoomMomentResponse(WorkbenchResponseModel):
     result_id: str
-    source_kind: Literal["result", "target", "chain_record"]
+    source_kind: FilmRoomSourceKind
     classification: str
     match_id: str
     period: str
@@ -2736,7 +2744,6 @@ def film_room_answer_from_document(
     plan_hash = stable_hash(document_payload)
     certified = film_room_certified_table_for_plan_hash(plan_hash)
     executions = film_room_execute_document(document_payload, output_root=output_root)
-    replay_payload: dict[str, Any] | None = None
     selected_replay_window_id: str | None = None
     moments: list[dict[str, Any]] = []
     seen_moments: set[tuple[str, str, int, str]] = set()
@@ -2781,13 +2788,8 @@ def film_room_answer_from_document(
                     fallback_result_id=str(row.get("result_id") or ""),
                     source_kind=source_kind,
                 )
-                if replay_payload is None and replay_meta["replay_window_id"]:
-                    replay_payload = ensure_film_room_replay_payload(
-                        str(replay_meta["replay_window_id"]),
-                        output_root=output_root,
-                    )
-                    selected_replay_window_id = str(replay_payload["replay_window_id"])
-                    canonical_sources = public_canonical_sources(replay_payload.get("canonical_sources"))
+                if selected_replay_window_id is None and replay_meta["replay_window_id"]:
+                    selected_replay_window_id = str(replay_meta["replay_window_id"])
                 evidence_row = deepcopy(chain_record)
                 moments.append(
                     {
@@ -2841,7 +2843,9 @@ def film_room_answer_from_document(
         "moments": moments,
         "moment_total_count": len(moments),
         "visible_moment_count": len(moments),
-        "replay": replay_payload,
+        # Replay payloads are deliberately lazy. The selected moment's window is
+        # materialized only when /api/film-room/replay-window is requested.
+        "replay": None,
         "executions": executions,
         "raw_evidence": {
             "rate_records": runtime_rate_source_rows or raw_rate_evidence_rows,
@@ -2984,7 +2988,8 @@ def film_room_register_replay_window(
     *,
     plan_hash: str,
     fallback_result_id: str,
-    source_kind: Literal["result", "target", "chain_record"],
+    source_kind: FilmRoomSourceKind,
+    plan_path: Path | None = None,
 ) -> dict[str, Any]:
     match_id = str(record.get("match_id") or "")
     period = str(record.get("period") or "")
@@ -3012,6 +3017,7 @@ def film_room_register_replay_window(
     FILM_ROOM_REPLAY_INDEX[replay_window_id] = {
         "replay_window_id": replay_window_id,
         "plan_hash": plan_hash,
+        "plan_path": str(plan_path) if plan_path is not None else None,
         "source_id": source_id,
         "source_kind": source_kind,
         "match_id": match_id,
@@ -3035,7 +3041,7 @@ def ensure_film_room_replay_payload(replay_window_id: str, *, output_root: Path)
         raise CapabilityGap(f"Unknown Film Room replay window: {replay_window_id}")
     payload = replay_window_from_canonical(
         replay_window_id=replay_window_id,
-        plan_path=Path(f"film_room_plan_{meta['plan_hash']}"),
+        plan_path=Path(str(meta.get("plan_path") or f"film_room_plan_{meta['plan_hash']}")),
         source_id=str(meta["source_id"]),
         source_kind=str(meta["source_kind"]),
         match_id=str(meta["match_id"]),
@@ -3524,6 +3530,205 @@ def film_room_flagship_specs() -> list[dict[str, Any]]:
     ]
 
 
+def film_room_certified_table_moments(
+    *,
+    certified: dict[str, Any],
+    plan_hash: str,
+) -> list[dict[str, Any]]:
+    """Build honest, replayable period records without executing the plan.
+
+    The certified tables intentionally omit their source-record populations.
+    Only table period records with a committed frame boundary can therefore be
+    exposed as gallery moments. They remain labelled as table rate partitions,
+    never as reconstructed chain records.
+    """
+
+    table = certified["table"]
+    moments: list[dict[str, Any]] = []
+    for row in table.get("rows", []) or []:
+        if not isinstance(row, dict):
+            continue
+        audit_role = str(row.get("audit_role") or "")
+        match_id = str(row.get("match_id") or "")
+        for period_record in row.get("periods", []) or []:
+            if not isinstance(period_record, dict):
+                continue
+            rate = period_record.get("rate")
+            evidence = deepcopy(rate if isinstance(rate, dict) else period_record)
+            period = str(period_record.get("period") or evidence.get("period") or "")
+            anchor_frame_id = int_or_none(
+                evidence.get("anchor_frame_id") or evidence.get("open_frame_id")
+            )
+            if not match_id or not period or anchor_frame_id is None:
+                continue
+            evidence.setdefault("audit_role", audit_role)
+            evidence.setdefault("match_id", match_id)
+            evidence.setdefault("period", period)
+            unknown_count = evidence.get("unknown_count")
+            if not isinstance(unknown_count, int) and all(
+                isinstance(evidence.get(name), int) for name in ("c_count", "d1_count", "d2_count")
+            ):
+                unknown_count = sum(
+                    int(evidence[name]) for name in ("c_count", "d1_count", "d2_count")
+                )
+                evidence["unknown_count"] = unknown_count
+            result_id = "certified_" + stable_hash(
+                {
+                    "plan_hash": plan_hash,
+                    "audit_role": audit_role,
+                    "match_id": match_id,
+                    "period": period,
+                    "relation_id": evidence.get("relation_id"),
+                }
+            )[:16]
+            replay_meta = film_room_register_replay_window(
+                {
+                    "match_id": match_id,
+                    "period": period,
+                    "anchor_frame_id": anchor_frame_id,
+                },
+                plan_hash=plan_hash,
+                plan_path=Path(certified["plan_path"]),
+                fallback_result_id=result_id,
+                source_kind="certified_table_partition",
+            )
+            classification = "CERTIFIED_TABLE_RATE_PARTITION"
+            overlay = film_room_evidence_overlay(
+                {
+                    "anchor_frame_id": anchor_frame_id,
+                    "classification": classification,
+                }
+            )
+            moments.append(
+                {
+                    "result_id": result_id,
+                    "source_kind": "certified_table_partition",
+                    "classification": classification,
+                    "match_id": match_id,
+                    "period": period,
+                    "anchor_frame_id": anchor_frame_id,
+                    "start_frame_id": int_or_none(evidence.get("open_frame_id")),
+                    "end_frame_id": int_or_none(evidence.get("close_frame_id")),
+                    "match_time_ms": None,
+                    "requested_evidence": deepcopy(evidence),
+                    "replay_window_id": replay_meta["replay_window_id"],
+                    "replay_start_frame_id": replay_meta["replay_start_frame_id"],
+                    "replay_end_frame_id": replay_meta["replay_end_frame_id"],
+                    "evidence_row": deepcopy(evidence),
+                    "unknown_reason": (
+                        f"{unknown_count} UNKNOWN records remain in this certified table partition."
+                        if isinstance(unknown_count, int) and unknown_count > 0
+                        else None
+                    ),
+                    "chain_status": None,
+                    "chain_reason": None,
+                    "evidence_overlay": overlay,
+                }
+            )
+    return moments
+
+
+def film_room_answer_from_certified_table(
+    document_payload: dict[str, Any],
+    *,
+    certified: dict[str, Any],
+) -> dict[str, Any]:
+    plan_hash = stable_hash(document_payload)
+    table = certified["table"]
+    if str(table.get("plan_hash") or "") != plan_hash:
+        raise CapabilityGap("Committed Film Room plan does not match its certified table hash.")
+    interval_metric = film_room_interval_metric(table)
+    if interval_metric is None:
+        raise CapabilityGap("Committed Film Room certified table has no interval metric.")
+    moments = film_room_certified_table_moments(certified=certified, plan_hash=plan_hash)
+    selected_replay_window_id = (
+        str(moments[0]["replay_window_id"])
+        if moments and moments[0].get("replay_window_id")
+        else None
+    )
+    answer = {
+        "status": "answer_ready",
+        "compiled_chips": film_room_compiled_chips(None, document_payload),
+        "document": document_payload,
+        "certified_evidence_rows": deepcopy(table.get("rows", [])),
+        "runtime_evidence_rows": [],
+        "evidence_rows_kind": "certified",
+        "interval_metric": interval_metric,
+        "moments": moments,
+        "moment_total_count": len(moments),
+        "visible_moment_count": len(moments),
+        "replay": None,
+        "executions": [],
+        "raw_evidence": {
+            "rate_records": [],
+            "returned_rate_records": [],
+            "runtime_rate_source_rows": [],
+            "certified_table": deepcopy(table),
+            "moment_source": "certified_table.rows[].periods[].rate",
+            "interval_source_contract": (
+                "Film Room interval metrics and gallery records come from the committed certified "
+                "table whose plan_hash matches the committed plan document. No plan execution ran."
+            ),
+        },
+        "provenance": {
+            "plan_hash": plan_hash,
+            "synthesized_document_hash": plan_hash,
+            "expression_hash": None,
+            "certified_table_path": str(certified["table_path"]),
+            "certified_table_hash": str(certified["table_hash"]),
+            "certified_plan_path": str(certified["plan_path"]),
+            "certified_period_records_hash": str(table.get("period_records_hash")),
+            "bound_plan_hashes": {},
+            "replay_window_id": selected_replay_window_id,
+            "canonical_sources": {},
+            "runtime_commit": runtime_commit_identifier(),
+            "tree": git_tree_identifier(),
+        },
+    }
+    return FilmRoomAnswerResponse.model_validate(answer).model_dump(mode="json")
+
+
+def film_room_certified_prewarmed_response(
+    *,
+    key: str,
+    question: str,
+    plan_path: Path,
+) -> dict[str, Any]:
+    started_at = time.monotonic()
+    document_payload = read_json(plan_path)
+    plan_hash = stable_hash(document_payload)
+    certified = film_room_certified_table_for_plan_hash(plan_hash)
+    if certified is None:
+        raise CapabilityGap(f"No committed certified table matches Film Room plan {plan_path}.")
+    answer = film_room_answer_from_certified_table(document_payload, certified=certified)
+    elapsed_ms = int((time.monotonic() - started_at) * 1000)
+    response = {
+        "ok": True,
+        "outcome": "expression",
+        "request_text": question,
+        "provider": "prewarmed_certified_table",
+        "model": "not_invoked",
+        "latency_ms": elapsed_ms,
+        "latency_breakdown_ms": {
+            "hermes": 0,
+            "synthesis": 0,
+            "execution": 0,
+            "total": elapsed_ms,
+        },
+        "hermes": {
+            "outcome": "expression",
+            "source": "prewarmed_certified_table",
+            "flagship_key": key,
+            "execution_performed": False,
+            "billing_surface": "none for committed certified-table bootstrap",
+        },
+        "answer": answer,
+        "clarification": None,
+        "refusal": None,
+    }
+    return validate_public_response("FilmRoomAskResponse", response)
+
+
 def film_room_prewarmed_response(
     *,
     key: str,
@@ -3629,38 +3834,137 @@ def film_room_bootstrap_response(*, output_root: Path) -> dict[str, Any]:
     return validate_public_response("FilmRoomBootstrapResponse", response)
 
 
-def prewarm_film_room_flagships(*, output_root: Path) -> None:
+def prewarm_film_room_flagships_from_certified_tables() -> None:
+    """Install the cheap committed-table gallery without executing any plan."""
+
     started_at_iso = utc_iso_seconds()
     with FILM_ROOM_PREWARM_LOCK:
         FILM_ROOM_PREWARMED_RESPONSES.clear()
         FILM_ROOM_PREWARM_RECORDS.clear()
+        FILM_ROOM_REPLAY_INDEX.clear()
         FILM_ROOM_PREWARM_STATE.update(
             {
                 "state": "warming",
                 "started_at": started_at_iso,
                 "completed_at": None,
                 "items": [
-                    {"key": str(spec["key"]), "plan": str(spec["plan_path"]), "status": "queued"}
+                    {
+                        "key": str(spec["key"]),
+                        "plan": str(spec["plan_path"]),
+                        "table": str(spec["table_path"]),
+                        "status": "queued",
+                        "execution_status": "not_started",
+                    }
                     for spec in film_room_flagship_specs()
                 ],
                 "last_error": None,
             }
         )
+    errors: list[dict[str, str]] = []
     for spec in film_room_flagship_specs():
         plan_path = Path(spec["plan_path"])
-        if not plan_path.exists():
-            print(f"Film Room prewarm skipped missing plan: {plan_path}", flush=True)
+        table_path = Path(spec["table_path"])
+        if not plan_path.exists() or not table_path.exists():
+            missing = plan_path if not plan_path.exists() else table_path
+            error = {
+                "error_type": "FileNotFoundError",
+                "message": f"missing committed input: {missing}",
+            }
+            errors.append(error)
             with FILM_ROOM_PREWARM_LOCK:
                 for item in FILM_ROOM_PREWARM_STATE["items"]:
                     if item.get("key") == str(spec["key"]):
-                        item["status"] = "missing_plan"
+                        item["status"] = "missing_committed_input"
             continue
         started_at = time.monotonic()
-        print(f"Prewarming Film Room flagship {plan_path}...", flush=True)
+        print(f"Prewarming Film Room flagship from certified table {table_path}...", flush=True)
         with FILM_ROOM_PREWARM_LOCK:
             for item in FILM_ROOM_PREWARM_STATE["items"]:
                 if item.get("key") == str(spec["key"]):
                     item["status"] = "running"
+        try:
+            response = film_room_certified_prewarmed_response(
+                key=str(spec["key"]),
+                question=str(spec["question"]),
+                plan_path=plan_path,
+            )
+        except Exception as exc:  # noqa: BLE001 - committed-pair errors become honest warming.
+            error = {"error_type": type(exc).__name__, "message": str(exc)}
+            errors.append(error)
+            with FILM_ROOM_PREWARM_LOCK:
+                for item in FILM_ROOM_PREWARM_STATE["items"]:
+                    if item.get("key") == str(spec["key"]):
+                        item["status"] = "certified_table_error"
+                        item["error"] = error
+            continue
+        elapsed_ms = int((time.monotonic() - started_at) * 1000)
+        answer = response["answer"] if isinstance(response.get("answer"), dict) else {}
+        record = {
+            "key": str(spec["key"]),
+            "plan": str(plan_path),
+            "table": str(table_path),
+            "prewarm_kind": "certified_table",
+            "execution_performed": False,
+            "elapsed_ms": elapsed_ms,
+            "evidence_rows_kind": answer.get("evidence_rows_kind"),
+            "moment_count": len(answer.get("moments", [])),
+        }
+        with FILM_ROOM_PREWARM_LOCK:
+            FILM_ROOM_PREWARMED_RESPONSES[str(spec["key"])] = response
+            FILM_ROOM_PREWARM_RECORDS.append(record)
+            for item in FILM_ROOM_PREWARM_STATE["items"]:
+                if item.get("key") == str(spec["key"]):
+                    item["status"] = "certified_ready"
+                    item["elapsed_ms"] = elapsed_ms
+        print(
+            f"Prewarmed Film Room flagship from certified table {table_path}: "
+            f"moments={record['moment_count']} elapsed_ms={elapsed_ms}",
+            flush=True,
+        )
+    with FILM_ROOM_PREWARM_LOCK:
+        gallery_ready = isinstance(
+            FILM_ROOM_PREWARMED_RESPONSES.get("counterattack_sequence_rate"), dict
+        )
+        FILM_ROOM_PREWARM_STATE.update(
+            {
+                "state": "ready" if gallery_ready else "warming",
+                "completed_at": utc_iso_seconds(),
+                "last_error": errors[-1] if errors else None,
+            }
+        )
+
+
+def prewarm_film_room_flagships(*, output_root: Path) -> None:
+    """Optionally execute flagship plans and atomically upgrade table answers."""
+
+    with FILM_ROOM_PREWARM_LOCK:
+        if not FILM_ROOM_PREWARM_STATE.get("items"):
+            FILM_ROOM_PREWARM_STATE["items"] = [
+                {
+                    "key": str(spec["key"]),
+                    "plan": str(spec["plan_path"]),
+                    "table": str(spec["table_path"]),
+                    "status": "not_loaded",
+                    "execution_status": "queued",
+                }
+                for spec in film_room_flagship_specs()
+            ]
+        FILM_ROOM_PREWARM_STATE["execution_started_at"] = utc_iso_seconds()
+    for spec in film_room_flagship_specs():
+        plan_path = Path(spec["plan_path"])
+        if not plan_path.exists():
+            print(f"Film Room execution prewarm skipped missing plan: {plan_path}", flush=True)
+            with FILM_ROOM_PREWARM_LOCK:
+                for item in FILM_ROOM_PREWARM_STATE["items"]:
+                    if item.get("key") == str(spec["key"]):
+                        item["execution_status"] = "missing_plan"
+            continue
+        started_at = time.monotonic()
+        print(f"Execution-prewarming Film Room flagship {plan_path}...", flush=True)
+        with FILM_ROOM_PREWARM_LOCK:
+            for item in FILM_ROOM_PREWARM_STATE["items"]:
+                if item.get("key") == str(spec["key"]):
+                    item["execution_status"] = "running"
         response = film_room_prewarmed_response(
             key=str(spec["key"]),
             question=str(spec["question"]),
@@ -3668,33 +3972,51 @@ def prewarm_film_room_flagships(*, output_root: Path) -> None:
             output_root=output_root,
         )
         elapsed_ms = int((time.monotonic() - started_at) * 1000)
-        executions = response["answer"]["executions"] if isinstance(response.get("answer"), dict) else []
-        cache_states = ",".join(str(item["cache_after_execute"]["cache_status"]) for item in executions)
-        result_count = sum(int(item["execution"].get("returned_result_count") or 0) for item in executions)
+        executions = (
+            response["answer"]["executions"]
+            if isinstance(response.get("answer"), dict)
+            else []
+        )
+        answer = response.get("answer") if isinstance(response.get("answer"), dict) else {}
+        upgrade_servable = bool(answer.get("moments") and answer.get("interval_metric"))
+        cache_states = [str(item["cache_after_execute"]["cache_status"]) for item in executions]
+        result_count = sum(
+            int(item["execution"].get("returned_result_count") or 0) for item in executions
+        )
         record = {
             "key": str(spec["key"]),
             "plan": str(plan_path),
+            "prewarm_kind": "execution_upgrade",
+            "execution_performed": True,
+            "upgrade_applied": upgrade_servable,
             "elapsed_ms": elapsed_ms,
-            "cache_after_execute": [str(item["cache_after_execute"]["cache_status"]) for item in executions],
+            "cache_after_execute": cache_states,
             "returned_result_count": result_count,
         }
         with FILM_ROOM_PREWARM_LOCK:
-            FILM_ROOM_PREWARMED_RESPONSES[str(spec["key"])] = response
+            if upgrade_servable:
+                FILM_ROOM_PREWARMED_RESPONSES[str(spec["key"])] = response
             FILM_ROOM_PREWARM_RECORDS.append(record)
             for item in FILM_ROOM_PREWARM_STATE["items"]:
                 if item.get("key") == str(spec["key"]):
-                    item["status"] = "ready"
-                    item["elapsed_ms"] = elapsed_ms
+                    item["execution_status"] = (
+                        "ready" if upgrade_servable else "completed_no_servable_upgrade"
+                    )
+                    item["execution_elapsed_ms"] = elapsed_ms
         print(
-            f"Prewarmed Film Room flagship {plan_path}: cache_statuses={cache_states} "
-            f"returned_results={result_count} elapsed_ms={elapsed_ms}",
+            f"Execution-prewarmed Film Room flagship {plan_path}: "
+            f"cache_statuses={','.join(cache_states)} returned_results={result_count} "
+            f"upgrade_applied={upgrade_servable} elapsed_ms={elapsed_ms}",
             flush=True,
         )
     with FILM_ROOM_PREWARM_LOCK:
+        gallery_ready = isinstance(
+            FILM_ROOM_PREWARMED_RESPONSES.get("counterattack_sequence_rate"), dict
+        )
         FILM_ROOM_PREWARM_STATE.update(
             {
-                "state": "ready",
-                "completed_at": utc_iso_seconds(),
+                "state": "ready" if gallery_ready else "warming",
+                "execution_completed_at": utc_iso_seconds(),
                 "last_error": None,
             }
         )
@@ -3719,9 +4041,12 @@ def prewarm_film_room_flagships_safely(*, output_root: Path) -> None:
             flush=True,
         )
         with FILM_ROOM_PREWARM_LOCK:
+            gallery_ready = isinstance(
+                FILM_ROOM_PREWARMED_RESPONSES.get("counterattack_sequence_rate"), dict
+            )
             FILM_ROOM_PREWARM_STATE.update(
                 {
-                    "state": "warming",
+                    "state": "ready" if gallery_ready else "warming",
                     "last_error": {
                         "error_type": type(exc).__name__,
                         "message": str(exc),
@@ -3732,18 +4057,8 @@ def prewarm_film_room_flagships_safely(*, output_root: Path) -> None:
 
 def start_film_room_prewarm_thread(*, output_root: Path) -> threading.Thread:
     with FILM_ROOM_PREWARM_LOCK:
-        FILM_ROOM_PREWARM_STATE.update(
-            {
-                "state": "warming",
-                "started_at": utc_iso_seconds(),
-                "completed_at": None,
-                "items": [
-                    {"key": str(spec["key"]), "plan": str(spec["plan_path"]), "status": "queued"}
-                    for spec in film_room_flagship_specs()
-                ],
-                "last_error": None,
-            }
-        )
+        for item in FILM_ROOM_PREWARM_STATE.get("items", []):
+            item["execution_status"] = "queued"
     thread = threading.Thread(
         target=prewarm_film_room_flagships_safely,
         kwargs={"output_root": output_root},
@@ -3752,6 +4067,25 @@ def start_film_room_prewarm_thread(*, output_root: Path) -> threading.Thread:
     )
     thread.start()
     return thread
+
+
+def initialize_film_room_prewarm(
+    *,
+    output_root: Path,
+    execution_enabled: bool | None = None,
+) -> threading.Thread | None:
+    prewarm_film_room_flagships_from_certified_tables()
+    should_execute = WORKBENCH_PREWARM_FILM_ROOM if execution_enabled is None else execution_enabled
+    if should_execute:
+        return start_film_room_prewarm_thread(output_root=output_root)
+    with FILM_ROOM_PREWARM_LOCK:
+        for item in FILM_ROOM_PREWARM_STATE.get("items", []):
+            item["execution_status"] = "disabled"
+    print(
+        "Film Room execution prewarm disabled; certified-table gallery remains ready.",
+        flush=True,
+    )
+    return None
 
 
 def n1e_job_root(output_root: Path) -> Path:
@@ -5660,20 +5994,10 @@ def main() -> None:
             name="execution-cache-prewarm",
             daemon=True,
         ).start()
-    if WORKBENCH_PREWARM_FILM_ROOM:
-        start_film_room_prewarm_thread(output_root=args.output_root)
-    else:
-        with FILM_ROOM_PREWARM_LOCK:
-            FILM_ROOM_PREWARM_STATE.update(
-                {
-                    "state": "warming",
-                    "started_at": utc_iso_seconds(),
-                    "items": [
-                        {"key": str(spec["key"]), "plan": str(spec["plan_path"]), "status": "disabled"}
-                        for spec in film_room_flagship_specs()
-                    ],
-                }
-            )
+    initialize_film_room_prewarm(
+        output_root=args.output_root,
+        execution_enabled=WORKBENCH_PREWARM_FILM_ROOM,
+    )
     print(f"Workbench Alpha host service: http://{args.host}:{args.port}")
     print(f"Static root: {args.static_root}")
     print(f"Output root: {args.output_root}")

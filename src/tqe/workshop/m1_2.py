@@ -1959,24 +1959,47 @@ def replay_window_from_canonical(
     frame_path = DEFAULT_CANONICAL_ROOT / "frames" / f"match_id={match_id}" / f"period={period}.parquet"
     position_path = DEFAULT_CANONICAL_ROOT / "positions" / f"match_id={match_id}" / f"period={period}.parquet"
     matches_path = DEFAULT_CANONICAL_ROOT / "matches.parquet"
-    frames_table = pq.ParquetFile(frame_path).read().to_pandas()
-    positions_table = pq.ParquetFile(position_path).read().to_pandas()
+    padding_frames = int(round(padding_seconds * FRAME_RATE_HZ))
+    requested_start_frame_id = max(0, anchor_frame_id - padding_frames)
+    requested_end_frame_id = anchor_frame_id + padding_frames
+    frame_filters = [
+        ("frame_id", ">=", requested_start_frame_id),
+        ("frame_id", "<=", requested_end_frame_id),
+    ]
+    # This bounds the Arrow tables materialized in memory. The current canonical
+    # files use full-half row groups, so the Parquet scanner may still decode
+    # overlapping row groups; DEPLOY-1C records that physical-I/O limitation.
+    frames_table = pq.read_table(
+        frame_path,
+        columns=["frame_id", "timestamp_utc"],
+        filters=frame_filters,
+        partitioning=None,
+    ).to_pandas()
+    positions_table = pq.read_table(
+        position_path,
+        columns=["frame_id", "team_id", "team_role", "entity_id", "entity_type", "x_m", "y_m"],
+        filters=frame_filters,
+        partitioning=None,
+    ).to_pandas()
     matches = {
         str(row["match_id"]): row
-        for row in pq.ParquetFile(matches_path).read().to_pylist()
+        for row in pq.read_table(
+            matches_path,
+            columns=["match_id", "pitch_length_m", "pitch_width_m"],
+            filters=[("match_id", "=", match_id)],
+            partitioning=None,
+        ).to_pylist()
     }
-    padding_frames = int(round(padding_seconds * FRAME_RATE_HZ))
+    if frames_table.empty:
+        raise CapabilityGap(f"NO_REPLAY_WINDOW: no canonical frames for {match_id} {period}")
     min_frame = int(frames_table.frame_id.min())
     max_frame = int(frames_table.frame_id.max())
-    start_frame_id = max(min_frame, anchor_frame_id - padding_frames)
-    end_frame_id = min(max_frame, anchor_frame_id + padding_frames)
-    frame_rows = frames_table[
-        (frames_table.frame_id >= start_frame_id) & (frames_table.frame_id <= end_frame_id)
-    ].sort_values("frame_id")
-    position_rows = positions_table[
-        (positions_table.frame_id >= start_frame_id)
-        & (positions_table.frame_id <= end_frame_id)
-    ].sort_values(["frame_id", "team_role", "entity_type", "entity_id"])
+    start_frame_id = max(min_frame, requested_start_frame_id)
+    end_frame_id = min(max_frame, requested_end_frame_id)
+    frame_rows = frames_table.sort_values("frame_id")
+    position_rows = positions_table.sort_values(
+        ["frame_id", "team_role", "entity_type", "entity_id"]
+    )
     positions_by_frame: dict[int, list[dict[str, Any]]] = {}
     for row in position_rows.itertuples(index=False):
         positions_by_frame.setdefault(int(row.frame_id), []).append(

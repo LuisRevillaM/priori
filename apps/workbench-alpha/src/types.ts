@@ -236,7 +236,7 @@ export type ReplayFrame = {
 export type ReplayPayload = {
   schema_version: string;
   replay_window_id: string;
-  source_kind: "result" | "target" | "chain_record";
+  source_kind: "result" | "target" | "chain_record" | "certified_table_partition";
   source_id: string;
   match_id: string;
   period: string;
@@ -265,7 +265,7 @@ export type FilmRoomIntervalMetric = {
 
 export type FilmRoomMoment = {
   result_id: string;
-  source_kind: "result" | "target" | "chain_record";
+  source_kind: "result" | "target" | "chain_record" | "certified_table_partition";
   classification: string;
   match_id: string;
   period: string;
