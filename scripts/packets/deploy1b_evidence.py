@@ -296,10 +296,12 @@ def run_command(
     output = stdout + stderr
     output_path = run_dir / f"{name}.txt"
     write_text_once(output_path, output)
+    duration_ms = round((utc_now() - started).total_seconds() * 1000, 3)
     return {
         "command": command,
         "started_at": started.replace(microsecond=0).isoformat(),
-        "duration_ms": round((utc_now() - started).total_seconds() * 1000, 3),
+        "duration_ms": duration_ms,
+        "flagged_over_5_minutes": duration_ms > 300_000,
         "return_code": return_code,
         "timed_out": timed_out,
         "status": "PASS" if return_code == 0 else "FAIL",
@@ -402,6 +404,7 @@ def main(argv: list[str] | None = None) -> int:
     if not api_key:
         raise SystemExit("RENDER_API_KEY is not set")
     require_committed_clean_script()
+    run_started_at = utc_now()
     script_sha = file_sha256(SCRIPT_PATH)
     run_dir = make_run_dir(script_sha)
     full_suite = run_full_suite(run_dir)
@@ -439,7 +442,7 @@ def main(argv: list[str] | None = None) -> int:
             "schema_version": "deploy1b.evidence_metadata.v1",
             "produced_by": SCRIPT_PATH.relative_to(ROOT).as_posix(),
             "producing_script_sha256": script_sha,
-            "run_started_at": utc_now().replace(microsecond=0).isoformat(),
+            "run_started_at": run_started_at.replace(microsecond=0).isoformat(),
             "git_branch": git_value("branch", "--show-current"),
             "git_commit": git_value("rev-parse", "HEAD"),
             "git_tree": git_value("rev-parse", "HEAD^{tree}"),
