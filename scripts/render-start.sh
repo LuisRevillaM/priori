@@ -31,6 +31,7 @@ prewarm_coach_compiler() {
   if [[ "${TQE_PREWARM_COACH_COMPILER:-1}" != "1" ]]; then
     return 0
   fi
+  local prewarm_output="$TQE_RUNTIME_ROOT/.entrelineas-coach-prewarm.json"
   for _ in $(seq 1 90); do
     if curl -fsS "http://127.0.0.1:${PORT}/healthz" >/dev/null 2>&1; then
       break
@@ -42,11 +43,12 @@ prewarm_coach_compiler() {
     -X POST "http://127.0.0.1:${PORT}/api/coach/interpret" \
     -H "Content-Type: application/json" \
     --data '{"query":"Show line breaks with no underneath outlet"}' \
-    >/tmp/entrelineas-coach-prewarm.json; then
+    >"$prewarm_output"; then
     echo "Prewarmed coach compiler for line-break preview."
   else
     echo "Coach compiler prewarm did not complete; endpoint remains available for on-demand execution." >&2
   fi
+  rm -f "$prewarm_output"
 }
 
 provision_and_prewarm_demo_data() {
