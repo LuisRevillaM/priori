@@ -58,9 +58,7 @@ if [[ "${TQE_PROVISION_DATA_BACKGROUND:-1}" == "1" ]]; then
   echo "Provisioning demo data in background."
   provision_and_prewarm_demo_data &
 else
-  echo "Provisioning demo data before service startup."
-  provision_demo_data
-  prewarm_coach_compiler &
+  provision_and_prewarm_demo_data
 fi
 
 if [[ "$WORKBENCH_HERMES_ENABLED" == "1" ]]; then

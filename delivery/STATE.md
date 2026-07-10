@@ -35,7 +35,13 @@ http://127.0.0.1:8765/film-room. Frontier: codex/afl08-passport-loop at 0c4ad01,
 
 ## Blockers
 
-None hard. Owner dashboard actions arrive with RB-001.
+BUDGET EVENT 2026-07-10 (§12 trigger): ChatGPT subscription usage
+limit hit mid-DEPLOY-2-round-2 (~2.4M executor tokens today); Codex
+lane + Hermes both down until ~22:34 local. Failover per §12: Claude-
+family executor available for ORACLE-MECHANICAL work only;
+design-bearing acceptance parks for cross-family until Codex wakes.
+DEPLOY-2 R2 (lazy hydration) produced no commits before the wall —
+clean restart when a lane opens.
 
 ## Awaiting director-grade review
 
