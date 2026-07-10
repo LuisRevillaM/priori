@@ -26,3 +26,20 @@ standing on this packet branch and an explicit push fast-forwarded
 the frontier to it — honest content, skipped merge ceremony. Repaired
 forward with this review; branch-check-before-governance-commit added
 to the director's checklist.
+
+---
+
+# DEPLOY-2 Round 2: ACCEPTED — ship executed by the director
+
+Reviewed 2026-07-10 at 5d9b182. The round survived two failovers (Sol
+capacity → Terra tail) with the design commit (lazy hydration) from
+Sol and the mechanical proof from Terra — the tier-routing law's
+first real outing. Leg zero clean. The 2GiB proof: cache rebuild,
+prewarm, bootstrap, and two hydrations inside --memory=2g with zero
+OOM and three fenced local oracles green. The refreshed bundle
+(658MB, hash-verified single-part) is on S3 with its manifest;
+Terra's deploy attempt correctly 404'd against origin (never-push
+law) and it restored prewarm=0 rather than leave a half-armed config
+— exemplary boundary behavior on the cheap tier. The director now
+merges, pushes, arms prewarm, deploys, and runs the live chain oracle
+as the closing acceptance.
