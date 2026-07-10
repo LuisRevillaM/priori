@@ -17,7 +17,7 @@ services:
       - key: WORKBENCH_HERMES_ENABLED
         value: "1"
       - key: WORKBENCH_PREWARM_FILM_ROOM
-        value: "1"
+        value: "0"
       - key: TQE_PROVISION_DATA_BACKGROUND
         value: "0"
       - key: HOME

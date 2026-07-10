@@ -146,13 +146,13 @@ class Deploy1CGalleryFromTablesTests(unittest.TestCase):
         table.assert_called_once_with()
         execution.assert_called_once_with(output_root=Path("/runtime"))
 
-    def test_deploy2_blueprint_enables_execution_prewarm_after_blocking_provision(self) -> None:
+    def test_deploy2_stop_keeps_execution_prewarm_disabled_after_blocking_provision(self) -> None:
         blueprint = yaml.safe_load(Path("render.yaml").read_text(encoding="utf-8"))
         env = {
             item["key"]: item.get("value")
             for item in blueprint["services"][0]["envVars"]
         }
-        self.assertEqual("1", env["WORKBENCH_PREWARM_FILM_ROOM"])
+        self.assertEqual("0", env["WORKBENCH_PREWARM_FILM_ROOM"])
         self.assertEqual("0", env["TQE_PROVISION_DATA_BACKGROUND"])
         self.assertEqual("1", env["TQE_EXECUTION_WORKERS"])
 
