@@ -16,8 +16,6 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from tqe.runtime.executor import runtime_code_epoch
-
 
 DEFAULT_MANIFEST = Path("config/deploy/demo-data-manifest.json")
 DEFAULT_ATTRIBUTION = Path("config/deploy/DATA_ATTRIBUTION.md")
@@ -192,7 +190,6 @@ def build_bundle_manifest(
         "source_dirty": git_dirty(),
         "source_manifest_path": str(source_manifest_path),
         "source_manifest_sha256": file_sha256(source_manifest_path) if source_manifest_path.exists() else "",
-        "runtime_code_epoch": runtime_code_epoch(),
         "attribution_path": str(attribution_path),
         "attribution_sha256": file_sha256(attribution_path) if attribution_path.exists() else "",
         "knowledge_pack_path": str(knowledge_pack_path),

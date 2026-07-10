@@ -122,11 +122,6 @@ KNOWLEDGE_PACK_PATH = Path(os.environ.get("TQE_KNOWLEDGE_PACK_PATH", "generated/
 EXPECTED_KNOWLEDGE_PACK_SHA256 = os.environ.get("TQE_EXPECTED_KNOWLEDGE_PACK_SHA256", "").strip()
 DATA_MANIFEST_PATH = Path(os.environ.get("TQE_DATA_MANIFEST_PATH", "config/deploy/demo-data-manifest.json"))
 CACHE_ROOT = Path(os.environ["TQE_CACHE_ROOT"]) if os.environ.get("TQE_CACHE_ROOT") else None
-FILM_ROOM_DESCRIPTOR_INDEX_SCHEMA = "film_room.descriptor_index.v1"
-FILM_ROOM_HYDRATION_SCHEMA = "film_room.chain_hydration.v1"
-FILM_ROOM_DESCRIPTOR_FRAGMENT_DIR = "film-room-descriptor-fragments"
-FILM_ROOM_HYDRATION_DIR = "film-room-hydration"
-FILM_ROOM_DESCRIPTOR_INDEX_FILE = "film-room-descriptor-index.json"
 N1D_ATTESTATION_PATH = Path("delivery/n1d/n1d1-attestation.json")
 N1D_MANIFEST_PATH = Path("delivery/n1d/n1d-canonical-freeze-manifest.json")
 N1D_ORIGIN_BUNDLE_PATH = Path("delivery/n1d/n1f-origin-bundle.json")
@@ -409,7 +404,6 @@ class ReplayPayloadResponse(WorkbenchResponseModel):
     canonical_sources: dict[str, str]
     pitch: PitchResponse
     frames: list[ReplayFrameResponse]
-    overlays: dict[str, Any] = Field(default_factory=dict)
 
 
 class FilmRoomIntervalMetricResponse(WorkbenchResponseModel):
@@ -3045,32 +3039,6 @@ def ensure_film_room_replay_payload(replay_window_id: str, *, output_root: Path)
     meta = FILM_ROOM_REPLAY_INDEX.get(replay_window_id)
     if not meta:
         raise CapabilityGap(f"Unknown Film Room replay window: {replay_window_id}")
-    overlay: dict[str, Any] = {}
-    hydration_relative = str(meta.get("hydration_path") or "")
-    if hydration_relative:
-        hydration_path = film_room_cache_path(output_root, hydration_relative)
-        expected_sha = str(meta.get("hydration_sha256") or "")
-        if not hydration_path.is_file() or not expected_sha or file_sha256(hydration_path) != expected_sha:
-            raise CapabilityGap(f"Film Room hydration shard failed verification: {replay_window_id}")
-        hydration = read_json(hydration_path)
-        if (
-            hydration.get("schema_version") != FILM_ROOM_HYDRATION_SCHEMA
-            or hydration.get("replay_window_id") != replay_window_id
-            or hydration.get("plan_hash") != meta.get("plan_hash")
-            or not isinstance(hydration.get("chain_record"), dict)
-        ):
-            raise CapabilityGap(f"Film Room hydration shard provenance mismatch: {replay_window_id}")
-        chain_record = hydration["chain_record"]
-        overlay = film_room_evidence_overlay(chain_record)
-        meta = {
-            **meta,
-            "source_id": str(hydration["source_id"]),
-            "source_kind": "chain_record",
-            "match_id": str(hydration["match_id"]),
-            "period": str(hydration["period"]),
-            "anchor_frame_id": int(hydration["anchor_frame_id"]),
-            "padding_seconds": float(hydration["padding_seconds"]),
-        }
     payload = replay_window_from_canonical(
         replay_window_id=replay_window_id,
         plan_path=Path(str(meta.get("plan_path") or f"film_room_plan_{meta['plan_hash']}")),
@@ -3081,13 +3049,6 @@ def ensure_film_room_replay_payload(replay_window_id: str, *, output_root: Path)
         anchor_frame_id=int(meta["anchor_frame_id"]),
         padding_seconds=float(meta["padding_seconds"]),
     )
-    payload["overlays"] = {
-        "stages": deepcopy(overlay.get("stage_labels") or []),
-        "stage_labels": deepcopy(overlay.get("stage_labels") or []),
-        "anchor_markers": deepcopy(overlay.get("anchor_markers") or []),
-        "carry_trails": deepcopy(overlay.get("carry_trails") or []),
-        "unknown": deepcopy(overlay.get("unknown") or {}),
-    }
     artifact.parent.mkdir(parents=True, exist_ok=True)
     write_json(artifact, payload)
     return sanitize_replay_payload(payload)
@@ -3186,251 +3147,6 @@ def film_room_evidence_overlay(record: dict[str, Any]) -> dict[str, Any]:
             "reason": unknown_reason,
         },
     }
-
-
-def film_room_cache_path(output_root: Path, relative: str) -> Path:
-    base = cache_root(output_root).resolve()
-    path = (base / relative).resolve()
-    if base not in path.parents:
-        raise CapabilityGap("Film Room cache path escapes storage root.")
-    return path
-
-
-def write_film_room_cache_json(path: Path, payload: dict[str, Any]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_name(f".{path.name}.tmp-{os.getpid()}-{threading.get_ident()}")
-    temporary.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    os.replace(temporary, path)
-
-
-def film_room_descriptor_evidence(record: dict[str, Any], *, role: str) -> dict[str, Any]:
-    fields = (
-        "chain_id",
-        "anchor_id",
-        "match_id",
-        "period",
-        "anchor_frame_id",
-        "start_frame_id",
-        "end_frame_id",
-        "chain_status",
-        "chain_reason",
-        "stage_1_status",
-        "stage_1_frame_id",
-        "stage_1_player_id",
-        "stage_2_status",
-        "stage_2_frame_id",
-        "stage_2_start_frame_id",
-        "stage_2_end_frame_id",
-        "stage_2_player_id",
-        "stage_2_minimum_numeric_value",
-        "stage_3_status",
-        "stage_3_frame_id",
-        "stage_3_player_id",
-    )
-    descriptor = {key: deepcopy(record[key]) for key in fields if key in record}
-    descriptor["audit_role"] = role
-    descriptor["descriptor_only"] = True
-    return descriptor
-
-
-def write_film_room_descriptor_fragment(
-    *,
-    key: str,
-    role: str,
-    plan_path: Path,
-    executions: list[dict[str, Any]],
-    output_root: Path,
-) -> dict[str, Any]:
-    """Write lightweight descriptors and one on-disk shard per chain record."""
-
-    if len(executions) != 1 or str(executions[0].get("role")) != role:
-        raise CapabilityGap(f"Descriptor generation expected one {role} execution.")
-    document_payload = read_json(plan_path)
-    plan_hash = stable_hash(document_payload)
-    execution_record = executions[0]
-    execution = execution_record.get("execution") if isinstance(execution_record.get("execution"), dict) else {}
-    rows = execution.get("results") if isinstance(execution.get("results"), list) else []
-    moments: list[dict[str, Any]] = []
-    seen: set[str] = set()
-    for row in rows:
-        if not isinstance(row, dict):
-            continue
-        requested = row.get("requested_evidence") if isinstance(row.get("requested_evidence"), dict) else {}
-        for chain_record in film_room_chain_population_records(requested, fallback=row):
-            if not isinstance(chain_record, dict):
-                continue
-            source_kind = film_room_source_kind(chain_record, fallback=row)
-            if source_kind != "chain_record":
-                continue
-            match_id = str(chain_record.get("match_id") or row.get("match_id") or "")
-            period = str(chain_record.get("period") or row.get("period") or "")
-            anchor_frame_id = int(chain_record.get("anchor_frame_id") or row.get("anchor_frame_id") or 0)
-            result_id = str(
-                chain_record.get("chain_id")
-                or chain_record.get("anchor_id")
-                or row.get("result_id")
-                or stable_hash(chain_record)[:16]
-            )
-            replay_meta = film_room_register_replay_window(
-                chain_record,
-                plan_hash=plan_hash,
-                plan_path=plan_path,
-                fallback_result_id=str(row.get("result_id") or result_id),
-                source_kind="chain_record",
-            )
-            replay_window_id = str(replay_meta["replay_window_id"])
-            if replay_window_id in seen:
-                continue
-            seen.add(replay_window_id)
-            replay_index = FILM_ROOM_REPLAY_INDEX[replay_window_id]
-            hydration_relative = f"{FILM_ROOM_HYDRATION_DIR}/{replay_window_id}.json"
-            hydration_payload = {
-                "schema_version": FILM_ROOM_HYDRATION_SCHEMA,
-                "replay_window_id": replay_window_id,
-                "plan_hash": plan_hash,
-                "plan_path": str(plan_path),
-                "source_id": str(replay_index["source_id"]),
-                "source_kind": "chain_record",
-                "match_id": match_id,
-                "period": period,
-                "anchor_frame_id": anchor_frame_id,
-                "padding_seconds": float(replay_index["padding_seconds"]),
-                "chain_record": deepcopy(chain_record),
-            }
-            hydration_path = film_room_cache_path(output_root, hydration_relative)
-            if hydration_path.exists():
-                if read_json(hydration_path) != hydration_payload:
-                    raise CapabilityGap(f"Conflicting Film Room hydration shard: {replay_window_id}")
-            else:
-                write_film_room_cache_json(hydration_path, hydration_payload)
-            hydration_sha256 = file_sha256(hydration_path)
-            evidence = film_room_descriptor_evidence(chain_record, role=role)
-            overlay = film_room_evidence_overlay(chain_record)
-            descriptor = FilmRoomMomentResponse.model_validate(
-                {
-                    "result_id": result_id,
-                    "source_kind": "chain_record",
-                    "classification": str(row.get("classification") or chain_record.get("chain_status") or ""),
-                    "match_id": match_id,
-                    "period": period,
-                    "anchor_frame_id": anchor_frame_id,
-                    "start_frame_id": int_or_none(chain_record.get("start_frame_id")),
-                    "end_frame_id": int_or_none(chain_record.get("end_frame_id")),
-                    "match_time_ms": (
-                        chain_record.get("match_time_ms")
-                        if isinstance(chain_record.get("match_time_ms"), int)
-                        else row.get("match_time_ms") if isinstance(row.get("match_time_ms"), int) else None
-                    ),
-                    "requested_evidence": evidence,
-                    "replay_window_id": replay_window_id,
-                    "replay_start_frame_id": replay_meta["replay_start_frame_id"],
-                    "replay_end_frame_id": replay_meta["replay_end_frame_id"],
-                    "evidence_row": evidence,
-                    "unknown_reason": film_room_unknown_reason(chain_record, row),
-                    "chain_status": str(chain_record.get("chain_status")) if chain_record.get("chain_status") else None,
-                    "chain_reason": str(chain_record.get("chain_reason")) if chain_record.get("chain_reason") else None,
-                    "evidence_overlay": overlay,
-                }
-            ).model_dump(mode="json")
-            moments.append(
-                {
-                    "descriptor": descriptor,
-                    "hydration_path": hydration_relative,
-                    "hydration_sha256": hydration_sha256,
-                }
-            )
-    fragment = {
-        "schema_version": FILM_ROOM_DESCRIPTOR_INDEX_SCHEMA,
-        "flagship_key": key,
-        "role": role,
-        "plan_hash": plan_hash,
-        "plan_path": str(plan_path),
-        "bound_plan_hash": str(execution.get("bound_plan_hash") or execution_record.get("bound_record", {}).get("bound_plan_hash") or ""),
-        "execution_id": str(execution.get("execution_id") or ""),
-        "cache_status": str(execution_record.get("cache_after_execute", {}).get("cache_status") or ""),
-        "moments": moments,
-    }
-    fragment_path = film_room_cache_path(
-        output_root,
-        f"{FILM_ROOM_DESCRIPTOR_FRAGMENT_DIR}/{key}-{role}.json",
-    )
-    write_film_room_cache_json(fragment_path, fragment)
-    return {
-        "flagship_key": key,
-        "role": role,
-        "descriptor_count": len(moments),
-        "fragment_path": str(fragment_path),
-        "fragment_sha256": file_sha256(fragment_path),
-    }
-
-
-def build_film_room_descriptor_index(*, output_root: Path) -> dict[str, Any]:
-    """Merge only small descriptor fragments; never open execution-cache payloads."""
-
-    flagships: dict[str, Any] = {}
-    for spec in film_room_flagship_specs():
-        key = str(spec["key"])
-        plan_path = Path(spec["plan_path"])
-        document = read_json(plan_path)
-        plan_hash = stable_hash(document)
-        roles = sorted(film_room_role_documents(document))
-        descriptors: list[dict[str, Any]] = []
-        hydrations: dict[str, dict[str, str]] = {}
-        bound_plan_hashes: dict[str, str] = {}
-        fragment_hashes: dict[str, str] = {}
-        for role in roles:
-            fragment_path = film_room_cache_path(
-                output_root,
-                f"{FILM_ROOM_DESCRIPTOR_FRAGMENT_DIR}/{key}-{role}.json",
-            )
-            if not fragment_path.is_file():
-                raise CapabilityGap(f"Film Room descriptor fragment is missing: {fragment_path}")
-            fragment = read_json(fragment_path)
-            if (
-                fragment.get("schema_version") != FILM_ROOM_DESCRIPTOR_INDEX_SCHEMA
-                or fragment.get("flagship_key") != key
-                or fragment.get("role") != role
-                or fragment.get("plan_hash") != plan_hash
-            ):
-                raise CapabilityGap(f"Film Room descriptor fragment provenance mismatch: {fragment_path}")
-            fragment_hashes[role] = file_sha256(fragment_path)
-            bound_plan_hashes[role] = str(fragment.get("bound_plan_hash") or "")
-            for item in fragment.get("moments") or []:
-                if not isinstance(item, dict) or not isinstance(item.get("descriptor"), dict):
-                    raise CapabilityGap(f"Malformed Film Room descriptor fragment: {fragment_path}")
-                descriptor = FilmRoomMomentResponse.model_validate(item["descriptor"]).model_dump(mode="json")
-                replay_window_id = str(descriptor.get("replay_window_id") or "")
-                hydration_relative = str(item.get("hydration_path") or "")
-                hydration_path = film_room_cache_path(output_root, hydration_relative)
-                expected_sha = str(item.get("hydration_sha256") or "")
-                if not replay_window_id or not hydration_path.is_file() or file_sha256(hydration_path) != expected_sha:
-                    raise CapabilityGap(f"Film Room hydration shard failed verification: {replay_window_id}")
-                if replay_window_id in hydrations:
-                    continue
-                descriptors.append(descriptor)
-                hydrations[replay_window_id] = {
-                    "path": hydration_relative,
-                    "sha256": expected_sha,
-                }
-        flagships[key] = {
-            "plan_hash": plan_hash,
-            "plan_path": str(plan_path),
-            "roles": roles,
-            "bound_plan_hashes": bound_plan_hashes,
-            "fragment_sha256": fragment_hashes,
-            "descriptor_count": len(descriptors),
-            "descriptors": descriptors,
-            "hydrations": hydrations,
-        }
-    index = {
-        "schema_version": FILM_ROOM_DESCRIPTOR_INDEX_SCHEMA,
-        "flagships": flagships,
-    }
-    write_film_room_cache_json(
-        film_room_cache_path(output_root, FILM_ROOM_DESCRIPTOR_INDEX_FILE),
-        index,
-    )
-    return index
 
 
 def film_room_certified_table_for_plan_hash(plan_hash: str) -> dict[str, Any] | None:
@@ -4013,102 +3729,6 @@ def film_room_certified_prewarmed_response(
     return validate_public_response("FilmRoomAskResponse", response)
 
 
-def film_room_descriptor_prewarmed_response(
-    *,
-    key: str,
-    question: str,
-    plan_path: Path,
-    index_entry: dict[str, Any],
-) -> dict[str, Any]:
-    """Upgrade the table answer from a lightweight, disk-backed descriptor index."""
-
-    started_at = time.monotonic()
-    response = film_room_certified_prewarmed_response(
-        key=key,
-        question=question,
-        plan_path=plan_path,
-    )
-    answer = response.get("answer") if isinstance(response.get("answer"), dict) else {}
-    plan_hash = stable_hash(read_json(plan_path))
-    if index_entry.get("plan_hash") != plan_hash:
-        raise CapabilityGap(f"Film Room descriptor index plan mismatch for {key}.")
-    descriptors = [
-        FilmRoomMomentResponse.model_validate(item).model_dump(mode="json")
-        for item in index_entry.get("descriptors") or []
-        if isinstance(item, dict)
-    ]
-    if not descriptors:
-        raise CapabilityGap(f"Film Room descriptor index has no moments for {key}.")
-    hydrations = index_entry.get("hydrations") if isinstance(index_entry.get("hydrations"), dict) else {}
-    for descriptor in descriptors:
-        replay_window_id = str(descriptor.get("replay_window_id") or "")
-        hydration = hydrations.get(replay_window_id) if isinstance(hydrations.get(replay_window_id), dict) else {}
-        if not hydration.get("path") or not hydration.get("sha256"):
-            raise CapabilityGap(f"Film Room descriptor lacks hydration provenance: {replay_window_id}")
-        anchor_frame_id = int(descriptor["anchor_frame_id"])
-        start_frame_id = int(descriptor.get("replay_start_frame_id") or anchor_frame_id)
-        end_frame_id = int(descriptor.get("replay_end_frame_id") or anchor_frame_id)
-        padding_frames = max(50, anchor_frame_id - start_frame_id, end_frame_id - anchor_frame_id)
-        FILM_ROOM_REPLAY_INDEX[replay_window_id] = {
-            "replay_window_id": replay_window_id,
-            "plan_hash": plan_hash,
-            "plan_path": str(plan_path),
-            "source_id": str(descriptor["result_id"]),
-            "source_kind": "chain_record",
-            "match_id": str(descriptor["match_id"]),
-            "period": str(descriptor["period"]),
-            "anchor_frame_id": anchor_frame_id,
-            "padding_seconds": padding_frames / 25.0,
-            "hydration_path": str(hydration["path"]),
-            "hydration_sha256": str(hydration["sha256"]),
-        }
-    answer["moments"] = descriptors
-    answer["moment_total_count"] = len(descriptors)
-    answer["visible_moment_count"] = len(descriptors)
-    answer["executions"] = []
-    answer["replay"] = None
-    answer["runtime_evidence_rows"] = []
-    answer["evidence_rows_kind"] = "certified"
-    answer["raw_evidence"] = {
-        "descriptor_index": {
-            "schema_version": FILM_ROOM_DESCRIPTOR_INDEX_SCHEMA,
-            "descriptor_count": len(descriptors),
-            "fragment_sha256": deepcopy(index_entry.get("fragment_sha256") or {}),
-        },
-        "moment_source": "disk_backed_chain_descriptor_index",
-        "interval_source_contract": (
-            "The interval remains the committed certified-table result; chain descriptors are loaded "
-            "without opening full execution payloads and hydrate one replay window per request."
-        ),
-    }
-    provenance = answer.get("provenance") if isinstance(answer.get("provenance"), dict) else {}
-    provenance["bound_plan_hashes"] = deepcopy(index_entry.get("bound_plan_hashes") or {})
-    provenance["replay_window_id"] = descriptors[0].get("replay_window_id")
-    answer["provenance"] = provenance
-    elapsed_ms = int((time.monotonic() - started_at) * 1000)
-    response.update(
-        {
-            "provider": "prewarmed_descriptor_index",
-            "latency_ms": elapsed_ms,
-            "latency_breakdown_ms": {
-                "hermes": 0,
-                "synthesis": 0,
-                "execution": 0,
-                "total": elapsed_ms,
-            },
-            "hermes": {
-                "outcome": "expression",
-                "source": "prewarmed_descriptor_index",
-                "flagship_key": key,
-                "execution_performed": False,
-                "billing_surface": "none for disk-backed descriptor bootstrap",
-            },
-            "answer": FilmRoomAnswerResponse.model_validate(answer).model_dump(mode="json"),
-        }
-    )
-    return validate_public_response("FilmRoomAskResponse", response)
-
-
 def film_room_prewarmed_response(
     *,
     key: str,
@@ -4315,7 +3935,7 @@ def prewarm_film_room_flagships_from_certified_tables() -> None:
 
 
 def prewarm_film_room_flagships(*, output_root: Path) -> None:
-    """Atomically upgrade table answers from disk-backed descriptors only."""
+    """Optionally execute flagship plans and atomically upgrade table answers."""
 
     with FILM_ROOM_PREWARM_LOCK:
         if not FILM_ROOM_PREWARM_STATE.get("items"):
@@ -4330,72 +3950,48 @@ def prewarm_film_room_flagships(*, output_root: Path) -> None:
                 for spec in film_room_flagship_specs()
             ]
         FILM_ROOM_PREWARM_STATE["execution_started_at"] = utc_iso_seconds()
-    started_index = time.monotonic()
-    descriptor_index = build_film_room_descriptor_index(output_root=output_root)
-    index_elapsed_ms = int((time.monotonic() - started_index) * 1000)
     for spec in film_room_flagship_specs():
         plan_path = Path(spec["plan_path"])
         if not plan_path.exists():
-            print(f"Film Room descriptor prewarm skipped missing plan: {plan_path}", flush=True)
+            print(f"Film Room execution prewarm skipped missing plan: {plan_path}", flush=True)
             with FILM_ROOM_PREWARM_LOCK:
                 for item in FILM_ROOM_PREWARM_STATE["items"]:
                     if item.get("key") == str(spec["key"]):
                         item["execution_status"] = "missing_plan"
             continue
         started_at = time.monotonic()
-        print(f"Descriptor-prewarming Film Room flagship {plan_path}...", flush=True)
+        print(f"Execution-prewarming Film Room flagship {plan_path}...", flush=True)
         with FILM_ROOM_PREWARM_LOCK:
             for item in FILM_ROOM_PREWARM_STATE["items"]:
                 if item.get("key") == str(spec["key"]):
                     item["execution_status"] = "running"
-        flagships = descriptor_index.get("flagships") if isinstance(descriptor_index.get("flagships"), dict) else {}
-        index_entry = flagships.get(str(spec["key"])) if isinstance(flagships.get(str(spec["key"])), dict) else {}
-        if not index_entry.get("descriptors"):
-            elapsed_ms = int((time.monotonic() - started_at) * 1000)
-            record = {
-                "key": str(spec["key"]),
-                "plan": str(plan_path),
-                "prewarm_kind": "descriptor_index_upgrade",
-                "execution_performed": False,
-                "upgrade_applied": False,
-                "elapsed_ms": elapsed_ms,
-                "index_build_elapsed_ms": index_elapsed_ms,
-                "descriptor_count": 0,
-                "full_execution_cache_payloads_opened": 0,
-                "reason": "no_chain_descriptors",
-            }
-            with FILM_ROOM_PREWARM_LOCK:
-                FILM_ROOM_PREWARM_RECORDS.append(record)
-                for item in FILM_ROOM_PREWARM_STATE["items"]:
-                    if item.get("key") == str(spec["key"]):
-                        item["execution_status"] = "no_chain_descriptors"
-                        item["execution_elapsed_ms"] = elapsed_ms
-            print(
-                f"Descriptor-prewarmed Film Room flagship {plan_path}: "
-                "descriptors=0 full_payloads_opened=0 upgrade_applied=False",
-                flush=True,
-            )
-            continue
-        response = film_room_descriptor_prewarmed_response(
+        response = film_room_prewarmed_response(
             key=str(spec["key"]),
             question=str(spec["question"]),
             plan_path=plan_path,
-            index_entry=index_entry,
+            output_root=output_root,
         )
         elapsed_ms = int((time.monotonic() - started_at) * 1000)
+        executions = (
+            response["answer"]["executions"]
+            if isinstance(response.get("answer"), dict)
+            else []
+        )
         answer = response.get("answer") if isinstance(response.get("answer"), dict) else {}
         upgrade_servable = bool(answer.get("moments") and answer.get("interval_metric"))
-        descriptor_count = len(answer.get("moments") or [])
+        cache_states = [str(item["cache_after_execute"]["cache_status"]) for item in executions]
+        result_count = sum(
+            int(item["execution"].get("returned_result_count") or 0) for item in executions
+        )
         record = {
             "key": str(spec["key"]),
             "plan": str(plan_path),
-            "prewarm_kind": "descriptor_index_upgrade",
-            "execution_performed": False,
+            "prewarm_kind": "execution_upgrade",
+            "execution_performed": True,
             "upgrade_applied": upgrade_servable,
             "elapsed_ms": elapsed_ms,
-            "index_build_elapsed_ms": index_elapsed_ms,
-            "descriptor_count": descriptor_count,
-            "full_execution_cache_payloads_opened": 0,
+            "cache_after_execute": cache_states,
+            "returned_result_count": result_count,
         }
         with FILM_ROOM_PREWARM_LOCK:
             if upgrade_servable:
@@ -4408,8 +4004,8 @@ def prewarm_film_room_flagships(*, output_root: Path) -> None:
                     )
                     item["execution_elapsed_ms"] = elapsed_ms
         print(
-            f"Descriptor-prewarmed Film Room flagship {plan_path}: "
-            f"descriptors={descriptor_count} full_payloads_opened=0 "
+            f"Execution-prewarmed Film Room flagship {plan_path}: "
+            f"cache_statuses={','.join(cache_states)} returned_results={result_count} "
             f"upgrade_applied={upgrade_servable} elapsed_ms={elapsed_ms}",
             flush=True,
         )

@@ -157,8 +157,8 @@ class Deploy1CGalleryFromTablesTests(unittest.TestCase):
     def test_failed_execution_upgrade_preserves_ready_table_answer(self) -> None:
         prewarm_film_room_flagships_from_certified_tables()
         with patch(
-            "tqe.workshop.app_service.build_film_room_descriptor_index",
-            side_effect=RuntimeError("descriptor index unavailable in proof"),
+            "tqe.workshop.app_service.film_room_prewarmed_response",
+            side_effect=RuntimeError("execution disabled in proof"),
         ):
             prewarm_film_room_flagships_safely(output_root=Path("/unused"))
 
@@ -166,27 +166,32 @@ class Deploy1CGalleryFromTablesTests(unittest.TestCase):
         self.assertEqual("ready", bootstrap["state"])
         self.assertEqual("prewarmed_certified_table", bootstrap["prewarmed_response"]["provider"])
 
-    def test_empty_descriptor_index_does_not_replace_servable_table_answer(self) -> None:
+    def test_empty_execution_result_does_not_replace_servable_table_answer(self) -> None:
         prewarm_film_room_flagships_from_certified_tables()
+        table_response = deepcopy(
+            app_service.FILM_ROOM_PREWARMED_RESPONSES["counterattack_sequence_rate"]
+        )
+        empty_execution_response = deepcopy(table_response)
+        empty_execution_response["provider"] = "prewarmed_committed_plan"
+        empty_execution_response["answer"]["moments"] = []
+        empty_execution_response["answer"]["moment_total_count"] = 0
+        empty_execution_response["answer"]["visible_moment_count"] = 0
         with patch(
-            "tqe.workshop.app_service.build_film_room_descriptor_index",
-            return_value={
-                "schema_version": "film_room.descriptor_index.v1",
-                "flagships": {
-                    str(spec["key"]): {
-                        "plan_hash": app_service.stable_hash(app_service.read_json(Path(spec["plan_path"]))),
-                        "descriptors": [],
-                        "hydrations": {},
-                    }
-                    for spec in app_service.film_room_flagship_specs()
-                },
-            },
+            "tqe.workshop.app_service.film_room_prewarmed_response",
+            return_value=empty_execution_response,
         ):
-            app_service.prewarm_film_room_flagships_safely(output_root=Path("/unused"))
+            app_service.prewarm_film_room_flagships(output_root=Path("/unused"))
 
         bootstrap = film_room_bootstrap_response(output_root=Path("/unused"))
         self.assertEqual("ready", bootstrap["state"])
         self.assertEqual("prewarmed_certified_table", bootstrap["prewarmed_response"]["provider"])
+        execution_records = [
+            record
+            for record in bootstrap["prewarm_records"]
+            if record.get("prewarm_kind") == "execution_upgrade"
+        ]
+        self.assertTrue(execution_records)
+        self.assertTrue(all(record["upgrade_applied"] is False for record in execution_records))
 
     def test_lazy_replay_parquet_reads_are_window_filtered(self) -> None:
         reads: list[dict[str, object]] = []
