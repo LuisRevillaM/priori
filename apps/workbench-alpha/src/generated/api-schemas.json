@@ -1215,6 +1215,11 @@
             "title": "Match Id",
             "type": "string"
           },
+          "overlays": {
+            "additionalProperties": true,
+            "title": "Overlays",
+            "type": "object"
+          },
           "period": {
             "title": "Period",
             "type": "string"
@@ -1733,6 +1738,11 @@
             "title": "Match Id",
             "type": "string"
           },
+          "overlays": {
+            "additionalProperties": true,
+            "title": "Overlays",
+            "type": "object"
+          },
           "period": {
             "title": "Period",
             "type": "string"
@@ -1971,6 +1981,11 @@
             "title": "Match Id",
             "type": "string"
           },
+          "overlays": {
+            "additionalProperties": true,
+            "title": "Overlays",
+            "type": "object"
+          },
           "period": {
             "title": "Period",
             "type": "string"
@@ -2190,6 +2205,11 @@
           "match_id": {
             "title": "Match Id",
             "type": "string"
+          },
+          "overlays": {
+            "additionalProperties": true,
+            "title": "Overlays",
+            "type": "object"
           },
           "period": {
             "title": "Period",

@@ -1218,6 +1218,11 @@ export const apiSchemas = {
             "title": "Match Id",
             "type": "string"
           },
+          "overlays": {
+            "additionalProperties": true,
+            "title": "Overlays",
+            "type": "object"
+          },
           "period": {
             "title": "Period",
             "type": "string"
@@ -1736,6 +1741,11 @@ export const apiSchemas = {
             "title": "Match Id",
             "type": "string"
           },
+          "overlays": {
+            "additionalProperties": true,
+            "title": "Overlays",
+            "type": "object"
+          },
           "period": {
             "title": "Period",
             "type": "string"
@@ -1974,6 +1984,11 @@ export const apiSchemas = {
             "title": "Match Id",
             "type": "string"
           },
+          "overlays": {
+            "additionalProperties": true,
+            "title": "Overlays",
+            "type": "object"
+          },
           "period": {
             "title": "Period",
             "type": "string"
@@ -2193,6 +2208,11 @@ export const apiSchemas = {
           "match_id": {
             "title": "Match Id",
             "type": "string"
+          },
+          "overlays": {
+            "additionalProperties": true,
+            "title": "Overlays",
+            "type": "object"
           },
           "period": {
             "title": "Period",
