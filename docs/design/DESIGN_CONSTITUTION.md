@@ -104,3 +104,21 @@ owner reaction is transcribed into rules here. Thereafter: rare taste
 probes only (one gate-passed load-bearing screen, variants side by
 side). KPI: owner intervention rate trends to zero while shipped
 surface area grows.
+
+## 7. Narrative correspondence (owner calibration note, 2026-07-10 —
+##    the rule that was missing)
+
+- N8. **The answer must be legible AS the question.** Every element
+  the screen highlights must be traceable, by a first-time viewer, to
+  the clause of the question it satisfies: the ask sentence renders
+  with its operative clauses keyed (①②③…), each key appears ON the
+  pitch at its witness moment (① regain ring, ② carry trail with its
+  threshold label, ③ pass marker), and the moment card describes the
+  moment in the QUESTION'S words, never in schema words. The test: a
+  viewer who reads the question and watches one replay can point at
+  the screen and narrate which part is which. If they cannot, the
+  screen fails regardless of every other gate.
+- Corollary: the interval card's label restates the question as
+  answered ("Of 115 regains, 1 completed the full chain…"), never as
+  a metric name. Schema vocabulary (anchors, statuses, node ids) is
+  toggle-gated debug, never the default reading surface.
