@@ -33,6 +33,17 @@ EXPECTED_ORACLE_SHA256 = {
     "chain_gallery": "e3485b16fa6cb7b40be9a021befa535a402db1bff1c2d4436fc1c084124344b4",
 }
 MEMORY_LIMIT_BYTES = 2 * 1024 * 1024 * 1024
+FILM_ROOM_PLANS = (
+    ROOT / "delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json",
+    ROOT / "delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_v0.json",
+)
+ROLE_CACHE_BUILDER = ROOT / "scripts/packets/deploy2_cache_builder.py"
+
+
+class ContainerStopped(RuntimeError):
+    def __init__(self, message: str, *, sampled_peak: int) -> None:
+        super().__init__(message)
+        self.sampled_peak = sampled_peak
 
 
 def sha256_path(path: Path) -> str:
@@ -180,6 +191,7 @@ def validate_reusable_image(tag: str, head: str, git_env: dict[str, str]) -> tup
         path
         for path in changed
         if path != "scripts/packets/deploy2_evidence.py"
+        and path != "scripts/packets/deploy2_cache_builder.py"
         and not path.startswith("delivery/packets/deploy-2-evidence/")
     ]
     if disallowed:
@@ -198,50 +210,70 @@ def container_port(name: str) -> int:
     raise RuntimeError("Docker did not publish port 10000")
 
 
-def start_cache_builder(name: str, tag: str, stage: Path) -> tuple[str, int]:
-    argv = [
-        "docker",
-        "run",
-        "--detach",
-        "--name",
-        name,
-        "--publish",
-        "127.0.0.1::10000",
-        "--mount",
-        f"type=bind,source={stage.resolve()},target=/var/data",
-        "--env",
-        "PORT=10000",
-        "--env",
-        "TQE_DATA_ROOT=/var/data/dataset/canonical/v1",
-        "--env",
-        "TQE_RAW_ROOT=/var/data/dataset/raw/idsse/figshare-28196177-v1",
-        "--env",
-        "TQE_RUNTIME_ROOT=/var/data/runtime",
-        "--env",
-        "TQE_CACHE_ROOT=/var/data/cache",
-        "--env",
-        "TQE_NODE_CACHE_ROOT=/var/data/cache/node-output",
-        "--env",
-        "TQE_EXECUTION_WORKERS=1",
-        "--env",
-        "WORKBENCH_HERMES_ENABLED=0",
-        "--env",
-        "WORKBENCH_PREWARM_FILM_ROOM=1",
-        tag,
-        "python",
-        "-m",
-        "tqe.workshop.app_service",
-        "--host",
-        "0.0.0.0",
-        "--port",
-        "10000",
-        "--static-root",
-        "/app/apps/workbench-alpha/dist",
-        "--output-root",
-        "/var/data/runtime",
-    ]
-    container_id = command(argv).stdout.strip()
-    return container_id, container_port(name)
+def build_role_caches(tag: str, stage: Path, run_id: str, timeout: int, log_path: Path) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    logs: list[str] = []
+    for plan in FILM_ROOM_PLANS:
+        payload = json.loads(plan.read_text(encoding="utf-8"))
+        documents = payload.get("documents") if isinstance(payload, dict) else None
+        roles = sorted(documents) if isinstance(documents, dict) else [
+            str(payload.get("default_invocation", {}).get("perspective_team_role") or "single")
+        ]
+        for role in roles:
+            name = f"priori-deploy2-cache-{run_id[-8:]}-{len(records)}"
+            completed = command(
+                [
+                    "docker",
+                    "run",
+                    "--rm",
+                    "--name",
+                    name,
+                    "--mount",
+                    f"type=bind,source={stage.resolve()},target=/var/data",
+                    "--mount",
+                    f"type=bind,source={ROLE_CACHE_BUILDER.resolve()},target=/evidence/deploy2_cache_builder.py,readonly",
+                    "--env",
+                    "TQE_DATA_ROOT=/var/data/dataset/canonical/v1",
+                    "--env",
+                    "TQE_RAW_ROOT=/var/data/dataset/raw/idsse/figshare-28196177-v1",
+                    "--env",
+                    "TQE_RUNTIME_ROOT=/var/data/runtime",
+                    "--env",
+                    "TQE_CACHE_ROOT=/var/data/cache",
+                    "--env",
+                    "TQE_NODE_CACHE_ROOT=/var/data/cache/node-output",
+                    "--env",
+                    "TQE_EXECUTION_WORKERS=1",
+                    "--env",
+                    "WORKBENCH_HERMES_ENABLED=0",
+                    "--env",
+                    "WORKBENCH_FILM_ROOM_RESULT_LIMIT=25",
+                    tag,
+                    "python",
+                    "/evidence/deploy2_cache_builder.py",
+                    "--plan",
+                    f"/app/{plan.relative_to(ROOT).as_posix()}",
+                    "--role",
+                    role,
+                    "--output-root",
+                    "/var/data/runtime",
+                ],
+                timeout=timeout,
+                check=False,
+            )
+            logs.append(f"$ plan={plan.relative_to(ROOT)} role={role}\n{completed.stdout}{completed.stderr}")
+            if completed.returncode:
+                write_text(log_path, "\n".join(logs))
+                raise RuntimeError(
+                    f"isolated cache generation failed for {plan.name}/{role} with exit {completed.returncode}"
+                )
+            lines = [line for line in completed.stdout.splitlines() if line.startswith("{")]
+            if not lines:
+                write_text(log_path, "\n".join(logs))
+                raise RuntimeError(f"cache builder emitted no record for {plan.name}/{role}")
+            records.append(json.loads(lines[-1]))
+    write_text(log_path, "\n".join(logs))
+    return records
 
 
 def start_proof_container(
@@ -306,7 +338,10 @@ def wait_for_execution_gallery(base_url: str, name: str, timeout: int) -> tuple[
             sampled_peak = max(sampled_peak, int(peak))
         state = command(["docker", "inspect", name, "--format", "{{.State.Status}} {{.State.OOMKilled}}"], check=False)
         if "true" in state.stdout.lower() or state.stdout.startswith("exited"):
-            raise RuntimeError(f"container stopped before gallery upgrade: {state.stdout.strip()}")
+            raise ContainerStopped(
+                f"container stopped before gallery upgrade: {state.stdout.strip()}",
+                sampled_peak=sampled_peak,
+            )
         try:
             boot = get_json(f"{base_url}/api/film-room/bootstrap")
             records = [record for record in boot.get("prewarm_records", []) if record.get("prewarm_kind") == "execution_upgrade"]
@@ -392,10 +427,8 @@ def local_phase(args: argparse.Namespace) -> int:
     for path in (base_output, stage, empty_cache, empty_runtime, final_output):
         path.mkdir(parents=True, exist_ok=True)
     image_tag = args.image_tag
-    cache_name = f"priori-deploy2-cache-{metadata['producing_script_sha256'][:8]}"
     proof_name = f"priori-deploy2-proof-{metadata['producing_script_sha256'][:8]}"
     proof_volume = f"priori-deploy2-proof-{metadata['producing_script_sha256'][:8]}"
-    cache_started = False
     proof_started = False
     try:
         if args.reuse_image:
@@ -433,12 +466,13 @@ def local_phase(args: argparse.Namespace) -> int:
         base_archive = base_output / f"{BUNDLE_NAME}.tar.gz"
         with tarfile.open(base_archive, "r:gz") as archive:
             archive.extractall(stage, filter="data")
-        _, cache_port = start_cache_builder(cache_name, image_tag, stage)
-        cache_started = True
-        cache_boot, _ = wait_for_execution_gallery(f"http://127.0.0.1:{cache_port}", cache_name, args.timeout)
-        cache_records = [record for record in cache_boot.get("prewarm_records", []) if record.get("prewarm_kind") == "execution_upgrade"]
-        stop_container(cache_name, run_dir / "cache-build-service.log")
-        cache_started = False
+        cache_records = build_role_caches(
+            image_tag,
+            stage,
+            metadata["run_id"],
+            args.timeout,
+            run_dir / "cache-build-service.log",
+        )
 
         final = command(
             [
@@ -471,7 +505,41 @@ def local_phase(args: argparse.Namespace) -> int:
         _, proof_port = start_proof_container(proof_name, proof_volume, image_tag, bundle, manifest, bundle_sha)
         proof_started = True
         base_url = f"http://127.0.0.1:{proof_port}"
-        proof_boot, sampled_peak = wait_for_execution_gallery(base_url, proof_name, args.timeout)
+        try:
+            proof_boot, sampled_peak = wait_for_execution_gallery(base_url, proof_name, args.timeout)
+        except ContainerStopped as exc:
+            state_payload = json.loads(
+                command(["docker", "inspect", proof_name, "--format", "{{json .State}}"] ).stdout
+            )
+            host_memory = int(
+                command(["docker", "inspect", proof_name, "--format", "{{.HostConfig.Memory}}"] ).stdout
+            )
+            stop_state = stop_container(proof_name, run_dir / "local-service-failure.log")
+            proof_started = False
+            result.update(
+                {
+                    "image": {"tag": image_tag, "id": image_id, "revision": image_revision},
+                    "bundle": {
+                        "path": str(bundle.relative_to(ROOT)),
+                        "manifest_path": str(manifest.relative_to(ROOT)),
+                        "archive_sha256": bundle_sha,
+                        "runtime_code_epoch": bundle_manifest.get("runtime_code_epoch"),
+                        "file_count": bundle_manifest.get("file_count"),
+                        "compressed_size_bytes": bundle_manifest.get("compressed_size_bytes"),
+                    },
+                    "cache_generation": {"execution_records": cache_records},
+                    "local_proof": {
+                        "base_url": base_url,
+                        "memory_limit_bytes": host_memory,
+                        "sampled_memory_peak_bytes": exc.sampled_peak,
+                        "sampled_memory_peak_mib": round(exc.sampled_peak / 1024 / 1024, 3),
+                        "oom_killed": bool(state_payload.get("OOMKilled")),
+                        "container_state": state_payload,
+                        "container_inspect": stop_state,
+                    },
+                }
+            )
+            raise
         write_json(run_dir / "local-bootstrap.json", {**metadata, "bootstrap": proof_boot})
         oracle_results = {
             name: run_oracle(name, base_url, run_dir, args.timeout)
@@ -531,8 +599,6 @@ def local_phase(args: argparse.Namespace) -> int:
     except Exception as exc:  # noqa: BLE001 - failure is sealed as evidence.
         result["error"] = {"type": type(exc).__name__, "message": str(exc)}
     finally:
-        if cache_started:
-            stop_container(cache_name, run_dir / "cache-build-service-failure.log")
         if proof_started:
             stop_container(proof_name, run_dir / "local-service-failure.log")
         command(["docker", "volume", "rm", proof_volume], check=False)
