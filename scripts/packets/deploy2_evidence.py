@@ -165,6 +165,28 @@ def build_image(tag: str, revision: str, log_path: Path) -> str:
     return image_id
 
 
+def validate_reusable_image(tag: str, head: str, git_env: dict[str, str]) -> tuple[str, str]:
+    """Reuse only an ancestor image whose later diff is evidence-only."""
+
+    image_id = docker_image_id(tag)
+    revision = command(
+        ["docker", "image", "inspect", tag, "--format", "{{index .Config.Labels \"org.opencontainers.image.revision\"}}"]
+    ).stdout.strip()
+    ancestor = command(["git", "merge-base", "--is-ancestor", revision, head], env=git_env, check=False)
+    if ancestor.returncode:
+        raise RuntimeError(f"reusable image revision is not an ancestor of HEAD: {revision}")
+    changed = git_output(["diff", "--name-only", f"{revision}..{head}"], git_env).splitlines()
+    disallowed = [
+        path
+        for path in changed
+        if path != "scripts/packets/deploy2_evidence.py"
+        and not path.startswith("delivery/packets/deploy-2-evidence/")
+    ]
+    if disallowed:
+        raise RuntimeError(f"reusable image excludes non-evidence changes: {disallowed}")
+    return image_id, revision
+
+
 def container_port(name: str) -> int:
     deadline = time.monotonic() + 60
     while time.monotonic() < deadline:
@@ -376,7 +398,20 @@ def local_phase(args: argparse.Namespace) -> int:
     cache_started = False
     proof_started = False
     try:
-        image_id = build_image(image_tag, metadata["producing_commit"], run_dir / "docker-build.log")
+        if args.reuse_image:
+            image_id, image_revision = validate_reusable_image(
+                image_tag,
+                metadata["producing_commit"],
+                git_env,
+            )
+            write_text(
+                run_dir / "docker-build.log",
+                f"Reused image {image_id} from implementation commit {image_revision}; "
+                "the intervening committed diff is evidence-only.\n",
+            )
+        else:
+            image_id = build_image(image_tag, metadata["producing_commit"], run_dir / "docker-build.log")
+            image_revision = metadata["producing_commit"]
         bundle_env = git_env | {"PYTHONPATH": "src:."}
         base = command(
             [
@@ -470,7 +505,7 @@ def local_phase(args: argparse.Namespace) -> int:
         result.update(
             {
                 "status": "PASS" if local_ok else "FAIL",
-                "image": {"tag": image_tag, "id": image_id},
+                "image": {"tag": image_tag, "id": image_id, "revision": image_revision},
                 "bundle": {
                     "path": str(bundle.relative_to(ROOT)),
                     "manifest_path": str(manifest.relative_to(ROOT)),
@@ -567,6 +602,7 @@ def main() -> int:
     subparsers = parser.add_subparsers(dest="phase", required=True)
     local = subparsers.add_parser("local")
     local.add_argument("--image-tag", default="priori-deploy2:local")
+    local.add_argument("--reuse-image", action="store_true")
     local.add_argument("--timeout", type=int, default=1800)
     live = subparsers.add_parser("live")
     live.add_argument("--base-url", required=True)
