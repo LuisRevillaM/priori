@@ -1,8 +1,8 @@
 # DEPLOY-2 Report — local memory PASS; shipping blocked on source availability
 
-Status: BLOCKED BEFORE LIVE DEPLOY  
-Branch: `packet/deploy-2`  
-Implementation: `6fdaf4864ba8ad894110d1290e1330560d34d38a`  
+Status: BLOCKED BEFORE LIVE DEPLOY
+Branch: `packet/deploy-2`
+Implementation: `6fdaf4864ba8ad894110d1290e1330560d34d38a`
 Local R-AZ run: `2026-07-10T174719.190195Z-c79f8e177bb9-local`
 
 ## Verdict
