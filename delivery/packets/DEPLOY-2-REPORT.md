@@ -38,6 +38,11 @@ Evidence is committed under
 The producer and its helper were byte-identical to committed `5e01180`; the
 image was built from a Git archive of that commit.
 
+Evidence-format note: `git diff --check` reports trailing spaces emitted by
+BuildKit in twelve lines of the verbatim `docker-build.log`. Source, JSON,
+Markdown, and oracle outputs are whitespace-clean; the raw log is intentionally
+preserved rather than rewritten after the sealed run.
+
 The prior zero-headroom proof is superseded: reaching exactly 2048 MiB is not
 evidence of a shippable 2 GiB process even when the kernel records no OOM.
 
