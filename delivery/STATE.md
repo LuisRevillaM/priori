@@ -17,8 +17,9 @@ http://127.0.0.1:8765/film-room. Frontier: codex/afl08-passport-loop at 0c4ad01,
 
 ## Next actions (in order)
 
-1. [any-steward] HERMES-2 landing rerun when the subscription
-   cooldown lifts (flip evidence 8/15 parked on packet/hermes-2).
+1. [any-steward] LEGIBILITY-1 (dispatched) — the N8 clause-keyed
+   surface on the live story gallery.
+2. [any-steward] HERMES-2 landing rerun (flip evidence 8/15 parked).
 2. [any-steward] SHADOW-1 per the amended queue; DEPLOY-2 (bundle
    cache refresh — restores chain-record moments + execution prewarm).
 3. [DIRECTOR] Perceptual stack run 1 against the live gallery.

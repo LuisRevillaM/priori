@@ -43,3 +43,15 @@ law) and it restored prewarm=0 rather than leave a half-armed config
 — exemplary boundary behavior on the cheap tier. The director now
 merges, pushes, arms prewarm, deploys, and runs the live chain oracle
 as the closing acceptance.
+
+---
+
+## Live closure — 2026-07-10
+
+The fenced chain oracle PASSES against the public URL: 115 chain
+records, ready state, hydrated overlays — with prewarm retired,
+provisioning disk-staged, and 1470 MiB of proven headroom. DEPLOY-2
+is CLOSED. The DEPLOY-1C D1 exception is EXPIRED as of this run. The
+saga's ledger: three OOMs, one eviction, one outage-and-rollback, two
+model-capacity failovers, one tier failover, two scribe-commits — and
+a public gallery that tells the story of the question it answers.
