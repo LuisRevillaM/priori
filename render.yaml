@@ -17,6 +17,8 @@ services:
       - key: WORKBENCH_HERMES_ENABLED
         value: "1"
       - key: WORKBENCH_PREWARM_FILM_ROOM
+        value: "1"
+      - key: TQE_PROVISION_DATA_BACKGROUND
         value: "0"
       - key: HOME
         value: /var/data
@@ -49,7 +51,7 @@ services:
       - key: TQE_NODE_CACHE_ROOT
         value: /var/data/cache/node-output
       - key: TQE_EXECUTION_WORKERS
-        value: "4"
+        value: "1"
       - key: TQE_DATA_MANIFEST_PATH
         value: /app/config/deploy/demo-data-manifest.json
       - key: TQE_KNOWLEDGE_PACK_PATH

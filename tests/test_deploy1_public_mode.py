@@ -5,6 +5,7 @@ import hashlib
 import json
 import subprocess
 import sys
+import tarfile
 import tempfile
 import threading
 import time
@@ -230,6 +231,84 @@ class Deploy1PublicModeTests(unittest.TestCase):
         self.assertNotEqual(0, completed.returncode)
         self.assertIn("hash_mismatches", completed.stdout)
         self.assertIn("cache/node-output/entry.json", completed.stdout)
+
+    def test_provisioning_refreshes_when_configured_bundle_sha_changes(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "source"
+            staged_dataset = source / "dataset" / "canonical" / "v1"
+            staged_cache = source / "cache" / "node-output"
+            staged_runtime = source / "runtime" / "execution-cache"
+            staged_dataset.mkdir(parents=True)
+            staged_cache.mkdir(parents=True)
+            staged_runtime.mkdir(parents=True)
+            (staged_dataset / "matches.parquet").write_text("new-data\n", encoding="utf-8")
+            (staged_cache / "entry.json").write_text('{"epoch":"new"}\n', encoding="utf-8")
+            (staged_runtime / "answer.json").write_text('{"cache":"new"}\n', encoding="utf-8")
+            archive = root / "bundle.tar.gz"
+            with tarfile.open(archive, "w:gz") as handle:
+                handle.add(source / "dataset", arcname="dataset")
+                handle.add(source / "cache", arcname="cache")
+                handle.add(source / "runtime", arcname="runtime")
+            archive_sha = hashlib.sha256(archive.read_bytes()).hexdigest()
+
+            dataset_root = root / "installed" / "dataset"
+            cache_root = root / "installed" / "cache"
+            runtime_root = root / "installed" / "runtime"
+            (dataset_root / "canonical" / "v1").mkdir(parents=True)
+            (dataset_root / "canonical" / "v1" / "matches.parquet").write_text(
+                "old-data\n", encoding="utf-8"
+            )
+            (cache_root / "node-output").mkdir(parents=True)
+            (cache_root / "node-output" / "entry.json").write_text(
+                '{"epoch":"old"}\n', encoding="utf-8"
+            )
+            runtime_root.mkdir(parents=True)
+            manifest = root / "manifest.json"
+            manifest.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "1.0",
+                        "required_paths": ["matches.parquet"],
+                        "required_raw_paths": [],
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            command = [
+                sys.executable,
+                "scripts/provision-demo-data.py",
+                "--dataset-root",
+                str(dataset_root),
+                "--cache-root",
+                str(cache_root),
+                "--runtime-root",
+                str(runtime_root),
+                "--manifest",
+                str(manifest),
+                "--bundle-url",
+                archive.resolve().as_uri(),
+                "--bundle-sha256",
+                archive_sha,
+            ]
+            first = subprocess.run(command, check=False, capture_output=True, text=True, timeout=30)
+            second = subprocess.run(command, check=False, capture_output=True, text=True, timeout=30)
+
+            stamp = json.loads((dataset_root.parent / ".tqe-data-bundle.json").read_text(encoding="utf-8"))
+            installed_data = (dataset_root / "canonical" / "v1" / "matches.parquet").read_text(
+                encoding="utf-8"
+            )
+            installed_cache = (cache_root / "node-output" / "entry.json").read_text(encoding="utf-8")
+
+        self.assertEqual(0, first.returncode, first.stderr)
+        self.assertIn("Demo data provisioned and verified.", first.stdout)
+        self.assertEqual("new-data\n", installed_data)
+        self.assertEqual('{"epoch":"new"}\n', installed_cache)
+        self.assertEqual(archive_sha, stamp["archive_sha256"])
+        self.assertEqual(0, second.returncode, second.stderr)
+        self.assertIn("Demo data already satisfies manifest.", second.stdout)
 
 
 if __name__ == "__main__":

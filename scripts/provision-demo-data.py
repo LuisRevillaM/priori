@@ -19,6 +19,7 @@ import shutil
 import tarfile
 import tempfile
 import urllib.request
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -39,7 +40,17 @@ def main() -> int:
     args.cache_root.mkdir(parents=True, exist_ok=True)
     args.runtime_root.mkdir(parents=True, exist_ok=True)
     bundle_manifest = read_json(args.bundle_manifest) if args.bundle_manifest else {}
-    if dataset_satisfies_manifest(args.dataset_root, manifest, bundle_manifest, cache_root=args.cache_root, runtime_root=args.runtime_root):
+    expected_sha = args.bundle_sha256 or str(manifest.get("bundle_sha256") or "")
+    stamp_path = args.dataset_root.parent / ".tqe-data-bundle.json"
+    stamp = read_json(stamp_path)
+    installed_bundle_matches = not expected_sha or stamp.get("archive_sha256") == expected_sha
+    if installed_bundle_matches and dataset_satisfies_manifest(
+        args.dataset_root,
+        manifest,
+        bundle_manifest,
+        cache_root=args.cache_root,
+        runtime_root=args.runtime_root,
+    ):
         print("Demo data already satisfies manifest.")
         return 0
     if not args.bundle_url:
@@ -63,7 +74,6 @@ def main() -> int:
         temp_path = Path(temp_dir)
         archive = temp_path / "bundle.tar.gz"
         download(args.bundle_url, archive)
-        expected_sha = args.bundle_sha256 or str(manifest.get("bundle_sha256") or "")
         if expected_sha:
             actual_sha = file_sha256(archive)
             if actual_sha != expected_sha:
@@ -96,6 +106,14 @@ def main() -> int:
             replace_tree(staged_cache, args.cache_root)
         if staged_runtime.exists():
             replace_tree(staged_runtime, args.runtime_root)
+        write_bundle_stamp(
+            stamp_path,
+            {
+                "schema_version": "tqe.data_bundle_install.v1",
+                "archive_sha256": file_sha256(archive),
+                "installed_at": datetime.now(UTC).isoformat(),
+            },
+        )
     print("Demo data provisioned and verified.")
     return 0
 
@@ -214,6 +232,15 @@ def file_sha256(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def write_bundle_stamp(path: Path, payload: dict[str, Any]) -> None:
+    """Publish bundle identity only after every verified tree is installed."""
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(f".{path.name}.tmp-{os.getpid()}")
+    temporary.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    os.replace(temporary, path)
 
 
 def unpack_tar_gz(archive: Path, destination: Path) -> None:
