@@ -2,7 +2,7 @@ services:
   - type: web
     name: entrelineas-film-room
     runtime: docker
-    plan: starter
+    plan: standard
     dockerfilePath: ./Dockerfile
     healthCheckPath: /film-room
     disk:
