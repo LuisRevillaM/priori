@@ -252,6 +252,7 @@ export type ReplayPayload = {
     coordinate_contract: string;
   };
   frames: ReplayFrame[];
+  overlays?: JsonObject;
 };
 
 export type FilmRoomIntervalMetric = {

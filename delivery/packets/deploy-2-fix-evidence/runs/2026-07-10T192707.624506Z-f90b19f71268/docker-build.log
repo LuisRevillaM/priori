@@ -1,0 +1,570 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 4.94kB 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/python:3.12-slim
+#2 DONE 1.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 352B done
+#3 DONE 0.0s
+
+#4 [frontend  1/13] FROM docker.io/library/python:3.12-slim@sha256:423ed6ab25b1921a477529254bfeeabf5855151dc2c3141699a1bfc852199fbf
+#4 resolve docker.io/library/python:3.12-slim@sha256:423ed6ab25b1921a477529254bfeeabf5855151dc2c3141699a1bfc852199fbf done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 65.29MB 0.7s done
+#5 DONE 0.7s
+
+#6 [runtime  4/29] RUN npm install -g n     && n 22     && npm install -g @openai/codex@0.131.0     && python -m pip install --upgrade pip
+#6 CACHED
+
+#7 [frontend  2/13] WORKDIR /app
+#7 CACHED
+
+#8 [runtime  3/29] RUN apt-get update     && apt-get install -y --no-install-recommends       build-essential       ca-certificates       curl       git       nodejs       npm       ripgrep     && rm -rf /var/lib/apt/lists/*
+#8 CACHED
+
+#9 [runtime  5/29] RUN git clone --recurse-submodules https://github.com/NousResearch/hermes-agent.git /opt/hermes-agent     && cd /opt/hermes-agent     && python -m venv venv     && /opt/hermes-agent/venv/bin/python -m pip install --upgrade pip     && /opt/hermes-agent/venv/bin/python -m pip install -e ".[all]"     && ln -sf /opt/hermes-agent/venv/bin/hermes /usr/local/bin/hermes
+#9 CACHED
+
+#10 [runtime  6/29] COPY pyproject.toml ./
+#10 CACHED
+
+#11 [frontend  3/13] RUN apt-get update     && apt-get install -y --no-install-recommends       ca-certificates       curl       nodejs       npm     && rm -rf /var/lib/apt/lists/*     && npm install -g n     && n 22
+#11 CACHED
+
+#12 [frontend  4/13] COPY pyproject.toml ./
+#12 CACHED
+
+#13 [frontend  5/13] COPY src ./src
+#13 ...
+
+#14 [runtime  7/29] COPY src ./src
+#14 DONE 0.2s
+
+#13 [frontend  5/13] COPY src ./src
+#13 DONE 0.2s
+
+#15 [frontend  6/13] COPY scripts ./scripts
+#15 DONE 0.1s
+
+#16 [runtime  8/29] COPY scripts ./scripts
+#16 DONE 0.1s
+
+#17 [frontend  7/13] COPY config ./config
+#17 DONE 0.1s
+
+#18 [runtime  9/29] COPY config ./config
+#18 DONE 0.1s
+
+#19 [runtime 10/29] COPY generated ./generated
+#19 ...
+
+#20 [frontend  8/13] COPY generated ./generated
+#20 DONE 0.2s
+
+#19 [runtime 10/29] COPY generated ./generated
+#19 DONE 0.2s
+
+#21 [runtime 11/29] COPY docs ./docs
+#21 DONE 0.0s
+
+#22 [runtime 12/29] RUN mkdir -p     /app/delivery/n1d     /app/delivery/packets/r2-2-flagship     /app/delivery/packets/scp2-3-evidence/witness-plan
+#22 DONE 0.3s
+
+#23 [frontend  9/13] RUN python3 -m venv .venv     && .venv/bin/python -m pip install --upgrade pip     && .venv/bin/python -m pip install -e .
+#23 ...
+
+#24 [runtime 13/29] COPY delivery/n1d/n1e-origin-bundle.json ./delivery/n1d/n1e-origin-bundle.json
+#24 DONE 0.0s
+
+#25 [runtime 14/29] COPY delivery/n1d/n1f-origin-bundle.json ./delivery/n1d/n1f-origin-bundle.json
+#25 DONE 0.0s
+
+#26 [runtime 15/29] COPY delivery/n1d/n1d1-attestation.json ./delivery/n1d/n1d1-attestation.json
+#26 DONE 0.0s
+
+#27 [runtime 16/29] COPY delivery/n1d/n1d-canonical-freeze-manifest.json ./delivery/n1d/n1d-canonical-freeze-manifest.json
+#27 DONE 0.0s
+
+#28 [runtime 17/29] COPY delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json ./delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json
+#28 DONE 0.0s
+
+#29 [runtime 18/29] COPY delivery/packets/r2-2-flagship/fragile_retention_rate_table.json ./delivery/packets/r2-2-flagship/fragile_retention_rate_table.json
+#29 DONE 0.0s
+
+#30 [runtime 19/29] COPY delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_v0.json ./delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_v0.json
+#30 DONE 0.0s
+
+#31 [runtime 20/29] COPY delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json ./delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json
+#31 DONE 0.0s
+
+#23 [frontend  9/13] RUN python3 -m venv .venv     && .venv/bin/python -m pip install --upgrade pip     && .venv/bin/python -m pip install -e .
+#23 2.836 Requirement already satisfied: pip in ./.venv/lib/python3.12/site-packages (25.0.1)
+#23 2.908 Collecting pip
+#23 2.961   Downloading pip-26.1.2-py3-none-any.whl.metadata (4.6 kB)
+#23 2.973 Downloading pip-26.1.2-py3-none-any.whl (1.8 MB)
+#23 3.055    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.8/1.8 MB 24.7 MB/s eta 0:00:00
+#23 3.063 Installing collected packages: pip
+#23 3.063   Attempting uninstall: pip
+#23 3.065     Found existing installation: pip 25.0.1
+#23 3.077     Uninstalling pip-25.0.1:
+#23 3.079       Successfully uninstalled pip-25.0.1
+#23 3.817 Successfully installed pip-26.1.2
+#23 4.185 Obtaining file:///app
+#23 4.187   Installing build dependencies: started
+#23 4.851   Installing build dependencies: finished with status 'done'
+#23 4.852   Checking if build backend supports build_editable: started
+#23 4.993   Checking if build backend supports build_editable: finished with status 'done'
+#23 4.993   Getting requirements to build editable: started
+#23 5.525   Getting requirements to build editable: finished with status 'done'
+#23 5.526   Preparing editable metadata (pyproject.toml): started
+#23 5.614   Preparing editable metadata (pyproject.toml): finished with status 'done'
+#23 5.911 Collecting floodlight==1.2.0 (from entrelineas-tactical-evidence==0.1.0)
+#23 5.951   Downloading floodlight-1.2.0-py3-none-any.whl.metadata (9.9 kB)
+#23 6.232 Collecting lxml<6,>=5.3 (from entrelineas-tactical-evidence==0.1.0)
+#23 6.239   Downloading lxml-5.4.0-cp312-cp312-manylinux_2_28_aarch64.whl.metadata (3.5 kB)
+#23 6.253 Collecting mcp<2,>=1.24 (from entrelineas-tactical-evidence==0.1.0)
+#23 6.266   Downloading mcp-1.28.1-py3-none-any.whl.metadata (9.4 kB)
+#23 6.333 Collecting pandas<3,>=2.3 (from entrelineas-tactical-evidence==0.1.0)
+#23 6.342   Downloading pandas-2.3.3-cp312-cp312-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl.metadata (91 kB)
+#23 6.454 Collecting pillow<13,>=12 (from entrelineas-tactical-evidence==0.1.0)
+#23 6.461   Downloading pillow-12.3.0-cp312-cp312-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl.metadata (9.1 kB)
+#23 6.509 Collecting pyarrow==24.0.0 (from entrelineas-tactical-evidence==0.1.0)
+#23 6.516   Downloading pyarrow-24.0.0-cp312-cp312-manylinux_2_28_aarch64.whl.metadata (3.0 kB)
+#23 6.570 Collecting pydantic==2.12.5 (from entrelineas-tactical-evidence==0.1.0)
+#23 6.579   Downloading pydantic-2.12.5-py3-none-any.whl.metadata (90 kB)
+#23 6.603 Collecting PyYAML<7,>=6.0 (from entrelineas-tactical-evidence==0.1.0)
+#23 6.610   Downloading pyyaml-6.0.3-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl.metadata (2.4 kB)
+#23 6.634 Collecting h5py<4.0.0,>=3.11.0 (from floodlight==1.2.0->entrelineas-tactical-evidence==0.1.0)
+#23 6.642   Downloading h5py-3.16.0-cp312-cp312-manylinux_2_28_aarch64.whl.metadata (3.0 kB)
+#23 6.735 Collecting iso8601<3.0.0,>=2.1.0 (from floodlight==1.2.0->entrelineas-tactical-evidence==0.1.0)
+#23 6.742   Downloading iso8601-2.1.0-py3-none-any.whl.metadata (3.7 kB)
+#23 6.834 Collecting matplotlib<4.0.0,>=3.9.2 (from floodlight==1.2.0->entrelineas-tactical-evidence==0.1.0)
+#23 6.841   Downloading matplotlib-3.11.0-cp312-cp312-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl.metadata (80 kB)
+#23 6.985 Collecting numpy<3.0.0,>=2.1.1 (from floodlight==1.2.0->entrelineas-tactical-evidence==0.1.0)
+#23 6.992   Downloading numpy-2.5.1-cp312-cp312-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl.metadata (6.6 kB)
+#23 7.015 Collecting pytz<2026.0,>=2025.1 (from floodlight==1.2.0->entrelineas-tactical-evidence==0.1.0)
+#23 7.024   Downloading pytz-2025.2-py2.py3-none-any.whl.metadata (22 kB)
+#23 7.082 Collecting scipy<2.0.0,>=1.14.1 (from floodlight==1.2.0->entrelineas-tactical-evidence==0.1.0)
+#23 7.089   Downloading scipy-1.18.0-cp312-cp312-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl.metadata (62 kB)
+#23 7.109 Collecting annotated-types>=0.6.0 (from pydantic==2.12.5->entrelineas-tactical-evidence==0.1.0)
+#23 7.115   Downloading annotated_types-0.7.0-py3-none-any.whl.metadata (15 kB)
+#23 7.575 Collecting pydantic-core==2.41.5 (from pydantic==2.12.5->entrelineas-tactical-evidence==0.1.0)
+#23 7.582   Downloading pydantic_core-2.41.5-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (7.3 kB)
+#23 7.595 Collecting typing-extensions>=4.14.1 (from pydantic==2.12.5->entrelineas-tactical-evidence==0.1.0)
+#23 7.602   Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+#23 7.615 Collecting typing-inspection>=0.4.2 (from pydantic==2.12.5->entrelineas-tactical-evidence==0.1.0)
+#23 7.623   Downloading typing_inspection-0.4.2-py3-none-any.whl.metadata (2.6 kB)
+#23 7.656 Collecting contourpy>=1.0.1 (from matplotlib<4.0.0,>=3.9.2->floodlight==1.2.0->entrelineas-tactical-evidence==0.1.0)
+#23 7.664   Downloading contourpy-1.3.3-cp312-cp312-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl.metadata (5.5 kB)
+#23 7.690 Collecting cycler>=0.10 (from matplotlib<4.0.0,>=3.9.2->floodlight==1.2.0->entrelineas-tactical-evidence==0.1.0)
+#23 7.696   Downloading cycler-0.12.1-py3-none-any.whl.metadata (3.8 kB)
+#23 7.790 Collecting fonttools>=4.22.0 (from matplotlib<4.0.0,>=3.9.2->floodlight==1.2.0->entrelineas-tactical-evidence==0.1.0)
+#23 7.800   Downloading fonttools-4.63.0-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl.metadata (118 kB)
+#23 7.843 Collecting kiwisolver>=1.3.1 (from matplotlib<4.0.0,>=3.9.2->floodlight==1.2.0->entrelineas-tactical-evidence==0.1.0)
+#23 7.850   Downloading kiwisolver-1.5.0-cp312-cp312-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl.metadata (5.1 kB)
+#23 7.870 Collecting packaging>=20.0 (from matplotlib<4.0.0,>=3.9.2->floodlight==1.2.0->entrelineas-tactical-evidence==0.1.0)
+#23 7.876   Downloading packaging-26.2-py3-none-any.whl.metadata (3.5 kB)
+#23 7.896 Collecting pyparsing>=3 (from matplotlib<4.0.0,>=3.9.2->floodlight==1.2.0->entrelineas-tactical-evidence==0.1.0)
+#23 7.902   Downloading pyparsing-3.3.2-py3-none-any.whl.metadata (5.8 kB)
+#23 7.915 Collecting python-dateutil>=2.7 (from matplotlib<4.0.0,>=3.9.2->floodlight==1.2.0->entrelineas-tactical-evidence==0.1.0)
+#23 7.920   Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl.metadata (8.4 kB)
+#23 7.934 Collecting anyio>=4.5 (from mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#23 7.941   Downloading anyio-4.14.1-py3-none-any.whl.metadata (4.6 kB)
+#23 7.952 Collecting httpx-sse>=0.4 (from mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#23 7.960   Downloading httpx_sse-0.4.3-py3-none-any.whl.metadata (9.7 kB)
+#23 7.974 Collecting httpx<1.0.0,>=0.27.1 (from mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#23 7.979   Downloading httpx-0.28.1-py3-none-any.whl.metadata (7.1 kB)
+#23 8.016 Collecting jsonschema>=4.20.0 (from mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#23 8.022   Downloading jsonschema-4.26.0-py3-none-any.whl.metadata (7.6 kB)
+#23 8.038 Collecting pydantic-settings>=2.5.2 (from mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#23 8.047   Downloading pydantic_settings-2.14.2-py3-none-any.whl.metadata (3.4 kB)
+#23 8.076 Collecting pyjwt>=2.10.1 (from pyjwt[crypto]>=2.10.1->mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#23 8.083   Downloading pyjwt-2.13.0-py3-none-any.whl.metadata (3.4 kB)
+#23 8.097 Collecting python-multipart>=0.0.9 (from mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#23 8.104   Downloading python_multipart-0.0.32-py3-none-any.whl.metadata (2.1 kB)
+#23 8.119 Collecting sse-starlette>=1.6.1 (from mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#23 8.125   Downloading sse_starlette-3.4.5-py3-none-any.whl.metadata (15 kB)
+#23 8.148 Collecting starlette>=0.27 (from mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#23 8.156   Downloading starlette-1.3.1-py3-none-any.whl.metadata (6.4 kB)
+#23 8.176 Collecting uvicorn>=0.31.1 (from mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#23 8.182   Downloading uvicorn-0.51.0-py3-none-any.whl.metadata (6.6 kB)
+#23 8.196 Collecting certifi (from httpx<1.0.0,>=0.27.1->mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#23 8.203   Downloading certifi-2026.6.17-py3-none-any.whl.metadata (2.5 kB)
+#23 8.218 Collecting httpcore==1.* (from httpx<1.0.0,>=0.27.1->mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#23 8.226   Downloading httpcore-1.0.9-py3-none-any.whl.metadata (21 kB)
+#23 8.239 Collecting idna (from httpx<1.0.0,>=0.27.1->mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#23 8.245   Downloading idna-3.18-py3-none-any.whl.metadata (6.1 kB)
+#23 8.257 Collecting h11>=0.16 (from httpcore==1.*->httpx<1.0.0,>=0.27.1->mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#23 8.262   Downloading h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+#23 8.280 Collecting tzdata>=2022.7 (from pandas<3,>=2.3->entrelineas-tactical-evidence==0.1.0)
+#23 8.285   Downloading tzdata-2026.3-py2.py3-none-any.whl.metadata (1.4 kB)
+#23 8.303 Collecting attrs>=22.2.0 (from jsonschema>=4.20.0->mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#23 8.312   Downloading attrs-26.1.0-py3-none-any.whl.metadata (8.8 kB)
+#23 8.325 Collecting jsonschema-specifications>=2023.03.6 (from jsonschema>=4.20.0->mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#23 8.331   Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl.metadata (2.9 kB)
+#23 8.348 Collecting referencing>=0.28.4 (from jsonschema>=4.20.0->mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#23 8.354   Downloading referencing-0.37.0-py3-none-any.whl.metadata (2.8 kB)
+#23 8.495 Collecting rpds-py>=0.25.0 (from jsonschema>=4.20.0->mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#23 8.505   Downloading rpds_py-2026.6.3-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (4.1 kB)
+#23 8.521 Collecting python-dotenv>=0.21.0 (from pydantic-settings>=2.5.2->mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#23 8.527   Downloading python_dotenv-1.2.2-py3-none-any.whl.metadata (27 kB)
+#23 8.612 Collecting cryptography>=3.4.0 (from pyjwt[crypto]>=2.10.1->mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#23 8.622   Downloading cryptography-49.0.0-cp311-abi3-manylinux_2_34_aarch64.whl.metadata (4.3 kB)
+#23 8.689 Collecting cffi>=2.0.0 (from cryptography>=3.4.0->pyjwt[crypto]>=2.10.1->mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#23 8.696   Downloading cffi-2.1.0-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.whl.metadata (2.5 kB)
+#23 8.709 Collecting pycparser (from cffi>=2.0.0->cryptography>=3.4.0->pyjwt[crypto]>=2.10.1->mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#23 8.714   Downloading pycparser-3.0-py3-none-any.whl.metadata (8.2 kB)
+#23 8.727 Collecting six>=1.5 (from python-dateutil>=2.7->matplotlib<4.0.0,>=3.9.2->floodlight==1.2.0->entrelineas-tactical-evidence==0.1.0)
+#23 8.732   Downloading six-1.17.0-py2.py3-none-any.whl.metadata (1.7 kB)
+#23 8.753 Collecting click>=7.0 (from uvicorn>=0.31.1->mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#23 8.759   Downloading click-8.4.2-py3-none-any.whl.metadata (2.6 kB)
+#23 8.768 Downloading floodlight-1.2.0-py3-none-any.whl (142 kB)
+#23 8.784 Downloading pyarrow-24.0.0-cp312-cp312-manylinux_2_28_aarch64.whl (45.7 MB)
+#23 10.27    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 45.7/45.7 MB 31.4 MB/s  0:00:01
+#23 10.29 Downloading pydantic-2.12.5-py3-none-any.whl (463 kB)
+#23 10.32 Downloading pydantic_core-2.41.5-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (1.9 MB)
+#23 10.38    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.9/1.9 MB 39.1 MB/s  0:00:00
+#23 10.40 Downloading h5py-3.16.0-cp312-cp312-manylinux_2_28_aarch64.whl (5.2 MB)
+#23 10.55    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.2/5.2 MB 35.1 MB/s  0:00:00
+#23 10.57 Downloading iso8601-2.1.0-py3-none-any.whl (7.5 kB)
+#23 10.59 Downloading lxml-5.4.0-cp312-cp312-manylinux_2_28_aarch64.whl (4.8 MB)
+#23 10.73    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.8/4.8 MB 34.9 MB/s  0:00:00
+#23 10.75 Downloading matplotlib-3.11.0-cp312-cp312-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl (10.8 MB)
+#23 11.13    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 10.8/10.8 MB 28.8 MB/s  0:00:00
+#23 11.15 Downloading mcp-1.28.1-py3-none-any.whl (222 kB)
+#23 11.18 Downloading httpx-0.28.1-py3-none-any.whl (73 kB)
+#23 11.21 Downloading httpcore-1.0.9-py3-none-any.whl (78 kB)
+#23 11.23 Downloading numpy-2.5.1-cp312-cp312-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl (15.2 MB)
+#23 11.90    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 15.2/15.2 MB 22.3 MB/s  0:00:00
+#23 11.93 Downloading pandas-2.3.3-cp312-cp312-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl (11.7 MB)
+#23 12.64    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11.7/11.7 MB 16.4 MB/s  0:00:00
+#23 12.66 Downloading pillow-12.3.0-cp312-cp312-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl (6.3 MB)
+#23 13.04    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 6.3/6.3 MB 16.7 MB/s  0:00:00
+#23 13.05 Downloading pytz-2025.2-py2.py3-none-any.whl (509 kB)
+#23 13.09 Downloading pyyaml-6.0.3-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (775 kB)
+#23 13.11    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 775.1/775.1 kB 32.1 MB/s  0:00:00
+#23 13.12 Downloading scipy-1.18.0-cp312-cp312-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl (34.0 MB)
+#23 14.68    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 34.0/34.0 MB 21.8 MB/s  0:00:01
+#23 14.69 Downloading annotated_types-0.7.0-py3-none-any.whl (13 kB)
+#23 14.70 Downloading anyio-4.14.1-py3-none-any.whl (124 kB)
+#23 14.72 Downloading contourpy-1.3.3-cp312-cp312-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl (332 kB)
+#23 14.85 Downloading cycler-0.12.1-py3-none-any.whl (8.3 kB)
+#23 14.87 Downloading fonttools-4.63.0-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (5.0 MB)
+#23 15.03    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.0/5.0 MB 32.4 MB/s  0:00:00
+#23 15.04 Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+#23 15.05 Downloading httpx_sse-0.4.3-py3-none-any.whl (9.0 kB)
+#23 15.07 Downloading idna-3.18-py3-none-any.whl (65 kB)
+#23 15.08 Downloading jsonschema-4.26.0-py3-none-any.whl (90 kB)
+#23 15.10 Downloading attrs-26.1.0-py3-none-any.whl (67 kB)
+#23 15.11 Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl (18 kB)
+#23 15.12 Downloading kiwisolver-1.5.0-cp312-cp312-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl (1.3 MB)
+#23 15.17    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.3/1.3 MB 30.4 MB/s  0:00:00
+#23 15.18 Downloading packaging-26.2-py3-none-any.whl (100 kB)
+#23 15.19 Downloading pydantic_settings-2.14.2-py3-none-any.whl (61 kB)
+#23 15.20 Downloading pyjwt-2.13.0-py3-none-any.whl (31 kB)
+#23 15.21 Downloading cryptography-49.0.0-cp311-abi3-manylinux_2_34_aarch64.whl (4.7 MB)
+#23 15.38    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.7/4.7 MB 28.8 MB/s  0:00:00
+#23 15.39 Downloading cffi-2.1.0-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.whl (222 kB)
+#23 15.41 Downloading pyparsing-3.3.2-py3-none-any.whl (122 kB)
+#23 15.42 Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)
+#23 15.44 Downloading python_dotenv-1.2.2-py3-none-any.whl (22 kB)
+#23 15.45 Downloading python_multipart-0.0.32-py3-none-any.whl (30 kB)
+#23 15.47 Downloading referencing-0.37.0-py3-none-any.whl (26 kB)
+#23 15.48 Downloading rpds_py-2026.6.3-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (368 kB)
+#23 15.50 Downloading six-1.17.0-py2.py3-none-any.whl (11 kB)
+#23 15.51 Downloading sse_starlette-3.4.5-py3-none-any.whl (16 kB)
+#23 15.52 Downloading starlette-1.3.1-py3-none-any.whl (73 kB)
+#23 15.53 Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+#23 15.55 Downloading typing_inspection-0.4.2-py3-none-any.whl (14 kB)
+#23 15.56 Downloading tzdata-2026.3-py2.py3-none-any.whl (348 kB)
+#23 15.58 Downloading uvicorn-0.51.0-py3-none-any.whl (73 kB)
+#23 15.59 Downloading click-8.4.2-py3-none-any.whl (119 kB)
+#23 15.60 Downloading certifi-2026.6.17-py3-none-any.whl (133 kB)
+#23 15.62 Downloading pycparser-3.0-py3-none-any.whl (48 kB)
+#23 15.77 Building wheels for collected packages: entrelineas-tactical-evidence
+#23 15.78   Building editable for entrelineas-tactical-evidence (pyproject.toml): started
+#23 16.05   Building editable for entrelineas-tactical-evidence (pyproject.toml): finished with status 'done'
+#23 16.05   Created wheel for entrelineas-tactical-evidence: filename=entrelineas_tactical_evidence-0.1.0-0.editable-py3-none-any.whl size=1556 sha256=92c072b50f5c58c9790b1c81d2df118ed42a32ddbc6df981491f2a3eb364f6f3
+#23 16.05   Stored in directory: /tmp/pip-ephem-wheel-cache-awy7aiz7/wheels/54/1b/b7/aa63e25c8f14f4f2ae7b04e6097bdecb770e455c5c1ee0a600
+#23 16.05 Successfully built entrelineas-tactical-evidence
+#23 16.11 Installing collected packages: pytz, tzdata, typing-extensions, six, rpds-py, PyYAML, python-multipart, python-dotenv, pyparsing, pyjwt, pycparser, pyarrow, pillow, packaging, numpy, lxml, kiwisolver, iso8601, idna, httpx-sse, h11, fonttools, cycler, click, certifi, attrs, annotated-types, uvicorn, typing-inspection, scipy, referencing, python-dateutil, pydantic-core, httpcore, h5py, contourpy, cffi, anyio, starlette, pydantic, pandas, matplotlib, jsonschema-specifications, httpx, cryptography, sse-starlette, pydantic-settings, jsonschema, floodlight, mcp, entrelineas-tactical-evidence
+#23 29.54 
+#23 29.54 Successfully installed PyYAML-6.0.3 annotated-types-0.7.0 anyio-4.14.1 attrs-26.1.0 certifi-2026.6.17 cffi-2.1.0 click-8.4.2 contourpy-1.3.3 cryptography-49.0.0 cycler-0.12.1 entrelineas-tactical-evidence-0.1.0 floodlight-1.2.0 fonttools-4.63.0 h11-0.16.0 h5py-3.16.0 httpcore-1.0.9 httpx-0.28.1 httpx-sse-0.4.3 idna-3.18 iso8601-2.1.0 jsonschema-4.26.0 jsonschema-specifications-2025.9.1 kiwisolver-1.5.0 lxml-5.4.0 matplotlib-3.11.0 mcp-1.28.1 numpy-2.5.1 packaging-26.2 pandas-2.3.3 pillow-12.3.0 pyarrow-24.0.0 pycparser-3.0 pydantic-2.12.5 pydantic-core-2.41.5 pydantic-settings-2.14.2 pyjwt-2.13.0 pyparsing-3.3.2 python-dateutil-2.9.0.post0 python-dotenv-1.2.2 python-multipart-0.0.32 pytz-2025.2 referencing-0.37.0 rpds-py-2026.6.3 scipy-1.18.0 six-1.17.0 sse-starlette-3.4.5 starlette-1.3.1 typing-extensions-4.16.0 typing-inspection-0.4.2 tzdata-2026.3 uvicorn-0.51.0
+#23 DONE 30.4s
+
+#32 [frontend 10/13] COPY apps/workbench-alpha/package*.json ./apps/workbench-alpha/
+#32 DONE 0.1s
+
+#33 [frontend 11/13] RUN npm --prefix apps/workbench-alpha ci
+#33 1.534 
+#33 1.534 added 83 packages, and audited 84 packages in 1s
+#33 1.534 
+#33 1.534 11 packages are looking for funding
+#33 1.534   run `npm fund` for details
+#33 1.536 
+#33 1.536 1 low severity vulnerability
+#33 1.536 
+#33 1.536 To address all issues, run:
+#33 1.536   npm audit fix
+#33 1.536 
+#33 1.536 Run `npm audit` for details.
+#33 DONE 2.0s
+
+#34 [frontend 12/13] COPY apps/workbench-alpha ./apps/workbench-alpha
+#34 DONE 0.2s
+
+#35 [frontend 13/13] RUN npm --prefix apps/workbench-alpha run build
+#35 0.208 
+#35 0.208 > entrelineas-workbench-alpha@0.1.0 build
+#35 0.208 > npm run generate:contracts && tsc --noEmit -p tsconfig.json && vite build
+#35 0.208 
+#35 0.253 
+#35 0.253 > entrelineas-workbench-alpha@0.1.0 generate:contracts
+#35 0.253 > PYTHONPATH=../../src ${PYTHON:-../../.venv/bin/python} ../../scripts/workbench_alpha/generate_contracts.py
+#35 0.253 
+#35 4.885 vite v7.3.5 building client environment for production...
+#35 4.915 transforming...
+#35 5.640 ✓ 179 modules transformed.
+#35 6.004 rendering chunks...
+#35 6.018 computing gzip size...
+#35 6.039 dist/index.html                     0.41 kB │ gzip:   0.28 kB
+#35 6.039 dist/assets/index-D-nsxbd-.css     32.91 kB │ gzip:   7.05 kB
+#35 6.039 dist/assets/index-mh7YKWfX.js   2,033.50 kB │ gzip: 238.39 kB
+#35 6.040 
+#35 6.040 (!) Some chunks are larger than 500 kB after minification. Consider:
+#35 6.040 - Using dynamic import() to code-split the application
+#35 6.040 - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+#35 6.040 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+#35 6.040 ✓ built in 1.14s
+#35 DONE 6.1s
+
+#36 [runtime 21/29] COPY --from=frontend /app/apps/workbench-alpha/dist ./apps/workbench-alpha/dist
+#36 DONE 0.0s
+
+#37 [runtime 22/29] RUN mkdir -p ./apps/workbench-alpha/src/generated
+#37 DONE 0.1s
+
+#38 [runtime 23/29] COPY --from=frontend /app/apps/workbench-alpha/src/generated/moment-zero.json ./apps/workbench-alpha/src/generated/moment-zero.json
+#38 DONE 0.0s
+
+#39 [runtime 24/29] COPY --from=frontend /app/apps/workbench-alpha/src/generated/moment-line-break-supported.json ./apps/workbench-alpha/src/generated/moment-line-break-supported.json
+#39 DONE 0.0s
+
+#40 [runtime 25/29] COPY --from=frontend /app/apps/workbench-alpha/src/generated/moment-high-bypass.json ./apps/workbench-alpha/src/generated/moment-high-bypass.json
+#40 DONE 0.0s
+
+#41 [runtime 26/29] COPY --from=frontend /app/apps/workbench-alpha/src/generated/moment-zero-catalog.json ./apps/workbench-alpha/src/generated/moment-zero-catalog.json
+#41 DONE 0.0s
+
+#42 [runtime 27/29] COPY --from=frontend /app/apps/workbench-alpha/src/generated/moment-line-break-supported-catalog.json ./apps/workbench-alpha/src/generated/moment-line-break-supported-catalog.json
+#42 DONE 0.0s
+
+#43 [runtime 28/29] COPY --from=frontend /app/apps/workbench-alpha/src/generated/moment-high-bypass-catalog.json ./apps/workbench-alpha/src/generated/moment-high-bypass-catalog.json
+#43 DONE 0.0s
+
+#44 [runtime 29/29] RUN python -m pip install --upgrade pip     && python -m pip install -e .     && chmod +x /app/scripts/render-start.sh /app/scripts/provision-demo-data.py /app/scripts/bootstrap-hermes.sh
+#44 0.319 Requirement already satisfied: pip in /usr/local/lib/python3.12/site-packages (26.1.2)
+#44 0.381 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+#44 0.525 Obtaining file:///app
+#44 0.526   Installing build dependencies: started
+#44 0.898   Installing build dependencies: finished with status 'done'
+#44 0.898   Checking if build backend supports build_editable: started
+#44 1.034   Checking if build backend supports build_editable: finished with status 'done'
+#44 1.034   Getting requirements to build editable: started
+#44 1.200   Getting requirements to build editable: finished with status 'done'
+#44 1.201   Preparing editable metadata (pyproject.toml): started
+#44 1.284   Preparing editable metadata (pyproject.toml): finished with status 'done'
+#44 1.482 Collecting floodlight==1.2.0 (from entrelineas-tactical-evidence==0.1.0)
+#44 1.525   Downloading floodlight-1.2.0-py3-none-any.whl.metadata (9.9 kB)
+#44 1.686 Collecting lxml<6,>=5.3 (from entrelineas-tactical-evidence==0.1.0)
+#44 1.694   Downloading lxml-5.4.0-cp312-cp312-manylinux_2_28_aarch64.whl.metadata (3.5 kB)
+#44 1.714 Collecting mcp<2,>=1.24 (from entrelineas-tactical-evidence==0.1.0)
+#44 1.722   Downloading mcp-1.28.1-py3-none-any.whl.metadata (9.4 kB)
+#44 1.776 Collecting pandas<3,>=2.3 (from entrelineas-tactical-evidence==0.1.0)
+#44 1.784   Downloading pandas-2.3.3-cp312-cp312-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl.metadata (91 kB)
+#44 1.886 Collecting pillow<13,>=12 (from entrelineas-tactical-evidence==0.1.0)
+#44 1.895   Downloading pillow-12.3.0-cp312-cp312-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl.metadata (9.1 kB)
+#44 1.936 Collecting pyarrow==24.0.0 (from entrelineas-tactical-evidence==0.1.0)
+#44 1.943   Downloading pyarrow-24.0.0-cp312-cp312-manylinux_2_28_aarch64.whl.metadata (3.0 kB)
+#44 1.993 Collecting pydantic==2.12.5 (from entrelineas-tactical-evidence==0.1.0)
+#44 2.000   Downloading pydantic-2.12.5-py3-none-any.whl.metadata (90 kB)
+#44 2.031 Collecting PyYAML<7,>=6.0 (from entrelineas-tactical-evidence==0.1.0)
+#44 2.031   Using cached pyyaml-6.0.3-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl.metadata (2.4 kB)
+#44 2.056 Collecting h5py<4.0.0,>=3.11.0 (from floodlight==1.2.0->entrelineas-tactical-evidence==0.1.0)
+#44 2.062   Downloading h5py-3.16.0-cp312-cp312-manylinux_2_28_aarch64.whl.metadata (3.0 kB)
+#44 2.077 Collecting iso8601<3.0.0,>=2.1.0 (from floodlight==1.2.0->entrelineas-tactical-evidence==0.1.0)
+#44 2.083   Downloading iso8601-2.1.0-py3-none-any.whl.metadata (3.7 kB)
+#44 2.158 Collecting matplotlib<4.0.0,>=3.9.2 (from floodlight==1.2.0->entrelineas-tactical-evidence==0.1.0)
+#44 2.163   Downloading matplotlib-3.11.0-cp312-cp312-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl.metadata (80 kB)
+#44 2.284 Collecting numpy<3.0.0,>=2.1.1 (from floodlight==1.2.0->entrelineas-tactical-evidence==0.1.0)
+#44 2.294   Downloading numpy-2.5.1-cp312-cp312-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl.metadata (6.6 kB)
+#44 2.317 Collecting pytz<2026.0,>=2025.1 (from floodlight==1.2.0->entrelineas-tactical-evidence==0.1.0)
+#44 2.323   Downloading pytz-2025.2-py2.py3-none-any.whl.metadata (22 kB)
+#44 2.381 Collecting scipy<2.0.0,>=1.14.1 (from floodlight==1.2.0->entrelineas-tactical-evidence==0.1.0)
+#44 2.388   Downloading scipy-1.18.0-cp312-cp312-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl.metadata (62 kB)
+#44 2.411 Collecting annotated-types>=0.6.0 (from pydantic==2.12.5->entrelineas-tactical-evidence==0.1.0)
+#44 2.414   Using cached annotated_types-0.7.0-py3-none-any.whl.metadata (15 kB)
+#44 2.696 Collecting pydantic-core==2.41.5 (from pydantic==2.12.5->entrelineas-tactical-evidence==0.1.0)
+#44 2.707   Downloading pydantic_core-2.41.5-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (7.3 kB)
+#44 2.722 Collecting typing-extensions>=4.14.1 (from pydantic==2.12.5->entrelineas-tactical-evidence==0.1.0)
+#44 2.723   Using cached typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+#44 2.736 Collecting typing-inspection>=0.4.2 (from pydantic==2.12.5->entrelineas-tactical-evidence==0.1.0)
+#44 2.738   Using cached typing_inspection-0.4.2-py3-none-any.whl.metadata (2.6 kB)
+#44 2.771 Collecting contourpy>=1.0.1 (from matplotlib<4.0.0,>=3.9.2->floodlight==1.2.0->entrelineas-tactical-evidence==0.1.0)
+#44 2.778   Downloading contourpy-1.3.3-cp312-cp312-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl.metadata (5.5 kB)
+#44 2.788 Collecting cycler>=0.10 (from matplotlib<4.0.0,>=3.9.2->floodlight==1.2.0->entrelineas-tactical-evidence==0.1.0)
+#44 2.794   Downloading cycler-0.12.1-py3-none-any.whl.metadata (3.8 kB)
+#44 2.864 Collecting fonttools>=4.22.0 (from matplotlib<4.0.0,>=3.9.2->floodlight==1.2.0->entrelineas-tactical-evidence==0.1.0)
+#44 2.872   Downloading fonttools-4.63.0-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl.metadata (118 kB)
+#44 2.909 Collecting kiwisolver>=1.3.1 (from matplotlib<4.0.0,>=3.9.2->floodlight==1.2.0->entrelineas-tactical-evidence==0.1.0)
+#44 2.915   Downloading kiwisolver-1.5.0-cp312-cp312-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl.metadata (5.1 kB)
+#44 2.933 Collecting packaging>=20.0 (from matplotlib<4.0.0,>=3.9.2->floodlight==1.2.0->entrelineas-tactical-evidence==0.1.0)
+#44 2.939   Downloading packaging-26.2-py3-none-any.whl.metadata (3.5 kB)
+#44 2.955 Collecting pyparsing>=3 (from matplotlib<4.0.0,>=3.9.2->floodlight==1.2.0->entrelineas-tactical-evidence==0.1.0)
+#44 2.956   Using cached pyparsing-3.3.2-py3-none-any.whl.metadata (5.8 kB)
+#44 2.972 Collecting python-dateutil>=2.7 (from matplotlib<4.0.0,>=3.9.2->floodlight==1.2.0->entrelineas-tactical-evidence==0.1.0)
+#44 2.973   Using cached python_dateutil-2.9.0.post0-py2.py3-none-any.whl.metadata (8.4 kB)
+#44 2.988 Collecting anyio>=4.5 (from mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#44 2.989   Using cached anyio-4.14.1-py3-none-any.whl.metadata (4.6 kB)
+#44 3.002 Collecting httpx-sse>=0.4 (from mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#44 3.003   Using cached httpx_sse-0.4.3-py3-none-any.whl.metadata (9.7 kB)
+#44 3.018 Collecting httpx<1.0.0,>=0.27.1 (from mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#44 3.019   Using cached httpx-0.28.1-py3-none-any.whl.metadata (7.1 kB)
+#44 3.045 Collecting jsonschema>=4.20.0 (from mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#44 3.046   Using cached jsonschema-4.26.0-py3-none-any.whl.metadata (7.6 kB)
+#44 3.058 Collecting pydantic-settings>=2.5.2 (from mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#44 3.059   Using cached pydantic_settings-2.14.2-py3-none-any.whl.metadata (3.4 kB)
+#44 3.074 Collecting pyjwt>=2.10.1 (from pyjwt[crypto]>=2.10.1->mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#44 3.074   Using cached pyjwt-2.13.0-py3-none-any.whl.metadata (3.4 kB)
+#44 3.087 Collecting python-multipart>=0.0.9 (from mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#44 3.088   Using cached python_multipart-0.0.32-py3-none-any.whl.metadata (2.1 kB)
+#44 3.102 Collecting sse-starlette>=1.6.1 (from mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#44 3.103   Using cached sse_starlette-3.4.5-py3-none-any.whl.metadata (15 kB)
+#44 3.121 Collecting starlette>=0.27 (from mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#44 3.122   Using cached starlette-1.3.1-py3-none-any.whl.metadata (6.4 kB)
+#44 3.138 Collecting uvicorn>=0.31.1 (from mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#44 3.139   Using cached uvicorn-0.51.0-py3-none-any.whl.metadata (6.6 kB)
+#44 3.153 Collecting certifi (from httpx<1.0.0,>=0.27.1->mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#44 3.158   Downloading certifi-2026.6.17-py3-none-any.whl.metadata (2.5 kB)
+#44 3.173 Collecting httpcore==1.* (from httpx<1.0.0,>=0.27.1->mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#44 3.174   Using cached httpcore-1.0.9-py3-none-any.whl.metadata (21 kB)
+#44 3.187 Collecting idna (from httpx<1.0.0,>=0.27.1->mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#44 3.188   Using cached idna-3.18-py3-none-any.whl.metadata (6.1 kB)
+#44 3.197 Collecting h11>=0.16 (from httpcore==1.*->httpx<1.0.0,>=0.27.1->mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#44 3.199   Using cached h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+#44 3.214 Collecting tzdata>=2022.7 (from pandas<3,>=2.3->entrelineas-tactical-evidence==0.1.0)
+#44 3.220   Downloading tzdata-2026.3-py2.py3-none-any.whl.metadata (1.4 kB)
+#44 3.236 Collecting attrs>=22.2.0 (from jsonschema>=4.20.0->mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#44 3.237   Using cached attrs-26.1.0-py3-none-any.whl.metadata (8.8 kB)
+#44 3.248 Collecting jsonschema-specifications>=2023.03.6 (from jsonschema>=4.20.0->mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#44 3.249   Using cached jsonschema_specifications-2025.9.1-py3-none-any.whl.metadata (2.9 kB)
+#44 3.263 Collecting referencing>=0.28.4 (from jsonschema>=4.20.0->mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#44 3.264   Using cached referencing-0.37.0-py3-none-any.whl.metadata (2.8 kB)
+#44 3.364 Collecting rpds-py>=0.25.0 (from jsonschema>=4.20.0->mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#44 3.365   Using cached rpds_py-2026.6.3-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (4.1 kB)
+#44 3.381 Collecting python-dotenv>=0.21.0 (from pydantic-settings>=2.5.2->mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#44 3.382   Using cached python_dotenv-1.2.2-py3-none-any.whl.metadata (27 kB)
+#44 3.454 Collecting cryptography>=3.4.0 (from pyjwt[crypto]>=2.10.1->mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#44 3.461   Downloading cryptography-49.0.0-cp311-abi3-manylinux_2_34_aarch64.whl.metadata (4.3 kB)
+#44 3.525 Collecting cffi>=2.0.0 (from cryptography>=3.4.0->pyjwt[crypto]>=2.10.1->mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#44 3.528   Using cached cffi-2.1.0-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.whl.metadata (2.5 kB)
+#44 3.538 Collecting pycparser (from cffi>=2.0.0->cryptography>=3.4.0->pyjwt[crypto]>=2.10.1->mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#44 3.539   Using cached pycparser-3.0-py3-none-any.whl.metadata (8.2 kB)
+#44 3.554 Collecting six>=1.5 (from python-dateutil>=2.7->matplotlib<4.0.0,>=3.9.2->floodlight==1.2.0->entrelineas-tactical-evidence==0.1.0)
+#44 3.555   Using cached six-1.17.0-py2.py3-none-any.whl.metadata (1.7 kB)
+#44 3.578 Collecting click>=7.0 (from uvicorn>=0.31.1->mcp<2,>=1.24->entrelineas-tactical-evidence==0.1.0)
+#44 3.579   Using cached click-8.4.2-py3-none-any.whl.metadata (2.6 kB)
+#44 3.587 Downloading floodlight-1.2.0-py3-none-any.whl (142 kB)
+#44 3.600 Downloading pyarrow-24.0.0-cp312-cp312-manylinux_2_28_aarch64.whl (45.7 MB)
+#44 4.811    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 45.7/45.7 MB 37.8 MB/s  0:00:01
+#44 4.819 Downloading pydantic-2.12.5-py3-none-any.whl (463 kB)
+#44 4.840 Downloading pydantic_core-2.41.5-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (1.9 MB)
+#44 4.891    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.9/1.9 MB 37.8 MB/s  0:00:00
+#44 4.897 Downloading h5py-3.16.0-cp312-cp312-manylinux_2_28_aarch64.whl (5.2 MB)
+#44 5.033    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.2/5.2 MB 38.5 MB/s  0:00:00
+#44 5.040 Downloading iso8601-2.1.0-py3-none-any.whl (7.5 kB)
+#44 5.048 Downloading lxml-5.4.0-cp312-cp312-manylinux_2_28_aarch64.whl (4.8 MB)
+#44 5.178    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.8/4.8 MB 37.0 MB/s  0:00:00
+#44 5.187 Downloading matplotlib-3.11.0-cp312-cp312-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl (10.8 MB)
+#44 5.510    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 10.8/10.8 MB 33.8 MB/s  0:00:00
+#44 5.520 Downloading mcp-1.28.1-py3-none-any.whl (222 kB)
+#44 5.530 Using cached httpx-0.28.1-py3-none-any.whl (73 kB)
+#44 5.532 Using cached httpcore-1.0.9-py3-none-any.whl (78 kB)
+#44 5.542 Downloading numpy-2.5.1-cp312-cp312-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl (15.2 MB)
+#44 6.001    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 15.2/15.2 MB 32.9 MB/s  0:00:00
+#44 6.010 Downloading pandas-2.3.3-cp312-cp312-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl (11.7 MB)
+#44 6.433    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11.7/11.7 MB 27.6 MB/s  0:00:00
+#44 6.443 Downloading pillow-12.3.0-cp312-cp312-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl (6.3 MB)
+#44 6.668    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 6.3/6.3 MB 27.9 MB/s  0:00:00
+#44 6.674 Downloading pytz-2025.2-py2.py3-none-any.whl (509 kB)
+#44 6.691 Using cached pyyaml-6.0.3-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (775 kB)
+#44 6.698 Downloading scipy-1.18.0-cp312-cp312-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl (34.0 MB)
+#44 7.892    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 34.0/34.0 MB 28.4 MB/s  0:00:01
+#44 7.900 Using cached annotated_types-0.7.0-py3-none-any.whl (13 kB)
+#44 7.902 Using cached anyio-4.14.1-py3-none-any.whl (124 kB)
+#44 7.912 Downloading contourpy-1.3.3-cp312-cp312-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl (332 kB)
+#44 7.929 Downloading cycler-0.12.1-py3-none-any.whl (8.3 kB)
+#44 7.937 Downloading fonttools-4.63.0-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (5.0 MB)
+#44 8.076    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.0/5.0 MB 36.3 MB/s  0:00:00
+#44 8.081 Using cached h11-0.16.0-py3-none-any.whl (37 kB)
+#44 8.083 Using cached httpx_sse-0.4.3-py3-none-any.whl (9.0 kB)
+#44 8.084 Using cached idna-3.18-py3-none-any.whl (65 kB)
+#44 8.085 Using cached jsonschema-4.26.0-py3-none-any.whl (90 kB)
+#44 8.087 Using cached attrs-26.1.0-py3-none-any.whl (67 kB)
+#44 8.089 Using cached jsonschema_specifications-2025.9.1-py3-none-any.whl (18 kB)
+#44 8.095 Downloading kiwisolver-1.5.0-cp312-cp312-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl (1.3 MB)
+#44 8.131    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.3/1.3 MB 36.8 MB/s  0:00:00
+#44 8.136 Downloading packaging-26.2-py3-none-any.whl (100 kB)
+#44 8.143 Using cached pydantic_settings-2.14.2-py3-none-any.whl (61 kB)
+#44 8.146 Using cached pyjwt-2.13.0-py3-none-any.whl (31 kB)
+#44 8.154 Downloading cryptography-49.0.0-cp311-abi3-manylinux_2_34_aarch64.whl (4.7 MB)
+#44 8.282    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.7/4.7 MB 36.3 MB/s  0:00:00
+#44 8.285 Using cached cffi-2.1.0-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.whl (222 kB)
+#44 8.288 Using cached pyparsing-3.3.2-py3-none-any.whl (122 kB)
+#44 8.290 Using cached python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)
+#44 8.291 Using cached python_dotenv-1.2.2-py3-none-any.whl (22 kB)
+#44 8.297 Downloading python_multipart-0.0.32-py3-none-any.whl (30 kB)
+#44 8.302 Using cached referencing-0.37.0-py3-none-any.whl (26 kB)
+#44 8.303 Using cached rpds_py-2026.6.3-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (368 kB)
+#44 8.305 Using cached six-1.17.0-py2.py3-none-any.whl (11 kB)
+#44 8.306 Using cached sse_starlette-3.4.5-py3-none-any.whl (16 kB)
+#44 8.311 Downloading starlette-1.3.1-py3-none-any.whl (73 kB)
+#44 8.316 Using cached typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+#44 8.318 Using cached typing_inspection-0.4.2-py3-none-any.whl (14 kB)
+#44 8.324 Downloading tzdata-2026.3-py2.py3-none-any.whl (348 kB)
+#44 8.341 Downloading uvicorn-0.51.0-py3-none-any.whl (73 kB)
+#44 8.349 Using cached click-8.4.2-py3-none-any.whl (119 kB)
+#44 8.354 Downloading certifi-2026.6.17-py3-none-any.whl (133 kB)
+#44 8.361 Using cached pycparser-3.0-py3-none-any.whl (48 kB)
+#44 8.539 Building wheels for collected packages: entrelineas-tactical-evidence
+#44 8.542   Building editable for entrelineas-tactical-evidence (pyproject.toml): started
+#44 8.777   Building editable for entrelineas-tactical-evidence (pyproject.toml): finished with status 'done'
+#44 8.778   Created wheel for entrelineas-tactical-evidence: filename=entrelineas_tactical_evidence-0.1.0-0.editable-py3-none-any.whl size=1556 sha256=2f2bd033bac333b1304f64acc66806d37a0dd3d1dfcce06d828a4fd9625b634c
+#44 8.778   Stored in directory: /tmp/pip-ephem-wheel-cache-h1le9nc3/wheels/54/1b/b7/aa63e25c8f14f4f2ae7b04e6097bdecb770e455c5c1ee0a600
+#44 8.780 Successfully built entrelineas-tactical-evidence
+#44 8.845 Installing collected packages: pytz, tzdata, typing-extensions, six, rpds-py, PyYAML, python-multipart, python-dotenv, pyparsing, pyjwt, pycparser, pyarrow, pillow, packaging, numpy, lxml, kiwisolver, iso8601, idna, httpx-sse, h11, fonttools, cycler, click, certifi, attrs, annotated-types, uvicorn, typing-inspection, scipy, referencing, python-dateutil, pydantic-core, httpcore, h5py, contourpy, cffi, anyio, starlette, pydantic, pandas, matplotlib, jsonschema-specifications, httpx, cryptography, sse-starlette, pydantic-settings, jsonschema, floodlight, mcp, entrelineas-tactical-evidence
+#44 20.90 
+#44 20.91 Successfully installed PyYAML-6.0.3 annotated-types-0.7.0 anyio-4.14.1 attrs-26.1.0 certifi-2026.6.17 cffi-2.1.0 click-8.4.2 contourpy-1.3.3 cryptography-49.0.0 cycler-0.12.1 entrelineas-tactical-evidence-0.1.0 floodlight-1.2.0 fonttools-4.63.0 h11-0.16.0 h5py-3.16.0 httpcore-1.0.9 httpx-0.28.1 httpx-sse-0.4.3 idna-3.18 iso8601-2.1.0 jsonschema-4.26.0 jsonschema-specifications-2025.9.1 kiwisolver-1.5.0 lxml-5.4.0 matplotlib-3.11.0 mcp-1.28.1 numpy-2.5.1 packaging-26.2 pandas-2.3.3 pillow-12.3.0 pyarrow-24.0.0 pycparser-3.0 pydantic-2.12.5 pydantic-core-2.41.5 pydantic-settings-2.14.2 pyjwt-2.13.0 pyparsing-3.3.2 python-dateutil-2.9.0.post0 python-dotenv-1.2.2 python-multipart-0.0.32 pytz-2025.2 referencing-0.37.0 rpds-py-2026.6.3 scipy-1.18.0 six-1.17.0 sse-starlette-3.4.5 starlette-1.3.1 typing-extensions-4.16.0 typing-inspection-0.4.2 tzdata-2026.3 uvicorn-0.51.0
+#44 20.91 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+#44 DONE 23.0s
+
+#45 exporting to image
+#45 exporting layers
+#45 exporting layers 14.6s done
+#45 exporting manifest sha256:9098a21afd34bff0764b95eba049b9be222b8575acaf22e2b4d02b7d521719fb done
+#45 exporting config sha256:09f518f790de57ca58dd716aa0c993610789402c4b3617bf9de69294af27f26f done
+#45 exporting attestation manifest sha256:89747b93777d9d0059688151b4e2baebd2b84a1cb7c48c22cdacb7eff0790bf1 done
+#45 exporting manifest list sha256:f0919a618c1034b6f3588f05550243944ae7d452bcdd28a64f8da8caeac47f89 done
+#45 naming to docker.io/library/priori-deploy2-fix:local done
+#45 unpacking to docker.io/library/priori-deploy2-fix:local
+#45 unpacking to docker.io/library/priori-deploy2-fix:local 9.2s done
+#45 DONE 23.9s
+
+ [33m1 warning found (use docker --debug to expand):
+[0m - SecretsUsedInArgOrEnv: Do not use ARG or ENV instructions for sensitive data (ENV "CODEX_AUTH_FILE") (line 31)

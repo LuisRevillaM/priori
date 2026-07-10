@@ -1,0 +1,8 @@
+PASS film_room_page
+PASS bootstrap_honest
+PASS interval_card_law
+PASS provenance_present
+PASS replay_frame_serves
+PASS ask_gated_without_token
+
+ORACLE PASS
