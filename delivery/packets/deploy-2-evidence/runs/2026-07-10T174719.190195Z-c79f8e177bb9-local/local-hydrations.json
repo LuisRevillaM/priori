@@ -1,0 +1,33 @@
+{
+  "branch": "packet/deploy-2",
+  "hydrations": [
+    {
+      "carry_trail_count": 0,
+      "frame_count": 101,
+      "memory_peak_bytes_after_hydration": 2147483648,
+      "replay_window_id": "replay_0e2ba8014f63667a",
+      "source_kind": "chain_record",
+      "stage_count": 1
+    },
+    {
+      "carry_trail_count": 0,
+      "frame_count": 301,
+      "memory_peak_bytes_after_hydration": 2147483648,
+      "replay_window_id": "replay_4f459a027b295d1e",
+      "source_kind": "chain_record",
+      "stage_count": 1
+    }
+  ],
+  "oracle_sha256": {
+    "chain_gallery": "e3485b16fa6cb7b40be9a021befa535a402db1bff1c2d4436fc1c084124344b4",
+    "deploy_smoke": "708e90e81109c63462a4d3d97ba11ebd4e5c12f7d0bb084fcd710257b60a5dc2",
+    "gallery_ready": "a3ef8770f86fea8762ace34a8675f3e9410809d77b68837b4e3d450a10f03d3c"
+  },
+  "producing_commit": "6fdaf4864ba8ad894110d1290e1330560d34d38a",
+  "producing_script": "scripts/packets/deploy2_evidence.py",
+  "producing_script_sha256": "c79f8e177bb9462a01aabf0c9975b22911cdbe6484f5845843f44b7459fc906b",
+  "producing_tree": "b6c8b4625de76f7e8f8e7028f44fabe4aad5ec9c",
+  "run_id": "2026-07-10T174719.190195Z-c79f8e177bb9",
+  "run_started_at": "2026-07-10T17:47:19.190195+00:00",
+  "schema_version": "deploy2.evidence.v2"
+}
