@@ -265,12 +265,20 @@ def collect_render_evidence(
     }
 
 
-def run_command(run_dir: Path, *, name: str, command: list[str], timeout: int) -> dict[str, Any]:
+def run_command(
+    run_dir: Path,
+    *,
+    name: str,
+    command: list[str],
+    timeout: int,
+    env: dict[str, str] | None = None,
+) -> dict[str, Any]:
     started = utc_now()
     try:
         completed = subprocess.run(
             command,
             cwd=ROOT,
+            env=env,
             check=False,
             capture_output=True,
             text=True,
@@ -300,11 +308,15 @@ def run_command(run_dir: Path, *, name: str, command: list[str], timeout: int) -
 
 
 def run_full_suite(run_dir: Path) -> dict[str, Any]:
+    env = dict(os.environ)
+    env["PYTHONPATH"] = str(ROOT / "src")
+    env["TMPDIR"] = "/private/tmp"
     return run_command(
         run_dir,
         name="full-python-suite",
         command=[sys.executable, "-m", "unittest", "discover", "-s", "tests"],
         timeout=1800,
+        env=env,
     )
 
 
