@@ -265,8 +265,7 @@ def collect_render_evidence(
     }
 
 
-def run_oracle(run_dir: Path, base_url: str) -> dict[str, Any]:
-    command = [sys.executable, str(ORACLE_PATH), "--base-url", base_url]
+def run_command(run_dir: Path, *, name: str, command: list[str], timeout: int) -> dict[str, Any]:
     started = utc_now()
     try:
         completed = subprocess.run(
@@ -275,7 +274,7 @@ def run_oracle(run_dir: Path, base_url: str) -> dict[str, Any]:
             check=False,
             capture_output=True,
             text=True,
-            timeout=900,
+            timeout=timeout,
         )
         stdout = completed.stdout
         stderr = completed.stderr
@@ -283,16 +282,14 @@ def run_oracle(run_dir: Path, base_url: str) -> dict[str, Any]:
         timed_out = False
     except subprocess.TimeoutExpired as exc:
         stdout = exc.stdout or ""
-        stderr = (exc.stderr or "") + "\nORACLE TIMEOUT\n"
+        stderr = (exc.stderr or "") + f"\n{name.upper()} TIMEOUT\n"
         return_code = 124
         timed_out = True
     output = stdout + stderr
-    output_path = run_dir / "oracle-without-token.txt"
+    output_path = run_dir / f"{name}.txt"
     write_text_once(output_path, output)
     return {
         "command": command,
-        "base_url": base_url,
-        "demo_token_supplied": False,
         "started_at": started.replace(microsecond=0).isoformat(),
         "duration_ms": round((utc_now() - started).total_seconds() * 1000, 3),
         "return_code": return_code,
@@ -302,7 +299,29 @@ def run_oracle(run_dir: Path, base_url: str) -> dict[str, Any]:
     }
 
 
-def evaluate(render: dict[str, Any], oracle: dict[str, Any]) -> dict[str, str]:
+def run_full_suite(run_dir: Path) -> dict[str, Any]:
+    return run_command(
+        run_dir,
+        name="full-python-suite",
+        command=[sys.executable, "-m", "unittest", "discover", "-s", "tests"],
+        timeout=1800,
+    )
+
+
+def run_oracle(run_dir: Path, base_url: str) -> dict[str, Any]:
+    record = run_command(
+        run_dir,
+        name="oracle-without-token",
+        command=[sys.executable, str(ORACLE_PATH), "--base-url", base_url],
+        timeout=900,
+    )
+    record.update({"base_url": base_url, "demo_token_supplied": False})
+    return record
+
+
+def evaluate(
+    render: dict[str, Any], oracle: dict[str, Any], full_suite: dict[str, Any]
+) -> dict[str, str]:
     logs = [str(row.get("message") or "") for row in render.get("relevant_logs", [])]
     env = {str(row.get("key")): row for row in render.get("target_env_vars", [])}
     provisioning_ok = any(
@@ -322,6 +341,7 @@ def evaluate(render: dict[str, Any], oracle: dict[str, Any]) -> dict[str, str]:
     service = render.get("target_service", {})
     config_ok = config_ok and service.get("name") == "entrelineas-film-room"
     return {
+        "full_python_suite": full_suite["status"],
         "render_deploy": "PASS" if render.get("deploy", {}).get("status") == "live" else "FAIL",
         "required_configuration": "PASS" if config_ok else "FAIL",
         "data_provisioning": "PASS" if provisioning_ok else "FAIL",
@@ -352,6 +372,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
             f"Environment groups enumerated: {payload['render']['inventory']['env_group_count']}",
             "",
             f"Oracle output: `{payload['oracle']['output_path']}`",
+            f"Full-suite output: `{payload['full_python_suite']['output_path']}`",
             "",
         ]
     )
@@ -371,14 +392,33 @@ def main(argv: list[str] | None = None) -> int:
     require_committed_clean_script()
     script_sha = file_sha256(SCRIPT_PATH)
     run_dir = make_run_dir(script_sha)
-    render = collect_render_evidence(
-        api_key=api_key,
-        owner_id=args.owner_id,
-        service_id=args.service_id,
-        deploy_id=args.deploy_id,
-    )
+    full_suite = run_full_suite(run_dir)
+    try:
+        render = collect_render_evidence(
+            api_key=api_key,
+            owner_id=args.owner_id,
+            service_id=args.service_id,
+            deploy_id=args.deploy_id,
+        )
+    except Exception as exc:  # noqa: BLE001 - failure must still produce immutable evidence.
+        render = {
+            "collection_error": f"{type(exc).__name__}: {exc}",
+            "inventory": {
+                "service_count": None,
+                "disk_count": None,
+                "disk_total_size_gb": None,
+                "env_group_count": None,
+                "services": [],
+                "disks": [],
+                "env_groups": [],
+            },
+            "target_service": {},
+            "target_env_vars": [],
+            "deploy": {},
+            "relevant_logs": [],
+        }
     oracle = run_oracle(run_dir, args.base_url.rstrip("/"))
-    checks = evaluate(render, oracle)
+    checks = evaluate(render, oracle, full_suite)
     status = "PASS" if all(value == "PASS" for value in checks.values()) else "FAIL"
     payload = {
         "schema_version": "deploy1b.evidence.v1",
@@ -398,6 +438,7 @@ def main(argv: list[str] | None = None) -> int:
         "checks": checks,
         "render": render,
         "oracle": oracle,
+        "full_python_suite": full_suite,
     }
     write_json_once(run_dir / "deploy1b-evidence.json", payload)
     write_text_once(run_dir / "deploy1b-evidence.md", render_markdown(payload))
