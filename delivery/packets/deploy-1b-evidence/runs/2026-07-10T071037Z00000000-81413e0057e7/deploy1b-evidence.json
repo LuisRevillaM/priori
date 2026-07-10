@@ -1,0 +1,74 @@
+{
+  "checks": {
+    "data_provisioning": "FAIL",
+    "fenced_oracle": "FAIL",
+    "flagship_prewarm": "FAIL",
+    "full_python_suite": "FAIL",
+    "render_deploy": "FAIL",
+    "required_configuration": "FAIL"
+  },
+  "evidence_metadata": {
+    "git_branch": "packet/deploy-1b",
+    "git_commit": "7acc51af0a267bf11e896dba311e059f8a10f2e8",
+    "git_tree": "fe496bf26a8964556a735721b018ce9fd8882429",
+    "oracle_path": "delivery/oracles/DEPLOY-1/deploy_smoke.py",
+    "oracle_sha256": "708e90e81109c63462a4d3d97ba11ebd4e5c12f7d0bb084fcd710257b60a5dc2",
+    "produced_by": "scripts/packets/deploy1b_evidence.py",
+    "producing_script_sha256": "81413e0057e7517559bf537a458507d10d879e392fdcfaf7470313227ed609dd",
+    "run_dir": "delivery/packets/deploy-1b-evidence/runs/2026-07-10T071037Z00000000-81413e0057e7",
+    "run_started_at": "2026-07-10T07:10:37+00:00",
+    "schema_version": "deploy1b.evidence_metadata.v1"
+  },
+  "full_python_suite": {
+    "command": [
+      "/Users/luisrevilla/code/priori/.venv/bin/python",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests"
+    ],
+    "duration_ms": 652541.064,
+    "flagged_over_5_minutes": true,
+    "output_path": "delivery/packets/deploy-1b-evidence/runs/2026-07-10T071037Z00000000-81413e0057e7/full-python-suite.txt",
+    "return_code": 1,
+    "started_at": "2026-07-10T07:10:37+00:00",
+    "status": "FAIL",
+    "timed_out": false
+  },
+  "oracle": {
+    "base_url": "https://priori-integrated-alpha.onrender.com",
+    "command": [
+      "/Users/luisrevilla/code/priori/.venv/bin/python",
+      "/Users/luisrevilla/code/priori/delivery/oracles/DEPLOY-1/deploy_smoke.py",
+      "--base-url",
+      "https://priori-integrated-alpha.onrender.com"
+    ],
+    "demo_token_supplied": false,
+    "duration_ms": 114.3,
+    "flagged_over_5_minutes": false,
+    "output_path": "delivery/packets/deploy-1b-evidence/runs/2026-07-10T071037Z00000000-81413e0057e7/oracle-without-token.txt",
+    "return_code": 1,
+    "started_at": "2026-07-10T07:21:30+00:00",
+    "status": "FAIL",
+    "timed_out": false
+  },
+  "render": {
+    "collection_error": "RuntimeError: Render API GET failed for /services: curl: (6) Could not resolve host: api.render.com",
+    "deploy": {},
+    "inventory": {
+      "disk_count": null,
+      "disk_total_size_gb": null,
+      "disks": [],
+      "env_group_count": null,
+      "env_groups": [],
+      "service_count": null,
+      "services": []
+    },
+    "relevant_logs": [],
+    "target_env_vars": [],
+    "target_service": {}
+  },
+  "schema_version": "deploy1b.evidence.v1",
+  "status": "FAIL"
+}
