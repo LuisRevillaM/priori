@@ -45,6 +45,12 @@ Read-only Render resolution confirmed the packet target before any local work:
 | Current workers | `TQE_EXECUTION_WORKERS=1` |
 | Current bundle SHA | `9e680b8b41670eece292e736ccd62184470b87e7e719eb578135b5be462f64a0` |
 
+The final read-only audit at `2026-07-10T16:28:53Z` found the latest deploy
+still live as `dep-d98dgopoagis73dsv6dg`, commit `fa412de`, triggered by the
+pre-existing remote `new_commit` event and finished at `11:35:41Z` before this
+executor's first evidence run. The three environment values above remained
+unchanged.
+
 The configured bundle host is the existing project S3 bucket. AWS identity and
 object inspection were attempted through the account wrapper but this executor
 could not reach the STS or S3 endpoints. No AWS action occurred. The later
