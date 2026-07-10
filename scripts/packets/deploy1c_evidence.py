@@ -15,6 +15,7 @@ import tempfile
 import threading
 import time
 import urllib.request
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
@@ -326,6 +327,30 @@ def fence_record() -> dict[str, Any]:
     }
 
 
+@contextmanager
+def mounted_test_corpus(data_root: Path, raw_root: Path):
+    """Expose read-only corpus paths expected by legacy tests in this worktree."""
+
+    mounts = [
+        (ROOT / "data/canonical/v1", data_root.resolve()),
+        (ROOT / "data/raw/idsse/figshare-28196177-v1", raw_root.resolve()),
+    ]
+    created: list[Path] = []
+    for mount, target in mounts:
+        if mount.is_symlink() or mount.exists():
+            if mount.resolve() != target:
+                raise RuntimeError(f"test corpus mount already points elsewhere: {mount}")
+            continue
+        mount.parent.mkdir(parents=True, exist_ok=True)
+        mount.symlink_to(target, target_is_directory=True)
+        created.append(mount)
+    try:
+        yield
+    finally:
+        for mount in reversed(created):
+            mount.unlink(missing_ok=True)
+
+
 def render_markdown(payload: dict[str, Any]) -> str:
     meta = payload["evidence_metadata"]
     focused = payload["focused_tests"]
@@ -380,16 +405,23 @@ def main(argv: list[str] | None = None) -> int:
         type=Path,
         default=Path(os.environ.get("TQE_DATA_ROOT", "data/canonical/v1")),
     )
+    parser.add_argument("--raw-root", type=Path)
     parser.add_argument("--full-suite-timeout", type=int, default=1800)
     args = parser.parse_args(argv)
     require_committed_clean_script()
     if not args.data_root.exists():
         raise SystemExit(f"canonical data root does not exist: {args.data_root}")
+    raw_root = args.raw_root or (
+        args.data_root.resolve().parents[1] / "raw/idsse/figshare-28196177-v1"
+    )
+    if not raw_root.exists():
+        raise SystemExit(f"raw data root does not exist: {raw_root}")
     os.environ.update(
         {
             "PYTHONPATH": str(SRC),
             "TMPDIR": "/private/tmp",
             "TQE_DATA_ROOT": str(args.data_root.resolve()),
+            "TQE_RAW_ROOT": str(raw_root.resolve()),
             "TQE_PUBLIC_MODE": "1",
             "WORKBENCH_PREWARM_FILM_ROOM": "0",
         }
@@ -446,18 +478,28 @@ def main(argv: list[str] | None = None) -> int:
             "bootstrap_path": "",
             "replay_path": "",
         }
-    full_suite = command_record(
-        [sys.executable, "-m", "unittest", "discover", "-s", "tests"],
-        output_path=run_dir / "full-python-suite.txt",
-        meta=meta,
-        timeout=args.full_suite_timeout,
-        env=env,
+    suite_env = dict(env)
+    suite_env.update(
+        {
+            "TQE_PUBLIC_MODE": "0",
+            "DEMO_ACCESS_TOKEN": "",
+            "DEMO_ACCESS_QUERY_TOKEN_ENABLED": "0",
+        }
     )
+    with mounted_test_corpus(args.data_root, raw_root):
+        full_suite = command_record(
+            [sys.executable, "-m", "unittest", "discover", "-s", "tests"],
+            output_path=run_dir / "full-python-suite.txt",
+            meta=meta,
+            timeout=args.full_suite_timeout,
+            env=suite_env,
+        )
     fences = fence_record()
     payload = {
         "schema_version": "deploy1c.evidence.v1",
         "evidence_metadata": meta,
         "canonical_data_root": str(args.data_root.resolve()),
+        "raw_data_root": str(raw_root.resolve()),
         "focused_tests": focused,
         "focused_ui_test": focused_ui,
         "ui_typecheck": ui_typecheck,

@@ -1,0 +1,437 @@
+evidence_metadata={"git_branch":"packet/deploy-1c","git_commit":"d495ea998fe29259e9d4d538f2ba66416011bc70","git_tree":"394049064ded24e42ced2247514e22d916b4b247","oracle_path":"delivery/oracles/DEPLOY-1C/gallery_ready.py","oracle_sha256":"a3ef8770f86fea8762ace34a8675f3e9410809d77b68837b4e3d450a10f03d3c","packet_base":"9eef466","produced_by":"scripts/packets/deploy1c_evidence.py","producing_script_sha256":"85b6862f2468ff0621e3162123ed371983897568d432f77f39e4eddc12ca55a9","run_dir":"delivery/packets/deploy-1c-evidence/runs/2026-07-10T085007Z00000000-85b6862f2468","run_started_at":"2026-07-10T08:50:07+00:00","schema_version":"deploy1c.evidence_metadata.v1"}
+Prewarming Film Room flagship from certified table delivery/packets/r2-2-flagship/fragile_retention_rate_table.json...
+Prewarmed Film Room flagship from certified table delivery/packets/r2-2-flagship/fragile_retention_rate_table.json: moments=0 elapsed_ms=54
+Prewarming Film Room flagship from certified table delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json...
+Prewarmed Film Room flagship from certified table delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json: moments=28 elapsed_ms=44
+Prewarming Film Room flagship from certified table delivery/packets/r2-2-flagship/fragile_retention_rate_table.json...
+Prewarmed Film Room flagship from certified table delivery/packets/r2-2-flagship/fragile_retention_rate_table.json: moments=0 elapsed_ms=39
+Prewarming Film Room flagship from certified table delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json...
+Prewarmed Film Room flagship from certified table delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json: moments=28 elapsed_ms=42
+Execution-prewarming Film Room flagship delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json...
+Execution-prewarmed Film Room flagship delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json: cache_statuses= returned_results=0 upgrade_applied=False elapsed_ms=0
+Execution-prewarming Film Room flagship delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_v0.json...
+Execution-prewarmed Film Room flagship delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_v0.json: cache_statuses= returned_results=0 upgrade_applied=False elapsed_ms=0
+Prewarming Film Room flagship from certified table delivery/packets/r2-2-flagship/fragile_retention_rate_table.json...
+Prewarmed Film Room flagship from certified table delivery/packets/r2-2-flagship/fragile_retention_rate_table.json: moments=0 elapsed_ms=39
+Prewarming Film Room flagship from certified table delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json...
+Prewarmed Film Room flagship from certified table delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json: moments=28 elapsed_ms=39
+Execution-prewarming Film Room flagship delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json...
+Film Room execution prewarm disabled; certified-table gallery remains ready.
+{"attestation_status": "VERIFIED", "blocking_reasons": []}
+..........................................E..E...........................................{"correlation_id": "err_c7b4f4258f56", "event": "workbench_internal_error", "exception_type": "TimeoutError", "message": "public Film Room ask exceeded 0.01s", "path": "/api/film-room/ask", "traceback": "TimeoutError: public Film Room ask exceeded 0.01s\n"}
+........{"error_type": "RuntimeError", "event": "film_room_prewarm_failed", "message": "execution disabled in proof", "traceback": "Traceback (most recent call last):\n  File \"/private/tmp/entrelineas-deploy1c/src/tqe/workshop/app_service.py\", line 4027, in prewarm_film_room_flagships_safely\n    prewarm_film_room_flagships(output_root=output_root)\n  File \"/private/tmp/entrelineas-deploy1c/src/tqe/workshop/app_service.py\", line 3968, in prewarm_film_room_flagships\n    response = film_room_prewarmed_response(\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py\", line 1139, in __call__\n    return self._mock_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py\", line 1143, in _mock_call\n    return self._execute_mock_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py\", line 1198, in _execute_mock_call\n    raise effect\nRuntimeError: execution disabled in proof\n"}
+....E............................................................................................E......EEFEE............................E..........E...............................E...............EE........................................................................................................................................................................................................................................FF.................E..............
+======================================================================
+ERROR: test_executor_any_filter_restores_widened_distribution (test_controlled_pass_honesty.ControlledPassExecutorParameterTest.test_executor_any_filter_restores_widened_distribution)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/entrelineas-deploy1c/tests/test_controlled_pass_honesty.py", line 297, in test_executor_any_filter_restores_widened_distribution
+    records = executor_controlled_pass_candidate_records("any")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/tests/test_controlled_pass_honesty.py", line 505, in executor_controlled_pass_candidate_records
+    state = executor._execute_period(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 720, in _execute_period
+    state = self._period_state(
+            ^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 961, in _period_state
+    state = stream_ball_state(raw_tracking, period)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 3801, in stream_ball_state
+    with raw_tracking_xml.open("rb") as handle:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/pathlib.py", line 1013, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'data/raw/idsse/figshare-28196177-v1/J03WOY/tracking.xml'
+
+======================================================================
+ERROR: test_executor_throw_in_filter_restores_throw_in_candidates (test_controlled_pass_honesty.ControlledPassExecutorParameterTest.test_executor_throw_in_filter_restores_throw_in_candidates)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/entrelineas-deploy1c/tests/test_controlled_pass_honesty.py", line 316, in test_executor_throw_in_filter_restores_throw_in_candidates
+    records = executor_controlled_pass_candidate_records("ThrowIn_Play_Pass")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/tests/test_controlled_pass_honesty.py", line 505, in executor_controlled_pass_candidate_records
+    state = executor._execute_period(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 720, in _execute_period
+    state = self._period_state(
+            ^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 961, in _period_state
+    state = stream_ball_state(raw_tracking, period)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 3801, in stream_ball_state
+    with raw_tracking_xml.open("rb") as handle:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/pathlib.py", line 1013, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'data/raw/idsse/figshare-28196177-v1/J03WOY/tracking.xml'
+
+======================================================================
+ERROR: test_conformance_report_script_smoke_writes_json (test_envelope.EnvelopeConformanceTests.test_conformance_report_script_smoke_writes_json)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/entrelineas-deploy1c/tests/test_envelope.py", line 211, in test_conformance_report_script_smoke_writes_json
+    exit_code = conformance_report_main(
+                ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/scripts/runtime/envelope_conformance_report.py", line 101, in main
+    report_for_plan(plan_path, match_id=args.match_id, period=args.period)
+  File "/private/tmp/entrelineas-deploy1c/scripts/runtime/envelope_conformance_report.py", line 39, in report_for_plan
+    state = executor._execute_period(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 720, in _execute_period
+    state = self._period_state(
+            ^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 961, in _period_state
+    state = stream_ball_state(raw_tracking, period)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 3801, in stream_ball_state
+    with raw_tracking_xml.open("rb") as handle:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/pathlib.py", line 1013, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'data/raw/idsse/figshare-28196177-v1/J03WOH/tracking.xml'
+
+======================================================================
+ERROR: setUpClass (test_m1_1_runtime.M11RuntimeTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/entrelineas-deploy1c/tests/test_m1_1_runtime.py", line 32, in setUpClass
+    cls.bound, cls.execution = execute_default_plan()
+                               ^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/legacy_m1.py", line 378, in execute_default_plan
+    ).execute(bound)
+      ^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 422, in execute
+    ) = self._execute_match(
+        ^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 563, in _execute_match
+    state = self._execute_period(
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 720, in _execute_period
+    state = self._period_state(
+            ^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 961, in _period_state
+    state = stream_ball_state(raw_tracking, period)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 3801, in stream_ball_state
+    with raw_tracking_xml.open("rb") as handle:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/pathlib.py", line 1013, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'data/raw/idsse/figshare-28196177-v1/J03WOY/tracking.xml'
+
+======================================================================
+ERROR: test_anchor_evaluations_include_non_pass_reasons (test_m2a_controlled_pass.M2AControlledPassRuntimeTest.test_anchor_evaluations_include_non_pass_reasons)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/entrelineas-deploy1c/tests/test_m2a_controlled_pass.py", line 47, in test_anchor_evaluations_include_non_pass_reasons
+    output = evaluate_controlled_passes(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/controlled_pass.py", line 116, in evaluate_controlled_passes
+    orientation = read_table(canonical_root / "orientation.parquet")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/controlled_pass.py", line 737, in read_table
+    return pd.read_parquet(path, columns=columns)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/.venv/lib/python3.12/site-packages/pandas/io/parquet.py", line 669, in read_parquet
+    return impl.read(
+           ^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/.venv/lib/python3.12/site-packages/pandas/io/parquet.py", line 258, in read
+    path_or_handle, handles, filesystem = _get_path_or_handle(
+                                          ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/.venv/lib/python3.12/site-packages/pandas/io/parquet.py", line 141, in _get_path_or_handle
+    handles = get_handle(
+              ^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/.venv/lib/python3.12/site-packages/pandas/io/common.py", line 882, in get_handle
+    handle = open(handle, ioargs.mode)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'data/canonical/v1/orientation.parquet'
+
+======================================================================
+ERROR: test_j03woy_runtime_emits_explicit_anchor_and_physical_release (test_m2a_controlled_pass.M2AControlledPassRuntimeTest.test_j03woy_runtime_emits_explicit_anchor_and_physical_release)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/entrelineas-deploy1c/tests/test_m2a_controlled_pass.py", line 16, in test_j03woy_runtime_emits_explicit_anchor_and_physical_release
+    output = evaluate_controlled_passes(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/controlled_pass.py", line 116, in evaluate_controlled_passes
+    orientation = read_table(canonical_root / "orientation.parquet")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/controlled_pass.py", line 737, in read_table
+    return pd.read_parquet(path, columns=columns)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/.venv/lib/python3.12/site-packages/pandas/io/parquet.py", line 669, in read_parquet
+    return impl.read(
+           ^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/.venv/lib/python3.12/site-packages/pandas/io/parquet.py", line 258, in read
+    path_or_handle, handles, filesystem = _get_path_or_handle(
+                                          ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/.venv/lib/python3.12/site-packages/pandas/io/parquet.py", line 141, in _get_path_or_handle
+    handles = get_handle(
+              ^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/.venv/lib/python3.12/site-packages/pandas/io/common.py", line 882, in get_handle
+    handle = open(handle, ioargs.mode)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'data/canonical/v1/orientation.parquet'
+
+======================================================================
+ERROR: setUpClass (test_m2a_high_bypass_pass.M2AHighBypassPassRuntimeTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/entrelineas-deploy1c/tests/test_m2a_high_bypass_pass.py", line 30, in setUpClass
+    cls.controlled = evaluate_controlled_passes(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/controlled_pass.py", line 116, in evaluate_controlled_passes
+    orientation = read_table(canonical_root / "orientation.parquet")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/controlled_pass.py", line 737, in read_table
+    return pd.read_parquet(path, columns=columns)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/.venv/lib/python3.12/site-packages/pandas/io/parquet.py", line 669, in read_parquet
+    return impl.read(
+           ^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/.venv/lib/python3.12/site-packages/pandas/io/parquet.py", line 258, in read
+    path_or_handle, handles, filesystem = _get_path_or_handle(
+                                          ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/.venv/lib/python3.12/site-packages/pandas/io/parquet.py", line 141, in _get_path_or_handle
+    handles = get_handle(
+              ^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/.venv/lib/python3.12/site-packages/pandas/io/common.py", line 882, in get_handle
+    handle = open(handle, ioargs.mode)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'data/canonical/v1/orientation.parquet'
+
+======================================================================
+ERROR: setUpClass (test_m2a_pass_bypass.M2APassBypassRuntimeTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/entrelineas-deploy1c/tests/test_m2a_pass_bypass.py", line 21, in setUpClass
+    cls.output = evaluate_pass_bypass_measurements(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/pass_bypass.py", line 68, in evaluate_pass_bypass_measurements
+    controlled = controlled_passes or evaluate_controlled_passes(
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/controlled_pass.py", line 116, in evaluate_controlled_passes
+    orientation = read_table(canonical_root / "orientation.parquet")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/controlled_pass.py", line 737, in read_table
+    return pd.read_parquet(path, columns=columns)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/.venv/lib/python3.12/site-packages/pandas/io/parquet.py", line 669, in read_parquet
+    return impl.read(
+           ^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/.venv/lib/python3.12/site-packages/pandas/io/parquet.py", line 258, in read
+    path_or_handle, handles, filesystem = _get_path_or_handle(
+                                          ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/.venv/lib/python3.12/site-packages/pandas/io/parquet.py", line 141, in _get_path_or_handle
+    handles = get_handle(
+              ^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/.venv/lib/python3.12/site-packages/pandas/io/common.py", line 882, in get_handle
+    handle = open(handle, ioargs.mode)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'data/canonical/v1/orientation.parquet'
+
+======================================================================
+ERROR: test_bind_and_execute_support_depth_composition (test_r1_1_project_onto_axis.ProjectOntoAxisTests.test_bind_and_execute_support_depth_composition)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/entrelineas-deploy1c/tests/test_r1_1_project_onto_axis.py", line 273, in test_bind_and_execute_support_depth_composition
+    execution = TacticalQueryExecutor(enable_node_cache=False).execute(bound)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 422, in execute
+    ) = self._execute_match(
+        ^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 563, in _execute_match
+    state = self._execute_period(
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 720, in _execute_period
+    state = self._period_state(
+            ^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 961, in _period_state
+    state = stream_ball_state(raw_tracking, period)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 3801, in stream_ball_state
+    with raw_tracking_xml.open("rb") as handle:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/pathlib.py", line 1013, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'data/raw/idsse/figshare-28196177-v1/J03WOY/tracking.xml'
+
+======================================================================
+ERROR: test_bind_and_execute_pressure_distance_delta (test_r1_2_delta_across_anchor.DeltaAcrossAnchorTests.test_bind_and_execute_pressure_distance_delta)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/entrelineas-deploy1c/tests/test_r1_2_delta_across_anchor.py", line 281, in test_bind_and_execute_pressure_distance_delta
+    execution = TacticalQueryExecutor(enable_node_cache=False).execute(bound)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 422, in execute
+    ) = self._execute_match(
+        ^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 563, in _execute_match
+    state = self._execute_period(
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 720, in _execute_period
+    state = self._period_state(
+            ^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 961, in _period_state
+    state = stream_ball_state(raw_tracking, period)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 3801, in stream_ball_state
+    with raw_tracking_xml.open("rb") as handle:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/pathlib.py", line 1013, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'data/raw/idsse/figshare-28196177-v1/J03WOY/tracking.xml'
+
+======================================================================
+ERROR: test_executor_path_through_real_bind_execute (test_r1_4_window.WindowOperatorTests.test_executor_path_through_real_bind_execute)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/entrelineas-deploy1c/tests/test_r1_4_window.py", line 477, in test_executor_path_through_real_bind_execute
+    execution = TacticalQueryExecutor().execute(bound)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 422, in execute
+    ) = self._execute_match(
+        ^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 563, in _execute_match
+    state = self._execute_period(
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 720, in _execute_period
+    state = self._period_state(
+            ^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 961, in _period_state
+    state = stream_ball_state(raw_tracking, period)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 3801, in stream_ball_state
+    with raw_tracking_xml.open("rb") as handle:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/pathlib.py", line 1013, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'data/raw/idsse/figshare-28196177-v1/J03WOY/tracking.xml'
+
+======================================================================
+ERROR: test_car0_composition_executes_for_both_team_perspectives (test_r1_5_typed_join.TypedJoinCompositionSuiteTests.test_car0_composition_executes_for_both_team_perspectives)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/entrelineas-deploy1c/tests/test_r1_5_typed_join.py", line 313, in test_car0_composition_executes_for_both_team_perspectives
+    execution = executor.execute(bound)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 422, in execute
+    ) = self._execute_match(
+        ^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 563, in _execute_match
+    state = self._execute_period(
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 720, in _execute_period
+    state = self._period_state(
+            ^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 961, in _period_state
+    state = stream_ball_state(raw_tracking, period)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 3801, in stream_ball_state
+    with raw_tracking_xml.open("rb") as handle:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/pathlib.py", line 1013, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'data/raw/idsse/figshare-28196177-v1/J03WOH/tracking.xml'
+
+======================================================================
+ERROR: test_car0_executor_path_chains_window_into_typed_join (test_r1_5_typed_join.TypedJoinCompositionSuiteTests.test_car0_executor_path_chains_window_into_typed_join)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/entrelineas-deploy1c/tests/test_r1_5_typed_join.py", line 352, in test_car0_executor_path_chains_window_into_typed_join
+    execution = TacticalQueryExecutor(canonical_root=CANONICAL_DATA_ROOT).execute(bound)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 422, in execute
+    ) = self._execute_match(
+        ^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 563, in _execute_match
+    state = self._execute_period(
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 720, in _execute_period
+    state = self._period_state(
+            ^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 961, in _period_state
+    state = stream_ball_state(raw_tracking, period)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 3801, in stream_ball_state
+    with raw_tracking_xml.open("rb") as handle:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/pathlib.py", line 1013, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'data/raw/idsse/figshare-28196177-v1/J03WOH/tracking.xml'
+
+======================================================================
+ERROR: test_attested_hero_execution_resolves_every_required_evidence_alias (test_workbench_beta0_contract.WorkbenchBeta0ContractTests.test_attested_hero_execution_resolves_every_required_evidence_alias)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/entrelineas-deploy1c/tests/test_workbench_beta0_contract.py", line 255, in test_attested_hero_execution_resolves_every_required_evidence_alias
+    records = run_host_authority_pipeline(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/workshop/app_service.py", line 2519, in run_host_authority_pipeline
+    executed = cached_execute_query_plan(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/workshop/app_service.py", line 5129, in cached_execute_query_plan
+    execution = execute_query_plan(request, output_root=output_root)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/workshop/m1_2.py", line 1229, in execute_query_plan
+    execution = executor_for_profile(profile).execute(bound)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 422, in execute
+    ) = self._execute_match(
+        ^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 563, in _execute_match
+    state = self._execute_period(
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 720, in _execute_period
+    state = self._period_state(
+            ^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 961, in _period_state
+    state = stream_ball_state(raw_tracking, period)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/entrelineas-deploy1c/src/tqe/runtime/executor.py", line 3801, in stream_ball_state
+    with raw_tracking_xml.open("rb") as handle:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/pathlib.py", line 1013, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'data/raw/idsse/figshare-28196177-v1/J03WOY/tracking.xml'
+
+======================================================================
+FAIL: test_scope_uses_canonical_match_library_not_one_match_gate (test_m2a_controlled_pass.M2AControlledPassRuntimeTest.test_scope_uses_canonical_match_library_not_one_match_gate)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/entrelineas-deploy1c/tests/test_m2a_controlled_pass.py", line 68, in test_scope_uses_canonical_match_library_not_one_match_gate
+    self.assertIn("J03WPY", match_ids)
+AssertionError: 'J03WPY' not found in ('J03WOY',)
+
+======================================================================
+FAIL: test_empty_film_room_ask_is_request_schema_invalid (test_smoke1_honest_errors.Smoke1HonestErrorTests.test_empty_film_room_ask_is_request_schema_invalid)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/entrelineas-deploy1c/tests/test_smoke1_honest_errors.py", line 70, in test_empty_film_room_ask_is_request_schema_invalid
+    self.assertEqual(400, status)
+AssertionError: 400 != 401
+
+======================================================================
+FAIL: test_internal_key_error_beyond_dispatch_is_not_request_schema_invalid (test_smoke1_honest_errors.Smoke1HonestErrorTests.test_internal_key_error_beyond_dispatch_is_not_request_schema_invalid)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/entrelineas-deploy1c/tests/test_smoke1_honest_errors.py", line 56, in test_internal_key_error_beyond_dispatch_is_not_request_schema_invalid
+    self.assertEqual(500, status)
+AssertionError: 500 != 401
+
+----------------------------------------------------------------------
+Ran 558 tests in 55.187s
+
+FAILED (failures=3, errors=14)
