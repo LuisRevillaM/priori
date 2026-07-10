@@ -86,6 +86,13 @@ field-domain mechanism; CAR ladder rungs 1-2 when a pitch needs them.
 4. EXAM-1 remaining sessions (window sweeps, E2, E3) — director.
 5. SCP2-E sealed exam under the two-sided bar — the Gate 1 closer.
 
+Post-Gate-1 era (SCP-3, per ADR 0017): Move 1 (external-correspondence
+evaluation system — absorbs CAP-1) then Move 2 (canonical CoachQueryIR,
+proof-carrying composition, bounded search demoted to offline
+discovery). Gate 2 absorbs the MatchFactStore shape and the
+tactical-footage-first domain profile. Near-term fix packet: public
+ask timeouts do not cancel underlying work (counsel finding).
+
 ## Goodhart watch
 
 Standing bent-metric candidates to attack at every gate review:

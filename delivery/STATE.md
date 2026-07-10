@@ -1,7 +1,7 @@
 # STATE — Entrelíneas
 
 Updated: 2026-07-10 (DIRECTOR-grade)
-**Phase:** Gate 1 — PUBLIC GALLERY LIVE (strict oracle PASS)
+**Phase:** Gate 1 — table gallery live; story gallery one fix from live
 **Read order:** STATE → PLAN → STEWARDSHIP → LEDGER → active packet
 
 ## Where we are
