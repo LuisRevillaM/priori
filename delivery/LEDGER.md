@@ -22,3 +22,9 @@
   operators key is live machinery pending SCL surface review.
 - EXAM-1 remaining: window sweeps, E2 adversarial compositions, E3
   honesty edges (stale-cache probe).
+- Machine-readable fences manifest + mechanical leg-zero checker
+  (ADR 0016 item 2).
+- R-AZ v2: deterministic payload / attestation envelope separation,
+  cross-hashed (ADR 0016 item 4; director keystone).
+- Rules registry with supersession; ruling-ID reuse cleanup
+  (ADR 0016 item 6).

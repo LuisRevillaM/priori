@@ -1,7 +1,7 @@
 # STATE — Entrelíneas
 
-Updated: 2026-07-07 (DIRECTOR-grade)
-**Phase:** Gate 1 — deploy handed to owner (RB-001)
+Updated: 2026-07-10 (DIRECTOR-grade)
+**Phase:** Gate 1 — DEPLOY-1B dispatched (loop self-provisions Render)
 **Read order:** STATE → PLAN → STEWARDSHIP → LEDGER → active packet
 
 ## Where we are
@@ -17,11 +17,10 @@ http://127.0.0.1:8765/film-room. Frontier: codex/afl08-passport-loop at 0c4ad01,
 
 ## Next actions (in order)
 
-1. [OWNER] Execute RB-001 (delivery/runbooks/): create the Render
-   service from the blueprint, set WORKBENCH_HERMES_ENABLED +
-   DEMO_ACCESS_TOKEN, optional Hermes secret file, deploy, and run
-   the deploy oracle against the live URL — its PASS is Gate 1's
-   deploy evidence.
+1. [any-steward] DEPLOY-1B in flight: executor provisions Render via
+   API (investigate → reuse-or-fresh → configure → provision data →
+   deploy → oracle vs live URL). RB-001 reduced to owner residuals
+   (Hermes secret if live asks wanted; retiring old services).
 2. [DIRECTOR] Perceptual gate stack run 1: golden screens from the
    deployed surface, multimodal critic panel vs the constitution,
    cold walkthrough, delight pass.
@@ -43,8 +42,10 @@ Nothing parked.
 
 ## Model line
 
-Director: Claude (frontier, this session). Executor: Codex thread
-019f3588-a26d-7592-8a47-d7e8c5117360 (third; exemplary evidence
-discipline on record; two predecessors retired — see
-delivery/packets/SCP2-3-REVIEW.md, SCP2-2-REVIEW.md). Hermes:
-openai-codex/gpt-5.5, subscription-only by standing law.
+Director: Claude Fable 5 (this session). Executor: GPT-5.6 Sol at
+max effort, Codex CLI 0.144.1, session
+019f4abb-3b78-7570-964b-f0ace45697c5, onboarded 2026-07-10 (ADR 0016;
+channel test PASS; RENDER_API_KEY visible to executor). Prior line
+gpt-5.5 xhigh (session 019f3588…) retired-in-good-standing as
+rollback pin. Hermes: openai-codex/gpt-5.6 line per global config,
+subscription-only by standing law.
