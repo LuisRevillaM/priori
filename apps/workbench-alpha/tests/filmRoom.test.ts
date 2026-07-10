@@ -10,7 +10,16 @@ import {
   momentCollectionLabel,
   refusalViewModel
 } from "../src/FilmRoom";
-import type { FilmRoomAskResponse } from "../src/types";
+import {
+  deriveQuestionClauseKeys,
+  intervalAnswerText,
+  momentCardText,
+  unknownMomentText,
+  visibleSchemaTokens
+} from "../src/filmRoomLegibility";
+import type { FilmRoomAskResponse, FilmRoomMoment, ReplayPayload } from "../src/types";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 
 const metric = assertIntervalMetric({
   label: "Certified interval",
@@ -221,7 +230,7 @@ const chips = headerChipsFromResponse({
   clarification: null,
   refusal: null
 } as FilmRoomAskResponse);
-assert.deepEqual(chips, ["2 matches", "home perspective", "openai-codex · gpt-5.5", "tree 1234567"]);
+assert.deepEqual(chips, ["2 matches", "home perspective", "certified evidence"]);
 
 assert.equal(chainStatusLabel(null), "no chain selected");
 assert.equal(
@@ -269,5 +278,80 @@ assert.equal(
   momentCollectionLabel([partitionPreview], 1),
   "1 certified table partition previews"
 );
+
+const expression = JSON.parse(
+  readFileSync(
+    resolve(
+      process.cwd(),
+      "../../delivery/packets/r2-4-flagship/meaning-expressions/counterattack_initiation_sequence_rate.v0.json"
+    ),
+    "utf8"
+  )
+);
+const clauses = deriveQuestionClauseKeys(expression);
+assert.deepEqual(
+  clauses.map((clause) => `${clause.key} ${clause.text}`),
+  [
+    "① they win the ball back",
+    "② carry it forward at least 3 m",
+    "③ keep it with a completed pass"
+  ]
+);
+
+const mutatedExpression = structuredClone(expression);
+const thresholdClause = mutatedExpression.meaning_clauses.find(
+  (clause: Record<string, unknown>) => clause.subject === "stage_2"
+);
+thresholdClause.value = 5;
+assert.equal(
+  deriveQuestionClauseKeys(mutatedExpression)[1].text,
+  "carry it forward at least 5 m",
+  "the rendered clause must change when the fixture's typed value changes"
+);
+
+const passMoment: FilmRoomMoment = {
+  result_id: "chain-pass",
+  source_kind: "chain_record",
+  classification: "PASS",
+  match_id: "J03WOY",
+  period: "secondHalf",
+  anchor_frame_id: 121915,
+  match_time_ms: 3_792_000,
+  requested_evidence: {},
+  replay_window_id: "replay-pass",
+  chain_status: "PASS",
+  chain_reason: "all_stages_pass",
+  evidence_overlay: {}
+};
+const replay = {
+  replay_window_id: "replay-pass",
+  overlays: {
+    stage_labels: [{ stage: 2, observed_numeric_value: 11.2 }]
+  }
+} as ReplayPayload;
+assert.equal(momentCardText(passMoment, replay), "① 63:12 regain → ② +11.2 m carry → ③ pass kept");
+
+const unknownMoment: FilmRoomMoment = {
+  ...passMoment,
+  result_id: "chain-unknown",
+  chain_status: "UNKNOWN",
+  chain_reason: "stage_2_window_truncated"
+};
+assert.equal(unknownMomentText(unknownMoment), "couldn't see whether ② happened — half ended");
+assert.equal(momentCardText(unknownMoment), "couldn't see whether ② happened — half ended");
+
+const answerSentence = intervalAnswerText({
+  label: "fixture metric name",
+  observed: 1 / 25,
+  lower: 0.0004,
+  upper: 1,
+  unknown_count: 90,
+  source: { population_count: 115, a_count: 1 }
+});
+assert.equal(
+  answerSentence,
+  "Of 115 regains, 1 completed the whole chain ①→②→③. 90 couldn't be fully seen — they widen the honest bounds to [0.04%, 100%]."
+);
+assert.deepEqual(visibleSchemaTokens(`${clauses.map((clause) => clause.text).join(" ")} ${answerSentence}`), []);
 
 console.log("film room tests passed");

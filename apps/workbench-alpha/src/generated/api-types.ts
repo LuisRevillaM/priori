@@ -602,6 +602,19 @@ export const apiSchemas = {
             ],
             "default": null
           },
+          "meaning_expression": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Meaning Expression"
+          },
           "moment_total_count": {
             "title": "Moment Total Count",
             "type": "integer"

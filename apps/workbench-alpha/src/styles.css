@@ -121,6 +121,30 @@
   font-size: 14px;
 }
 
+.questionClauses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 9px;
+}
+
+.questionClauses span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #3a5c46;
+  border-radius: 4px;
+  background: #0b0f0d;
+  color: #d9e7dc;
+  padding: 5px 8px;
+  font-size: 12px;
+}
+
+.questionClauses b {
+  color: #ffb13d;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
 .userBubble {
   justify-self: end;
   background: #111814;
@@ -322,6 +346,19 @@
   font-size: 11px;
 }
 
+.stageKeyChip {
+  fill: #0b0f0d;
+  stroke: #ffb13d;
+  stroke-width: 1;
+}
+
+.stageKeyText {
+  fill: #ffb13d;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .unknownOverlay {
   fill: rgba(139, 147, 160, 0.26);
   stroke: #8b93a0;
@@ -346,7 +383,7 @@
 
 .provenanceStrip {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 1px;
   margin-top: 8px;
   border: 1px solid #243229;
@@ -410,6 +447,13 @@
   color: #d9e7dc;
   font-size: 13px;
   line-height: 1.35;
+}
+
+.metricAnswer {
+  margin-top: 10px;
+  color: #d9e7dc;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .metricBoundsLine {
@@ -522,7 +566,7 @@
 .momentItem {
   width: 100%;
   display: grid;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: auto 1fr;
   gap: 8px;
   align-items: center;
   border: 1px solid #243229;
@@ -531,6 +575,10 @@
   color: #d9e7dc;
   padding: 8px;
   text-align: left;
+}
+
+.momentItem span {
+  line-height: 1.4;
 }
 
 .momentItem small {
@@ -570,6 +618,13 @@
   display: grid;
   gap: 8px;
   margin: 10px 0 0;
+}
+
+.evidenceSentence {
+  margin: 10px 0 0;
+  color: #d9e7dc;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .evidenceSummary div {
