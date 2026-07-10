@@ -1,0 +1,155 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 67B 0.1s
+#1 transferring dockerfile: 4.94kB 0.1s done
+#1 DONE 0.2s
+
+#2 [internal] load metadata for docker.io/library/python:3.12-slim
+#2 DONE 1.2s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 352B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 DONE 0.0s
+
+#5 [frontend  1/13] FROM docker.io/library/python:3.12-slim@sha256:423ed6ab25b1921a477529254bfeeabf5855151dc2c3141699a1bfc852199fbf
+#5 resolve docker.io/library/python:3.12-slim@sha256:423ed6ab25b1921a477529254bfeeabf5855151dc2c3141699a1bfc852199fbf 0.0s done
+#5 DONE 0.0s
+
+#4 [internal] load build context
+#4 transferring context: 130.78kB 0.2s done
+#4 DONE 0.2s
+
+#6 [frontend  2/13] WORKDIR /app
+#6 CACHED
+
+#7 [frontend  3/13] RUN apt-get update     && apt-get install -y --no-install-recommends       ca-certificates       curl       nodejs       npm     && rm -rf /var/lib/apt/lists/*     && npm install -g n     && n 22
+#7 CACHED
+
+#8 [frontend 11/13] RUN npm --prefix apps/workbench-alpha ci
+#8 CACHED
+
+#9 [frontend  9/13] RUN python3 -m venv .venv     && .venv/bin/python -m pip install --upgrade pip     && .venv/bin/python -m pip install -e .
+#9 CACHED
+
+#10 [runtime  5/29] RUN git clone --recurse-submodules https://github.com/NousResearch/hermes-agent.git /opt/hermes-agent     && cd /opt/hermes-agent     && python -m venv venv     && /opt/hermes-agent/venv/bin/python -m pip install --upgrade pip     && /opt/hermes-agent/venv/bin/python -m pip install -e ".[all]"     && ln -sf /opt/hermes-agent/venv/bin/hermes /usr/local/bin/hermes
+#10 CACHED
+
+#11 [runtime 25/29] COPY --from=frontend /app/apps/workbench-alpha/src/generated/moment-high-bypass.json ./apps/workbench-alpha/src/generated/moment-high-bypass.json
+#11 CACHED
+
+#12 [frontend  4/13] COPY pyproject.toml ./
+#12 CACHED
+
+#13 [runtime 24/29] COPY --from=frontend /app/apps/workbench-alpha/src/generated/moment-line-break-supported.json ./apps/workbench-alpha/src/generated/moment-line-break-supported.json
+#13 CACHED
+
+#14 [frontend  5/13] COPY src ./src
+#14 CACHED
+
+#15 [runtime  4/29] RUN npm install -g n     && n 22     && npm install -g @openai/codex@0.131.0     && python -m pip install --upgrade pip
+#15 CACHED
+
+#16 [runtime 26/29] COPY --from=frontend /app/apps/workbench-alpha/src/generated/moment-zero-catalog.json ./apps/workbench-alpha/src/generated/moment-zero-catalog.json
+#16 CACHED
+
+#17 [runtime  7/29] COPY src ./src
+#17 CACHED
+
+#18 [runtime 27/29] COPY --from=frontend /app/apps/workbench-alpha/src/generated/moment-line-break-supported-catalog.json ./apps/workbench-alpha/src/generated/moment-line-break-supported-catalog.json
+#18 CACHED
+
+#19 [runtime 15/29] COPY delivery/n1d/n1d1-attestation.json ./delivery/n1d/n1d1-attestation.json
+#19 CACHED
+
+#20 [runtime 20/29] COPY delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json ./delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json
+#20 CACHED
+
+#21 [runtime  3/29] RUN apt-get update     && apt-get install -y --no-install-recommends       build-essential       ca-certificates       curl       git       nodejs       npm       ripgrep     && rm -rf /var/lib/apt/lists/*
+#21 CACHED
+
+#22 [runtime  6/29] COPY pyproject.toml ./
+#22 CACHED
+
+#23 [frontend  6/13] COPY scripts ./scripts
+#23 CACHED
+
+#24 [runtime 13/29] COPY delivery/n1d/n1e-origin-bundle.json ./delivery/n1d/n1e-origin-bundle.json
+#24 CACHED
+
+#25 [runtime 21/29] COPY --from=frontend /app/apps/workbench-alpha/dist ./apps/workbench-alpha/dist
+#25 CACHED
+
+#26 [runtime 23/29] COPY --from=frontend /app/apps/workbench-alpha/src/generated/moment-zero.json ./apps/workbench-alpha/src/generated/moment-zero.json
+#26 CACHED
+
+#27 [frontend 12/13] COPY apps/workbench-alpha ./apps/workbench-alpha
+#27 CACHED
+
+#28 [runtime 11/29] COPY docs ./docs
+#28 CACHED
+
+#29 [frontend  8/13] COPY generated ./generated
+#29 CACHED
+
+#30 [runtime 28/29] COPY --from=frontend /app/apps/workbench-alpha/src/generated/moment-high-bypass-catalog.json ./apps/workbench-alpha/src/generated/moment-high-bypass-catalog.json
+#30 CACHED
+
+#31 [runtime 19/29] COPY delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_v0.json ./delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_v0.json
+#31 CACHED
+
+#32 [frontend 13/13] RUN npm --prefix apps/workbench-alpha run build
+#32 CACHED
+
+#33 [runtime  9/29] COPY config ./config
+#33 CACHED
+
+#34 [runtime 22/29] RUN mkdir -p ./apps/workbench-alpha/src/generated
+#34 CACHED
+
+#35 [runtime 14/29] COPY delivery/n1d/n1f-origin-bundle.json ./delivery/n1d/n1f-origin-bundle.json
+#35 CACHED
+
+#36 [runtime  8/29] COPY scripts ./scripts
+#36 CACHED
+
+#37 [frontend 10/13] COPY apps/workbench-alpha/package*.json ./apps/workbench-alpha/
+#37 CACHED
+
+#38 [runtime 10/29] COPY generated ./generated
+#38 CACHED
+
+#39 [runtime 12/29] RUN mkdir -p     /app/delivery/n1d     /app/delivery/packets/r2-2-flagship     /app/delivery/packets/scp2-3-evidence/witness-plan
+#39 CACHED
+
+#40 [runtime 16/29] COPY delivery/n1d/n1d-canonical-freeze-manifest.json ./delivery/n1d/n1d-canonical-freeze-manifest.json
+#40 CACHED
+
+#41 [frontend  7/13] COPY config ./config
+#41 CACHED
+
+#42 [runtime 17/29] COPY delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json ./delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json
+#42 CACHED
+
+#43 [runtime 18/29] COPY delivery/packets/r2-2-flagship/fragile_retention_rate_table.json ./delivery/packets/r2-2-flagship/fragile_retention_rate_table.json
+#43 CACHED
+
+#44 [runtime 29/29] RUN python -m pip install --upgrade pip     && python -m pip install -e .     && chmod +x /app/scripts/render-start.sh /app/scripts/provision-demo-data.py /app/scripts/bootstrap-hermes.sh
+#44 CACHED
+
+#45 exporting to image
+#45 exporting layers done
+#45 exporting manifest sha256:68c234406e8a1a2d9c81d7a740db3e7acc2d9c1a77f3dd41a69ea769e36a0479 done
+#45 exporting config sha256:e01d99d2ade9e42ed3874b680be06f283d481fff88ab23b60d4947fd91891c2b done
+#45 exporting attestation manifest sha256:acba5f30c45280d365cea55db0c2688ff19690fddb3ea90db630acd7286ec2da 0.0s done
+#45 exporting manifest list sha256:ce6b3928bbd4c5dee2fc52abef66a65849379744db8cedc891ab134d35fefbfa
+#45 exporting manifest list sha256:ce6b3928bbd4c5dee2fc52abef66a65849379744db8cedc891ab134d35fefbfa done
+#45 naming to docker.io/library/priori-deploy2:local done
+#45 unpacking to docker.io/library/priori-deploy2:local 0.0s done
+#45 DONE 0.2s
+
+ [33m1 warning found (use docker --debug to expand):
+[0m - SecretsUsedInArgOrEnv: Do not use ARG or ENV instructions for sensitive data (ENV "CODEX_AUTH_FILE") (line 31)
