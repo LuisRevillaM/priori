@@ -1,0 +1,21 @@
+{
+  "branch": "packet/deploy-2",
+  "error": {
+    "message": "container stopped before gallery upgrade: exited true",
+    "type": "RuntimeError"
+  },
+  "oracle_sha256": {
+    "chain_gallery": "e3485b16fa6cb7b40be9a021befa535a402db1bff1c2d4436fc1c084124344b4",
+    "deploy_smoke": "708e90e81109c63462a4d3d97ba11ebd4e5c12f7d0bb084fcd710257b60a5dc2",
+    "gallery_ready": "a3ef8770f86fea8762ace34a8675f3e9410809d77b68837b4e3d450a10f03d3c"
+  },
+  "phase": "local",
+  "producing_commit": "ac3746cb0765e1391003bd59e496222483d9c747",
+  "producing_script": "scripts/packets/deploy2_evidence.py",
+  "producing_script_sha256": "e01b0aa76c87b04c5182ac946ff47d4c22b770921c6c4746087f6ffe0bd98ca9",
+  "producing_tree": "ee217acbe1550f38aca6bc264793426a17e636a1",
+  "run_id": "2026-07-10T114445.981708+0000-e01b0aa76c87",
+  "run_started_at": "2026-07-10T11:44:45.981894+00:00",
+  "schema_version": "deploy2.evidence.v1",
+  "status": "FAIL"
+}

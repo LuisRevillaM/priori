@@ -183,8 +183,6 @@ def start_cache_builder(name: str, tag: str, stage: Path) -> tuple[str, int]:
         "--detach",
         "--name",
         name,
-        "--memory=4g",
-        "--memory-swap=4g",
         "--publish",
         "127.0.0.1::10000",
         "--mount",
