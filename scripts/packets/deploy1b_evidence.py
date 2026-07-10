@@ -10,6 +10,7 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
 import urllib.parse
 from pathlib import Path
 from typing import Any
@@ -57,14 +58,26 @@ def require_committed_clean_script() -> None:
         raise SystemExit(f"evidence producer is not committed at HEAD: {relative}")
     if hashlib.sha256(committed.stdout).hexdigest() != file_sha256(SCRIPT_PATH):
         raise SystemExit(f"evidence producer differs from committed HEAD: {relative}")
-    dirty = subprocess.run(
-        ["git", "status", "--porcelain", "--untracked-files=no"],
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-        timeout=20,
-    ).stdout.strip()
+    with tempfile.TemporaryDirectory(prefix="deploy1b-git-index-") as temp_dir:
+        env = dict(os.environ)
+        env["GIT_INDEX_FILE"] = str(Path(temp_dir) / "index")
+        subprocess.run(
+            ["git", "read-tree", "HEAD"],
+            cwd=ROOT,
+            env=env,
+            check=True,
+            capture_output=True,
+            timeout=20,
+        )
+        dirty = subprocess.run(
+            ["git", "status", "--porcelain", "--untracked-files=no"],
+            cwd=ROOT,
+            env=env,
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=20,
+        ).stdout.strip()
     if dirty:
         raise SystemExit("tracked tree is dirty; commit before producing DEPLOY-1B evidence")
 
