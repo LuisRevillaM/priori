@@ -25,8 +25,16 @@ discerning outsider with no one in the room.
 Exit criteria: deploy oracle green against the live URL; design
 constitution authored and the full perceptual stack passed (critic
 panel, cold walkthrough, director delight pass on real device);
-sealed exam (SCP2-E) passed with every answer certified-or-honestly-
-refused; gallery instant, live asks demo-token-gated.
+sealed exam (SCP2-E) passed under the TWO-SIDED bar (ADR 0016 era:
+proposed by the Sol executor, concurred cross-family): ZERO wrong
+answers AND at least the PREDECLARED usefulness floor of genuinely
+answered questions — the floor declared in writing before the sealed
+set runs, immovable after first contact; honesty may never mask low
+capability, capability may never excuse a wrong answer. Research
+exception: owner-present coach-observation sessions on the unpolished
+surface may run before the stack passes (their vocabulary and
+confusion are product inputs); the PUBLIC surface still requires the
+full stack. Gallery instant, live asks demo-token-gated.
 Kill/pivot rules: if Render-class hardware cannot serve the gallery
 instantly, ship static-precomputed gallery + local live demos; if the
 critic panel keeps failing the same surface after 3 rounds, the
@@ -66,13 +74,17 @@ field-domain mechanism; CAR ladder rungs 1-2 when a pitch needs them.
 
 ## Queue (next 5)
 
-1. DEPLOY-1 + RB-001 (Render, entrelineas service) — Grade B, oracle:
-   live-URL smoke with binary exit.
-2. DESIGN-CONSTITUTION (craft module keystone) — Grade A, director-
-   authored.
-3. EXAM-1 remaining sessions (window sweeps, E2, E3) — director.
-4. Few-shot capability entry: owner-phrasing → flagship composition.
-5. SCP2-E sealed exam — the Gate 1 closer.
+1. SHADOW-1 (Gate 2 shadow lane): one rights-clean broadcast match
+   through the vision ladder into the canonical port; survival table
+   for the five most valuable questions, thresholds declared before
+   the run — Grade B, parallel-safe (vision repo + worktree).
+2. CAP-1: frozen paraphrase family (≥8 director-authored phrasings,
+   hash-pinned pre-change) + changed-meaning counterexamples for the
+   fragile-retention flagship — Grade A.
+3. Perceptual gate stack run 1 against the live deployment (critic
+   panel, cold walkthrough, delight pass) — director.
+4. EXAM-1 remaining sessions (window sweeps, E2, E3) — director.
+5. SCP2-E sealed exam under the two-sided bar — the Gate 1 closer.
 
 ## Goodhart watch
 

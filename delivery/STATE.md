@@ -1,7 +1,7 @@
 # STATE — Entrelíneas
 
 Updated: 2026-07-10 (DIRECTOR-grade)
-**Phase:** Gate 1 — DEPLOY-1B dispatched (loop self-provisions Render)
+**Phase:** Gate 1 — deployed; awaiting live-URL oracle PASS
 **Read order:** STATE → PLAN → STEWARDSHIP → LEDGER → active packet
 
 ## Where we are
@@ -17,10 +17,10 @@ http://127.0.0.1:8765/film-room. Frontier: codex/afl08-passport-loop at 0c4ad01,
 
 ## Next actions (in order)
 
-1. [any-steward] DEPLOY-1B in flight: executor provisions Render via
-   API (investigate → reuse-or-fresh → configure → provision data →
-   deploy → oracle vs live URL). RB-001 reduced to owner residuals
-   (Hermes secret if live asks wanted; retiring old services).
+1. [DIRECTOR] Run the fenced deploy oracle against the live URL when
+   the 4acbe79 auto-deploy goes live; append PASS to
+   DEPLOY-1B-REVIEW as the packet's true acceptance.
+2. [any-steward] SHADOW-1 then CAP-1 per the amended queue.
 2. [DIRECTOR] Perceptual gate stack run 1: golden screens from the
    deployed surface, multimodal critic panel vs the constitution,
    cold walkthrough, delight pass.

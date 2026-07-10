@@ -28,3 +28,8 @@
   cross-hashed (ADR 0016 item 4; director keystone).
 - Rules registry with supersession; ruling-ID reuse cleanup
   (ADR 0016 item 6).
+- Render URL slug still carries the old name (slugs do not follow
+  renames); custom domain or slug migration = owner decision.
+- Executor sandbox cannot bind sockets or resolve external DNS;
+  deploy packets state this up front and route live verification to
+  the director (DEPLOY-1B).
