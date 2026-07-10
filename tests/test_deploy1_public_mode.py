@@ -5,7 +5,6 @@ import hashlib
 import json
 import subprocess
 import sys
-import tarfile
 import tempfile
 import threading
 import time
@@ -235,22 +234,54 @@ class Deploy1PublicModeTests(unittest.TestCase):
     def test_provisioning_refreshes_when_configured_bundle_sha_changes(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            source = root / "source"
-            staged_dataset = source / "dataset" / "canonical" / "v1"
-            staged_cache = source / "cache" / "node-output"
-            staged_runtime = source / "runtime" / "execution-cache"
+            source_dataset = root / "source-dataset"
+            staged_dataset = source_dataset / "canonical" / "v1"
+            staged_cache = root / "source-cache" / "node-output"
+            staged_runtime = root / "source-runtime" / "execution-cache"
             staged_dataset.mkdir(parents=True)
             staged_cache.mkdir(parents=True)
             staged_runtime.mkdir(parents=True)
             (staged_dataset / "matches.parquet").write_text("new-data\n", encoding="utf-8")
             (staged_cache / "entry.json").write_text('{"epoch":"new"}\n', encoding="utf-8")
             (staged_runtime / "answer.json").write_text('{"cache":"new"}\n', encoding="utf-8")
-            archive = root / "bundle.tar.gz"
-            with tarfile.open(archive, "w:gz") as handle:
-                handle.add(source / "dataset", arcname="dataset")
-                handle.add(source / "cache", arcname="cache")
-                handle.add(source / "runtime", arcname="runtime")
-            archive_sha = hashlib.sha256(archive.read_bytes()).hexdigest()
+            manifest = root / "manifest.json"
+            manifest.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "1.0",
+                        "bundle_id": "test-persistent-staging",
+                        "required_paths": ["matches.parquet"],
+                        "required_raw_paths": [],
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            bundle_output = root / "bundle-output"
+            bundle_build = subprocess.run(
+                [
+                    sys.executable,
+                    "scripts/create-demo-data-bundle.py",
+                    "--dataset-root",
+                    str(source_dataset),
+                    "--manifest",
+                    str(manifest),
+                    "--cache-root",
+                    str(root / "source-cache"),
+                    "--runtime-root",
+                    str(root / "source-runtime"),
+                    "--output-dir",
+                    str(bundle_output),
+                ],
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+            archive = bundle_output / "test-persistent-staging.tar.gz"
+            bundle_manifest = bundle_output / "test-persistent-staging.manifest.json"
+            bundle_payload = json.loads(bundle_manifest.read_text(encoding="utf-8"))
+            archive_sha = str(bundle_payload["archive_sha256"])
 
             dataset_root = root / "installed" / "dataset"
             cache_root = root / "installed" / "cache"
@@ -264,19 +295,6 @@ class Deploy1PublicModeTests(unittest.TestCase):
                 '{"epoch":"old"}\n', encoding="utf-8"
             )
             runtime_root.mkdir(parents=True)
-            manifest = root / "manifest.json"
-            manifest.write_text(
-                json.dumps(
-                    {
-                        "schema_version": "1.0",
-                        "required_paths": ["matches.parquet"],
-                        "required_raw_paths": [],
-                    }
-                )
-                + "\n",
-                encoding="utf-8",
-            )
-
             command = [
                 sys.executable,
                 "scripts/provision-demo-data.py",
@@ -288,6 +306,8 @@ class Deploy1PublicModeTests(unittest.TestCase):
                 str(runtime_root),
                 "--manifest",
                 str(manifest),
+                "--bundle-manifest",
+                str(bundle_manifest),
                 "--bundle-url",
                 archive.resolve().as_uri(),
                 "--bundle-sha256",
@@ -297,13 +317,24 @@ class Deploy1PublicModeTests(unittest.TestCase):
             second = subprocess.run(command, check=False, capture_output=True, text=True, timeout=30)
 
             stamp = json.loads((dataset_root.parent / ".tqe-data-bundle.json").read_text(encoding="utf-8"))
+            staging_line = next(
+                line
+                for line in first.stdout.splitlines()
+                if line.startswith("Demo data staging directory: ")
+            )
+            staging_path = Path(staging_line.removeprefix("Demo data staging directory: "))
             installed_data = (dataset_root / "canonical" / "v1" / "matches.parquet").read_text(
                 encoding="utf-8"
             )
             installed_cache = (cache_root / "node-output" / "entry.json").read_text(encoding="utf-8")
 
+        self.assertEqual(0, bundle_build.returncode, bundle_build.stderr)
         self.assertEqual(0, first.returncode, first.stderr)
         self.assertIn("Demo data provisioned and verified.", first.stdout)
+        expected_staging_parent = dataset_root.resolve().parent / ".tqe-provisioning"
+        self.assertEqual(expected_staging_parent, staging_path.parent)
+        self.assertFalse(staging_path.exists())
+        self.assertFalse((dataset_root.parent / ".tqe-provisioning").exists())
         self.assertEqual("new-data\n", installed_data)
         self.assertEqual('{"epoch":"new"}\n', installed_cache)
         self.assertEqual(archive_sha, stamp["archive_sha256"])

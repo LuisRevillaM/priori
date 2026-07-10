@@ -70,50 +70,64 @@ def main() -> int:
         )
         return 1
 
-    with tempfile.TemporaryDirectory(prefix="entrelineas-demo-data-") as temp_dir:
-        temp_path = Path(temp_dir)
-        archive = temp_path / "bundle.tar.gz"
-        download(args.bundle_url, archive)
-        if expected_sha:
-            actual_sha = file_sha256(archive)
-            if actual_sha != expected_sha:
-                raise SystemExit(f"Data bundle SHA mismatch: expected {expected_sha}, got {actual_sha}")
-        unpacked = temp_path / "unpacked"
-        unpacked.mkdir()
-        unpack_tar_gz(archive, unpacked)
-        staged = temp_path / "dataset"
-        source = unpacked / "dataset" if (unpacked / "dataset").exists() else unpacked
-        shutil.move(str(source), staged)
-        staged_cache = unpacked / "cache"
-        staged_runtime = unpacked / "runtime"
-        if not dataset_satisfies_manifest(
-            staged,
-            manifest,
-            bundle_manifest,
-            cache_root=staged_cache,
-            runtime_root=staged_runtime,
-        ):
-            print(
-                json.dumps(
-                    missing_report(staged, manifest, bundle_manifest, cache_root=staged_cache, runtime_root=staged_runtime),
-                    indent=2,
-                    sort_keys=True,
+    staging_parent = provisioning_staging_parent(args.dataset_root)
+    try:
+        with tempfile.TemporaryDirectory(
+            prefix="entrelineas-demo-data-",
+            dir=staging_parent,
+        ) as temp_dir:
+            temp_path = Path(temp_dir)
+            print(f"Demo data staging directory: {temp_path}")
+            archive = temp_path / "bundle.tar.gz"
+            download(args.bundle_url, archive)
+            if expected_sha:
+                actual_sha = file_sha256(archive)
+                if actual_sha != expected_sha:
+                    raise SystemExit(f"Data bundle SHA mismatch: expected {expected_sha}, got {actual_sha}")
+            unpacked = temp_path / "unpacked"
+            unpacked.mkdir()
+            unpack_tar_gz(archive, unpacked)
+            staged = temp_path / "dataset"
+            source = unpacked / "dataset" if (unpacked / "dataset").exists() else unpacked
+            shutil.move(str(source), staged)
+            staged_cache = unpacked / "cache"
+            staged_runtime = unpacked / "runtime"
+            if not dataset_satisfies_manifest(
+                staged,
+                manifest,
+                bundle_manifest,
+                cache_root=staged_cache,
+                runtime_root=staged_runtime,
+            ):
+                print(
+                    json.dumps(
+                        missing_report(
+                            staged,
+                            manifest,
+                            bundle_manifest,
+                            cache_root=staged_cache,
+                            runtime_root=staged_runtime,
+                        ),
+                        indent=2,
+                        sort_keys=True,
+                    )
                 )
+                raise SystemExit("Downloaded data bundle does not satisfy manifest.")
+            replace_tree(staged, args.dataset_root)
+            if staged_cache.exists():
+                replace_tree(staged_cache, args.cache_root)
+            if staged_runtime.exists():
+                replace_tree(staged_runtime, args.runtime_root)
+            write_bundle_stamp(
+                stamp_path,
+                {
+                    "schema_version": "tqe.data_bundle_install.v1",
+                    "archive_sha256": file_sha256(archive),
+                    "installed_at": datetime.now(UTC).isoformat(),
+                },
             )
-            raise SystemExit("Downloaded data bundle does not satisfy manifest.")
-        replace_tree(staged, args.dataset_root)
-        if staged_cache.exists():
-            replace_tree(staged_cache, args.cache_root)
-        if staged_runtime.exists():
-            replace_tree(staged_runtime, args.runtime_root)
-        write_bundle_stamp(
-            stamp_path,
-            {
-                "schema_version": "tqe.data_bundle_install.v1",
-                "archive_sha256": file_sha256(archive),
-                "installed_at": datetime.now(UTC).isoformat(),
-            },
-        )
+    finally:
+        remove_empty_staging_parent(staging_parent)
     print("Demo data provisioned and verified.")
     return 0
 
@@ -125,6 +139,24 @@ def read_json(path: Path | None) -> dict[str, Any]:
         return {}
     payload = json.loads(path.read_text(encoding="utf-8"))
     return payload if isinstance(payload, dict) else {}
+
+
+def provisioning_staging_parent(dataset_root: Path) -> Path:
+    """Return a staging parent on the same persistent volume as the dataset."""
+
+    persistent_root = dataset_root.resolve().parent
+    staging_parent = persistent_root / ".tqe-provisioning"
+    staging_parent.mkdir(parents=True, exist_ok=True)
+    return staging_parent
+
+
+def remove_empty_staging_parent(staging_parent: Path) -> None:
+    """Remove the shared parent when no concurrent provisioner is using it."""
+
+    try:
+        staging_parent.rmdir()
+    except OSError:
+        pass
 
 
 def dataset_satisfies_manifest(
