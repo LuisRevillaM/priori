@@ -1,11 +1,47 @@
-# DEPLOY-2 Report — local memory PASS; shipping blocked on source availability
+# DEPLOY-2 Report — prewarm-off fix proven with material headroom
 
-Status: BLOCKED BEFORE LIVE DEPLOY
-Branch: `packet/deploy-2`
-Implementation: `6fdaf4864ba8ad894110d1290e1330560d34d38a`
-Local R-AZ run: `2026-07-10T174719.190195Z-c79f8e177bb9-local`
+Status: FIX PROVEN LOCALLY — AWAITING DIRECTOR SHIP
+Branch: `packet/deploy-2-fix`
+Implementation: `5e011805e0645f387dd018ca7cf13a2e3a4d5d79`
+Fix R-AZ run: `2026-07-10T192707.624506Z-f90b19f71268`
 
-## Verdict
+## Fix-round verdict
+
+The descriptor index now loads synchronously from the retained disk cache's
+committed fragments and hydration metadata, independently of
+`WORKBENCH_PREWARM_FILM_ROOM`. The measured service ran with that flag set to
+`0`; no plan execution or full execution-cache payload load occurred.
+
+The proof pre-provisioned and hash-verified the retained disk outside the
+measured container, matching the live redeploy path where the refreshed bundle
+is already installed. The measured `--memory=2g --memory-swap=2g` container
+then performed service startup, descriptor-index load, bootstrap, two distinct
+hydrations, and all three fenced local oracles.
+
+| Fix proof check | Result |
+| --- | --- |
+| Film Room execution prewarm | OFF |
+| Cgroup memory limit | `2,147,483,648` bytes / `2048 MiB` |
+| Cgroup peak | `605,818,880` bytes / `577.754 MiB` |
+| Headroom | `1,541,664,768` bytes / `1470.246 MiB` / `71.789%` |
+| Required minimum headroom | `512 MiB` |
+| OOM / OOM-kill events | `0` / `0` |
+| Full execution-cache payloads opened | `0` |
+| Bootstrap | 115 `chain_record` descriptors |
+| Hydrations | Two distinct replay windows; 101 and 301 frames; stage overlays present |
+| DEPLOY-1 smoke oracle | PASS |
+| DEPLOY-1C gallery oracle | PASS |
+| DEPLOY-2 chain oracle | PASS |
+
+Evidence is committed under
+`delivery/packets/deploy-2-fix-evidence/runs/2026-07-10T192707.624506Z-f90b19f71268/`.
+The producer and its helper were byte-identical to committed `5e01180`; the
+image was built from a Git archive of that commit.
+
+The prior zero-headroom proof is superseded: reaching exactly 2048 MiB is not
+evidence of a shippable 2 GiB process even when the kernel records no OOM.
+
+## Prior round verdict — superseded by the fix proof
 
 The director's Option A implementation fits the 2 GiB service envelope under
 the required workload: blocking provision, descriptor-index startup,
@@ -70,13 +106,12 @@ they remain valid descriptor fragments and do not impersonate chain witnesses.
 | --- | --- |
 | `PYTHONPATH=src .venv/bin/python -m unittest tests.test_deploy2_lazy_hydration tests.test_deploy1c_gallery_from_tables tests.test_deploy1_public_mode` | PASS — 17 tests |
 | `npm --prefix apps/workbench-alpha run build` | PASS |
-| `make test` | 594 run: 587 passed; 7 errors all from host-sandbox `PermissionError` on ephemeral `socket.bind` in existing HTTP-server tests. No assertion failure or DEPLOY-2 failure. |
-| R-AZ local producer | PASS — cache rebuild, 2 GiB proof, bootstrap, two hydrations, and three fenced local oracles |
+| `make test` | PASS — 594 tests in 495.230 seconds; repository attestation VERIFIED |
+| Fix R-AZ producer | PASS — prewarm off, retained-disk startup, descriptor bootstrap, two hydrations, three fenced local oracles, 1470.246 MiB headroom |
 
 ## Required next authority
 
-Make `6fdaf48` available to Render's connected repository/branch, then issue a
-fresh S3 presigned bundle URL if the current one has expired, set
-`WORKBENCH_PREWARM_FILM_ROOM=1`, and deploy that exact commit. Only after five
-minutes of stable service should the director run the live fenced chain oracle
-for acceptance.
+The director deploys exact commit `5e01180` with
+`WORKBENCH_PREWARM_FILM_ROOM=0` permanently. Issue a fresh S3 presigned bundle
+URL only if the configured one has expired. After five minutes of stable
+service, the director runs the live fenced chain oracle for acceptance.

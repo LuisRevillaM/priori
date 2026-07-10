@@ -1,0 +1,2 @@
+PASS state=ready | interval=PASS | moment=PASS
+ORACLE PASS
