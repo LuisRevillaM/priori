@@ -21,3 +21,13 @@ degradation would have been a REJECT.
 The live-URL oracle run plus an explicit replay-window request, post
 merge and deploy, closes this packet — merge queued behind HERMES-2
 per the one-writer law (Sol-1 holds the main tree).
+
+---
+
+## Live closure — 2026-07-10
+
+The strict oracle PASSES against the deployed URL (state=ready,
+interval PASS, moment PASS) and an explicit replay-window request
+served 101 canonical frames (J03WOH firstHalf) over the public
+internet. DEPLOY-1C is CLOSED; DEPLOY-1B's live-PASS condition is
+satisfied by the same deployment. The public gallery is demoable.
