@@ -1,0 +1,689 @@
+EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE..................................EEEEEEEEE
+======================================================================
+ERROR: test_afl_g0_contract (unittest.loader._FailedTest.test_afl_g0_contract)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_afl_g0_contract
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_afl_g0_contract.py", line 6, in <module>
+    from tqe.verification.afl_g0 import load_contract, run, validate_contract
+ModuleNotFoundError: No module named 'tqe.verification'
+
+
+======================================================================
+ERROR: test_afl_gate (unittest.loader._FailedTest.test_afl_gate)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_afl_gate
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_afl_gate.py", line 9, in <module>
+    from tqe.verification import afl_gate
+ModuleNotFoundError: No module named 'tqe.verification'
+
+
+======================================================================
+ERROR: test_afl_validation_factory (unittest.loader._FailedTest.test_afl_validation_factory)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_afl_validation_factory
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_afl_validation_factory.py", line 9, in <module>
+    from tqe.verification.afl_validation_factory import (
+ModuleNotFoundError: No module named 'tqe.verification'
+
+
+======================================================================
+ERROR: test_coach_interpret_surface (unittest.loader._FailedTest.test_coach_interpret_surface)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_coach_interpret_surface
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_coach_interpret_surface.py", line 5, in <module>
+    from src.tqe.workshop.app_service import (
+  File "/Users/luisrevilla/code/priori/src/tqe/workshop/app_service.py", line 36, in <module>
+    from tqe.data.team_branding import team_branding_for
+ModuleNotFoundError: No module named 'tqe.data'
+
+
+======================================================================
+ERROR: test_controlled_line_break (unittest.loader._FailedTest.test_controlled_line_break)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_controlled_line_break
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_controlled_line_break.py", line 3, in <module>
+    from tqe.runtime.controlled_line_break import (
+ModuleNotFoundError: No module named 'tqe.runtime.controlled_line_break'
+
+
+======================================================================
+ERROR: test_controlled_pass_honesty (unittest.loader._FailedTest.test_controlled_pass_honesty)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_controlled_pass_honesty
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_controlled_pass_honesty.py", line 11, in <module>
+    from tqe.runtime.binder import bind_document
+ModuleNotFoundError: No module named 'tqe.runtime.binder'
+
+
+======================================================================
+ERROR: test_corridor_episode_honesty (unittest.loader._FailedTest.test_corridor_episode_honesty)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_corridor_episode_honesty
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_corridor_episode_honesty.py", line 9, in <module>
+    from tqe.runtime.binder import bind_document
+ModuleNotFoundError: No module named 'tqe.runtime.binder'
+
+
+======================================================================
+ERROR: test_defensive_line_model (unittest.loader._FailedTest.test_defensive_line_model)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_defensive_line_model
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_defensive_line_model.py", line 3, in <module>
+    from tqe.runtime.defensive_line import (
+ModuleNotFoundError: No module named 'tqe.runtime.defensive_line'
+
+
+======================================================================
+ERROR: test_deploy1_public_mode (unittest.loader._FailedTest.test_deploy1_public_mode)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_deploy1_public_mode
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_deploy1_public_mode.py", line 15, in <module>
+    from tqe.workshop import app_service
+ModuleNotFoundError: No module named 'tqe.workshop'
+
+
+======================================================================
+ERROR: test_envelope (unittest.loader._FailedTest.test_envelope)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_envelope
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_envelope.py", line 12, in <module>
+    from scripts.runtime.envelope_conformance_report import main as conformance_report_main
+  File "/Users/luisrevilla/code/priori/scripts/runtime/envelope_conformance_report.py", line 13, in <module>
+    from tqe.runtime.binder import bind_document_from_path
+ModuleNotFoundError: No module named 'tqe.runtime.binder'
+
+
+======================================================================
+ERROR: test_executor_boundaries (unittest.loader._FailedTest.test_executor_boundaries)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_executor_boundaries
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_executor_boundaries.py", line 14, in <module>
+    from tqe.runtime import executor
+ImportError: cannot import name 'executor' from 'tqe.runtime' (unknown location)
+
+
+======================================================================
+ERROR: test_film_room_app (unittest.loader._FailedTest.test_film_room_app)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_film_room_app
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_film_room_app.py", line 7, in <module>
+    from tqe.workshop.app_service import (
+ModuleNotFoundError: No module named 'tqe.workshop'
+
+
+======================================================================
+ERROR: test_gate_a_build (unittest.loader._FailedTest.test_gate_a_build)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_gate_a_build
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_gate_a_build.py", line 7, in <module>
+    from tqe.data.gate_a_build import MatchMeta, TeamMeta, extract_orientation, extract_raw_samples
+ModuleNotFoundError: No module named 'tqe.data'
+
+
+======================================================================
+ERROR: test_lane_occupancy (unittest.loader._FailedTest.test_lane_occupancy)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_lane_occupancy
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_lane_occupancy.py", line 6, in <module>
+    from tqe.runtime.lane_occupancy import (
+ModuleNotFoundError: No module named 'tqe.runtime.lane_occupancy'
+
+
+======================================================================
+ERROR: test_local_number_relation (unittest.loader._FailedTest.test_local_number_relation)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_local_number_relation
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_local_number_relation.py", line 3, in <module>
+    from tqe.runtime.local_number_relation import (
+ModuleNotFoundError: No module named 'tqe.runtime.local_number_relation'
+
+
+======================================================================
+ERROR: test_m1_1_binder (unittest.loader._FailedTest.test_m1_1_binder)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_m1_1_binder
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_m1_1_binder.py", line 10, in <module>
+    from tqe.runtime.artifacts import expected_generated_artifacts
+ModuleNotFoundError: No module named 'tqe.runtime.artifacts'
+
+
+======================================================================
+ERROR: test_m1_1_runtime (unittest.loader._FailedTest.test_m1_1_runtime)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_m1_1_runtime
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_m1_1_runtime.py", line 2, in <module>
+    from tqe.runtime.legacy_m1 import LEGACY_M1_PARITY_PROFILE, execute_default_plan, execute_legacy_m1_plan_from_path, select_proof_results
+ModuleNotFoundError: No module named 'tqe.runtime.legacy_m1'
+
+
+======================================================================
+ERROR: test_m2a_bypass (unittest.loader._FailedTest.test_m2a_bypass)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_m2a_bypass
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_m2a_bypass.py", line 3, in <module>
+    from tqe.runtime.bypass import BypassConfig, PlayerPosition, evaluate_opponents_bypassed_by_action
+ModuleNotFoundError: No module named 'tqe.runtime.bypass'
+
+
+======================================================================
+ERROR: test_m2a_controlled_pass (unittest.loader._FailedTest.test_m2a_controlled_pass)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_m2a_controlled_pass
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_m2a_controlled_pass.py", line 4, in <module>
+    from tqe.runtime.controlled_pass import (
+ModuleNotFoundError: No module named 'tqe.runtime.controlled_pass'
+
+
+======================================================================
+ERROR: test_m2a_high_bypass_pass (unittest.loader._FailedTest.test_m2a_high_bypass_pass)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_m2a_high_bypass_pass
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_m2a_high_bypass_pass.py", line 5, in <module>
+    from tqe.runtime.controlled_pass import ControlledPassOutput, evaluate_controlled_passes
+ModuleNotFoundError: No module named 'tqe.runtime.controlled_pass'
+
+
+======================================================================
+ERROR: test_m2a_pass_bypass (unittest.loader._FailedTest.test_m2a_pass_bypass)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_m2a_pass_bypass
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_m2a_pass_bypass.py", line 6, in <module>
+    from tqe.runtime.controlled_pass import ControlledPassOutput
+ModuleNotFoundError: No module named 'tqe.runtime.controlled_pass'
+
+
+======================================================================
+ERROR: test_n1d1_attestation (unittest.loader._FailedTest.test_n1d1_attestation)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_n1d1_attestation
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_n1d1_attestation.py", line 7, in <module>
+    from tqe.verification import n1d1
+ModuleNotFoundError: No module named 'tqe.verification'
+
+
+======================================================================
+ERROR: test_one_touch_pass_chain (unittest.loader._FailedTest.test_one_touch_pass_chain)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_one_touch_pass_chain
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_one_touch_pass_chain.py", line 5, in <module>
+    from tqe.runtime.one_touch import (
+ModuleNotFoundError: No module named 'tqe.runtime.one_touch'
+
+
+======================================================================
+ERROR: test_predicate_truth_series (unittest.loader._FailedTest.test_predicate_truth_series)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_predicate_truth_series
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_predicate_truth_series.py", line 15, in <module>
+    from tqe.runtime.executor import (
+ModuleNotFoundError: No module named 'tqe.runtime.executor'
+
+
+======================================================================
+ERROR: test_r1_0_operator_scaffolding (unittest.loader._FailedTest.test_r1_0_operator_scaffolding)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_r1_0_operator_scaffolding
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_r1_0_operator_scaffolding.py", line 9, in <module>
+    from tqe.runtime.binder import BindError, Binder, bind_document, bind_error_codes
+ModuleNotFoundError: No module named 'tqe.runtime.binder'
+
+
+======================================================================
+ERROR: test_r1_1_project_onto_axis (unittest.loader._FailedTest.test_r1_1_project_onto_axis)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_r1_1_project_onto_axis
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_r1_1_project_onto_axis.py", line 12, in <module>
+    from scripts.coverage_map import compiler_search_reachability as search
+  File "/Users/luisrevilla/code/priori/scripts/coverage_map/compiler_search_reachability.py", line 32, in <module>
+    from tqe.runtime.binder import BindError, bind_document  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'tqe.runtime.binder'
+
+
+======================================================================
+ERROR: test_r1_2_delta_across_anchor (unittest.loader._FailedTest.test_r1_2_delta_across_anchor)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_r1_2_delta_across_anchor
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_r1_2_delta_across_anchor.py", line 11, in <module>
+    from scripts.coverage_map import compiler_search_reachability as search
+  File "/Users/luisrevilla/code/priori/scripts/coverage_map/compiler_search_reachability.py", line 32, in <module>
+    from tqe.runtime.binder import BindError, bind_document  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'tqe.runtime.binder'
+
+
+======================================================================
+ERROR: test_r1_3_extremum_over_set (unittest.loader._FailedTest.test_r1_3_extremum_over_set)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_r1_3_extremum_over_set
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_r1_3_extremum_over_set.py", line 10, in <module>
+    from scripts.coverage_map import compiler_search_reachability as search
+  File "/Users/luisrevilla/code/priori/scripts/coverage_map/compiler_search_reachability.py", line 32, in <module>
+    from tqe.runtime.binder import BindError, bind_document  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'tqe.runtime.binder'
+
+
+======================================================================
+ERROR: test_r1_4_window (unittest.loader._FailedTest.test_r1_4_window)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_r1_4_window
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_r1_4_window.py", line 9, in <module>
+    from tqe.runtime.binder import BindError, bind_document, bind_error_codes
+ModuleNotFoundError: No module named 'tqe.runtime.binder'
+
+
+======================================================================
+ERROR: test_r1_5_typed_join (unittest.loader._FailedTest.test_r1_5_typed_join)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_r1_5_typed_join
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_r1_5_typed_join.py", line 8, in <module>
+    from tqe.runtime.binder import BindError, bind_document, bind_error_codes
+ModuleNotFoundError: No module named 'tqe.runtime.binder'
+
+
+======================================================================
+ERROR: test_r1_c_checkpoint (unittest.loader._FailedTest.test_r1_c_checkpoint)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_r1_c_checkpoint
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_r1_c_checkpoint.py", line 10, in <module>
+    from scripts.audits import r1_5_population_audit
+  File "/Users/luisrevilla/code/priori/scripts/audits/r1_5_population_audit.py", line 19, in <module>
+    from tqe.runtime.binder import bind_document  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'tqe.runtime.binder'
+
+
+======================================================================
+ERROR: test_r2_1_aggregate_over (unittest.loader._FailedTest.test_r2_1_aggregate_over)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_r2_1_aggregate_over
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_r2_1_aggregate_over.py", line 10, in <module>
+    from tqe.runtime.binder import BindError, bind_document, bind_error_codes
+ModuleNotFoundError: No module named 'tqe.runtime.binder'
+
+
+======================================================================
+ERROR: test_r2_2_rate (unittest.loader._FailedTest.test_r2_2_rate)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_r2_2_rate
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_r2_2_rate.py", line 10, in <module>
+    from tqe.runtime.executor import RuntimeAnchor, evidence_value_for_anchor
+ModuleNotFoundError: No module named 'tqe.runtime.executor'
+
+
+======================================================================
+ERROR: test_r2_4_sequence_pattern (unittest.loader._FailedTest.test_r2_4_sequence_pattern)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_r2_4_sequence_pattern
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_r2_4_sequence_pattern.py", line 6, in <module>
+    from tqe.runtime.ir import CatalogOutput, MissingDataSemantics, TypedValue
+ModuleNotFoundError: No module named 'tqe.runtime.ir'
+
+
+======================================================================
+ERROR: test_relative_position_to_line (unittest.loader._FailedTest.test_relative_position_to_line)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_relative_position_to_line
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_relative_position_to_line.py", line 3, in <module>
+    from tqe.runtime.relative_position_to_line import (
+ModuleNotFoundError: No module named 'tqe.runtime.relative_position_to_line'
+
+
+======================================================================
+ERROR: test_scp0_semantic_registry (unittest.loader._FailedTest.test_scp0_semantic_registry)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_scp0_semantic_registry
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_scp0_semantic_registry.py", line 9, in <module>
+    from tqe.semantic_registry import generate as scpgen
+ModuleNotFoundError: No module named 'tqe.semantic_registry'
+
+
+======================================================================
+ERROR: test_scp1_semantic_compiler (unittest.loader._FailedTest.test_scp1_semantic_compiler)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_scp1_semantic_compiler
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_scp1_semantic_compiler.py", line 7, in <module>
+    from tqe.runtime.binder import bind_document
+ModuleNotFoundError: No module named 'tqe.runtime.binder'
+
+
+======================================================================
+ERROR: test_scp2_1_meaning_to_target (unittest.loader._FailedTest.test_scp2_1_meaning_to_target)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_scp2_1_meaning_to_target
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_scp2_1_meaning_to_target.py", line 13, in <module>
+    from scripts.coverage_map import compiler_search_reachability as search
+  File "/Users/luisrevilla/code/priori/scripts/coverage_map/compiler_search_reachability.py", line 32, in <module>
+    from tqe.runtime.binder import BindError, bind_document  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'tqe.runtime.binder'
+
+
+======================================================================
+ERROR: test_scp2_2_hermes_nl (unittest.loader._FailedTest.test_scp2_2_hermes_nl)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_scp2_2_hermes_nl
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_scp2_2_hermes_nl.py", line 10, in <module>
+    from scripts.scp2_2.eval_harness import evaluate_case_set_payload
+  File "/Users/luisrevilla/code/priori/scripts/scp2_2/eval_harness.py", line 24, in <module>
+    from tqe.runtime.ir import stable_hash
+ModuleNotFoundError: No module named 'tqe.runtime.ir'
+
+
+======================================================================
+ERROR: test_smoke1_honest_errors (unittest.loader._FailedTest.test_smoke1_honest_errors)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_smoke1_honest_errors
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_smoke1_honest_errors.py", line 13, in <module>
+    from scripts.coverage_map.compiler_search_reachability import SynthesisError
+  File "/Users/luisrevilla/code/priori/scripts/coverage_map/compiler_search_reachability.py", line 32, in <module>
+    from tqe.runtime.binder import BindError, bind_document  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'tqe.runtime.binder'
+
+
+======================================================================
+ERROR: test_source_lock (unittest.loader._FailedTest.test_source_lock)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_source_lock
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_source_lock.py", line 5, in <module>
+    from tqe.idsse.source_lock import select_match_files
+ModuleNotFoundError: No module named 'tqe.idsse'
+
+
+======================================================================
+ERROR: test_support_arrival (unittest.loader._FailedTest.test_support_arrival)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_support_arrival
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_support_arrival.py", line 4, in <module>
+    from tqe.runtime.support_arrival import (
+ModuleNotFoundError: No module named 'tqe.runtime.support_arrival'
+
+
+======================================================================
+ERROR: test_verifier_write_mode (unittest.loader._FailedTest.test_verifier_write_mode)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_verifier_write_mode
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_verifier_write_mode.py", line 21, in <module>
+    from tqe.semantic_registry.generate import (
+ModuleNotFoundError: No module named 'tqe.semantic_registry'
+
+
+======================================================================
+ERROR: test_workbench_beta0_contract (unittest.loader._FailedTest.test_workbench_beta0_contract)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_workbench_beta0_contract
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/luisrevilla/code/priori/tests/test_workbench_beta0_contract.py", line 11, in <module>
+    from tqe.runtime.ir import ExecutionStatus, QueryExecution, TacticalQueryDocument
+ModuleNotFoundError: No module named 'tqe.runtime.ir'
+
+
+----------------------------------------------------------------------
+Ran 78 tests in 0.004s
+
+FAILED (errors=44)

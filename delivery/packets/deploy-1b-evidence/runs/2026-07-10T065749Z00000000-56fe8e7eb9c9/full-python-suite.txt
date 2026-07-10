@@ -1,0 +1,153 @@
+{"attestation_status": "VERIFIED", "blocking_reasons": []}
+/Users/luisrevilla/.matplotlib is not a writable directory
+Matplotlib created a temporary cache directory at /private/tmp/matplotlib-k7uy2f55 because there was an issue with the default path ({configdir}); it is highly recommended to set the MPLCONFIGDIR environment variable to a writable directory, in particular to speed up the import of Matplotlib and to better support multiprocessing.
+Matplotlib is building the font cache; this may take a moment.
+........................................../Users/runner/work/crossbow/crossbow/arrow/cpp/src/arrow/util/cpu_info.cc:242: IOError: sysctlbyname failed for 'hw.l1dcachesize'. Detail: [errno 1] Operation not permitted
+/Users/runner/work/crossbow/crossbow/arrow/cpp/src/arrow/util/cpu_info.cc:242: IOError: sysctlbyname failed for 'hw.l2cachesize'. Detail: [errno 1] Operation not permitted
+/Users/runner/work/crossbow/crossbow/arrow/cpp/src/arrow/util/cpu_info.cc:242: IOError: sysctlbyname failed for 'hw.l3cachesize'. Detail: [errno 1] Operation not permitted
+/Users/runner/work/crossbow/crossbow/arrow/cpp/src/arrow/util/cpu_info.cc:242: IOError: sysctlbyname failed for 'hw.optional.neon'. Detail: [errno 1] Operation not permitted
+...............................................EEEEE.......................................................................................................................................................................................................................................................................................................................................................................................................................................................................EE................................
+======================================================================
+ERROR: test_public_mode_live_ask_timeout_is_typed_internal_error (test_deploy1_public_mode.Deploy1PublicModeTests.test_public_mode_live_ask_timeout_is_typed_internal_error)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/luisrevilla/code/priori/tests/test_deploy1_public_mode.py", line 169, in test_public_mode_live_ask_timeout_is_typed_internal_error
+    status, body = self.request(
+                   ^^^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/tests/test_deploy1_public_mode.py", line 48, in request
+    server = WorkbenchServer(
+             ^^^^^^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/src/tqe/workshop/app_service.py", line 5069, in __init__
+    super().__init__(server_address, request_handler)
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_public_mode_live_ask_with_token_degrades_when_hermes_absent (test_deploy1_public_mode.Deploy1PublicModeTests.test_public_mode_live_ask_with_token_degrades_when_hermes_absent)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/luisrevilla/code/priori/tests/test_deploy1_public_mode.py", line 144, in test_public_mode_live_ask_with_token_degrades_when_hermes_absent
+    status, body = self.request(
+                   ^^^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/tests/test_deploy1_public_mode.py", line 48, in request
+    server = WorkbenchServer(
+             ^^^^^^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/src/tqe/workshop/app_service.py", line 5069, in __init__
+    super().__init__(server_address, request_handler)
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_public_mode_live_ask_with_token_reaches_handler (test_deploy1_public_mode.Deploy1PublicModeTests.test_public_mode_live_ask_with_token_reaches_handler)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/luisrevilla/code/priori/tests/test_deploy1_public_mode.py", line 123, in test_public_mode_live_ask_with_token_reaches_handler
+    status, body = self.request(
+                   ^^^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/tests/test_deploy1_public_mode.py", line 48, in request
+    server = WorkbenchServer(
+             ^^^^^^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/src/tqe/workshop/app_service.py", line 5069, in __init__
+    super().__init__(server_address, request_handler)
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_public_mode_live_ask_without_token_is_demo_token_required (test_deploy1_public_mode.Deploy1PublicModeTests.test_public_mode_live_ask_without_token_is_demo_token_required)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/luisrevilla/code/priori/tests/test_deploy1_public_mode.py", line 93, in test_public_mode_live_ask_without_token_is_demo_token_required
+    status, body = self.request("POST", "/api/film-room/ask", payload={"text": "Show controlled passes."})
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/tests/test_deploy1_public_mode.py", line 48, in request
+    server = WorkbenchServer(
+             ^^^^^^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/src/tqe/workshop/app_service.py", line 5069, in __init__
+    super().__init__(server_address, request_handler)
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_public_mode_serves_gallery_and_bootstrap_without_demo_token (test_deploy1_public_mode.Deploy1PublicModeTests.test_public_mode_serves_gallery_and_bootstrap_without_demo_token)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/luisrevilla/code/priori/tests/test_deploy1_public_mode.py", line 76, in test_public_mode_serves_gallery_and_bootstrap_without_demo_token
+    page_status, page_body = self.request("GET", "/film-room")
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/tests/test_deploy1_public_mode.py", line 48, in request
+    server = WorkbenchServer(
+             ^^^^^^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/src/tqe/workshop/app_service.py", line 5069, in __init__
+    super().__init__(server_address, request_handler)
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_empty_film_room_ask_is_request_schema_invalid (test_smoke1_honest_errors.Smoke1HonestErrorTests.test_empty_film_room_ask_is_request_schema_invalid)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/luisrevilla/code/priori/tests/test_smoke1_honest_errors.py", line 68, in test_empty_film_room_ask_is_request_schema_invalid
+    status, body, _logs = self.post_json({"text": ""})
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/tests/test_smoke1_honest_errors.py", line 22, in post_json
+    server = WorkbenchServer(
+             ^^^^^^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/src/tqe/workshop/app_service.py", line 5069, in __init__
+    super().__init__(server_address, request_handler)
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_internal_key_error_beyond_dispatch_is_not_request_schema_invalid (test_smoke1_honest_errors.Smoke1HonestErrorTests.test_internal_key_error_beyond_dispatch_is_not_request_schema_invalid)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/luisrevilla/code/priori/tests/test_smoke1_honest_errors.py", line 54, in test_internal_key_error_beyond_dispatch_is_not_request_schema_invalid
+    status, body, logs = self.post_json({"text": "valid ask"})
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/tests/test_smoke1_honest_errors.py", line 22, in post_json
+    server = WorkbenchServer(
+             ^^^^^^^^^^^^^^^^
+  File "/Users/luisrevilla/code/priori/src/tqe/workshop/app_service.py", line 5069, in __init__
+    super().__init__(server_address, request_handler)
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+PermissionError: [Errno 1] Operation not permitted
+
+----------------------------------------------------------------------
+Ran 583 tests in 543.503s
+
+FAILED (errors=7)
