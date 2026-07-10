@@ -353,7 +353,7 @@ def markdown_summary(payload: dict[str, Any]) -> str:
                 f"- Deploy ID: `{payload.get('deploy_id')}`",
             ]
         )
-    lines.extend(["", "| Oracle | Exit |", "| --- | ---: |"]) 
+    lines.extend(["", "| Oracle | Exit |", "| --- | ---: |"])
     for name, result in payload.get("oracles", {}).items():
         lines.append(f"| `{name}` | {result['exit_code']} |")
     return "\n".join(lines) + "\n"
