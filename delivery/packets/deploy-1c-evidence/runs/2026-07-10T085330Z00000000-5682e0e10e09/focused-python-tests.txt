@@ -1,0 +1,46 @@
+evidence_metadata={"git_branch":"packet/deploy-1c","git_commit":"ae440bc37d7afde48dd8454ee96ef91fec3a640e","git_tree":"6e7be55cc5583f716eab80e11eb543488e2901db","oracle_path":"delivery/oracles/DEPLOY-1C/gallery_ready.py","oracle_sha256":"a3ef8770f86fea8762ace34a8675f3e9410809d77b68837b4e3d450a10f03d3c","packet_base":"9eef466","produced_by":"scripts/packets/deploy1c_evidence.py","producing_script_sha256":"5682e0e10e09652421b590b6ff7ff57ee5fe26e44d3e9cfc1de3a44e5b1c0614","run_dir":"delivery/packets/deploy-1c-evidence/runs/2026-07-10T085330Z00000000-5682e0e10e09","run_started_at":"2026-07-10T08:53:30+00:00","schema_version":"deploy1c.evidence_metadata.v1"}
+Prewarming Film Room flagship from certified table delivery/packets/r2-2-flagship/fragile_retention_rate_table.json...
+Prewarmed Film Room flagship from certified table delivery/packets/r2-2-flagship/fragile_retention_rate_table.json: moments=0 elapsed_ms=34
+Prewarming Film Room flagship from certified table delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json...
+Prewarmed Film Room flagship from certified table delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json: moments=28 elapsed_ms=34
+Prewarming Film Room flagship from certified table delivery/packets/r2-2-flagship/fragile_retention_rate_table.json...
+Prewarmed Film Room flagship from certified table delivery/packets/r2-2-flagship/fragile_retention_rate_table.json: moments=0 elapsed_ms=31
+Prewarming Film Room flagship from certified table delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json...
+Prewarmed Film Room flagship from certified table delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json: moments=28 elapsed_ms=35
+Execution-prewarming Film Room flagship delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json...
+Execution-prewarmed Film Room flagship delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json: cache_statuses= returned_results=0 upgrade_applied=False elapsed_ms=0
+Execution-prewarming Film Room flagship delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_v0.json...
+Execution-prewarmed Film Room flagship delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_v0.json: cache_statuses= returned_results=0 upgrade_applied=False elapsed_ms=0
+Prewarming Film Room flagship from certified table delivery/packets/r2-2-flagship/fragile_retention_rate_table.json...
+Prewarmed Film Room flagship from certified table delivery/packets/r2-2-flagship/fragile_retention_rate_table.json: moments=0 elapsed_ms=33
+Prewarming Film Room flagship from certified table delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json...
+Prewarmed Film Room flagship from certified table delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json: moments=28 elapsed_ms=34
+Execution-prewarming Film Room flagship delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json...
+Film Room execution prewarm disabled; certified-table gallery remains ready.
+test_certified_table_prewarm_is_ready_without_execution_or_replay_reads (tests.test_deploy1c_gallery_from_tables.Deploy1CGalleryFromTablesTests.test_certified_table_prewarm_is_ready_without_execution_or_replay_reads) ... ok
+test_empty_execution_result_does_not_replace_servable_table_answer (tests.test_deploy1c_gallery_from_tables.Deploy1CGalleryFromTablesTests.test_empty_execution_result_does_not_replace_servable_table_answer) ... ok
+test_execution_answers_register_windows_but_do_not_materialize_them (tests.test_deploy1c_gallery_from_tables.Deploy1CGalleryFromTablesTests.test_execution_answers_register_windows_but_do_not_materialize_them) ... ok
+test_failed_execution_upgrade_preserves_ready_table_answer (tests.test_deploy1c_gallery_from_tables.Deploy1CGalleryFromTablesTests.test_failed_execution_upgrade_preserves_ready_table_answer) ... {"error_type": "RuntimeError", "event": "film_room_prewarm_failed", "message": "execution disabled in proof", "traceback": "Traceback (most recent call last):\n  File \"/private/tmp/entrelineas-deploy1c/src/tqe/workshop/app_service.py\", line 4027, in prewarm_film_room_flagships_safely\n    prewarm_film_room_flagships(output_root=output_root)\n  File \"/private/tmp/entrelineas-deploy1c/src/tqe/workshop/app_service.py\", line 3968, in prewarm_film_room_flagships\n    response = film_room_prewarmed_response(\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py\", line 1139, in __call__\n    return self._mock_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py\", line 1143, in _mock_call\n    return self._execute_mock_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py\", line 1198, in _execute_mock_call\n    raise effect\nRuntimeError: execution disabled in proof\n"}
+ok
+test_flag_controls_only_execution_upgrade (tests.test_deploy1c_gallery_from_tables.Deploy1CGalleryFromTablesTests.test_flag_controls_only_execution_upgrade) ... ok
+test_lazy_replay_parquet_reads_are_window_filtered (tests.test_deploy1c_gallery_from_tables.Deploy1CGalleryFromTablesTests.test_lazy_replay_parquet_reads_are_window_filtered) ... ok
+test_render_explicitly_disables_execution_prewarm (tests.test_deploy1c_gallery_from_tables.Deploy1CGalleryFromTablesTests.test_render_explicitly_disables_execution_prewarm) ... ok
+test_anchor_only_moment_gets_observed_overlay_marker (tests.test_film_room_app.FilmRoomAppTests.test_anchor_only_moment_gets_observed_overlay_marker) ... ok
+test_canonical_source_ids_are_idempotent (tests.test_film_room_app.FilmRoomAppTests.test_canonical_source_ids_are_idempotent) ... ok
+test_chain_record_overlay_uses_stage_witnesses_and_unknown_slate (tests.test_film_room_app.FilmRoomAppTests.test_chain_record_overlay_uses_stage_witnesses_and_unknown_slate) ... ok
+test_counterattack_certified_and_runtime_interval_helpers_use_same_declared_denominator (tests.test_film_room_app.FilmRoomAppTests.test_counterattack_certified_and_runtime_interval_helpers_use_same_declared_denominator) ... ok
+test_ranked_execute_response_replaces_empty_requested_evidence_with_contract (tests.test_film_room_app.FilmRoomAppTests.test_ranked_execute_response_replaces_empty_requested_evidence_with_contract) ... ok
+test_replay_window_padding_is_derived_from_witness_frames (tests.test_film_room_app.FilmRoomAppTests.test_replay_window_padding_is_derived_from_witness_frames) ... ok
+test_source_kind_is_derived_from_record_shape (tests.test_film_room_app.FilmRoomAppTests.test_source_kind_is_derived_from_record_shape) ... ok
+test_provisioning_rejects_cache_hash_mismatch (tests.test_deploy1_public_mode.Deploy1PublicModeTests.test_provisioning_rejects_cache_hash_mismatch) ... ok
+test_public_mode_live_ask_timeout_is_typed_internal_error (tests.test_deploy1_public_mode.Deploy1PublicModeTests.test_public_mode_live_ask_timeout_is_typed_internal_error) ... {"correlation_id": "err_0ae20f40c6d0", "event": "workbench_internal_error", "exception_type": "TimeoutError", "message": "public Film Room ask exceeded 0.01s", "path": "/api/film-room/ask", "traceback": "TimeoutError: public Film Room ask exceeded 0.01s\n"}
+ok
+test_public_mode_live_ask_with_token_degrades_when_hermes_absent (tests.test_deploy1_public_mode.Deploy1PublicModeTests.test_public_mode_live_ask_with_token_degrades_when_hermes_absent) ... ok
+test_public_mode_live_ask_with_token_reaches_handler (tests.test_deploy1_public_mode.Deploy1PublicModeTests.test_public_mode_live_ask_with_token_reaches_handler) ... ok
+test_public_mode_live_ask_without_token_is_demo_token_required (tests.test_deploy1_public_mode.Deploy1PublicModeTests.test_public_mode_live_ask_without_token_is_demo_token_required) ... ok
+test_public_mode_serves_gallery_and_bootstrap_without_demo_token (tests.test_deploy1_public_mode.Deploy1PublicModeTests.test_public_mode_serves_gallery_and_bootstrap_without_demo_token) ... ok
+
+----------------------------------------------------------------------
+Ran 20 tests in 3.371s
+
+OK

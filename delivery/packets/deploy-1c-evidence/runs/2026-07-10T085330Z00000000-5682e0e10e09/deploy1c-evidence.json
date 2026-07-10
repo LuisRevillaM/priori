@@ -1,0 +1,326 @@
+{
+  "canonical_data_root": "/Users/luisrevilla/code/priori/data/canonical/v1",
+  "deviations": [
+    {
+      "case_law": "SCP2-3 R-BB",
+      "id": "DEPLOY-1C-D1",
+      "implementation": "Bootstrap exposes certified_table_partition previews anchored at the committed period open frame. API and UI state that these are not chain witnesses.",
+      "reason": "The committed certified table intentionally omits source-record populations. Without plan execution or a fenced-table mutation, certified chain witnesses cannot be reconstructed.",
+      "requested_ruling": "Ratify partition previews as a DEPLOY-1C bootstrap-only exception to R-BB, or require a later certified table format that commits replayable witnesses.",
+      "status": "RATIFICATION_REQUESTED"
+    }
+  ],
+  "evidence_metadata": {
+    "git_branch": "packet/deploy-1c",
+    "git_commit": "ae440bc37d7afde48dd8454ee96ef91fec3a640e",
+    "git_tree": "6e7be55cc5583f716eab80e11eb543488e2901db",
+    "oracle_path": "delivery/oracles/DEPLOY-1C/gallery_ready.py",
+    "oracle_sha256": "a3ef8770f86fea8762ace34a8675f3e9410809d77b68837b4e3d450a10f03d3c",
+    "packet_base": "9eef466",
+    "produced_by": "scripts/packets/deploy1c_evidence.py",
+    "producing_script_sha256": "5682e0e10e09652421b590b6ff7ff57ee5fe26e44d3e9cfc1de3a44e5b1c0614",
+    "run_dir": "delivery/packets/deploy-1c-evidence/runs/2026-07-10T085330Z00000000-5682e0e10e09",
+    "run_started_at": "2026-07-10T08:53:30+00:00",
+    "schema_version": "deploy1c.evidence_metadata.v1"
+  },
+  "fences": {
+    "changed_paths": [],
+    "packet_base": "9eef466",
+    "paths": [
+      "delivery/oracles",
+      "delivery/LEDGER.md",
+      "docs/design",
+      "config/scp2-2-blind-eval.sha256",
+      "config/scp2-2-blind-eval-v2.sha256",
+      "delivery/packets/scp2-2-dev-cases.json",
+      "delivery/packets/scp2-2-dev-results.json",
+      "delivery/packets/r2-2-flagship",
+      "delivery/packets/scp2-3-evidence",
+      "src/tqe/semantic_compiler"
+    ],
+    "semantic_compiler_touched": false,
+    "status": "PASS"
+  },
+  "focused_tests": {
+    "command": [
+      "/Users/luisrevilla/code/priori/.venv/bin/python",
+      "-m",
+      "unittest",
+      "-v",
+      "tests.test_deploy1c_gallery_from_tables",
+      "tests.test_film_room_app",
+      "tests.test_deploy1_public_mode"
+    ],
+    "duration_ms": 3955.69,
+    "flagged_over_5_minutes": false,
+    "output_path": "delivery/packets/deploy-1c-evidence/runs/2026-07-10T085330Z00000000-5682e0e10e09/focused-python-tests.txt",
+    "reported_test_count": 20,
+    "reported_test_seconds": 3.371,
+    "return_code": 0,
+    "status": "PASS",
+    "timed_out": false
+  },
+  "focused_ui_test": {
+    "command": [
+      "node",
+      "--import",
+      "./apps/workbench-alpha/node_modules/tsx/dist/loader.mjs",
+      "apps/workbench-alpha/tests/filmRoom.test.ts"
+    ],
+    "duration_ms": 159.57,
+    "flagged_over_5_minutes": false,
+    "output_path": "delivery/packets/deploy-1c-evidence/runs/2026-07-10T085330Z00000000-5682e0e10e09/focused-film-room-ui-test.txt",
+    "reported_test_count": null,
+    "reported_test_seconds": null,
+    "return_code": 0,
+    "status": "PASS",
+    "timed_out": false
+  },
+  "full_suite": {
+    "command": [
+      "/Users/luisrevilla/code/priori/.venv/bin/python",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests"
+    ],
+    "duration_ms": 546701.404,
+    "flagged_over_5_minutes": true,
+    "output_path": "delivery/packets/deploy-1c-evidence/runs/2026-07-10T085330Z00000000-5682e0e10e09/full-python-suite.txt",
+    "reported_test_count": 590,
+    "reported_test_seconds": 545.638,
+    "return_code": 0,
+    "status": "PASS",
+    "timed_out": false
+  },
+  "lazy_replay_memory_read": {
+    "bounded": "materialized Arrow tables and public replay payload",
+    "follow_up": "Physically partition or row-group canonical Parquet by bounded frame ranges before claiming window-bounded storage I/O.",
+    "limitation": "Canonical frame and position files currently use full-half row groups. Predicate filters keep returned rows inside the requested replay window, but overlapping row groups may still be scanned or decoded by PyArrow.",
+    "status": "FLAGGED_NON_BLOCKING"
+  },
+  "local_gallery": {
+    "base_url": "http://127.0.0.1:61653",
+    "bootstrap_path": "delivery/packets/deploy-1c-evidence/runs/2026-07-10T085330Z00000000-5682e0e10e09/film-room-bootstrap.json",
+    "checks": {
+      "bootstrap_ready": true,
+      "evidence_rows_kind_certified": true,
+      "no_answer_executions": true,
+      "no_execution_artifacts": true,
+      "partition_previews_honestly_typed": true,
+      "prewarm_records_report_no_execution": true,
+      "provider_is_certified_table": true,
+      "replay_has_frames": true,
+      "replay_materialized_on_request": true,
+      "replay_was_lazy": true,
+      "replay_within_requested_window": true
+    },
+    "execution_artifact_counts": {
+      "bound-plans": 0,
+      "draft-plans": 0,
+      "executions": 0
+    },
+    "first_moment": {
+      "anchor_frame_id": 10280,
+      "chain_reason": null,
+      "chain_status": null,
+      "classification": "CERTIFIED_TABLE_RATE_PARTITION",
+      "end_frame_id": 78575,
+      "evidence_overlay": {
+        "anchor_markers": [
+          {
+            "frame_id": 10280,
+            "player_id": null,
+            "stage": 0,
+            "status": "CERTIFIED_TABLE_RATE_PARTITION"
+          }
+        ],
+        "carry_trails": [],
+        "stage_labels": [
+          {
+            "frame_id": 10280,
+            "label": "observed anchor",
+            "player_id": null,
+            "stage": 0,
+            "status": "CERTIFIED_TABLE_RATE_PARTITION"
+          }
+        ],
+        "unknown": {
+          "is_unknown": false,
+          "reason": null
+        }
+      },
+      "evidence_row": {
+        "a_count": 0,
+        "audit_role": "home",
+        "b_count": 0,
+        "c_count": 84,
+        "close_frame_id": 78575,
+        "constraint_opt_out_reason": "entity identity and frame alignment are not part of this sequence rate denominator",
+        "d1_count": 0,
+        "d2_count": 20,
+        "denominator_count_interval": {
+          "fail_count": 0,
+          "lower_bound": 84,
+          "observed": 84,
+          "pass_count": 84,
+          "population_count": 104,
+          "unknown_count": 20,
+          "upper_bound": 104
+        },
+        "denominator_source_node_id": "sequence_pattern",
+        "denominator_source_output_name": "chain_records",
+        "denominator_status_field": "stage_1_status",
+        "e_count": 0,
+        "group_by_fields": [
+          "team_role",
+          "match_id"
+        ],
+        "group_key": {
+          "match_id": "J03WOH",
+          "team_role": "home"
+        },
+        "lower_bound": 0,
+        "match_id": "J03WOH",
+        "numerator_count_interval": {
+          "fail_count": 0,
+          "lower_bound": 0,
+          "observed": 0,
+          "pass_count": 0,
+          "population_count": 104,
+          "unknown_count": 104,
+          "upper_bound": 104
+        },
+        "numerator_source_node_id": "sequence_pattern",
+        "numerator_source_output_name": "chain_records",
+        "numerator_status_field": "chain_status",
+        "observed": null,
+        "observed_denominator_count": 0,
+        "open_frame_id": 10280,
+        "period": "firstHalf",
+        "population_expression": "counterattack initiation completed chains over regain starts",
+        "rate_kind": "rate",
+        "rate_status": "PASS",
+        "relation_id": "18b60807f5b96a90",
+        "source_record_count": 104,
+        "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+        "unknown_count": 104,
+        "upper_bound": 1
+      },
+      "match_id": "J03WOH",
+      "match_time_ms": null,
+      "period": "firstHalf",
+      "replay_end_frame_id": 10330,
+      "replay_start_frame_id": 10230,
+      "replay_window_id": "replay_bd4c3742eb7fe284",
+      "requested_evidence": {
+        "a_count": 0,
+        "audit_role": "home",
+        "b_count": 0,
+        "c_count": 84,
+        "close_frame_id": 78575,
+        "constraint_opt_out_reason": "entity identity and frame alignment are not part of this sequence rate denominator",
+        "d1_count": 0,
+        "d2_count": 20,
+        "denominator_count_interval": {
+          "fail_count": 0,
+          "lower_bound": 84,
+          "observed": 84,
+          "pass_count": 84,
+          "population_count": 104,
+          "unknown_count": 20,
+          "upper_bound": 104
+        },
+        "denominator_source_node_id": "sequence_pattern",
+        "denominator_source_output_name": "chain_records",
+        "denominator_status_field": "stage_1_status",
+        "e_count": 0,
+        "group_by_fields": [
+          "team_role",
+          "match_id"
+        ],
+        "group_key": {
+          "match_id": "J03WOH",
+          "team_role": "home"
+        },
+        "lower_bound": 0,
+        "match_id": "J03WOH",
+        "numerator_count_interval": {
+          "fail_count": 0,
+          "lower_bound": 0,
+          "observed": 0,
+          "pass_count": 0,
+          "population_count": 104,
+          "unknown_count": 104,
+          "upper_bound": 104
+        },
+        "numerator_source_node_id": "sequence_pattern",
+        "numerator_source_output_name": "chain_records",
+        "numerator_status_field": "chain_status",
+        "observed": null,
+        "observed_denominator_count": 0,
+        "open_frame_id": 10280,
+        "period": "firstHalf",
+        "population_expression": "counterattack initiation completed chains over regain starts",
+        "rate_kind": "rate",
+        "rate_status": "PASS",
+        "relation_id": "18b60807f5b96a90",
+        "source_record_count": 104,
+        "subset_declaration": "chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records",
+        "unknown_count": 104,
+        "upper_bound": 1
+      },
+      "result_id": "certified_20aa8d292cc4c0df",
+      "source_kind": "certified_table_partition",
+      "start_frame_id": 10280,
+      "unknown_reason": "104 UNKNOWN records remain in this certified table partition."
+    },
+    "oracle": {
+      "command": [
+        "/Users/luisrevilla/code/priori/.venv/bin/python",
+        "/private/tmp/entrelineas-deploy1c/delivery/oracles/DEPLOY-1C/gallery_ready.py",
+        "--base-url",
+        "http://127.0.0.1:61653",
+        "--ready-timeout",
+        "30"
+      ],
+      "duration_ms": 86.783,
+      "flagged_over_5_minutes": false,
+      "output_path": "delivery/packets/deploy-1c-evidence/runs/2026-07-10T085330Z00000000-5682e0e10e09/gallery-ready-oracle.txt",
+      "reported_test_count": null,
+      "reported_test_seconds": null,
+      "return_code": 0,
+      "status": "PASS",
+      "timed_out": false
+    },
+    "replay_frame_count": 101,
+    "replay_frame_id_max": 10330,
+    "replay_frame_id_min": 10230,
+    "replay_path": "delivery/packets/deploy-1c-evidence/runs/2026-07-10T085330Z00000000-5682e0e10e09/film-room-replay-window.json",
+    "status": "PASS"
+  },
+  "oracle_scope_limitation": {
+    "detail": "The fenced gallery_ready.py verifies a replay_window_id but does not request it. This R-AZ producer separately calls the replay-window endpoint; the director's live acceptance should repeat that supplemental request.",
+    "status": "FLAGGED"
+  },
+  "raw_data_root": "/Users/luisrevilla/code/priori/data/raw/idsse/figshare-28196177-v1",
+  "schema_version": "deploy1c.evidence.v1",
+  "status": "PASS",
+  "ui_typecheck": {
+    "command": [
+      "apps/workbench-alpha/node_modules/.bin/tsc",
+      "--noEmit",
+      "-p",
+      "apps/workbench-alpha/tsconfig.json"
+    ],
+    "duration_ms": 2051.768,
+    "flagged_over_5_minutes": false,
+    "output_path": "delivery/packets/deploy-1c-evidence/runs/2026-07-10T085330Z00000000-5682e0e10e09/ui-typecheck.txt",
+    "reported_test_count": null,
+    "reported_test_seconds": null,
+    "return_code": 0,
+    "status": "PASS",
+    "timed_out": false
+  }
+}
