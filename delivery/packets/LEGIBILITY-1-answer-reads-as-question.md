@@ -1,6 +1,6 @@
 # LEGIBILITY-1 — the answer reads as the question (implements N8)
 
-Status: DRAFT (commits at DEPLOY-2 merge; dispatches after — same surface)
+Status: READY (DEPLOY-2 closed live; the surface is the specced one)
 Grade: A (all UI is Grade A; this spec dictates design and microcopy)
 Branch: packet/legibility-1  Oracle: golden screens + component tests
 (committed at dispatch) + the perceptual stack with the N8 walkthrough
