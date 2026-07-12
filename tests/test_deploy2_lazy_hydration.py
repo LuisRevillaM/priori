@@ -145,6 +145,13 @@ class Deploy2LazyHydrationTests(unittest.TestCase):
         self.assertNotIn("large_chain_payload_marker", item["descriptor"]["requested_evidence"])
         self.assertEqual("full-payload", shard["chain_record"]["large_chain_payload_marker"])
         self.assertEqual(3, len(item["descriptor"]["evidence_overlay"]["stage_labels"]))
+        self.assertEqual(
+            [80, 100, 120],
+            [
+                label["frame_id"]
+                for label in item["descriptor"]["evidence_overlay"]["stage_labels"]
+            ],
+        )
         stage_two = item["descriptor"]["evidence_overlay"]["stage_labels"][1]
         self.assertEqual("at least 8 m", stage_two["label"])
         self.assertEqual(11.2, stage_two["observed_numeric_value"])

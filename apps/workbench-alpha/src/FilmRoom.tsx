@@ -63,7 +63,7 @@ export function replaySamplingLabel(replay: ReplayPayload | null | undefined) {
   const sourceFrames = Math.max(1, replay.end_frame_id - replay.start_frame_id + 1);
   const duration = (sourceFrames - 1) / replay.frame_rate_hz;
   const strideText = stride === 1 ? "every frame" : `every ${stride}th frame`;
-  return `${replay.frame_rate_hz} fps source · ${strideText} · ${duration.toFixed(1)} s window`;
+  return `${strideText} · ${duration.toFixed(1)} s window`;
 }
 
 export function assertIntervalMetric(metric: unknown): FilmRoomIntervalMetric {
@@ -246,9 +246,16 @@ export function headerChipsFromResponse(response: FilmRoomAskResponse | null): s
   const chips = [
     matchIds.size ? `${matchIds.size} matches` : "scope pending",
     roleLabel,
-    response ? "evidence pipeline: certified" : "evidence loading"
+    intervalCertificationChip(response)
   ];
   return chips;
+}
+
+export function intervalCertificationChip(response: FilmRoomAskResponse | null): string {
+  if (!response) return "metric interval: loading";
+  const source = asRecord(response.answer?.interval_metric?.source);
+  const evidenceKind = typeof source.evidence_kind === "string" ? source.evidence_kind : "not recorded";
+  return `metric interval: ${evidenceKind}`;
 }
 
 export function answeredQuestionScope(response: FilmRoomAskResponse | null): string {
@@ -295,6 +302,15 @@ export function provenanceTreeView(tree: string | null | undefined): { text: str
   return { text: value.slice(0, 12), title: value };
 }
 
+export function partitionVisibilityNote(value: number, total: number): string | null {
+  if (!(value > 0) || !(total > 0)) return null;
+  const share = value / total;
+  if (share >= 0.01) return null;
+  const percent = share * 100;
+  const precision = percent < 0.1 ? 2 : 1;
+  return `segment enlarged to be visible — true share ${percent.toFixed(precision)}%`;
+}
+
 function IntervalCard({ metric, scope }: { metric: FilmRoomIntervalMetric | null | undefined; scope: string }) {
   const renderable = assertIntervalMetric(metric);
   const lower = Math.max(0, Math.min(100, renderable.lower * 100));
@@ -306,9 +322,12 @@ function IntervalCard({ metric, scope }: { metric: FilmRoomIntervalMetric | null
   const unknown = renderable.unknown_count;
   const partitionTotal = Math.max(1, completed + brokeDown + unknown);
   const presentation = intervalPresentation(renderable);
+  const observedCount = completed + brokeDown;
+  const observedAlign = observed >= 75 ? "right" : observed <= 25 ? "left" : "center";
+  const enlargementNote = partitionVisibilityNote(completed, partitionTotal);
   const segmentStyle = (value: number) => ({
     width: `${(value / partitionTotal) * 100}%`,
-    minWidth: value > 0 ? "2px" : "0"
+    minWidth: value > 0 ? "3px" : "0"
   });
   return (
     <section className={`filmPanel metricPanel ${presentation.findingFirst ? "findingFirst" : "rateFirst"}`}>
@@ -318,16 +337,23 @@ function IntervalCard({ metric, scope }: { metric: FilmRoomIntervalMetric | null
       </div>
       <div className="answeredScope">{scope}</div>
       <div className="metricFinding">{presentation.headline}</div>
-      <div className="metricObserved">observed {presentation.observedFraction}</div>
+      <div className="metricObserved">
+        <span>observed </span>
+        <b>{formatCount(completed)}</b>
+        <span>/{formatCount(observedCount)} ({formatPercent(renderable.observed)})</span>
+      </div>
       <div className="metricSubtitle">{presentation.subtitle}</div>
       <div className="metricAnswer">{intervalAnswerText(renderable)}</div>
       <div className="intervalBar" aria-label="Bounded interval">
         <span className="intervalRange" style={{ left: `${lower}%`, width: `${upper - lower}%` }} />
         <span className="intervalObserved" style={{ left: `${observed}%` }} />
+        <span className={`intervalObservedCallout ${observedAlign}`} style={{ left: `${observed}%` }}>
+          <i aria-hidden="true" />
+          <span>observed {formatPercent(renderable.observed)}</span>
+        </span>
       </div>
       <div className="metricBounds">
         <span>{formatPercent(renderable.lower)}</span>
-        <span>observed {formatPercent(renderable.observed)}</span>
         <span>{formatPercent(renderable.upper)}</span>
       </div>
       <div className="partitionStrip" aria-label="Observed, failed, and unknown partition">
@@ -335,11 +361,12 @@ function IntervalCard({ metric, scope }: { metric: FilmRoomIntervalMetric | null
         <i className="partitionFail" style={segmentStyle(brokeDown)} />
         <i className="partitionUnknown" style={segmentStyle(unknown)} />
       </div>
-      <div className="partitionLegend">
-        <span><i className="legendKey passKey" />{formatCount(completed)} completed</span>
-        <span><i className="legendKey failKey" />{formatCount(brokeDown)} broke down</span>
-        <span><i className="legendKey unknownKey" />{formatCount(unknown)} unknown</span>
+      <div className="partitionDirectLabels">
+        {completed > 0 ? <span className="partitionPassLabel">{formatCount(completed)} complete</span> : null}
+        {brokeDown > 0 ? <span className="partitionFailLabel">{formatCount(brokeDown)} broke down</span> : null}
+        {unknown > 0 ? <span className="partitionUnknownLabel">{formatCount(unknown)} unknown</span> : null}
       </div>
+      {enlargementNote ? <div className="partitionScaleNote">{enlargementNote}</div> : null}
     </section>
   );
 }
@@ -372,6 +399,7 @@ function entityPoint(
 function trailPoints(
   replay: ReplayPayload,
   trail: JsonObject,
+  currentFrameId: number,
   toX: (x: number) => number,
   toY: (y: number) => number
 ) {
@@ -380,7 +408,7 @@ function trailPoints(
   if (start == null || end == null) return "";
   const entityId = typeof trail.player_id === "string" ? trail.player_id : null;
   const points = replay.frames
-    .filter((frame) => frame.frame_id >= start && frame.frame_id <= end)
+    .filter((frame) => frame.frame_id >= start && frame.frame_id <= end && frame.frame_id <= currentFrameId)
     .filter((_, index) => index % 3 === 0)
     .map((frame) => {
       const entity: ReplayEntity | undefined =
@@ -390,6 +418,13 @@ function trailPoints(
     })
     .filter(Boolean);
   return points.join(" ");
+}
+
+export function visibleWitnessLabels(labels: JsonObject[], currentFrameId: number): JsonObject[] {
+  return labels.filter((label) => {
+    const witnessFrameId = finiteNumber(label.frame_id);
+    return witnessFrameId != null && witnessFrameId <= currentFrameId;
+  });
 }
 
 function PitchReplay({
@@ -425,14 +460,16 @@ function PitchReplay({
   const height = 440;
   const pitchLength = replay.pitch.length_m || 105;
   const pitchWidth = replay.pitch.width_m || 68;
-  const toX = (x: number) => ((x + pitchLength / 2) / pitchLength) * width;
-  const toY = (y: number) => ((pitchWidth / 2 - y) / pitchWidth) * height;
+  const pitchInsetX = 34;
+  const pitchInsetY = 28;
+  const toX = (x: number) => pitchInsetX + ((x + pitchLength / 2) / pitchLength) * (width - pitchInsetX * 2);
+  const toY = (y: number) => pitchInsetY + ((pitchWidth / 2 - y) / pitchWidth) * (height - pitchInsetY * 2);
   const players = frame.entities.filter((entity) => entity.entity_type !== "ball");
   const ball = frame.entities.find((entity) => entity.entity_type === "ball");
   const hydratedOverlay = asRecord(replay.overlays);
   const overlay = Object.keys(hydratedOverlay).length ? hydratedOverlay : asRecord(moment?.evidence_overlay);
-  const stageLabels = asArray(overlay.stage_labels).map(asRecord);
-  const anchorMarkers = asArray(overlay.anchor_markers).map(asRecord);
+  const stageLabels = visibleWitnessLabels(asArray(overlay.stage_labels).map(asRecord), frame.frame_id);
+  const anchorMarkers = visibleWitnessLabels(asArray(overlay.anchor_markers).map(asRecord), frame.frame_id);
   const carryTrails = asArray(overlay.carry_trails).map(asRecord);
   const unknown = asRecord(overlay.unknown);
   const evidenceUnknown = moment?.chain_status === "UNKNOWN" || unknown.is_unknown === true;
@@ -451,19 +488,27 @@ function PitchReplay({
     const baseText = String(label.label);
     const text = evidenceUnknown ? `${baseText} — not verified` : baseText;
     const chipWidth = Math.min(width - 16, Math.max(78, text.length * 7 + 34));
-    const stageOffsetX = stage === 1 ? -96 : stage === 2 ? -18 : 58;
-    const stageOffsetY = stage === 1 ? -44 : stage === 2 ? -14 : 18;
-    const chipX = Math.max(8, Math.min(width - chipWidth - 8, point.x + stageOffsetX));
-    let chipY = Math.max(8, Math.min(height - 30, point.y + stageOffsetY));
-    for (let attempt = 0; attempt < 8; attempt += 1) {
+    const chipX = Math.max(16, Math.min(width - chipWidth - 16, point.x - chipWidth / 2));
+    const above = point.y - 42;
+    const below = point.y + 20;
+    const candidateYs = stage === 2
+      ? [below, above, below + 28, above - 28]
+      : [above, below, above - 28, below + 28];
+    let chipY = Math.max(16, Math.min(height - 38, candidateYs[0]));
+    for (const candidateY of candidateYs) {
+      const nextY = Math.max(16, Math.min(height - 38, candidateY));
       const collides = occupiedLabelBoxes.some(
-        (box) => chipX < box.x + box.width && chipX + chipWidth > box.x && chipY < box.y + box.height && chipY + 22 > box.y
+        (box) => chipX < box.x + box.width + 6 && chipX + chipWidth + 6 > box.x && nextY < box.y + box.height + 6 && nextY + 28 > box.y
       );
-      if (!collides) break;
-      chipY = Math.max(8, Math.min(height - 30, chipY + (attempt % 2 === 0 ? 26 : -52)));
+      if (!collides) {
+        chipY = nextY;
+        break;
+      }
     }
     occupiedLabelBoxes.push({ x: chipX, y: chipY, width: chipWidth, height: 22 });
-    return { label, clauseKey, text, chipWidth, chipX, chipY };
+    const leaderX = Math.max(chipX + 8, Math.min(chipX + chipWidth - 8, point.x));
+    const leaderY = chipY > point.y ? chipY : chipY + 22;
+    return { clauseKey, text, chipWidth, chipX, chipY, point, leaderX, leaderY };
   });
 
   return (
@@ -473,7 +518,14 @@ function PitchReplay({
         <span className="momentname">
           {moment ? `${moment.match_id} · ${periodLabel(moment.period)}` : "Selected moment"}
         </span>
+        <span className="pitchTeamLegend" aria-label="Team color legend">
+          <span><i className="homeTeamKey" />home team</span>
+          <span><i className="awayTeamKey" />away team</span>
+        </span>
       </div>
+      {evidenceUnknown ? (
+        <div className="unknownStrip">{moment ? unknownMomentText(moment) : "This part is not fully seen"}</div>
+      ) : null}
       <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Canonical tracking replay with evidence overlay">
         <rect x="0" y="0" width={width} height={height} rx="4" className="pitchBase" />
         <rect x="34" y="28" width="612" height="384" className="pitchLine" />
@@ -484,7 +536,7 @@ function PitchReplay({
         {carryTrails.map((trail, index) => (
           <polyline
             key={`trail-${index}`}
-            points={trailPoints(replay, trail, toX, toY)}
+            points={trailPoints(replay, trail, frame.frame_id, toX, toY)}
             className={`carryTrail ${evidenceUnknown ? "evidenceUnknown" : "evidenceComplete"}`}
           />
         ))}
@@ -518,9 +570,16 @@ function PitchReplay({
         {ball ? <circle cx={toX(ball.x_m)} cy={toY(ball.y_m)} r="4.5" className="ballDot" /> : null}
         {stageLabelLayouts.map((layout, index) => {
           if (!layout) return null;
-          const { clauseKey, text, chipWidth, chipX, chipY } = layout;
+          const { clauseKey, text, chipWidth, chipX, chipY, point, leaderX, leaderY } = layout;
           return (
             <g key={`label-${index}`}>
+              <line
+                x1={point.x}
+                y1={point.y}
+                x2={leaderX}
+                y2={leaderY}
+                className={`stageLeader ${evidenceUnknown ? "evidenceUnknown" : "evidenceComplete"}`}
+              />
               <rect
                 x={chipX}
                 y={chipY}
@@ -546,14 +605,6 @@ function PitchReplay({
             </g>
           );
         })}
-        {unknown.is_unknown === true ? (
-          <g>
-            <rect x="20" y="20" width="370" height="30" className="unknownOverlay" />
-            <text x="32" y="40" className="unknownLabel">
-              {moment ? unknownMomentText(moment) : "This part is not fully seen"}
-            </text>
-          </g>
-        ) : null}
       </svg>
       <div className="filmControls">
         <button type="button" onClick={() => setPlaying(!playing)} aria-label="Play or pause replay">
@@ -568,7 +619,7 @@ function PitchReplay({
           aria-label="Replay frame"
         />
         <span className="replayClock">{replayMatchClock(frame, replay, moment)}</span>
-        <span className="replayFrameCount">sample {frameIndex + 1} of {replay.frames.length}</span>
+        <span className="replayFrameCount">frame {frameIndex + 1} of {replay.frames.length} · {replay.frame_rate_hz} fps</span>
         <span className="replaySampling">{replaySamplingLabel(replay)}</span>
       </div>
     </section>
@@ -640,16 +691,26 @@ function ProvenanceStrip({ response, replay }: { response: FilmRoomAskResponse |
   const latency = response?.latency_breakdown_ms;
   const tree = provenanceTreeView(provenance?.tree);
   const timing = (value: number | undefined) => value && value > 0 ? `${value} ms` : "not measured";
+  const artifactLabels = provenanceArtifactLabels(
+    provenance?.plan_hash,
+    provenance?.synthesized_document_hash
+  );
   return (
     <section className="provenanceStrip">
-      <span>PLAN {provenance?.plan_hash?.slice(0, 12) ?? "pending"}</span>
-      <span>DOC {provenance?.synthesized_document_hash?.slice(0, 12) ?? "pending"}</span>
+      {artifactLabels.map((label) => <span key={label}>{label}</span>)}
       <span title={tree.title}>TREE {tree.text}</span>
       <span>REPLAY {replay?.replay_window_id ?? provenance?.replay_window_id ?? "none"}</span>
       <span>METRIC {response?.answer?.interval_metric?.label ?? "pending"}</span>
       <span>Hermes {timing(latency?.hermes)} · Synthesis {timing(latency?.synthesis)} · Execution {timing(latency?.execution)}</span>
     </section>
   );
+}
+
+export function provenanceArtifactLabels(planHash: string | null | undefined, documentHash: string | null | undefined): string[] {
+  const plan = planHash?.trim() || "pending";
+  const document = documentHash?.trim() || "pending";
+  if (plan !== "pending" && plan === document) return [`PLAN = DOC ${plan.slice(0, 12)}`];
+  return [`PLAN ${plan.slice(0, 12)}`, `DOC ${document.slice(0, 12)}`];
 }
 
 function AskThread({
@@ -684,11 +745,6 @@ function AskThread({
         ) : null}
       </div>
       {loading ? <div className="bubble hermesBubble">{warming ?? "Loading prewarmed film..."}</div> : null}
-      {outcomeClass === "answer" && response?.answer ? (
-        <div className="bubble hermesBubble answerBanner">
-          <div>{momentCoverageText(response.answer)}</div>
-        </div>
-      ) : null}
       {outcomeClass === "clarification" ? (
         <div className="bubble hermesBubble">
           <div>{String(clarification.question ?? "Clarify the reading.")}</div>
@@ -778,6 +834,7 @@ export function FilmRoom() {
       const demo_token = demoTokenFromBrowser();
       const next = await filmRoomAsk({ text: query, context, demo_token });
       setResponse(next);
+      if (next.answer) setQuery("");
       setReplay(next.answer?.replay ?? null);
       setSelectedMoment(0);
       setFrameIndex(0);
@@ -808,6 +865,7 @@ export function FilmRoom() {
         }
         const prewarmed = payload.prewarmed_response ?? null;
         setResponse(prewarmed);
+        if (prewarmed?.answer) setQuery("");
         setReplay(prewarmed?.answer?.replay ?? null);
         setLoadingBootstrap(false);
       })
@@ -865,13 +923,18 @@ export function FilmRoom() {
       />
 
       <form
-        className="filmAskbar"
+        className={`filmAskbar ${response?.answer ? "answered" : ""}`}
         onSubmit={(event) => {
           event.preventDefault();
           void submit();
         }}
       >
-        <input value={query} onChange={(event) => setQuery(event.currentTarget.value)} aria-label="Ask the film anything" />
+        <input
+          value={query}
+          placeholder={response?.answer ? "Ask another…" : undefined}
+          onChange={(event) => setQuery(event.currentTarget.value)}
+          aria-label="Ask the film anything"
+        />
         <button type="submit" disabled={busy}>
           {busy ? "RUNNING" : "ASK"}
         </button>
