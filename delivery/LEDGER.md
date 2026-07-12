@@ -39,3 +39,9 @@
   live); provisioning must stage on the persistent disk, never
   ephemeral /tmp (2GB limit; caused a Size eviction + outage,
   restored by rollback).
+- Auto-deploy DISABLED (2026-07-13, director act via API): a frontier
+  push caused ~3 min of public 502 mid-swap (no zero-downtime on this
+  plan) and raced manual deploys (canceled duplicates in the event
+  log). Deploys are now an explicit director act via the API, always
+  followed by the stability window + oracle. Re-enable only with a
+  health-gated zero-downtime setup.
