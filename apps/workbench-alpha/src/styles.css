@@ -156,6 +156,15 @@
   color: #d9e7dc;
 }
 
+.answerBanner {
+  width: fit-content;
+  max-width: 92%;
+  margin-left: 12px;
+  border-color: #1c2620;
+  background: rgba(14, 20, 17, 0.92);
+  padding: 8px 12px;
+}
+
 .refusalBubble {
   justify-self: start;
   background: #1d1514;
@@ -333,6 +342,12 @@
   stroke-width: 2.5;
 }
 
+.carryTrail.evidenceUnknown,
+.anchorMarker.evidenceUnknown {
+  stroke: #8b93a0;
+  stroke-dasharray: 7 5;
+}
+
 .anchorMarker {
   fill: none;
   stroke: #ffb13d;
@@ -359,6 +374,16 @@
   font-weight: 700;
 }
 
+.stageKeyChip.evidenceUnknown {
+  stroke: #8b93a0;
+  stroke-dasharray: 4 3;
+}
+
+.stageKeyText.evidenceUnknown,
+.stageLabel.evidenceUnknown {
+  fill: #8b93a0;
+}
+
 .unknownOverlay {
   fill: rgba(139, 147, 160, 0.26);
   stroke: #8b93a0;
@@ -381,9 +406,26 @@
   accent-color: #ffb13d;
 }
 
+.filmControls input[type="range"] {
+  height: 22px;
+  cursor: pointer;
+}
+
+.filmControls input[type="range"]:focus-visible {
+  outline: 2px solid #ffb13d;
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+.replaySampling {
+  grid-column: 2 / -1;
+  color: #8b93a0;
+  text-align: right;
+}
+
 .provenanceStrip {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1px;
   margin-top: 8px;
   border: 1px solid #243229;
@@ -396,9 +438,7 @@
 .provenanceStrip span {
   background: #111814;
   padding: 8px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 .filmRail {
@@ -435,11 +475,33 @@
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 }
 
-.metricValue {
+.metricFinding {
   margin-top: 10px;
-  font-size: 38px;
-  line-height: 1;
+  font-size: 22px;
+  line-height: 1.15;
+  color: #e8f2ea;
+  font-weight: 700;
+}
+
+.answeredScope {
+  margin-top: 9px;
+  color: #9fb3a6;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+  text-transform: none;
+}
+
+.metricObserved,
+.metricSubtitle {
+  margin-top: 7px;
+  color: #d9e7dc;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.metricObserved {
   color: #ffb13d;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 }
 
 .metricLabel {
@@ -452,7 +514,7 @@
 .metricAnswer {
   margin-top: 10px;
   color: #d9e7dc;
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.5;
 }
 
@@ -479,7 +541,8 @@
 }
 
 .intervalRange {
-  background: #8a6524;
+  background: #8b93a0;
+  opacity: 0.48;
   border-radius: 2px;
 }
 
@@ -563,6 +626,11 @@
   overflow: auto;
 }
 
+.coverageHeader {
+  text-transform: none;
+  line-height: 1.45;
+}
+
 .momentItem {
   width: 100%;
   display: grid;
@@ -588,13 +656,34 @@
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 }
 
-.momentItem.selected {
+.momentItem.complete.selected {
   border-color: #ffb13d;
 }
 
-.momentItem strong {
+.momentItem.unknown.selected {
+  border-color: #8b93a0;
+}
+
+.momentStatus {
   color: #ffb13d;
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
+.momentStatus.unknown {
+  color: #8b93a0;
+}
+
+.momentListFade {
+  position: relative;
+  z-index: 1;
+  margin-top: -28px;
+  padding: 28px 8px 4px;
+  background: #111814;
+  color: #8b93a0;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+  text-align: right;
+  pointer-events: none;
 }
 
 .momentItem em {

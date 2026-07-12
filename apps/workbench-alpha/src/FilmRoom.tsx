@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { WorkbenchApiError, filmRoomAsk, filmRoomBootstrap, filmRoomReplayFrame, filmRoomReplayWindow } from "./api";
 import {
   deriveQuestionClauseKeys,
   intervalAnswerText,
+  intervalPresentation,
   momentCardText,
   unknownMomentText,
   type QuestionClauseKey
@@ -38,14 +39,31 @@ function periodLabel(period: string) {
   return period.replaceAll("_", " ");
 }
 
-function matchClock(frame: ReplayFrame | undefined, replay: ReplayPayload | null | undefined) {
-  if (!frame || !replay) return "00:00.00";
-  const offsetFrames = Math.max(0, frame.frame_id - replay.start_frame_id);
-  const seconds = offsetFrames / replay.frame_rate_hz;
+export function replayMatchClock(
+  frame: ReplayFrame | undefined,
+  replay: ReplayPayload | null | undefined,
+  moment: FilmRoomMoment | null | undefined
+) {
+  if (!frame || !replay || typeof moment?.match_time_ms !== "number") return "match time not recorded";
+  const seconds = Math.max(0, moment.match_time_ms / 1000 + (frame.frame_id - replay.anchor_frame_id) / replay.frame_rate_hz);
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
   const centis = Math.floor((seconds % 1) * 100);
   return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}.${String(centis).padStart(2, "0")}`;
+}
+
+export function replaySamplingLabel(replay: ReplayPayload | null | undefined) {
+  if (!replay?.frames.length) return "sampling not recorded";
+  const steps = replay.frames
+    .slice(1)
+    .map((frame, index) => frame.frame_id - replay.frames[index].frame_id)
+    .filter((step) => step > 0)
+    .sort((a, b) => a - b);
+  const stride = steps.length ? steps[Math.floor(steps.length / 2)] : 1;
+  const sourceFrames = Math.max(1, replay.end_frame_id - replay.start_frame_id + 1);
+  const duration = (sourceFrames - 1) / replay.frame_rate_hz;
+  const strideText = stride === 1 ? "every frame" : `every ${stride}th frame`;
+  return `${replay.frame_rate_hz} fps source · ${strideText} · ${duration.toFixed(1)} s window`;
 }
 
 export function assertIntervalMetric(metric: unknown): FilmRoomIntervalMetric {
@@ -220,23 +238,64 @@ export function headerChipsFromResponse(response: FilmRoomAskResponse | null): s
     for (const matchId of asArray(invocation.match_ids)) matchIds.add(String(matchId));
     if (invocation.perspective_team_role) roles.add(String(invocation.perspective_team_role));
   }
+  const roleLabel = roles.size === 2 && roles.has("home") && roles.has("away")
+    ? "both teams"
+    : roles.size === 1
+      ? `${Array.from(roles)[0]} team`
+      : "team scope pending";
   const chips = [
     matchIds.size ? `${matchIds.size} matches` : "scope pending",
-    roles.size ? `${Array.from(roles).join("+")} perspective` : "role pending",
-    response ? "certified evidence" : "evidence loading"
+    roleLabel,
+    response ? "evidence pipeline: certified" : "evidence loading"
   ];
   return chips;
+}
+
+export function answeredQuestionScope(response: FilmRoomAskResponse | null): string {
+  const [matchLabel, teamLabel] = headerChipsFromResponse(response);
+  return `${teamLabel} across ${matchLabel}`;
+}
+
+export function orderedFilmRoomMoments(moments: FilmRoomMoment[]) {
+  return moments
+    .map((moment, index) => ({ moment, index }))
+    .sort((a, b) => {
+      const aRank = a.moment.chain_status === "PASS" ? 0 : 1;
+      const bRank = b.moment.chain_status === "PASS" ? 0 : 1;
+      return aRank - bRank || a.index - b.index;
+    })
+    .map(({ moment }) => moment);
+}
+
+export function momentCoverageText(answer: FilmRoomAskResponse["answer"] | null | undefined): string {
+  const metricSource = asRecord(answer?.interval_metric?.source);
+  const population = finiteNumber(metricSource.population_count) ?? 0;
+  const raw = asRecord(answer?.raw_evidence);
+  const descriptorIndex = asRecord(raw.descriptor_index);
+  const coverage = asRecord(descriptorIndex.coverage);
+  const shown = finiteNumber(coverage.shown_count) ?? answer?.visible_moment_count ?? answer?.moments.length ?? 0;
+  const recordedPopulation = finiteNumber(coverage.population_count) ?? population;
+  const base = `Showing ${Number(shown).toLocaleString("en-US")} of ${Number(recordedPopulation).toLocaleString("en-US")}`;
+  if (shown >= recordedPopulation) return base;
+  if (
+    coverage.reason_code === "returned_classified_result_source_records" &&
+    coverage.replay_partition_count === 1 &&
+    coverage.completed_partition_count === 1
+  ) {
+    return `${base} — replay details exist only for the match-half containing the completed chain.`;
+  }
+  return `${base} — replay coverage reason not recorded.`;
 }
 
 export function provenanceTreeView(tree: string | null | undefined): { text: string; title: string } {
   const value = tree?.trim() ?? "";
   if (!value || value.toLowerCase() === "unknown") {
-    return { text: "—", title: "Tree hash unavailable in this build" };
+    return { text: "not recorded", title: "Tree hash not recorded in this build" };
   }
   return { text: value.slice(0, 12), title: value };
 }
 
-function IntervalCard({ metric }: { metric: FilmRoomIntervalMetric | null | undefined }) {
+function IntervalCard({ metric, scope }: { metric: FilmRoomIntervalMetric | null | undefined; scope: string }) {
   const renderable = assertIntervalMetric(metric);
   const lower = Math.max(0, Math.min(100, renderable.lower * 100));
   const upper = Math.max(lower, Math.min(100, renderable.upper * 100));
@@ -246,13 +305,21 @@ function IntervalCard({ metric }: { metric: FilmRoomIntervalMetric | null | unde
   const brokeDown = (finiteNumber(source.b_count) ?? 0) + (finiteNumber(source.e_count) ?? 0);
   const unknown = renderable.unknown_count;
   const partitionTotal = Math.max(1, completed + brokeDown + unknown);
+  const presentation = intervalPresentation(renderable);
+  const segmentStyle = (value: number) => ({
+    width: `${(value / partitionTotal) * 100}%`,
+    minWidth: value > 0 ? "2px" : "0"
+  });
   return (
-    <section className="filmPanel metricPanel">
+    <section className={`filmPanel metricPanel ${presentation.findingFirst ? "findingFirst" : "rateFirst"}`}>
       <div className="filmPanelHeader">
         <span>Answer</span>
         <span>{formatCount(completed)} complete · {formatCount(renderable.unknown_count)} not fully seen</span>
       </div>
-      <div className="metricValue">{formatPercent(renderable.observed)}</div>
+      <div className="answeredScope">{scope}</div>
+      <div className="metricFinding">{presentation.headline}</div>
+      <div className="metricObserved">observed {presentation.observedFraction}</div>
+      <div className="metricSubtitle">{presentation.subtitle}</div>
       <div className="metricAnswer">{intervalAnswerText(renderable)}</div>
       <div className="intervalBar" aria-label="Bounded interval">
         <span className="intervalRange" style={{ left: `${lower}%`, width: `${upper - lower}%` }} />
@@ -264,9 +331,9 @@ function IntervalCard({ metric }: { metric: FilmRoomIntervalMetric | null | unde
         <span>{formatPercent(renderable.upper)}</span>
       </div>
       <div className="partitionStrip" aria-label="Observed, failed, and unknown partition">
-        <i className="partitionPass" style={{ width: `${(completed / partitionTotal) * 100}%` }} />
-        <i className="partitionFail" style={{ width: `${(brokeDown / partitionTotal) * 100}%` }} />
-        <i className="partitionUnknown" style={{ width: `${(unknown / partitionTotal) * 100}%` }} />
+        <i className="partitionPass" style={segmentStyle(completed)} />
+        <i className="partitionFail" style={segmentStyle(brokeDown)} />
+        <i className="partitionUnknown" style={segmentStyle(unknown)} />
       </div>
       <div className="partitionLegend">
         <span><i className="legendKey passKey" />{formatCount(completed)} completed</span>
@@ -368,6 +435,36 @@ function PitchReplay({
   const anchorMarkers = asArray(overlay.anchor_markers).map(asRecord);
   const carryTrails = asArray(overlay.carry_trails).map(asRecord);
   const unknown = asRecord(overlay.unknown);
+  const evidenceUnknown = moment?.chain_status === "UNKNOWN" || unknown.is_unknown === true;
+  const occupiedLabelBoxes: Array<{ x: number; y: number; width: number; height: number }> = [];
+  const stageLabelLayouts = stageLabels.map((label) => {
+    const point = entityPoint(
+      replay,
+      finiteNumber(label.frame_id),
+      typeof label.player_id === "string" ? label.player_id : null,
+      toX,
+      toY
+    );
+    if (!point) return null;
+    const stage = finiteNumber(label.stage);
+    const clauseKey = stage && stage >= 1 && stage <= 3 ? ["①", "②", "③"][stage - 1] : "";
+    const baseText = String(label.label);
+    const text = evidenceUnknown ? `${baseText} — not verified` : baseText;
+    const chipWidth = Math.min(width - 16, Math.max(78, text.length * 7 + 34));
+    const stageOffsetX = stage === 1 ? -96 : stage === 2 ? -18 : 58;
+    const stageOffsetY = stage === 1 ? -44 : stage === 2 ? -14 : 18;
+    const chipX = Math.max(8, Math.min(width - chipWidth - 8, point.x + stageOffsetX));
+    let chipY = Math.max(8, Math.min(height - 30, point.y + stageOffsetY));
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+      const collides = occupiedLabelBoxes.some(
+        (box) => chipX < box.x + box.width && chipX + chipWidth > box.x && chipY < box.y + box.height && chipY + 22 > box.y
+      );
+      if (!collides) break;
+      chipY = Math.max(8, Math.min(height - 30, chipY + (attempt % 2 === 0 ? 26 : -52)));
+    }
+    occupiedLabelBoxes.push({ x: chipX, y: chipY, width: chipWidth, height: 22 });
+    return { label, clauseKey, text, chipWidth, chipX, chipY };
+  });
 
   return (
     <section className="stagebox">
@@ -385,7 +482,11 @@ function PitchReplay({
         <rect x="34" y="124" width="94" height="192" className="pitchLine" />
         <rect x="552" y="124" width="94" height="192" className="pitchLine" />
         {carryTrails.map((trail, index) => (
-          <polyline key={`trail-${index}`} points={trailPoints(replay, trail, toX, toY)} className="carryTrail" />
+          <polyline
+            key={`trail-${index}`}
+            points={trailPoints(replay, trail, toX, toY)}
+            className={`carryTrail ${evidenceUnknown ? "evidenceUnknown" : "evidenceComplete"}`}
+          />
         ))}
         {anchorMarkers.map((marker, index) => {
           const point = entityPoint(
@@ -395,7 +496,15 @@ function PitchReplay({
             toX,
             toY
           );
-          return point ? <circle key={`anchor-${index}`} cx={point.x} cy={point.y} r="13" className="anchorMarker" /> : null;
+          return point ? (
+            <circle
+              key={`anchor-${index}`}
+              cx={point.x}
+              cy={point.y}
+              r="13"
+              className={`anchorMarker ${evidenceUnknown ? "evidenceUnknown" : "evidenceComplete"}`}
+            />
+          ) : null;
         })}
         {players.map((entity) => (
           <circle
@@ -407,23 +516,9 @@ function PitchReplay({
           />
         ))}
         {ball ? <circle cx={toX(ball.x_m)} cy={toY(ball.y_m)} r="4.5" className="ballDot" /> : null}
-        {stageLabels.map((label, index) => {
-          const point = entityPoint(
-            replay,
-            finiteNumber(label.frame_id),
-            typeof label.player_id === "string" ? label.player_id : null,
-            toX,
-            toY
-          );
-          if (!point) return null;
-          const stage = finiteNumber(label.stage);
-          const clauseKey = stage && stage >= 1 && stage <= 3 ? ["①", "②", "③"][stage - 1] : "";
-          const text = String(label.label);
-          const chipWidth = Math.max(78, text.length * 7 + 34);
-          const stageOffsetX = stage === 1 ? -96 : stage === 2 ? -18 : 58;
-          const stageOffsetY = stage === 1 ? -44 : stage === 2 ? -14 : 18;
-          const chipX = Math.max(8, Math.min(width - chipWidth - 8, point.x + stageOffsetX));
-          const chipY = Math.max(8, Math.min(height - 30, point.y + stageOffsetY));
+        {stageLabelLayouts.map((layout, index) => {
+          if (!layout) return null;
+          const { clauseKey, text, chipWidth, chipX, chipY } = layout;
           return (
             <g key={`label-${index}`}>
               <rect
@@ -432,19 +527,19 @@ function PitchReplay({
                 width={chipWidth}
                 height="22"
                 rx="3"
-                className="stageKeyChip"
+                className={`stageKeyChip ${evidenceUnknown ? "evidenceUnknown" : "evidenceComplete"}`}
               />
               <text
                 x={chipX + 7}
                 y={chipY + 15}
-                className="stageKeyText"
+                className={`stageKeyText ${evidenceUnknown ? "evidenceUnknown" : "evidenceComplete"}`}
               >
                 {clauseKey}
               </text>
               <text
                 x={chipX + 26}
                 y={chipY + 15}
-                className="stageLabel"
+                className={`stageLabel ${evidenceUnknown ? "evidenceUnknown" : "evidenceComplete"}`}
               >
                 {text}
               </text>
@@ -472,8 +567,9 @@ function PitchReplay({
           onChange={(event) => setFrameIndex(Number(event.currentTarget.value))}
           aria-label="Replay frame"
         />
-        <span>{matchClock(frame, replay)}</span>
-        <span>{frameIndex + 1}/{replay.frames.length}</span>
+        <span className="replayClock">{replayMatchClock(frame, replay, moment)}</span>
+        <span className="replayFrameCount">sample {frameIndex + 1} of {replay.frames.length}</span>
+        <span className="replaySampling">{replaySamplingLabel(replay)}</span>
       </div>
     </section>
   );
@@ -481,36 +577,60 @@ function PitchReplay({
 
 function MomentList({
   moments,
-  total,
   selected,
   setSelected,
-  replay
+  replay,
+  coverage
 }: {
   moments: FilmRoomMoment[];
-  total: number;
   selected: number;
   setSelected: (value: number) => void;
   replay: ReplayPayload | null;
+  coverage: string;
 }) {
+  const listRef = useRef<HTMLDivElement>(null);
+  const [hiddenBelow, setHiddenBelow] = useState(0);
+  useEffect(() => {
+    const list = listRef.current;
+    if (!list) return;
+    const update = () => {
+      const visibleBottom = list.getBoundingClientRect().bottom;
+      const buttons = Array.from(list.querySelectorAll<HTMLElement>(".momentItem"));
+      setHiddenBelow(buttons.filter((button) => button.getBoundingClientRect().bottom > visibleBottom + 1).length);
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(list);
+    for (const button of list.querySelectorAll<HTMLElement>(".momentItem")) observer.observe(button);
+    const timeout = window.setTimeout(update, 100);
+    list.addEventListener("scroll", update, { passive: true });
+    return () => {
+      window.clearTimeout(timeout);
+      observer.disconnect();
+      list.removeEventListener("scroll", update);
+    };
+  }, [moments]);
   return (
     <section className="filmPanel">
-      <div className="filmPanelHeader">
-        <span>{momentCollectionLabel(moments, total)}</span>
-        <span>{moments.length} shown</span>
+      <div className="filmPanelHeader coverageHeader">
+        <span>{coverage}</span>
       </div>
-      <div className="momentList">
+      <div className="momentList" ref={listRef}>
         {moments.map((moment, index) => (
           <button
             type="button"
             key={`${moment.result_id}-${moment.replay_window_id ?? index}`}
-            className={index === selected ? "momentItem selected" : "momentItem"}
+            className={`momentItem ${moment.chain_status === "PASS" ? "complete" : "unknown"}${index === selected ? " selected" : ""}`}
             onClick={() => setSelected(index)}
           >
-            <strong>{moment.chain_status === "UNKNOWN" ? "UNKNOWN" : "PASS"}</strong>
+            <strong className={`momentStatus ${moment.chain_status === "PASS" ? "complete" : "unknown"}`}>
+              {moment.chain_status === "PASS" ? "COMPLETE" : "UNKNOWN"}
+            </strong>
             <span>{momentCardText(moment, index === selected ? replay : null)}</span>
           </button>
         ))}
       </div>
+      {hiddenBelow > 0 ? <div className="momentListFade">{hiddenBelow} more below</div> : null}
     </section>
   );
 }
@@ -519,6 +639,7 @@ function ProvenanceStrip({ response, replay }: { response: FilmRoomAskResponse |
   const provenance = response?.answer?.provenance;
   const latency = response?.latency_breakdown_ms;
   const tree = provenanceTreeView(provenance?.tree);
+  const timing = (value: number | undefined) => value && value > 0 ? `${value} ms` : "not measured";
   return (
     <section className="provenanceStrip">
       <span>PLAN {provenance?.plan_hash?.slice(0, 12) ?? "pending"}</span>
@@ -526,7 +647,7 @@ function ProvenanceStrip({ response, replay }: { response: FilmRoomAskResponse |
       <span title={tree.title}>TREE {tree.text}</span>
       <span>REPLAY {replay?.replay_window_id ?? provenance?.replay_window_id ?? "none"}</span>
       <span>METRIC {response?.answer?.interval_metric?.label ?? "pending"}</span>
-      <span>H {latency?.hermes ?? 0}ms · S {latency?.synthesis ?? 0}ms · E {latency?.execution ?? 0}ms</span>
+      <span>Hermes {timing(latency?.hermes)} · Synthesis {timing(latency?.synthesis)} · Execution {timing(latency?.execution)}</span>
     </section>
   );
 }
@@ -564,8 +685,8 @@ function AskThread({
       </div>
       {loading ? <div className="bubble hermesBubble">{warming ?? "Loading prewarmed film..."}</div> : null}
       {outcomeClass === "answer" && response?.answer ? (
-        <div className="bubble hermesBubble">
-          <div>{momentCollectionLabel(response.answer.moments, response.answer.moment_total_count)} are ready to watch.</div>
+        <div className="bubble hermesBubble answerBanner">
+          <div>{momentCoverageText(response.answer)}</div>
         </div>
       ) : null}
       {outcomeClass === "clarification" ? (
@@ -641,7 +762,10 @@ export function FilmRoom() {
   const [bootstrapWarming, setBootstrapWarming] = useState<string | null>(null);
   const [selectedMoment, setSelectedMoment] = useState(0);
   const [frameIndex, setFrameIndex] = useState(0);
-  const moments = response?.answer?.moments ?? [];
+  const moments = useMemo(
+    () => orderedFilmRoomMoments(response?.answer?.moments ?? []),
+    [response?.answer?.moments]
+  );
   const selected = moments[selectedMoment] ?? null;
   const clauseKeys = useMemo(
     () => deriveQuestionClauseKeys(response?.answer?.meaning_expression),
@@ -759,13 +883,15 @@ export function FilmRoom() {
           <ProvenanceStrip response={response} replay={replay} />
         </div>
         <aside className="filmRail">
-          {response?.answer?.interval_metric ? <IntervalCard metric={response.answer.interval_metric} /> : null}
+          {response?.answer?.interval_metric ? (
+            <IntervalCard metric={response.answer.interval_metric} scope={answeredQuestionScope(response)} />
+          ) : null}
           <MomentList
             moments={moments}
-            total={response?.answer?.moment_total_count ?? moments.length}
             selected={selectedMoment}
             setSelected={setSelectedMoment}
             replay={replay}
+            coverage={momentCoverageText(response?.answer)}
           />
           <EvidencePanel moment={selected} response={response} replay={replay} />
         </aside>

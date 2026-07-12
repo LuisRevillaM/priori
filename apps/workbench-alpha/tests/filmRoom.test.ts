@@ -7,13 +7,19 @@ import {
   filmRoomOutcomeClass,
   headerChipsFromResponse,
   intervalHeadline,
+  momentCoverageText,
   momentCollectionLabel,
+  orderedFilmRoomMoments,
   provenanceTreeView,
+  replayMatchClock,
+  replaySamplingLabel,
   refusalViewModel
 } from "../src/FilmRoom";
 import {
   deriveQuestionClauseKeys,
+  FILM_ROOM_STATUS_TOKENS,
   intervalAnswerText,
+  intervalPresentation,
   momentCardText,
   unknownMomentText,
   visibleSchemaTokens
@@ -231,14 +237,14 @@ const chips = headerChipsFromResponse({
   clarification: null,
   refusal: null
 } as FilmRoomAskResponse);
-assert.deepEqual(chips, ["2 matches", "home perspective", "certified evidence"]);
+assert.deepEqual(chips, ["2 matches", "home team", "evidence pipeline: certified"]);
 assert.deepEqual(provenanceTreeView(null), {
-  text: "—",
-  title: "Tree hash unavailable in this build"
+  text: "not recorded",
+  title: "Tree hash not recorded in this build"
 });
 assert.deepEqual(provenanceTreeView("unknown"), {
-  text: "—",
-  title: "Tree hash unavailable in this build"
+  text: "not recorded",
+  title: "Tree hash not recorded in this build"
 });
 assert.deepEqual(provenanceTreeView("0123456789abcdef"), {
   text: "0123456789ab",
@@ -353,6 +359,10 @@ const unknownMoment: FilmRoomMoment = {
 };
 assert.equal(unknownMomentText(unknownMoment), "couldn't see whether ② happened — half ended");
 assert.equal(momentCardText(unknownMoment), "couldn't see whether ② happened — half ended");
+assert.deepEqual(
+  orderedFilmRoomMoments([unknownMoment, passMoment]).map((moment) => moment.chain_status),
+  ["PASS", "UNKNOWN"]
+);
 
 const answerSentence = intervalAnswerText({
   label: "fixture metric name",
@@ -367,5 +377,73 @@ assert.equal(
   "Of 115 regains, 1 completed the whole chain ①→②→③. 90 couldn't be fully seen — they widen the honest bounds to [0.04%, 100%]."
 );
 assert.deepEqual(visibleSchemaTokens(`${clauses.map((clause) => clause.text).join(" ")} ${answerSentence}`), []);
+
+const findingFirst = intervalPresentation({
+  label: "fixture",
+  observed: 1,
+  lower: 0,
+  upper: 1,
+  unknown_count: 2810,
+  source: { population_count: 2811, a_count: 1, b_count: 0, e_count: 0 }
+});
+assert.equal(findingFirst.findingFirst, true);
+assert.equal(findingFirst.headline, "1 of 2,811 seen through");
+assert.equal(findingFirst.observedFraction, "1/1 (100%)");
+assert.equal(findingFirst.subtitle, "could be almost never, could be always — only 1 could be fully seen.");
+assert.equal(
+  intervalPresentation({
+    label: "fixture",
+    observed: 0.8,
+    lower: 0.7,
+    upper: 0.9,
+    unknown_count: 10,
+    source: { population_count: 100, a_count: 40, b_count: 10, e_count: 0 }
+  }).findingFirst,
+  false
+);
+
+const coverageAnswer = {
+  interval_metric: { source: { population_count: 2811 } },
+  visible_moment_count: 115,
+  moments: Array.from({ length: 115 }),
+  raw_evidence: {
+    descriptor_index: {
+      coverage: {
+        reason_code: "returned_classified_result_source_records",
+        shown_count: 115,
+        population_count: 2811,
+        replay_partition_count: 1,
+        completed_partition_count: 1
+      }
+    }
+  }
+} as unknown as NonNullable<FilmRoomAskResponse["answer"]>;
+assert.equal(
+  momentCoverageText(coverageAnswer),
+  "Showing 115 of 2,811 — replay details exist only for the match-half containing the completed chain."
+);
+
+const sampledReplay = {
+  ...replay,
+  frame_rate_hz: 25,
+  start_frame_id: 121_885,
+  end_frame_id: 121_945,
+  anchor_frame_id: 121_915,
+  frames: [
+    { frame_id: 121_885, entities: [] },
+    { frame_id: 121_890, entities: [] }
+  ]
+} as ReplayPayload;
+assert.equal(replaySamplingLabel(sampledReplay), "25 fps source · every 5th frame · 2.4 s window");
+assert.equal(replayMatchClock(sampledReplay.frames[0], sampledReplay, passMoment), "63:10.80");
+
+assert.deepEqual(FILM_ROOM_STATUS_TOKENS, { COMPLETE: "#FFB13D", UNKNOWN: "#8B93A0" });
+const css = readFileSync(resolve(process.cwd(), "src/styles.css"), "utf8");
+for (const selector of [".momentStatus.unknown", ".momentItem.unknown.selected", ".stageKeyChip.evidenceUnknown"]) {
+  const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const rule = css.match(new RegExp(`${escapedSelector}\\s*\\{([^}]*)\\}`));
+  assert.ok(rule, `status token lint selector missing: ${selector}`);
+  assert.match(rule[1].toUpperCase(), /#8B93A0/, `UNKNOWN selector escaped slate: ${selector}`);
+}
 
 console.log("film room tests passed");
