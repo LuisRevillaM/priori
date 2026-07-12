@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -20,7 +19,7 @@ from tqe.workshop.app_service import (
     initialize_film_room_prewarm,
     write_film_room_descriptor_fragment,
 )
-from tqe.workshop.m1_2 import read_json, write_json
+from tqe.workshop.m1_2 import CapabilityGap, read_json, write_json
 
 
 def chain_record(anchor: int, *, marker: str = "full-payload") -> dict[str, object]:
@@ -86,6 +85,7 @@ class Deploy2LazyHydrationTests(unittest.TestCase):
             app_service.FILM_ROOM_PREWARMED_RESPONSES.clear()
             app_service.FILM_ROOM_PREWARM_RECORDS.clear()
             app_service.FILM_ROOM_REPLAY_INDEX.clear()
+            app_service.FILM_ROOM_PREWARM_STATE.clear()
             app_service.FILM_ROOM_PREWARM_STATE.update(
                 {
                     "state": "warming",
@@ -146,6 +146,45 @@ class Deploy2LazyHydrationTests(unittest.TestCase):
         self.assertEqual("at least 8 m", stage_two["label"])
         self.assertEqual(11.2, stage_two["observed_numeric_value"])
 
+    def test_rebuild_accepts_equivalent_absolute_hydration_plan_path(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            cache = root / "cache"
+            plan_path = app_service.FILM_ROOM_R2_4_PLAN_PATH
+            execution = {
+                "role": "away",
+                "execution": {
+                    "execution_id": "exec-path-spelling",
+                    "bound_plan_hash": "bound-path-spelling",
+                    "results": [
+                        {
+                            "result_id": "path-spelling",
+                            "classification": "PASS",
+                            "requested_evidence": {"source_records": [chain_record(700)]},
+                        }
+                    ],
+                },
+                "cache_after_execute": {"cache_status": "HIT"},
+                "bound_record": {"bound_plan_hash": "bound-path-spelling"},
+            }
+            with patch("tqe.workshop.app_service.CACHE_ROOT", cache):
+                write_film_room_descriptor_fragment(
+                    key="counterattack_sequence_rate",
+                    role="away",
+                    plan_path=plan_path.resolve(),
+                    executions=[execution],
+                    output_root=root / "runtime",
+                )
+                summary = write_film_room_descriptor_fragment(
+                    key="counterattack_sequence_rate",
+                    role="away",
+                    plan_path=plan_path,
+                    executions=[execution],
+                    output_root=root / "runtime",
+                )
+
+        self.assertEqual(1, summary["descriptor_count"])
+
     def test_prewarm_off_startup_loads_metadata_without_execution_or_full_payloads(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -189,6 +228,7 @@ class Deploy2LazyHydrationTests(unittest.TestCase):
                         cache / f"film-room-descriptor-fragments/{key}-{role}.json",
                         {
                             "schema_version": FILM_ROOM_DESCRIPTOR_INDEX_SCHEMA,
+                            "code_epoch": app_service.film_room_descriptor_code_epoch(),
                             "flagship_key": key,
                             "role": role,
                             "plan_hash": plan_hash,
@@ -210,7 +250,9 @@ class Deploy2LazyHydrationTests(unittest.TestCase):
             with (
                 patch("tqe.workshop.app_service.CACHE_ROOT", cache),
                 patch("tqe.workshop.app_service.read_json", side_effect=tracked_read_json),
-                patch("tqe.workshop.app_service.film_room_prewarmed_response") as full_payload_prewarm,
+                patch(
+                    "tqe.workshop.app_service.film_room_prewarmed_response"
+                ) as full_payload_prewarm,
                 patch("tqe.workshop.app_service.film_room_execute_document") as plan_execution,
             ):
                 thread = initialize_film_room_prewarm(
@@ -249,6 +291,160 @@ class Deploy2LazyHydrationTests(unittest.TestCase):
         self.assertNotIn(cache / "enormous-execution-cache.json", opened)
         full_payload_prewarm.assert_not_called()
         plan_execution.assert_not_called()
+
+    def test_old_schema_fragments_rebuild_from_disk_execution_caches_and_reach_ready(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            cache = root / "cache"
+            for spec_index, spec in enumerate(film_room_flagship_specs()):
+                key = str(spec["key"])
+                plan_path = Path(spec["plan_path"])
+                plan_payload = read_json(plan_path)
+                plan_hash = stable_hash(plan_payload)
+                for role_index, (role, role_document) in enumerate(
+                    sorted(film_room_role_documents(plan_payload).items())
+                ):
+                    bound_plan_hash = stable_hash(
+                        {"fixture": "old-schema", "key": key, "role": role}
+                    )
+                    rows = []
+                    if key == "counterattack_sequence_rate" and role == "away":
+                        rows = [
+                            {
+                                "result_id": "old-result",
+                                "classification": "PASS",
+                                "requested_evidence": {
+                                    "source_records": [chain_record(2400, marker="disk-cache")]
+                                },
+                            }
+                        ]
+                    cache_payload = {
+                        "schema_version": "1.0",
+                        "cache_key": stable_hash({"key": key, "role": role}),
+                        "cache_identity": {
+                            "bound_plan_hash": bound_plan_hash,
+                            "scope": {"perspective_team_role": role},
+                        },
+                        "execution_record": {
+                            "bound_plan_hash": bound_plan_hash,
+                            "document": role_document,
+                        },
+                        "response": {
+                            "bound_plan_hash": bound_plan_hash,
+                            "execution_id": f"exec-{spec_index}-{role_index}",
+                            "results": rows,
+                        },
+                    }
+                    write_json(cache / f"{cache_payload['cache_key']}.json", cache_payload)
+                    write_json(
+                        cache / f"film-room-descriptor-fragments/{key}-{role}.json",
+                        {
+                            "schema_version": "film_room.descriptor_index.v1",
+                            "flagship_key": key,
+                            "role": role,
+                            "plan_hash": plan_hash,
+                            "plan_path": str(plan_path),
+                            "bound_plan_hash": bound_plan_hash,
+                            "execution_id": "old-execution",
+                            "cache_status": "HIT",
+                            "moments": [],
+                        },
+                    )
+            with (
+                patch("tqe.workshop.app_service.CACHE_ROOT", cache),
+                patch("tqe.workshop.app_service.film_room_execute_document") as plan_execution,
+                patch(
+                    "tqe.workshop.app_service.film_room_prewarmed_response"
+                ) as full_payload_prewarm,
+            ):
+                initialize_film_room_prewarm(
+                    output_root=root / "fresh-runtime",
+                    execution_enabled=False,
+                )
+                bootstrap = film_room_bootstrap_response(output_root=root / "fresh-runtime")
+                replay_window_id = bootstrap["answer"]["moments"][0]["replay_window_id"]
+                hydrated_marker = read_json(
+                    cache / f"film-room-hydration/{replay_window_id}.json"
+                )["chain_record"]["large_chain_payload_marker"]
+
+        rebuild_records = [
+            record
+            for record in bootstrap["prewarm_records"]
+            if record.get("prewarm_kind") == "descriptor_fragment_rebuild"
+        ]
+        self.assertEqual("ready", bootstrap["state"])
+        self.assertEqual(1, len(bootstrap["answer"]["moments"]))
+        self.assertEqual("disk-cache", hydrated_marker)
+        self.assertEqual(4, len(rebuild_records))
+        self.assertTrue(
+            all("cache-key miss" in record["rebuild_reason"] for record in rebuild_records)
+        )
+        self.assertEqual(
+            "complete",
+            app_service.FILM_ROOM_PREWARM_STATE["descriptor_rebuild"]["status"],
+        )
+        self.assertTrue(all(record["execution_performed"] is False for record in rebuild_records))
+        plan_execution.assert_not_called()
+        full_payload_prewarm.assert_not_called()
+
+    def test_rebuild_failure_stays_warming_and_names_the_missing_cache(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            cache = root / "empty-cache"
+            cache.mkdir()
+            with patch("tqe.workshop.app_service.CACHE_ROOT", cache):
+                app_service.load_film_room_descriptor_index_safely(
+                    output_root=root / "runtime"
+                )
+
+        state = app_service.FILM_ROOM_PREWARM_STATE
+        self.assertEqual("warming", state["state"])
+        self.assertEqual("failed", state["descriptor_rebuild"]["status"])
+        self.assertEqual("fragile_retention", state["descriptor_rebuild"]["flagship_key"])
+        self.assertEqual("away", state["descriptor_rebuild"]["role"])
+        self.assertIn("found 0", state["descriptor_rebuild"]["message"])
+        self.assertEqual(
+            "rebuilding_descriptor_cache",
+            state["items"][0]["execution_status"],
+        )
+
+    def test_chain_rebuild_refuses_execution_payload_above_memory_guard(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            cache = root / "cache"
+            plan_path = app_service.FILM_ROOM_R2_4_PLAN_PATH
+            role_document = film_room_role_documents(read_json(plan_path))["away"]
+            bound_plan_hash = stable_hash({"fixture": "oversized-cache"})
+            cache_payload = {
+                "cache_identity": {
+                    "bound_plan_hash": bound_plan_hash,
+                    "scope": {"perspective_team_role": "away"},
+                },
+                "execution_record": {"document": role_document},
+                "response": {"results": []},
+            }
+            cache_path = cache / "oversized.json"
+            write_json(cache_path, cache_payload)
+            with (
+                patch("tqe.workshop.app_service.CACHE_ROOT", cache),
+                patch("tqe.workshop.app_service.FILM_ROOM_REBUILD_MAX_PAYLOAD_BYTES", 1),
+            ):
+                with self.assertRaisesRegex(CapabilityGap, "bounded-memory limit"):
+                    app_service.rebuild_film_room_descriptor_fragment(
+                        key="counterattack_sequence_rate",
+                        role="away",
+                        plan_path=plan_path,
+                        output_root=root / "runtime",
+                        old_fragment={"bound_plan_hash": bound_plan_hash},
+                    )
+
+    def test_production_image_includes_legibility_meaning_expression(self) -> None:
+        dockerfile = Path("Dockerfile").read_text(encoding="utf-8")
+        relative = (
+            "delivery/packets/r2-4-flagship/meaning-expressions/"
+            "counterattack_initiation_sequence_rate.v0.json"
+        )
+        self.assertIn(f"COPY {relative} ", dockerfile)
 
     def test_hydration_reads_one_verified_shard_and_returns_stage_overlays(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

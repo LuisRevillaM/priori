@@ -82,6 +82,7 @@ COPY docs ./docs
 RUN mkdir -p \
     /app/delivery/n1d \
     /app/delivery/packets/r2-2-flagship \
+    /app/delivery/packets/r2-4-flagship/meaning-expressions \
     /app/delivery/packets/scp2-3-evidence/witness-plan
 COPY delivery/n1d/n1e-origin-bundle.json ./delivery/n1d/n1e-origin-bundle.json
 COPY delivery/n1d/n1f-origin-bundle.json ./delivery/n1d/n1f-origin-bundle.json
@@ -89,6 +90,7 @@ COPY delivery/n1d/n1d1-attestation.json ./delivery/n1d/n1d1-attestation.json
 COPY delivery/n1d/n1d-canonical-freeze-manifest.json ./delivery/n1d/n1d-canonical-freeze-manifest.json
 COPY delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json ./delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json
 COPY delivery/packets/r2-2-flagship/fragile_retention_rate_table.json ./delivery/packets/r2-2-flagship/fragile_retention_rate_table.json
+COPY delivery/packets/r2-4-flagship/meaning-expressions/counterattack_initiation_sequence_rate.v0.json ./delivery/packets/r2-4-flagship/meaning-expressions/counterattack_initiation_sequence_rate.v0.json
 COPY delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_v0.json ./delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_v0.json
 COPY delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json ./delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json
 COPY --from=frontend /app/apps/workbench-alpha/dist ./apps/workbench-alpha/dist

@@ -125,11 +125,13 @@ KNOWLEDGE_PACK_PATH = Path(os.environ.get("TQE_KNOWLEDGE_PACK_PATH", "generated/
 EXPECTED_KNOWLEDGE_PACK_SHA256 = os.environ.get("TQE_EXPECTED_KNOWLEDGE_PACK_SHA256", "").strip()
 DATA_MANIFEST_PATH = Path(os.environ.get("TQE_DATA_MANIFEST_PATH", "config/deploy/demo-data-manifest.json"))
 CACHE_ROOT = Path(os.environ["TQE_CACHE_ROOT"]) if os.environ.get("TQE_CACHE_ROOT") else None
-FILM_ROOM_DESCRIPTOR_INDEX_SCHEMA = "film_room.descriptor_index.v1"
+FILM_ROOM_DESCRIPTOR_INDEX_SCHEMA = "film_room.descriptor_index.v2"
 FILM_ROOM_HYDRATION_SCHEMA = "film_room.chain_hydration.v1"
 FILM_ROOM_DESCRIPTOR_FRAGMENT_DIR = "film-room-descriptor-fragments"
 FILM_ROOM_HYDRATION_DIR = "film-room-hydration"
 FILM_ROOM_DESCRIPTOR_INDEX_FILE = "film-room-descriptor-index.json"
+FILM_ROOM_EXECUTION_CACHE_METADATA_BYTES = 1024 * 1024
+FILM_ROOM_REBUILD_MAX_PAYLOAD_BYTES = 64 * 1024 * 1024
 N1D_ATTESTATION_PATH = Path("delivery/n1d/n1d1-attestation.json")
 N1D_MANIFEST_PATH = Path("delivery/n1d/n1d-canonical-freeze-manifest.json")
 N1D_ORIGIN_BUNDLE_PATH = Path("delivery/n1d/n1f-origin-bundle.json")
@@ -3225,6 +3227,82 @@ def film_room_cache_path(output_root: Path, relative: str) -> Path:
     return path
 
 
+def film_room_descriptor_code_epoch() -> str:
+    """Bind derived Film Room caches to their producing application code."""
+
+    return stable_hash(
+        {
+            "schema_version": "film_room.descriptor_code_epoch.v1",
+            "descriptor_schema": FILM_ROOM_DESCRIPTOR_INDEX_SCHEMA,
+            "app_service_sha256": file_sha256(Path(__file__)),
+        }
+    )
+
+
+def film_room_plan_id(document: dict[str, Any]) -> str:
+    draft_plan = (
+        document.get("draft_plan") if isinstance(document.get("draft_plan"), dict) else {}
+    )
+    return str(draft_plan.get("plan_id") or "")
+
+
+def film_room_plan_emits_chain_records(document: dict[str, Any]) -> bool:
+    draft_plan = (
+        document.get("draft_plan") if isinstance(document.get("draft_plan"), dict) else {}
+    )
+    anchor_source = (
+        draft_plan.get("anchor_source")
+        if isinstance(draft_plan.get("anchor_source"), dict)
+        else {}
+    )
+    return str(anchor_source.get("output_name") or "") == "chain_records"
+
+
+def film_room_execution_cache_metadata(path: Path) -> dict[str, str]:
+    """Read only a bounded prefix needed to identify an execution cache."""
+
+    with path.open("rb") as handle:
+        prefix = handle.read(FILM_ROOM_EXECUTION_CACHE_METADATA_BYTES)
+    text = prefix.decode("utf-8", errors="ignore")
+
+    def first(pattern: str) -> str:
+        match = re.search(pattern, text)
+        return match.group(1) if match else ""
+
+    return {
+        "bound_plan_hash": first(r'"bound_plan_hash"\s*:\s*"([0-9a-f]+)"'),
+        "role": first(r'"perspective_team_role"\s*:\s*"([^"]+)"'),
+        "plan_id": first(r'"plan_id"\s*:\s*"([^"]+)"'),
+    }
+
+
+def find_film_room_execution_cache(
+    *,
+    output_root: Path,
+    role: str,
+    plan_id: str,
+    bound_plan_hash: str,
+) -> tuple[Path, dict[str, str]]:
+    candidates: list[tuple[Path, dict[str, str]]] = []
+    for path in sorted(cache_root(output_root).glob("*.json")):
+        metadata = film_room_execution_cache_metadata(path)
+        if metadata["role"] != role:
+            continue
+        if bound_plan_hash:
+            if metadata["bound_plan_hash"] != bound_plan_hash:
+                continue
+        elif metadata["plan_id"] != plan_id:
+            continue
+        candidates.append((path, metadata))
+    if len(candidates) != 1:
+        raise CapabilityGap(
+            "Film Room descriptor rebuild expected one execution cache for "
+            f"plan_id={plan_id} role={role} bound_plan_hash={bound_plan_hash or 'unknown'}; "
+            f"found {len(candidates)}."
+        )
+    return candidates[0]
+
+
 def write_film_room_cache_json(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_name(f".{path.name}.tmp-{os.getpid()}-{threading.get_ident()}")
@@ -3328,8 +3406,24 @@ def write_film_room_descriptor_fragment(
             }
             hydration_path = film_room_cache_path(output_root, hydration_relative)
             if hydration_path.exists():
-                if read_json(hydration_path) != hydration_payload:
-                    raise CapabilityGap(f"Conflicting Film Room hydration shard: {replay_window_id}")
+                existing_hydration = read_json(hydration_path)
+                if existing_hydration != hydration_payload:
+                    if not isinstance(existing_hydration, dict):
+                        raise CapabilityGap(
+                            f"Conflicting Film Room hydration shard: {replay_window_id}"
+                        )
+                    existing_identity = deepcopy(existing_hydration)
+                    rebuilt_identity = deepcopy(hydration_payload)
+                    # The original bundle recorded an absolute container plan
+                    # path. A cache-only rebuild may know the same hashed plan
+                    # by its repository-relative path; that spelling is not
+                    # part of the chain payload's semantic identity.
+                    existing_identity.pop("plan_path", None)
+                    rebuilt_identity.pop("plan_path", None)
+                    if existing_identity != rebuilt_identity:
+                        raise CapabilityGap(
+                            f"Conflicting Film Room hydration shard: {replay_window_id}"
+                        )
             else:
                 write_film_room_cache_json(hydration_path, hydration_payload)
             hydration_sha256 = file_sha256(hydration_path)
@@ -3370,6 +3464,7 @@ def write_film_room_descriptor_fragment(
             )
     fragment = {
         "schema_version": FILM_ROOM_DESCRIPTOR_INDEX_SCHEMA,
+        "code_epoch": film_room_descriptor_code_epoch(),
         "flagship_key": key,
         "role": role,
         "plan_hash": plan_hash,
@@ -3393,8 +3488,141 @@ def write_film_room_descriptor_fragment(
     }
 
 
+def validate_film_room_descriptor_fragment(
+    *,
+    fragment: dict[str, Any],
+    fragment_path: Path,
+    key: str,
+    role: str,
+    plan_hash: str,
+    output_root: Path,
+) -> None:
+    if (
+        fragment.get("schema_version") != FILM_ROOM_DESCRIPTOR_INDEX_SCHEMA
+        or fragment.get("code_epoch") != film_room_descriptor_code_epoch()
+        or fragment.get("flagship_key") != key
+        or fragment.get("role") != role
+        or fragment.get("plan_hash") != plan_hash
+    ):
+        raise CapabilityGap(f"Film Room descriptor fragment cache-key miss: {fragment_path}")
+    moments = fragment.get("moments")
+    if not isinstance(moments, list):
+        raise CapabilityGap(f"Malformed Film Room descriptor fragment: {fragment_path}")
+    for item in moments:
+        if not isinstance(item, dict) or not isinstance(item.get("descriptor"), dict):
+            raise CapabilityGap(f"Malformed Film Room descriptor fragment: {fragment_path}")
+        descriptor = FilmRoomMomentResponse.model_validate(item["descriptor"])
+        replay_window_id = str(descriptor.replay_window_id or "")
+        hydration_relative = str(item.get("hydration_path") or "")
+        expected_sha = str(item.get("hydration_sha256") or "")
+        hydration_path = film_room_cache_path(output_root, hydration_relative)
+        if not replay_window_id or not hydration_path.is_file() or file_sha256(hydration_path) != expected_sha:
+            raise CapabilityGap(f"Film Room hydration shard failed verification: {replay_window_id}")
+
+
+def rebuild_film_room_descriptor_fragment(
+    *,
+    key: str,
+    role: str,
+    plan_path: Path,
+    output_root: Path,
+    old_fragment: dict[str, Any] | None,
+) -> dict[str, Any]:
+    """Rebuild a derived fragment from one durable execution cache, never a plan run."""
+
+    document_payload = read_json(plan_path)
+    role_documents = film_room_role_documents(document_payload)
+    role_document = role_documents.get(role)
+    if not isinstance(role_document, dict):
+        raise CapabilityGap(f"Film Room descriptor rebuild has no {role} document for {plan_path}.")
+    old_bound_plan_hash = (
+        str(old_fragment.get("bound_plan_hash") or "") if isinstance(old_fragment, dict) else ""
+    )
+    execution_cache_path_value, metadata = find_film_room_execution_cache(
+        output_root=output_root,
+        role=role,
+        plan_id=film_room_plan_id(role_document),
+        bound_plan_hash=old_bound_plan_hash,
+    )
+    emits_chains = film_room_plan_emits_chain_records(role_document)
+    if emits_chains:
+        cache_size = execution_cache_path_value.stat().st_size
+        if cache_size > FILM_ROOM_REBUILD_MAX_PAYLOAD_BYTES:
+            raise CapabilityGap(
+                "Film Room descriptor rebuild refused an execution cache above the bounded-memory "
+                f"limit: path={execution_cache_path_value} bytes={cache_size} "
+                f"limit={FILM_ROOM_REBUILD_MAX_PAYLOAD_BYTES}."
+            )
+        cache_payload = read_json(execution_cache_path_value)
+        response = (
+            cache_payload.get("response")
+            if isinstance(cache_payload.get("response"), dict)
+            else {}
+        )
+        cache_identity = (
+            cache_payload.get("cache_identity")
+            if isinstance(cache_payload.get("cache_identity"), dict)
+            else {}
+        )
+        if (
+            str(cache_identity.get("bound_plan_hash") or "") != metadata["bound_plan_hash"]
+            or str(cache_identity.get("scope", {}).get("perspective_team_role") or "") != role
+            or not isinstance(response.get("results"), list)
+        ):
+            raise CapabilityGap(
+                f"Film Room execution cache provenance mismatch: {execution_cache_path_value}"
+            )
+        execution_id = str(response.get("execution_id") or "")
+        execution = {
+            "role": role,
+            "execution": response,
+            "cache_after_execute": {"cache_status": "HIT"},
+            "bound_record": {"bound_plan_hash": metadata["bound_plan_hash"]},
+        }
+    else:
+        execution_id = ""
+        execution = {
+            "role": role,
+            "execution": {
+                "bound_plan_hash": metadata["bound_plan_hash"],
+                "execution_id": execution_id,
+                "results": [],
+            },
+            "cache_after_execute": {"cache_status": "HIT_METADATA_ONLY"},
+            "bound_record": {"bound_plan_hash": metadata["bound_plan_hash"]},
+        }
+    producer_plan_path = plan_path
+    if isinstance(old_fragment, dict) and old_fragment.get("plan_path"):
+        old_plan_path = Path(str(old_fragment["plan_path"]))
+        if old_plan_path.is_file() and stable_hash(read_json(old_plan_path)) == stable_hash(
+            document_payload
+        ):
+            producer_plan_path = old_plan_path
+    summary = write_film_room_descriptor_fragment(
+        key=key,
+        role=role,
+        plan_path=producer_plan_path,
+        executions=[execution],
+        output_root=output_root,
+    )
+    return {
+        **summary,
+        "execution_cache_path": str(execution_cache_path_value),
+        "execution_cache_bytes_opened": (
+            execution_cache_path_value.stat().st_size
+            if emits_chains
+            else min(
+                execution_cache_path_value.stat().st_size,
+                FILM_ROOM_EXECUTION_CACHE_METADATA_BYTES,
+            )
+        ),
+        "execution_id": execution_id,
+        "payload_loaded": emits_chains,
+    }
+
+
 def build_film_room_descriptor_index(*, output_root: Path) -> dict[str, Any]:
-    """Merge only small descriptor fragments; never open execution-cache payloads."""
+    """Merge valid fragments or rebuild them from memory-bounded execution caches."""
 
     flagships: dict[str, Any] = {}
     for spec in film_room_flagship_specs():
@@ -3412,16 +3640,95 @@ def build_film_room_descriptor_index(*, output_root: Path) -> dict[str, Any]:
                 output_root,
                 f"{FILM_ROOM_DESCRIPTOR_FRAGMENT_DIR}/{key}-{role}.json",
             )
-            if not fragment_path.is_file():
-                raise CapabilityGap(f"Film Room descriptor fragment is missing: {fragment_path}")
-            fragment = read_json(fragment_path)
-            if (
-                fragment.get("schema_version") != FILM_ROOM_DESCRIPTOR_INDEX_SCHEMA
-                or fragment.get("flagship_key") != key
-                or fragment.get("role") != role
-                or fragment.get("plan_hash") != plan_hash
-            ):
-                raise CapabilityGap(f"Film Room descriptor fragment provenance mismatch: {fragment_path}")
+            fragment: dict[str, Any] | None = None
+            rebuild_reason = "missing"
+            if fragment_path.is_file():
+                try:
+                    candidate = read_json(fragment_path)
+                    if not isinstance(candidate, dict):
+                        raise CapabilityGap(f"Malformed Film Room descriptor fragment: {fragment_path}")
+                    fragment = candidate
+                    validate_film_room_descriptor_fragment(
+                        fragment=fragment,
+                        fragment_path=fragment_path,
+                        key=key,
+                        role=role,
+                        plan_hash=plan_hash,
+                        output_root=output_root,
+                    )
+                except Exception as exc:  # noqa: BLE001 - any invalid derived cache must MISS.
+                    rebuild_reason = f"{type(exc).__name__}: {exc}"
+            if fragment is None or rebuild_reason != "missing":
+                with FILM_ROOM_PREWARM_LOCK:
+                    FILM_ROOM_PREWARM_STATE["state"] = "warming"
+                    FILM_ROOM_PREWARM_STATE["descriptor_rebuild"] = {
+                        "flagship_key": key,
+                        "role": role,
+                        "reason": rebuild_reason,
+                        "status": "rebuilding_from_execution_cache",
+                    }
+                    for state_item in FILM_ROOM_PREWARM_STATE.get("items", []):
+                        if state_item.get("key") == key:
+                            state_item["execution_status"] = "rebuilding_descriptor_cache"
+                            state_item["rebuild_role"] = role
+                            state_item["rebuild_reason"] = rebuild_reason
+                print(
+                    json.dumps(
+                        {
+                            "event": "film_room_descriptor_rebuild_started",
+                            "flagship_key": key,
+                            "role": role,
+                            "reason": rebuild_reason,
+                            "source": "disk_execution_cache",
+                        },
+                        sort_keys=True,
+                    ),
+                    flush=True,
+                )
+                rebuild = rebuild_film_room_descriptor_fragment(
+                    key=key,
+                    role=role,
+                    plan_path=plan_path,
+                    output_root=output_root,
+                    old_fragment=fragment,
+                )
+                fragment = read_json(fragment_path)
+                validate_film_room_descriptor_fragment(
+                    fragment=fragment,
+                    fragment_path=fragment_path,
+                    key=key,
+                    role=role,
+                    plan_hash=plan_hash,
+                    output_root=output_root,
+                )
+                with FILM_ROOM_PREWARM_LOCK:
+                    FILM_ROOM_PREWARM_RECORDS.append(
+                        {
+                            "key": key,
+                            "role": role,
+                            "prewarm_kind": "descriptor_fragment_rebuild",
+                            "execution_performed": False,
+                            "rebuild_reason": rebuild_reason,
+                            **rebuild,
+                        }
+                    )
+                print(
+                    json.dumps(
+                        {
+                            "event": "film_room_descriptor_rebuild_complete",
+                            "flagship_key": key,
+                            "role": role,
+                            "descriptor_count": rebuild["descriptor_count"],
+                            "payload_loaded": rebuild["payload_loaded"],
+                        },
+                        sort_keys=True,
+                    ),
+                    flush=True,
+                )
+            if fragment is None:
+                raise CapabilityGap(
+                    f"Film Room descriptor fragment rebuild produced no fragment: {fragment_path}"
+                )
             fragment_hashes[role] = file_sha256(fragment_path)
             bound_plan_hashes[role] = str(fragment.get("bound_plan_hash") or "")
             for item in fragment.get("moments") or []:
@@ -3453,6 +3760,7 @@ def build_film_room_descriptor_index(*, output_root: Path) -> dict[str, Any]:
         }
     index = {
         "schema_version": FILM_ROOM_DESCRIPTOR_INDEX_SCHEMA,
+        "code_epoch": film_room_descriptor_code_epoch(),
         "flagships": flagships,
     }
     write_film_room_cache_json(
@@ -4471,6 +4779,14 @@ def load_film_room_descriptor_index(*, output_root: Path) -> None:
             {
                 "state": "ready" if gallery_ready else "warming",
                 "descriptor_index_completed_at": utc_iso_seconds(),
+                "descriptor_rebuild": (
+                    {
+                        **FILM_ROOM_PREWARM_STATE["descriptor_rebuild"],
+                        "status": "complete",
+                    }
+                    if isinstance(FILM_ROOM_PREWARM_STATE.get("descriptor_rebuild"), dict)
+                    else None
+                ),
                 "last_error": None,
             }
         )
@@ -4501,12 +4817,16 @@ def load_film_room_descriptor_index_safely(*, output_root: Path) -> None:
             flush=True,
         )
         with FILM_ROOM_PREWARM_LOCK:
-            gallery_ready = isinstance(
-                FILM_ROOM_PREWARMED_RESPONSES.get("counterattack_sequence_rate"), dict
-            )
+            rebuild = FILM_ROOM_PREWARM_STATE.get("descriptor_rebuild")
             FILM_ROOM_PREWARM_STATE.update(
                 {
-                    "state": "ready" if gallery_ready else "warming",
+                    "state": "warming",
+                    "descriptor_rebuild": {
+                        **(rebuild if isinstance(rebuild, dict) else {}),
+                        "status": "failed",
+                        "error_type": type(exc).__name__,
+                        "message": str(exc),
+                    },
                     "last_error": {
                         "error_type": type(exc).__name__,
                         "message": str(exc),
