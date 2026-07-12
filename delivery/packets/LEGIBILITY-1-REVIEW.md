@@ -50,3 +50,14 @@ now precedent.
 
 Multimodal critic panel and the genuinely-fresh cold walkthrough run
 against the LIVE deployed surface after merge, per the stack order.
+
+---
+
+## Fix round + golden promotion — 2026-07-12
+
+Both fixes verified in re-captured pixels by the director ("watching
+the carry…" in the question's voice; tree absence as em-dash). The
+three re-captured screens are PROMOTED to committed goldens at
+delivery/goldens/legibility-1/ by this ruling. Merged and shipped;
+live verification (real tree hash on the deployed strip) appended at
+ship.
