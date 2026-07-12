@@ -122,3 +122,25 @@ surface area grows.
   answered ("Of 115 regains, 1 completed the full chain…"), never as
   a metric name. Schema vocabulary (anchors, statuses, node ids) is
   toggle-gated debug, never the default reading surface.
+
+## 8. Amendments from perceptual stack run 1 (2026-07-13)
+
+- N1-EW (EVIDENTIARY WEIGHT). A point estimate's display scale may
+  never exceed what its observed-n warrants. When observed coverage
+  is thin (observed-n below ~30, or unknowns dominate the
+  population), the FINDING is the headline ("1 of 2,811 seen
+  through"), never the ratio; the percentage demotes to body rank.
+  Amber ink is budgeted in proportion to evidence: the interval's
+  unknown-widened span renders in slate; only the observed point/mass
+  wears amber. A 1/1 → "100%" at display scale is the canonical
+  violation.
+- N2-XR (CROSS-PANEL RECONCILIATION). Every population count visible
+  on the surface must reconcile to every other visible count, with
+  the transformation named ON the surface ("Showing 115 of 2,811 —
+  the rest have no replayable footage"). Two unreconciled
+  denominators on one screen is a violation regardless of each being
+  individually true.
+- T2 enforcement note: run 1 found UNKNOWN badges wearing amber in
+  shipped pixels — the token lint gate has a hole (status badge
+  classes). Golden review now includes a token audit pass: sample
+  status colors against §2 before promotion.
