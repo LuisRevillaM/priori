@@ -1,62 +1,66 @@
 # STATE — Entrelíneas
 
-Updated: 2026-07-12 (DIRECTOR-grade)
-**Phase:** Gate 1 — table gallery live; story gallery one fix from live
+Updated: 2026-07-13 (DIRECTOR-grade)
+**Phase:** Gate 1 — clause-keyed story gallery LIVE; perceptual stack running
 **Read order:** STATE → PLAN → STEWARDSHIP → LEDGER → active packet
 
 ## Where we are
 
 The engine is whole: 37 primitives, 8 grammar operators, 12 certified
 concepts; the bridge compiles natural language into certified plans or
-typed refusals (Hermes on ChatGPT subscription, openai-codex/gpt-5.5);
-the Film Room renders answers with evidence drawn on the pitch;
-execution is 4× faster cold / 10-17× warm with byte-identity proven;
-one denominator per ask on every serving path (SEAM-1); errors tell
-the truth (SMOKE-1). The owner's first smoke test is underway against
-http://127.0.0.1:8765/film-room. Frontier: codex/afl08-passport-loop at 0c4ad01, pushed. DEPLOY-1 merged (oracle green both modes locally); design constitution in-tree at docs/design/DESIGN_CONSTITUTION.md; stewardship loop bootstrapped.
+typed refusals (Hermes on ChatGPT subscription, openai-codex line);
+execution 4× faster cold / 10-17× warm with byte-identity proven; one
+denominator per ask (SEAM-1); errors tell the truth (SMOKE-1).
+
+The product is PUBLIC: https://priori-integrated-alpha.onrender.com/film-room
+serves the clause-keyed story gallery — 115 chain moments, ①②③ keys
+derived from meaning expressions, badges on the turf, moment cards in
+the question's words, honest intervals — fenced chain oracle PASS
+recorded in LEGIBILITY-1-REVIEW (closed live 2026-07-12). Rule N8
+(the owner's first smoke-test note) is shipped law. Deploy truths in
+LEDGER: prewarm retired; headroom stated never grazed; provisioning
+stages on the persistent disk; caches carry epoch keys and rebuild on
+miss; zeros speak.
+
+Post-Gate-1 direction ruled in ADR 0017 (cross-family counsel):
+evaluation oracle before compiler rewrite; CoachQueryIR era (SCP-3);
+MatchFactStore shape for Gate 2; tactical-footage-first; training
+doctrine v2 (docs/VISION_TRAINING_DOCTRINE.md).
 
 ## Next actions (in order)
 
-1. [DIRECTOR] Perceptual stack run 1 vs the live clause-keyed
-   surface: multimodal critic panel + genuinely-fresh cold
-   walkthrough; then the director delight pass and the owner
-   calibration session.
-2. [any-steward] HERMES-2 landing rerun (flip evidence 8/15 parked).
-3. [any-steward] Ask-timeout cancellation fix (counsel finding).
-2. [any-steward] SHADOW-1 per the amended queue; DEPLOY-2 (bundle
-   cache refresh — restores chain-record moments + execution prewarm).
-3. [DIRECTOR] Perceptual stack run 1 against the live gallery.
-2. [DIRECTOR] Perceptual gate stack run 1: golden screens from the
-   deployed surface, multimodal critic panel vs the constitution,
-   cold walkthrough, delight pass.
-3. [any-steward] EXAM-1 remaining sessions: window sweeps, E2
-   adversarial compositions, E3 stale-cache probe.
-4. [DIRECTOR] Capability item: owner's natural fragile-retention
-   phrasing must land on the flagship composition (few-shot entry).
-5. [OWNER+DIRECTOR] Owner taste calibration session (constitution §6)
-   — schedule at owner's convenience post-deploy.
-6. [OWNER+DIRECTOR] Sealed exam (SCP2-E) — the Gate 1 closer.
+1. [DIRECTOR] Perceptual stack run 1 vs the live surface: golden
+   screens from the DEPLOYED URL, multimodal critic panel vs the
+   constitution, genuinely-fresh cold walkthrough, delight pass.
+2. [any-steward] HERMES-2 landing rerun (flip evidence 8/15 parked on
+   packet/hermes-2; flip committed, landing run blocked twice by
+   subscription/capacity walls).
+3. [any-steward] Ask-timeout cancellation fix (counsel finding: timed
+   out public asks keep consuming resources).
+4. [any-steward] SHADOW-1 (Gate 2 shadow lane, tactical-first per
+   ADR 0017 R-0017-7) — vision repo + worktree, parallel-safe.
+5. [OWNER+DIRECTOR] Taste calibration session (constitution §6).
+6. [OWNER+DIRECTOR] Sealed exam SCP2-E under the two-sided bar — the
+   Gate 1 closer (floor predeclared in writing before the set runs).
 
 ## Blockers
 
-BUDGET EVENT 2026-07-10 (§12 trigger): ChatGPT subscription usage
-limit hit mid-DEPLOY-2-round-2 (~2.4M executor tokens today); Codex
-lane + Hermes both down until ~22:34 local. Failover per §12: Claude-
-family executor available for ORACLE-MECHANICAL work only;
-design-bearing acceptance parks for cross-family until Codex wakes.
-DEPLOY-2 R2 (lazy hydration) produced no commits before the wall —
-clean restart when a lane opens.
+None. (The 2026-07-10 subscription budget event resolved; Sol
+capacity walls are intermittent — Terra failover and scribe-commit
+routes are proven case law.)
 
-## Awaiting director-grade review
+## FOR-THE-OWNER (non-blocking)
 
-Nothing parked.
+Modal budget $25→~$150 (first training experiments); SkillCorner
+rights confirmation; Plan-A footage conversations; optional custom
+domain (URL slug still says priori-integrated-alpha); optional second
+executor account (two capacity walls in one day at ~2.4M/4.8M tokens).
 
 ## Model line
 
-Director: Claude Fable 5 (this session). Executor: GPT-5.6 Sol at
-max effort, Codex CLI 0.144.1, session
-019f4abb-3b78-7570-964b-f0ace45697c5, onboarded 2026-07-10 (ADR 0016;
-channel test PASS; RENDER_API_KEY visible to executor). Prior line
-gpt-5.5 xhigh (session 019f3588…) retired-in-good-standing as
-rollback pin. Hermes: openai-codex/gpt-5.6 line per global config,
-subscription-only by standing law.
+Director: Claude Fable 5. Executor: GPT-5.6 Sol at max effort, Codex
+CLI 0.144.1, session 019f4abb-3b78-7570-964b-f0ace45697c5 (ADR 0016);
+Terra tier failover proven (DEPLOY-2). Prior line gpt-5.5 xhigh
+(019f3588…) retired-in-good-standing as rollback pin. Hermes:
+openai-codex/gpt-5.5 pending HERMES-2 landing; subscription-only by
+standing law.
