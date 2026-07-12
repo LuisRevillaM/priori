@@ -1,6 +1,6 @@
 # STATE — Entrelíneas
 
-Updated: 2026-07-10, session close (DIRECTOR-grade)
+Updated: 2026-07-12 (DIRECTOR-grade)
 **Phase:** Gate 1 — table gallery live; story gallery one fix from live
 **Read order:** STATE → PLAN → STEWARDSHIP → LEDGER → active packet
 
@@ -17,11 +17,12 @@ http://127.0.0.1:8765/film-room. Frontier: codex/afl08-passport-loop at 0c4ad01,
 
 ## Next actions (in order)
 
-1. [DIRECTOR] LEGIBILITY-1 was IN FLIGHT at session close (Sol,
-   detached worker; check its branch/worktree for authored work and
-   the scratchpad log at resume) — review per Grade A: golden screens
-   need director eyes BEFORE committing as goldens.
+1. [DIRECTOR] Perceptual stack run 1 vs the live clause-keyed
+   surface: multimodal critic panel + genuinely-fresh cold
+   walkthrough; then the director delight pass and the owner
+   calibration session.
 2. [any-steward] HERMES-2 landing rerun (flip evidence 8/15 parked).
+3. [any-steward] Ask-timeout cancellation fix (counsel finding).
 2. [any-steward] SHADOW-1 per the amended queue; DEPLOY-2 (bundle
    cache refresh — restores chain-record moments + execution prewarm).
 3. [DIRECTOR] Perceptual stack run 1 against the live gallery.

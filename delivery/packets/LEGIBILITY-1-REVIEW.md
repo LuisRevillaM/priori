@@ -78,3 +78,12 @@ rebuilding/failure states replace silent zeros, and the 2GiB proof
 carries real headroom this time (95.85 MiB peak, 1,952 MiB free).
 Deviation (image defect) disclosed and RATIFIED. Ships on director's
 suite green; live chain oracle closes as always.
+
+---
+
+## Live closure — 2026-07-12
+
+ORACLE PASS on the public URL: 115 chain records, ready state,
+hydrated overlays — on the properly-packaged image with the
+clause-keyed surface. LEGIBILITY-1 is CLOSED live. Rule N8, from the
+owner's first smoke-test note to public pixels: complete.
