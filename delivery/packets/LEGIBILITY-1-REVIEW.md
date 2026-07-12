@@ -61,3 +61,20 @@ three re-captured screens are PROMOTED to committed goldens at
 delivery/goldens/legibility-1/ by this ruling. Merged and shipped;
 live verification (real tree hash on the deployed strip) appended at
 ship.
+
+---
+
+## Hotfix round — 2026-07-12
+
+The live regression's diagnosis took three tries and the executor's
+evidence beat both director hypotheses: not ephemeral fragments (the
+rollback served 115 from the same disk), not schema drift (no typed
+field changed) — the production IMAGE omitted the new
+meaning-expression module, failing counterattack prewarm upstream of
+the descriptor path, and the failure was swallowed into a silent
+zero. Fixed at 10dbdb4, plus the durable laws regardless: fragments
+rebuild from disk caches on miss-or-invalid, explicit
+rebuilding/failure states replace silent zeros, and the 2GiB proof
+carries real headroom this time (95.85 MiB peak, 1,952 MiB free).
+Deviation (image defect) disclosed and RATIFIED. Ships on director's
+suite green; live chain oracle closes as always.

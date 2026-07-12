@@ -128,3 +128,75 @@ The director must confirm the current live tree value during promotion/ship.
 | `LEGIBILITY_CANDIDATE_DIR=artifacts/legibility-1/candidates npx playwright test tests/legibility1.spec.ts --project=chromium` | PASS — N8 walkthrough, `② watching the carry…`, titled `TREE —`, three recaptures |
 | `MPLCONFIGDIR=/private/tmp/priori-matplotlib make test` | PASS — 594 tests in 745.270s; attestation VERIFIED |
 | `git diff --check` | PASS |
+
+## Live-regression hotfix — descriptor cache migration
+
+Branch: `packet/legibility-1-hotfix` from `fafdb21`.
+
+### Diagnosis and deviation
+
+The rollback experiment correctly disproved ephemerality: the descriptor and
+hydration files survive on the persistent cache disk. Inspection did **not**
+find a new typed field on `FilmRoomMomentResponse`; the legibility delta changed
+the meaning payload and descriptor overlay producer. The old fragment format
+had no producer epoch, so it could not distinguish compatible bytes from stale
+derived semantics. That cache-law gap is fixed as directed.
+
+The first container run also found an independent, ship-blocking cause absent
+from the stated diagnosis: `Dockerfile` did not copy LEGIBILITY-1's new
+`counterattack_initiation_sequence_rate.v0.json` meaning expression. The
+counterattack certified prewarm therefore failed before descriptor upgrade.
+The amended image now contains that committed file; its in-image SHA-256 is
+`e59bd793b8096bb5a266cff7774da9fc0bf3788936400f96d4241b2debc1e1f1`.
+This deviation is necessary to make the shipped surface reach ready and is
+covered by a named regression test.
+
+### Delivered behavior
+
+- Descriptor fragments and the merged index are now v2 and carry a code epoch
+  bound to the descriptor schema and producing `app_service.py` bytes. A
+  schema/code change is a cache miss.
+- Missing or invalid fragments rebuild from the matching durable execution
+  cache without executing a plan. The selector reads at most a 1 MiB metadata
+  prefix per candidate.
+- Chain-producing execution payloads have a hard 64 MiB load guard. The real
+  counterattack payloads are 4,403,154 and 2,412,577 bytes. The 908–912 MiB
+  fragile-retention envelopes are never decoded; their empty chain fragments
+  rebuild metadata-only.
+- Old absolute `/app/...` and current repository-relative spellings of the same
+  plan are accepted as equivalent hydration provenance only when every other
+  payload field matches.
+- Rebuild start/completion events name flagship, role, reason, and disk-cache
+  source. A failed rebuild leaves bootstrap `warming` with the exact failure in
+  `descriptor_rebuild` and `last_error`; validation failure cannot become a
+  silent zero.
+
+### 2 GiB proof
+
+The committed producer ran against a fresh runtime root and a hard-linked copy
+of the real DEPLOY-2 cache bundle, beginning with four v1 fragments and 115
+away chain descriptors. `WORKBENCH_PREWARM_FILM_ROOM=0` throughout.
+
+| Run | Result | Peak | Headroom |
+| --- | --- | ---: | ---: |
+| Preserved attempt 1 | FAIL honestly — missing image asset plus absolute/relative hydration-path conflict | 90.59 MiB | 1,957.41 MiB |
+| Exact current source in production image | PASS — ready, 115 moments, four cache-only rebuilds | 166.42 MiB | 1,881.58 MiB (91.87%) |
+| Amended production image, no source/asset mounts | PASS — ready, 115 moments, prewarm off | 95.85 MiB | 1,952.15 MiB (95.32%) |
+
+No run was OOM-killed. Raw stdout/stderr, cgroup counters, container states,
+hashes, and the producer live under
+`delivery/packets/legibility-1-hotfix-evidence/` and
+`scripts/packets/legibility1_hotfix_evidence.py`.
+
+### Hotfix full-suite table
+
+| Command | Result |
+| --- | --- |
+| `PYTHONPATH=src .venv/bin/python -m unittest tests.test_deploy2_lazy_hydration tests.test_deploy1c_gallery_from_tables tests.test_deploy1_public_mode tests.test_film_room_app` | PASS — 26 tests |
+| `PYTHONPATH=src .venv/bin/python -m unittest tests.test_deploy2_lazy_hydration` on the final tree | PASS — 8 tests |
+| `MPLCONFIGDIR=/private/tmp/priori-matplotlib make test` | PASS — 596 tests in 1020.980s; attestation VERIFIED (run began before the final three guard tests were appended) |
+| `MPLCONFIGDIR=/private/tmp/priori-matplotlib-final make test` | PASS — 599 tests in 828.585s; attestation VERIFIED; exact final tree |
+| Production Docker image build | PASS — image `sha256:c79d8b28b825590a09e9d9aa1ce27dcf2a699987ef06baf2d686548b48964688`; meaning asset verified in-container |
+| `git diff --check` | PASS |
+
+No Render service was mutated. The director remains the ship authority.
