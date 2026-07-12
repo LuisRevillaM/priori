@@ -8,6 +8,7 @@ import {
   headerChipsFromResponse,
   intervalHeadline,
   momentCollectionLabel,
+  provenanceTreeView,
   refusalViewModel
 } from "../src/FilmRoom";
 import {
@@ -231,6 +232,18 @@ const chips = headerChipsFromResponse({
   refusal: null
 } as FilmRoomAskResponse);
 assert.deepEqual(chips, ["2 matches", "home perspective", "certified evidence"]);
+assert.deepEqual(provenanceTreeView(null), {
+  text: "—",
+  title: "Tree hash unavailable in this build"
+});
+assert.deepEqual(provenanceTreeView("unknown"), {
+  text: "—",
+  title: "Tree hash unavailable in this build"
+});
+assert.deepEqual(provenanceTreeView("0123456789abcdef"), {
+  text: "0123456789ab",
+  title: "0123456789abcdef"
+});
 
 assert.equal(chainStatusLabel(null), "no chain selected");
 assert.equal(
@@ -329,6 +342,7 @@ const replay = {
     stage_labels: [{ stage: 2, observed_numeric_value: 11.2 }]
   }
 } as ReplayPayload;
+assert.equal(momentCardText(passMoment), "① 63:12 regain → ② watching the carry… → ③ pass kept");
 assert.equal(momentCardText(passMoment, replay), "① 63:12 regain → ② +11.2 m carry → ③ pass kept");
 
 const unknownMoment: FilmRoomMoment = {

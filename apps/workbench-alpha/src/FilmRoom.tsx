@@ -228,6 +228,14 @@ export function headerChipsFromResponse(response: FilmRoomAskResponse | null): s
   return chips;
 }
 
+export function provenanceTreeView(tree: string | null | undefined): { text: string; title: string } {
+  const value = tree?.trim() ?? "";
+  if (!value || value.toLowerCase() === "unknown") {
+    return { text: "—", title: "Tree hash unavailable in this build" };
+  }
+  return { text: value.slice(0, 12), title: value };
+}
+
 function IntervalCard({ metric }: { metric: FilmRoomIntervalMetric | null | undefined }) {
   const renderable = assertIntervalMetric(metric);
   const lower = Math.max(0, Math.min(100, renderable.lower * 100));
@@ -510,11 +518,12 @@ function MomentList({
 function ProvenanceStrip({ response, replay }: { response: FilmRoomAskResponse | null; replay: ReplayPayload | null }) {
   const provenance = response?.answer?.provenance;
   const latency = response?.latency_breakdown_ms;
+  const tree = provenanceTreeView(provenance?.tree);
   return (
     <section className="provenanceStrip">
       <span>PLAN {provenance?.plan_hash?.slice(0, 12) ?? "pending"}</span>
       <span>DOC {provenance?.synthesized_document_hash?.slice(0, 12) ?? "pending"}</span>
-      <span>TREE {provenance?.tree?.slice(0, 12) ?? "pending"}</span>
+      <span title={tree.title}>TREE {tree.text}</span>
       <span>REPLAY {replay?.replay_window_id ?? provenance?.replay_window_id ?? "none"}</span>
       <span>METRIC {response?.answer?.interval_metric?.label ?? "pending"}</span>
       <span>H {latency?.hermes ?? 0}ms · S {latency?.synthesis ?? 0}ms · E {latency?.execution ?? 0}ms</span>

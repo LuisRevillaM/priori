@@ -1,6 +1,6 @@
 # LEGIBILITY-1 Report — implementation ready for director golden review
 
-Status: READY_FOR_DIRECTOR_GOLDEN_REVIEW
+Status: FIXES DELIVERED — AWAITING DIRECTOR GOLDEN PROMOTION
 
 Branch: `packet/legibility-1`
 
@@ -84,3 +84,47 @@ Product code and test assertions were not altered to accommodate the sandbox.
 
 No file under `docs/design/**`, no deploy oracle, dev set, blind pin, or sealed
 evidence was modified.
+
+## Round 2 — ACCEPT-WITH-FIXES response
+
+Review basis: `delivery/packets/LEGIBILITY-1-REVIEW.md` at `46f58b7`.
+
+The three exact fixes are delivered:
+
+1. The pre-hydration PASS card now says `② watching the carry…`; after lazy
+   hydration it still replaces that phrase with the observed witness value.
+2. Missing, blank, and literal-sentinel `unknown` tree values render as
+   `TREE —` with `title="Tree hash unavailable in this build"`. A real tree
+   continues to render its first 12 characters and exposes its full value in
+   the title.
+3. The committed Playwright producer was rerun after both fixes and replaced
+   all three candidate PNGs in `artifacts/legibility-1/candidates/`.
+
+The recaptured candidates below supersede the Round 1 candidate bytes. They
+remain uncommitted for director-only golden promotion.
+
+| Round 2 candidate | SHA-256 | Dimensions |
+| --- | --- | --- |
+| `artifacts/legibility-1/candidates/gallery-answer.png` | `79554686c79498ad295ec337bc3281640d148ed4e96dd6bad5652a1dc4c4d908` | 1440×1100 |
+| `artifacts/legibility-1/candidates/keyed-moment-replay.png` | `f5f01e36d6110605bc238a9c74b599948abd6ebebc99443cd706411e2c542ecc` | 1440×1100 |
+| `artifacts/legibility-1/candidates/unknown-moment.png` | `c2e6b6a9b167c132dbb7803d7c9230989c443a6ea3c7f26385373b09bf1066ba` | 1440×1100 |
+
+### Live-tree check
+
+Current live bootstrap verification is **unverified from this executor**. The
+public hostname could not be resolved by the shell (`curl: (6)`), the internet
+reader could not open the unindexed endpoint, the in-app browser exposed no
+browser backend, and the shell `agent-browser` runtime is not installed.
+Historical committed live bootstrap evidence confirms that deployed responses
+have carried real tree hashes, but it is not substituted for a current check.
+The director must confirm the current live tree value during promotion/ship.
+
+### Round 2 full-suite table
+
+| Command | Result |
+| --- | --- |
+| Frontend unit modules via `node --import tsx` | PASS — 8 modules; exact loading copy and absent/sentinel/real tree cases covered |
+| `npm --prefix apps/workbench-alpha run build` | PASS — TypeScript and Vite |
+| `LEGIBILITY_CANDIDATE_DIR=artifacts/legibility-1/candidates npx playwright test tests/legibility1.spec.ts --project=chromium` | PASS — N8 walkthrough, `② watching the carry…`, titled `TREE —`, three recaptures |
+| `MPLCONFIGDIR=/private/tmp/priori-matplotlib make test` | PASS — 594 tests in 745.270s; attestation VERIFIED |
+| `git diff --check` | PASS |

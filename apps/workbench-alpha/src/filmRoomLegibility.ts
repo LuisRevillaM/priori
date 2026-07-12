@@ -120,7 +120,7 @@ export function unknownMomentText(moment: FilmRoomMoment): string {
 export function momentCardText(moment: FilmRoomMoment, replay?: ReplayPayload | null): string {
   if (moment.chain_status === "UNKNOWN") return unknownMomentText(moment);
   const carry = observedCarryMetres(moment, replay);
-  const carryText = carry == null ? "carry witness loading" : `+${carry.toFixed(1)} m carry`;
+  const carryText = carry == null ? "watching the carry…" : `+${carry.toFixed(1)} m carry`;
   return `① ${matchClock(moment)} regain → ② ${carryText} → ③ pass kept`;
 }
 

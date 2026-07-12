@@ -129,6 +129,11 @@ test('N8 cold walkthrough: "read the question, watch one replay, narrate which p
   await expect(page.locator(".questionClauses span").nth(2)).toHaveText("③keep it with a completed pass");
   await expect(page.getByText(/Of 2,811 regains, 1 completed the whole chain ①→②→③/)).toBeVisible();
   await expect(page.locator("svg").getByText("①")).toBeVisible();
+  await expect(page.locator(".provenanceStrip span").filter({ hasText: "TREE —" })).toHaveAttribute(
+    "title",
+    "Tree hash unavailable in this build"
+  );
+  await expect(page.getByRole("button", { name: /PASS ① 63:12 regain → ② watching the carry…/ })).toBeVisible();
 
   if (candidateRoot) {
     mkdirSync(candidateRoot, { recursive: true });
