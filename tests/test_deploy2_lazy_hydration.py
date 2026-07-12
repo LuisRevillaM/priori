@@ -125,7 +125,10 @@ class Deploy2LazyHydrationTests(unittest.TestCase):
                 "bound_record": {"bound_plan_hash": "bound-test"},
             }
             cache = root / "cache"
-            with patch("tqe.workshop.app_service.CACHE_ROOT", cache):
+            with (
+                patch("tqe.workshop.app_service.CACHE_ROOT", cache),
+                patch("tqe.workshop.app_service.canonical_match_time_ms", return_value=4_000),
+            ):
                 summary = write_film_room_descriptor_fragment(
                     key="test_flagship",
                     role="home",
@@ -145,6 +148,7 @@ class Deploy2LazyHydrationTests(unittest.TestCase):
         stage_two = item["descriptor"]["evidence_overlay"]["stage_labels"][1]
         self.assertEqual("at least 8 m", stage_two["label"])
         self.assertEqual(11.2, stage_two["observed_numeric_value"])
+        self.assertEqual(4_000, item["descriptor"]["match_time_ms"])
 
     def test_rebuild_accepts_equivalent_absolute_hydration_plan_path(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -288,6 +292,10 @@ class Deploy2LazyHydrationTests(unittest.TestCase):
         self.assertEqual("no_chain_descriptors", fragile_record["reason"])
         self.assertFalse(fragile_record["upgrade_applied"])
         self.assertEqual(2, index["flagships"]["counterattack_sequence_rate"]["descriptor_count"])
+        coverage = bootstrap["answer"]["raw_evidence"]["descriptor_index"]["coverage"]
+        self.assertEqual("returned_classified_result_source_records", coverage["reason_code"])
+        self.assertEqual(2, coverage["shown_count"])
+        self.assertGreater(coverage["population_count"], coverage["shown_count"])
         self.assertNotIn(cache / "enormous-execution-cache.json", opened)
         full_payload_prewarm.assert_not_called()
         plan_execution.assert_not_called()

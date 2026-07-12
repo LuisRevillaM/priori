@@ -17,6 +17,11 @@ export const DEFAULT_SURFACE_SCHEMA_TOKENS = [
   "stage_3"
 ] as const;
 
+export const FILM_ROOM_STATUS_TOKENS = {
+  COMPLETE: "#FFB13D",
+  UNKNOWN: "#8B93A0"
+} as const;
+
 function asRecord(value: unknown): JsonObject {
   return value && typeof value === "object" && !Array.isArray(value) ? (value as JsonObject) : {};
 }
@@ -145,6 +150,34 @@ export function intervalAnswerText(metric: FilmRoomIntervalMetric): string {
   const completed = count(source.a_count);
   const unknown = metric.unknown_count;
   return `Of ${countLabel(population)} regains, ${countLabel(completed)} completed the whole chain ①→②→③. ${countLabel(unknown)} couldn't be fully seen — they widen the honest bounds to [${boundPercent(metric.lower)}, ${boundPercent(metric.upper)}].`;
+}
+
+export type IntervalPresentation = {
+  findingFirst: boolean;
+  headline: string;
+  observedFraction: string;
+  subtitle: string;
+};
+
+export function intervalPresentation(metric: FilmRoomIntervalMetric): IntervalPresentation {
+  const source = asRecord(metric.source);
+  const population = count(source.population_count);
+  const completed = count(source.a_count);
+  const brokeDown = count(source.b_count) + count(source.e_count);
+  const observedCount = completed + brokeDown;
+  const unknownShare = population > 0 ? metric.unknown_count / population : 1;
+  const findingFirst = observedCount < 30 || unknownShare > 0.5;
+  return {
+    findingFirst,
+    headline: findingFirst
+      ? `${countLabel(completed)} of ${countLabel(population)} seen through`
+      : `${boundPercent(metric.observed)} observed`,
+    observedFraction: `${countLabel(completed)}/${countLabel(observedCount)} (${boundPercent(metric.observed)})`,
+    subtitle:
+      findingFirst
+        ? `could be almost never, could be always — only ${countLabel(observedCount)} could be fully seen.`
+        : `honest bounds: ${boundPercent(metric.lower)} to ${boundPercent(metric.upper)}. Only ${countLabel(observedCount)} could be fully seen.`
+  };
 }
 
 export function visibleSchemaTokens(text: string): string[] {

@@ -49,6 +49,7 @@ from tqe.workshop.m1_2 import (
     ReplayWindowRequest,
     SubmitQueryPlanRequest,
     ValidateQueryPlanRequest,
+    canonical_match_time_ms,
     describe_capability,
     execute_query_plan,
     host_confirm_bound_plan,
@@ -2816,7 +2817,7 @@ def film_room_answer_from_document(
                         "match_time_ms": (
                             chain_record.get("match_time_ms")
                             if isinstance(chain_record.get("match_time_ms"), int)
-                            else row.get("match_time_ms") if isinstance(row.get("match_time_ms"), int) else None
+                            else canonical_match_time_ms(match_id, period, anchor_frame_id)
                         ),
                         "requested_evidence": deepcopy(chain_record),
                         "replay_window_id": replay_meta["replay_window_id"],
@@ -3442,7 +3443,7 @@ def write_film_room_descriptor_fragment(
                     "match_time_ms": (
                         chain_record.get("match_time_ms")
                         if isinstance(chain_record.get("match_time_ms"), int)
-                        else row.get("match_time_ms") if isinstance(row.get("match_time_ms"), int) else None
+                        else canonical_match_time_ms(match_id, period, anchor_frame_id)
                     ),
                     "requested_evidence": evidence,
                     "replay_window_id": replay_window_id,
@@ -4422,6 +4423,40 @@ def film_room_descriptor_prewarmed_response(
             "schema_version": FILM_ROOM_DESCRIPTOR_INDEX_SCHEMA,
             "descriptor_count": len(descriptors),
             "fragment_sha256": deepcopy(index_entry.get("fragment_sha256") or {}),
+            "coverage": {
+                "schema_version": "film_room.replay_coverage.v1",
+                "reason_code": "returned_classified_result_source_records",
+                "shown_count": len(descriptors),
+                "population_count": int(
+                    (
+                        answer.get("interval_metric", {}).get("source", {}).get("population_count")
+                        if isinstance(answer.get("interval_metric"), dict)
+                        else 0
+                    )
+                    or 0
+                ),
+                "replay_partition_count": len(
+                    {
+                        (
+                            str(descriptor.get("match_id") or ""),
+                            str(descriptor.get("period") or ""),
+                            str(descriptor.get("requested_evidence", {}).get("audit_role") or ""),
+                        )
+                        for descriptor in descriptors
+                    }
+                ),
+                "completed_partition_count": len(
+                    {
+                        (
+                            str(descriptor.get("match_id") or ""),
+                            str(descriptor.get("period") or ""),
+                            str(descriptor.get("requested_evidence", {}).get("audit_role") or ""),
+                        )
+                        for descriptor in descriptors
+                        if descriptor.get("chain_status") == "PASS"
+                    }
+                ),
+            },
         },
         "moment_source": "disk_backed_chain_descriptor_index",
         "interval_source_contract": (

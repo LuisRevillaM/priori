@@ -15,6 +15,15 @@ function loadJson(path: string) {
   return JSON.parse(readFileSync(path, "utf8"));
 }
 
+async function captureCandidate(page: import("@playwright/test").Page, path: string) {
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+    await new Promise<void>((resolveFrame) => requestAnimationFrame(() => requestAnimationFrame(() => resolveFrame())));
+  });
+  await page.waitForTimeout(250);
+  await page.screenshot({ path, fullPage: true, animations: "disabled" });
+}
+
 function replayFor(moment: Record<string, unknown>) {
   const anchor = Number(moment.anchor_frame_id);
   const replayWindowId = String(moment.replay_window_id);
@@ -107,6 +116,20 @@ test('N8 cold walkthrough: "read the question, watch one replay, narrate which p
   response.answer.meaning_expression = meaningExpression;
   response.answer.moments = [unknownMoment, passMoment];
   response.answer.visible_moment_count = 2;
+  response.answer.raw_evidence = {
+    ...response.answer.raw_evidence,
+    descriptor_index: {
+      ...(response.answer.raw_evidence?.descriptor_index ?? {}),
+      coverage: {
+        schema_version: "film_room.replay_coverage.v1",
+        reason_code: "returned_classified_result_source_records",
+        shown_count: 115,
+        population_count: 2811,
+        replay_partition_count: 1,
+        completed_partition_count: 1
+      }
+    }
+  };
   bootstrap.prewarmed_response = response;
   bootstrap.answer = response.answer;
 
@@ -129,34 +152,78 @@ test('N8 cold walkthrough: "read the question, watch one replay, narrate which p
   await expect(page.locator(".questionClauses span").nth(2)).toHaveText("③keep it with a completed pass");
   await expect(page.getByText(/Of 2,811 regains, 1 completed the whole chain ①→②→③/)).toBeVisible();
   await expect(page.locator("svg").getByText("①")).toBeVisible();
-  await expect(page.locator(".provenanceStrip span").filter({ hasText: "TREE —" })).toHaveAttribute(
+  await expect(page.locator(".provenanceStrip span").filter({ hasText: "TREE not recorded" })).toHaveAttribute(
     "title",
-    "Tree hash unavailable in this build"
+    "Tree hash not recorded in this build"
   );
-  await expect(page.getByRole("button", { name: /PASS ① 63:12 regain → ② watching the carry…/ })).toBeVisible();
+  await expect(page.getByText("Showing 115 of 2,811 — replay details exist only for the match-half containing the completed chain.")).toHaveCount(2);
+  await expect(page.locator(".metricPanel.findingFirst")).toBeVisible();
+  await expect(page.getByText("1 of 2,811 seen through")).toBeVisible();
+  await expect(page.getByText("observed 1/1 (100%)")).toBeVisible();
+  await expect(page.getByRole("button", { name: /COMPLETE ① 63:12 regain → ② \+11.2 m carry/ })).toBeVisible();
+
+  const statusTokenAudit = [
+    { selector: ".momentStatus.complete", color: "rgb(255, 177, 61)" },
+    { selector: ".momentStatus.unknown", color: "rgb(139, 147, 160)" }
+  ];
+  for (const audit of statusTokenAudit) {
+    await expect(page.locator(audit.selector).first()).toHaveCSS("color", audit.color);
+  }
 
   if (candidateRoot) {
     mkdirSync(candidateRoot, { recursive: true });
-    await page.screenshot({ path: resolve(candidateRoot, "gallery-answer.png"), fullPage: true });
+    await captureCandidate(page, resolve(candidateRoot, "gallery-answer.png"));
   }
 
-  await page.getByRole("button", { name: /PASS ①/ }).click();
+  await page.getByRole("button", { name: /COMPLETE ①/ }).click();
   await expect(page.getByText("① 63:12 regain → ② +11.2 m carry → ③ pass kept").first()).toBeVisible();
   await expect(page.locator("svg").getByText("①")).toBeVisible();
   await expect(page.locator("svg").getByText("②")).toBeVisible();
   await expect(page.locator("svg").getByText("③")).toBeVisible();
   if (candidateRoot) {
-    await page.screenshot({ path: resolve(candidateRoot, "keyed-moment-replay.png"), fullPage: true });
+    await captureCandidate(page, resolve(candidateRoot, "keyed-moment-replay.png"));
   }
 
   await page.getByRole("button", { name: /UNKNOWN couldn't see whether ② happened — half ended/ }).click();
   await expect(page.getByText("couldn't see whether ② happened — half ended").first()).toBeVisible();
+  await expect(page.locator("svg").getByText("regain — not verified")).toBeVisible();
+  await expect(page.locator(".stageKeyText.evidenceUnknown")).toHaveCSS("fill", "rgb(139, 147, 160)");
+  await expect(page.locator(".stageKeyChip.evidenceUnknown")).not.toHaveCSS("stroke-dasharray", "none");
   if (candidateRoot) {
-    await page.screenshot({ path: resolve(candidateRoot, "unknown-moment.png"), fullPage: true });
+    await captureCandidate(page, resolve(candidateRoot, "unknown-moment.png"));
+  }
+
+  const scrubber = page.getByRole("slider", { name: "Replay frame" });
+  await scrubber.focus();
+  await scrubber.press("ArrowRight");
+  await expect(scrubber).toHaveCSS("outline-style", "solid");
+  if (candidateRoot) {
+    await captureCandidate(page, resolve(candidateRoot, "unknown-slate-replay.png"));
   }
 
   const visibleText = (await page.locator("body").innerText()).toLowerCase();
   for (const token of ["anchor_frame_id", "chain_status", "source_node_id", "stage_1", "stage_2", "stage_3"]) {
     expect(visibleText).not.toContain(token);
+  }
+
+  response.answer.interval_metric = {
+    ...response.answer.interval_metric,
+    observed: 0.8,
+    lower: 0.7,
+    upper: 0.9,
+    unknown_count: 10,
+    source: {
+      ...response.answer.interval_metric.source,
+      population_count: 100,
+      a_count: 40,
+      b_count: 10,
+      e_count: 0
+    }
+  };
+  await page.reload();
+  await expect(page.locator(".metricPanel.rateFirst")).toBeVisible();
+  await expect(page.getByText("80% observed")).toBeVisible();
+  if (candidateRoot) {
+    await captureCandidate(page, resolve(candidateRoot, "ratio-first-answer.png"));
   }
 });
