@@ -299,6 +299,7 @@ export type FilmRoomAskResponse = Omit<GeneratedFilmRoomAskResponse, "answer" | 
   answer?: {
     status: "answer_ready";
     compiled_chips: string[];
+    meaning_expression?: JsonObject | null;
     document: JsonObject;
     certified_evidence_rows: JsonObject[];
     runtime_evidence_rows: JsonObject[];

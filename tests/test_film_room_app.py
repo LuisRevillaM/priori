@@ -70,7 +70,10 @@ class FilmRoomAppTests(unittest.TestCase):
             }
         )
 
-        self.assertEqual(["regain", "carry >= 3m", "pass"], [item["label"] for item in overlay["stage_labels"]])
+        self.assertEqual(
+            ["regain", "at least 3 m", "pass kept"],
+            [item["label"] for item in overlay["stage_labels"]],
+        )
         self.assertEqual(
             [{"start_frame_id": 130, "end_frame_id": 155, "player_id": "p7", "status": "PASS"}],
             overlay["carry_trails"],

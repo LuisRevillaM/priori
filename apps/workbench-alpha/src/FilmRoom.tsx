@@ -1,5 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { WorkbenchApiError, filmRoomAsk, filmRoomBootstrap, filmRoomReplayFrame, filmRoomReplayWindow } from "./api";
+import {
+  deriveQuestionClauseKeys,
+  intervalAnswerText,
+  momentCardText,
+  unknownMomentText,
+  type QuestionClauseKey
+} from "./filmRoomLegibility";
 import type { FilmRoomAskResponse, FilmRoomBootstrapResponse, FilmRoomIntervalMetric, FilmRoomMoment, JsonObject, ReplayEntity, ReplayFrame, ReplayPayload } from "./types";
 
 const FLAGSHIP_ASK = "After a regain, how often does the team progress the ball by carry and keep it with a controlled pass?";
@@ -23,6 +30,12 @@ function formatPercent(value: number | null | undefined) {
 
 function formatCount(value: unknown) {
   return typeof value === "number" && Number.isFinite(value) ? String(value) : "0";
+}
+
+function periodLabel(period: string) {
+  if (period === "firstHalf") return "First half";
+  if (period === "secondHalf") return "Second half";
+  return period.replaceAll("_", " ");
 }
 
 function matchClock(frame: ReplayFrame | undefined, replay: ReplayPayload | null | undefined) {
@@ -210,11 +223,17 @@ export function headerChipsFromResponse(response: FilmRoomAskResponse | null): s
   const chips = [
     matchIds.size ? `${matchIds.size} matches` : "scope pending",
     roles.size ? `${Array.from(roles).join("+")} perspective` : "role pending",
-    response ? `${response.provider} · ${response.model}` : "openai-codex · gpt-5.5"
+    response ? "certified evidence" : "evidence loading"
   ];
-  const tree = response?.answer?.provenance.tree;
-  if (tree) chips.push(`tree ${tree.slice(0, 7)}`);
   return chips;
+}
+
+export function provenanceTreeView(tree: string | null | undefined): { text: string; title: string } {
+  const value = tree?.trim() ?? "";
+  if (!value || value.toLowerCase() === "unknown") {
+    return { text: "—", title: "Tree hash unavailable in this build" };
+  }
+  return { text: value.slice(0, 12), title: value };
 }
 
 function IntervalCard({ metric }: { metric: FilmRoomIntervalMetric | null | undefined }) {
@@ -230,12 +249,11 @@ function IntervalCard({ metric }: { metric: FilmRoomIntervalMetric | null | unde
   return (
     <section className="filmPanel metricPanel">
       <div className="filmPanelHeader">
-        <span>{intervalHeadline(renderable)}</span>
-        <span>UNKNOWN {renderable.unknown_count}</span>
+        <span>Answer</span>
+        <span>{formatCount(completed)} complete · {formatCount(renderable.unknown_count)} not fully seen</span>
       </div>
       <div className="metricValue">{formatPercent(renderable.observed)}</div>
-      <div className="metricLabel">{renderable.label}</div>
-      <div className="metricBoundsLine">bounds {formatPercent(renderable.lower)} - {formatPercent(renderable.upper)}</div>
+      <div className="metricAnswer">{intervalAnswerText(renderable)}</div>
       <div className="intervalBar" aria-label="Bounded interval">
         <span className="intervalRange" style={{ left: `${lower}%`, width: `${upper - lower}%` }} />
         <span className="intervalObserved" style={{ left: `${observed}%` }} />
@@ -344,7 +362,8 @@ function PitchReplay({
   const toY = (y: number) => ((pitchWidth / 2 - y) / pitchWidth) * height;
   const players = frame.entities.filter((entity) => entity.entity_type !== "ball");
   const ball = frame.entities.find((entity) => entity.entity_type === "ball");
-  const overlay = asRecord(moment?.evidence_overlay);
+  const hydratedOverlay = asRecord(replay.overlays);
+  const overlay = Object.keys(hydratedOverlay).length ? hydratedOverlay : asRecord(moment?.evidence_overlay);
   const stageLabels = asArray(overlay.stage_labels).map(asRecord);
   const anchorMarkers = asArray(overlay.anchor_markers).map(asRecord);
   const carryTrails = asArray(overlay.carry_trails).map(asRecord);
@@ -355,7 +374,7 @@ function PitchReplay({
       <div className="stagehead">
         <span className="eyebrow">Replay</span>
         <span className="momentname">
-          {moment ? `${moment.match_id} · ${moment.period} · frame ${moment.anchor_frame_id}` : replay.replay_window_id}
+          {moment ? `${moment.match_id} · ${periodLabel(moment.period)}` : "Selected moment"}
         </span>
       </div>
       <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Canonical tracking replay with evidence overlay">
@@ -396,16 +415,48 @@ function PitchReplay({
             toX,
             toY
           );
-          return point ? (
-            <text key={`label-${index}`} x={point.x + 10} y={point.y - 12} className="stageLabel">
-              {String(label.label)}
-            </text>
-          ) : null;
+          if (!point) return null;
+          const stage = finiteNumber(label.stage);
+          const clauseKey = stage && stage >= 1 && stage <= 3 ? ["①", "②", "③"][stage - 1] : "";
+          const text = String(label.label);
+          const chipWidth = Math.max(78, text.length * 7 + 34);
+          const stageOffsetX = stage === 1 ? -96 : stage === 2 ? -18 : 58;
+          const stageOffsetY = stage === 1 ? -44 : stage === 2 ? -14 : 18;
+          const chipX = Math.max(8, Math.min(width - chipWidth - 8, point.x + stageOffsetX));
+          const chipY = Math.max(8, Math.min(height - 30, point.y + stageOffsetY));
+          return (
+            <g key={`label-${index}`}>
+              <rect
+                x={chipX}
+                y={chipY}
+                width={chipWidth}
+                height="22"
+                rx="3"
+                className="stageKeyChip"
+              />
+              <text
+                x={chipX + 7}
+                y={chipY + 15}
+                className="stageKeyText"
+              >
+                {clauseKey}
+              </text>
+              <text
+                x={chipX + 26}
+                y={chipY + 15}
+                className="stageLabel"
+              >
+                {text}
+              </text>
+            </g>
+          );
         })}
         {unknown.is_unknown === true ? (
           <g>
-            <rect x="20" y="20" width="250" height="30" className="unknownOverlay" />
-            <text x="32" y="40" className="unknownLabel">{String(unknown.reason ?? "UNKNOWN")}</text>
+            <rect x="20" y="20" width="370" height="30" className="unknownOverlay" />
+            <text x="32" y="40" className="unknownLabel">
+              {moment ? unknownMomentText(moment) : "This part is not fully seen"}
+            </text>
           </g>
         ) : null}
       </svg>
@@ -422,9 +473,7 @@ function PitchReplay({
           aria-label="Replay frame"
         />
         <span>{matchClock(frame, replay)}</span>
-        <span>
-          {frame.frame_id} · {frameIndex + 1}/{replay.frames.length}
-        </span>
+        <span>{frameIndex + 1}/{replay.frames.length}</span>
       </div>
     </section>
   );
@@ -434,12 +483,14 @@ function MomentList({
   moments,
   total,
   selected,
-  setSelected
+  setSelected,
+  replay
 }: {
   moments: FilmRoomMoment[];
   total: number;
   selected: number;
   setSelected: (value: number) => void;
+  replay: ReplayPayload | null;
 }) {
   return (
     <section className="filmPanel">
@@ -455,11 +506,8 @@ function MomentList({
             className={index === selected ? "momentItem selected" : "momentItem"}
             onClick={() => setSelected(index)}
           >
-            <span>{moment.match_id}</span>
-            <span>{moment.period}</span>
-            <strong>{moment.anchor_frame_id}</strong>
-            <small>{chainStatusLabel(moment)}</small>
-            {moment.unknown_reason ? <em>{moment.unknown_reason}</em> : null}
+            <strong>{moment.chain_status === "UNKNOWN" ? "UNKNOWN" : "PASS"}</strong>
+            <span>{momentCardText(moment, index === selected ? replay : null)}</span>
           </button>
         ))}
       </div>
@@ -470,12 +518,14 @@ function MomentList({
 function ProvenanceStrip({ response, replay }: { response: FilmRoomAskResponse | null; replay: ReplayPayload | null }) {
   const provenance = response?.answer?.provenance;
   const latency = response?.latency_breakdown_ms;
+  const tree = provenanceTreeView(provenance?.tree);
   return (
     <section className="provenanceStrip">
       <span>PLAN {provenance?.plan_hash?.slice(0, 12) ?? "pending"}</span>
       <span>DOC {provenance?.synthesized_document_hash?.slice(0, 12) ?? "pending"}</span>
-      <span>TREE {provenance?.tree?.slice(0, 12) ?? "pending"}</span>
+      <span title={tree.title}>TREE {tree.text}</span>
       <span>REPLAY {replay?.replay_window_id ?? provenance?.replay_window_id ?? "none"}</span>
+      <span>METRIC {response?.answer?.interval_metric?.label ?? "pending"}</span>
       <span>H {latency?.hermes ?? 0}ms · S {latency?.synthesis ?? 0}ms · E {latency?.execution ?? 0}ms</span>
     </section>
   );
@@ -486,12 +536,14 @@ function AskThread({
   error,
   loading,
   warming,
+  clauseKeys,
   onClarify
 }: {
   response: FilmRoomAskResponse | null;
   error: FilmRoomErrorView | null;
   loading: boolean;
   warming: string | null;
+  clauseKeys: QuestionClauseKey[];
   onClarify: (state: JsonObject, answer: string) => void;
 }) {
   const clarification = asRecord(response?.clarification);
@@ -500,19 +552,20 @@ function AskThread({
   const refusal = refusalViewModel(response?.refusal);
   return (
     <section className="askThread">
-      <div className="bubble userBubble">{response?.request_text ?? FLAGSHIP_ASK}</div>
+      <div className="bubble userBubble">
+        <div>{response?.request_text ?? FLAGSHIP_ASK}</div>
+        {clauseKeys.length ? (
+          <div className="questionClauses" aria-label="The question's three operative clauses">
+            {clauseKeys.map((clause) => (
+              <span key={clause.stage}><b>{clause.key}</b>{clause.text}</span>
+            ))}
+          </div>
+        ) : null}
+      </div>
       {loading ? <div className="bubble hermesBubble">{warming ?? "Loading prewarmed film..."}</div> : null}
       {outcomeClass === "answer" && response?.answer ? (
         <div className="bubble hermesBubble">
-          <div>
-            {momentCollectionLabel(response.answer.moments, response.answer.moment_total_count)} · plan{" "}
-            {response.answer.provenance.plan_hash.slice(0, 12)}
-          </div>
-          <div className="compiled">
-            {response.answer.compiled_chips.map((chip) => (
-              <span className="stage" key={chip}>{chip}</span>
-            ))}
-          </div>
+          <div>{momentCollectionLabel(response.answer.moments, response.answer.moment_total_count)} are ready to watch.</div>
         </div>
       ) : null}
       {outcomeClass === "clarification" ? (
@@ -551,10 +604,16 @@ function AskThread({
   );
 }
 
-function EvidencePanel({ moment, response }: { moment: FilmRoomMoment | null | undefined; response: FilmRoomAskResponse | null }) {
+function EvidencePanel({
+  moment,
+  response,
+  replay
+}: {
+  moment: FilmRoomMoment | null | undefined;
+  response: FilmRoomAskResponse | null;
+  replay: ReplayPayload | null;
+}) {
   const [showRaw, setShowRaw] = useState(false);
-  const overlay = asRecord(moment?.evidence_overlay);
-  const isPartitionPreview = moment?.source_kind === "certified_table_partition";
   return (
     <section className="filmPanel notesPanel">
       <div className="filmPanelHeader">
@@ -564,16 +623,9 @@ function EvidencePanel({ moment, response }: { moment: FilmRoomMoment | null | u
       {showRaw ? (
         <pre>{JSON.stringify(moment?.evidence_row ?? response?.answer?.raw_evidence ?? {}, null, 2)}</pre>
       ) : (
-        <dl className="evidenceSummary">
-          <div><dt>{isPartitionPreview ? "record" : "chain"}</dt><dd>{chainStatusLabel(moment)}</dd></div>
-          <div><dt>reason</dt><dd>{moment?.chain_reason ?? moment?.unknown_reason ?? "observed"}</dd></div>
-          <div>
-            <dt>replay</dt>
-            <dd>{isPartitionPreview ? "period-open preview; not a certified chain witness" : "witness window"}</dd>
-          </div>
-          <div><dt>window</dt><dd>{moment?.replay_start_frame_id ?? "-"} - {moment?.replay_end_frame_id ?? "-"}</dd></div>
-          <div><dt>overlays</dt><dd>{asArray(overlay.stage_labels).length} stages · {asArray(overlay.carry_trails).length} trails</dd></div>
-        </dl>
+        <p className="evidenceSentence">
+          {moment ? momentCardText(moment, replay) : "Choose a moment to see how it answers the question."}
+        </p>
       )}
     </section>
   );
@@ -591,11 +643,10 @@ export function FilmRoom() {
   const [frameIndex, setFrameIndex] = useState(0);
   const moments = response?.answer?.moments ?? [];
   const selected = moments[selectedMoment] ?? null;
-  const selectedFrame = useMemo(() => {
-    if (!replay?.frames.length) return null;
-    return replay.frames[Math.min(frameIndex, replay.frames.length - 1)];
-  }, [frameIndex, replay]);
-
+  const clauseKeys = useMemo(
+    () => deriveQuestionClauseKeys(response?.answer?.meaning_expression),
+    [response?.answer?.meaning_expression]
+  );
   async function submit(context?: JsonObject) {
     setBusy(true);
     setError(null);
@@ -685,6 +736,7 @@ export function FilmRoom() {
         error={error}
         loading={loadingBootstrap}
         warming={bootstrapWarming}
+        clauseKeys={clauseKeys}
         onClarify={(pending, answer) => void submit({ pending_clarification: pending, answer })}
       />
 
@@ -713,14 +765,9 @@ export function FilmRoom() {
             total={response?.answer?.moment_total_count ?? moments.length}
             selected={selectedMoment}
             setSelected={setSelectedMoment}
+            replay={replay}
           />
-          <EvidencePanel moment={selected} response={response} />
-          <section className="filmPanel notesPanel">
-            <div className="filmPanelHeader">
-              <span>Frame</span>
-              <span>{selectedFrame?.frame_id ?? "none"}</span>
-            </div>
-          </section>
+          <EvidencePanel moment={selected} response={response} replay={replay} />
         </aside>
       </section>
     </main>

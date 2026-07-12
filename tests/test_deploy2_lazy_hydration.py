@@ -45,6 +45,12 @@ def chain_record(anchor: int, *, marker: str = "full-payload") -> dict[str, obje
         "stage_3_status": "PASS",
         "stage_3_frame_id": anchor + 20,
         "stage_3_player_id": "p3",
+        "stage_2_minimum_numeric_field": "carry_forward_progression_m",
+        "source_records": [
+            {"transition_status": "PASS"},
+            {"carry_status": "PASS", "carry_forward_progression_m": 11.2},
+            {"controlled_pass_status": "PASS"},
+        ],
         "large_chain_payload_marker": marker,
     }
 
@@ -136,6 +142,9 @@ class Deploy2LazyHydrationTests(unittest.TestCase):
         self.assertNotIn("large_chain_payload_marker", item["descriptor"]["requested_evidence"])
         self.assertEqual("full-payload", shard["chain_record"]["large_chain_payload_marker"])
         self.assertEqual(3, len(item["descriptor"]["evidence_overlay"]["stage_labels"]))
+        stage_two = item["descriptor"]["evidence_overlay"]["stage_labels"][1]
+        self.assertEqual("at least 8 m", stage_two["label"])
+        self.assertEqual(11.2, stage_two["observed_numeric_value"])
 
     def test_prewarm_off_startup_loads_metadata_without_execution_or_full_payloads(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -216,6 +225,8 @@ class Deploy2LazyHydrationTests(unittest.TestCase):
         self.assertEqual("prewarmed_descriptor_index", bootstrap["prewarmed_response"]["provider"])
         self.assertTrue(bootstrap["answer"]["moments"])
         self.assertTrue(all(item["source_kind"] == "chain_record" for item in bootstrap["answer"]["moments"]))
+        self.assertEqual("meaning_expression.v0", bootstrap["answer"]["meaning_expression"]["schema_version"])
+        self.assertTrue(bootstrap["answer"]["meaning_expression"]["meaning_clauses"])
         self.assertEqual([], bootstrap["answer"]["executions"])
         self.assertTrue(
             all(record.get("execution_performed") is False for record in bootstrap["prewarm_records"])

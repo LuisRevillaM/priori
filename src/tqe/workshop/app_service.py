@@ -74,6 +74,9 @@ HIGH_BYPASS_PLAN_PATH = Path("config/query-plans/high_bypass_completed_pass.expe
 LINE_BREAK_SUPPORT_RESPONSE_PLAN_PATH = Path("config/query-plans/line_break_support_response.experimental.v1.json")
 FILM_ROOM_R2_4_PLAN_PATH = Path("delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_v0.json")
 FILM_ROOM_R2_4_TABLE_PATH = Path("delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json")
+FILM_ROOM_R2_4_MEANING_PATH = Path(
+    "delivery/packets/r2-4-flagship/meaning-expressions/counterattack_initiation_sequence_rate.v0.json"
+)
 FILM_ROOM_R2_2_PLAN_PATH = Path("delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json")
 FILM_ROOM_R2_2_TABLE_PATH = Path("delivery/packets/r2-2-flagship/fragile_retention_rate_table.json")
 FILM_ROOM_COUNTERATTACK_QUESTION = (
@@ -473,6 +476,7 @@ class FilmRoomProvenanceResponse(WorkbenchResponseModel):
 class FilmRoomAnswerResponse(WorkbenchResponseModel):
     status: Literal["answer_ready"]
     compiled_chips: list[str]
+    meaning_expression: dict[str, Any] | None = None
     document: dict[str, Any]
     certified_evidence_rows: list[dict[str, Any]]
     runtime_evidence_rows: list[dict[str, Any]]
@@ -2841,6 +2845,7 @@ def film_room_answer_from_document(
     answer = {
         "status": "answer_ready",
         "compiled_chips": film_room_compiled_chips(expression_payload, document_payload),
+        "meaning_expression": deepcopy(expression_payload) if isinstance(expression_payload, dict) else None,
         "document": document_payload,
         "certified_evidence_rows": certified.get("table", {}).get("rows", []) if certified else [],
         "runtime_evidence_rows": runtime_evidence_rows,
@@ -3117,9 +3122,23 @@ def film_room_evidence_overlay(record: dict[str, Any]) -> dict[str, Any]:
             label = "regain"
         elif index == 2:
             distance = record.get("stage_2_minimum_numeric_value")
-            label = f"carry >= {distance:g}m" if isinstance(distance, (int, float)) else "carry"
+            label = f"at least {distance:g} m" if isinstance(distance, (int, float)) else "carry"
         else:
-            label = "pass"
+            label = "pass kept"
+        observed_numeric_value = None
+        if index == 2:
+            source_records = record.get("source_records")
+            source_record = (
+                source_records[1]
+                if isinstance(source_records, list)
+                and len(source_records) > 1
+                and isinstance(source_records[1], dict)
+                else {}
+            )
+            numeric_field = str(record.get("stage_2_minimum_numeric_field") or "")
+            candidate = source_record.get(numeric_field) if numeric_field else None
+            if isinstance(candidate, (int, float)) and not isinstance(candidate, bool):
+                observed_numeric_value = float(candidate)
         stage_labels.append(
             {
                 "stage": index,
@@ -3127,6 +3146,7 @@ def film_room_evidence_overlay(record: dict[str, Any]) -> dict[str, Any]:
                 "frame_id": frame_id,
                 "status": status,
                 "player_id": str(player_id) if player_id else None,
+                "observed_numeric_value": observed_numeric_value,
             }
         )
         anchor_markers.append(
@@ -3168,14 +3188,23 @@ def film_room_evidence_overlay(record: dict[str, Any]) -> dict[str, Any]:
     stage_2_end = int_or_none(record.get("stage_2_end_frame_id"))
     stage_2_player = record.get("stage_2_player_id")
     if stage_2_start is not None and stage_2_end is not None:
-        carry_trails.append(
-            {
-                "start_frame_id": stage_2_start,
-                "end_frame_id": stage_2_end,
-                "player_id": str(stage_2_player) if stage_2_player else None,
-                "status": str(record.get("stage_2_status") or "UNKNOWN"),
-            }
+        trail = {
+            "start_frame_id": stage_2_start,
+            "end_frame_id": stage_2_end,
+            "player_id": str(stage_2_player) if stage_2_player else None,
+            "status": str(record.get("stage_2_status") or "UNKNOWN"),
+        }
+        observed_numeric_value = next(
+            (
+                label.get("observed_numeric_value")
+                for label in stage_labels
+                if label.get("stage") == 2
+            ),
+            None,
         )
+        if observed_numeric_value is not None:
+            trail["observed_numeric_value"] = observed_numeric_value
+        carry_trails.append(trail)
     unknown_reason = film_room_unknown_reason(record, record)
     return {
         "anchor_markers": anchor_markers,
@@ -3810,6 +3839,7 @@ def film_room_flagship_specs() -> list[dict[str, Any]]:
             "question": FILM_ROOM_COUNTERATTACK_QUESTION,
             "plan_path": FILM_ROOM_R2_4_PLAN_PATH,
             "table_path": FILM_ROOM_R2_4_TABLE_PATH,
+            "meaning_expression_path": FILM_ROOM_R2_4_MEANING_PATH,
         },
     ]
 
@@ -3916,6 +3946,7 @@ def film_room_answer_from_certified_table(
     document_payload: dict[str, Any],
     *,
     certified: dict[str, Any],
+    meaning_expression: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     plan_hash = stable_hash(document_payload)
     table = certified["table"]
@@ -3933,6 +3964,7 @@ def film_room_answer_from_certified_table(
     answer = {
         "status": "answer_ready",
         "compiled_chips": film_room_compiled_chips(None, document_payload),
+        "meaning_expression": deepcopy(meaning_expression),
         "document": document_payload,
         "certified_evidence_rows": deepcopy(table.get("rows", [])),
         "runtime_evidence_rows": [],
@@ -3977,6 +4009,7 @@ def film_room_certified_prewarmed_response(
     key: str,
     question: str,
     plan_path: Path,
+    meaning_expression_path: Path | None = None,
 ) -> dict[str, Any]:
     started_at = time.monotonic()
     document_payload = read_json(plan_path)
@@ -3984,7 +4017,12 @@ def film_room_certified_prewarmed_response(
     certified = film_room_certified_table_for_plan_hash(plan_hash)
     if certified is None:
         raise CapabilityGap(f"No committed certified table matches Film Room plan {plan_path}.")
-    answer = film_room_answer_from_certified_table(document_payload, certified=certified)
+    meaning_expression = read_json(meaning_expression_path) if meaning_expression_path else None
+    answer = film_room_answer_from_certified_table(
+        document_payload,
+        certified=certified,
+        meaning_expression=meaning_expression,
+    )
     elapsed_ms = int((time.monotonic() - started_at) * 1000)
     response = {
         "ok": True,
@@ -4019,6 +4057,7 @@ def film_room_descriptor_prewarmed_response(
     question: str,
     plan_path: Path,
     index_entry: dict[str, Any],
+    meaning_expression_path: Path | None = None,
 ) -> dict[str, Any]:
     """Upgrade the table answer from a lightweight, disk-backed descriptor index."""
 
@@ -4027,6 +4066,7 @@ def film_room_descriptor_prewarmed_response(
         key=key,
         question=question,
         plan_path=plan_path,
+        meaning_expression_path=meaning_expression_path,
     )
     answer = response.get("answer") if isinstance(response.get("answer"), dict) else {}
     plan_hash = stable_hash(read_json(plan_path))
@@ -4267,6 +4307,11 @@ def prewarm_film_room_flagships_from_certified_tables() -> None:
                 key=str(spec["key"]),
                 question=str(spec["question"]),
                 plan_path=plan_path,
+                meaning_expression_path=(
+                    Path(spec["meaning_expression_path"])
+                    if spec.get("meaning_expression_path")
+                    else None
+                ),
             )
         except Exception as exc:  # noqa: BLE001 - committed-pair errors become honest warming.
             error = {"error_type": type(exc).__name__, "message": str(exc)}
@@ -4381,6 +4426,11 @@ def load_film_room_descriptor_index(*, output_root: Path) -> None:
             question=str(spec["question"]),
             plan_path=plan_path,
             index_entry=index_entry,
+            meaning_expression_path=(
+                Path(spec["meaning_expression_path"])
+                if spec.get("meaning_expression_path")
+                else None
+            ),
         )
         elapsed_ms = int((time.monotonic() - started_at) * 1000)
         answer = response.get("answer") if isinstance(response.get("answer"), dict) else {}
