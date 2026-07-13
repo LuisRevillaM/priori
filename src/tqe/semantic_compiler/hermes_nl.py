@@ -27,7 +27,7 @@ from tqe.semantic_compiler.meaning_expression import (
 
 
 DEFAULT_PROVIDER = "openai-codex"
-DEFAULT_MODEL = "gpt-5.5"
+DEFAULT_MODEL = "gpt-5.6-sol"
 DEFAULT_TOOLSET = "mcp-priori_tactical"
 MAX_MODEL_REPAIR_ATTEMPTS = 2
 DEFAULT_SCP2_2_MAX_OUTPUT_TOKENS = 32768

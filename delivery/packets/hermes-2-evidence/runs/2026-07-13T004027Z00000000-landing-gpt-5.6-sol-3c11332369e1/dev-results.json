@@ -1,0 +1,296 @@
+{
+  "case_set_ref": "delivery/packets/scp2-2-dev-cases.json",
+  "case_set_sha256": "07a10d76b1f3322e94131090068f19157975fbea65aefbebdb8e17aba2da4b7a",
+  "elapsed_seconds": 32.243,
+  "finished_at_utc": "2026-07-13T00:41:10.962465Z",
+  "long_run_flag": false,
+  "long_run_threshold_seconds": 300.0,
+  "model_tier": {
+    "billing_surface": "chatgpt_subscription",
+    "model": "gpt-5.6-sol",
+    "provider": "openai-codex"
+  },
+  "pack_path": "generated/tactical-knowledge-pack.json",
+  "pack_sha256": "6b8821a462bd30c03ea4ebd65fefd2e33fc951ffc7f789f9cd577689c306177a",
+  "schema_version": "scp2_2.eval_results.v0",
+  "started_at_utc": "2026-07-13T00:40:38.719369Z",
+  "summary": {
+    "fail": 15,
+    "pass": 0,
+    "total": 15
+  },
+  "verdicts": [
+    {
+      "case_id": "dev_same_meaning_controlled_pass",
+      "elapsed_seconds": 4.994,
+      "failures": [
+        "request 1: HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate.",
+        "request 2: HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate."
+      ],
+      "kind": "same_meaning_pair",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        },
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_same_meaning_sequence_rate",
+      "elapsed_seconds": 3.652,
+      "failures": [
+        "request 1: HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate.",
+        "request 2: HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate."
+      ],
+      "kind": "same_meaning_pair",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        },
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_same_meaning_line_break_support",
+      "elapsed_seconds": 2.998,
+      "failures": [
+        "request 1: HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate.",
+        "request 2: HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate."
+      ],
+      "kind": "same_meaning_pair",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        },
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_changed_rate_vs_count",
+      "elapsed_seconds": 2.805,
+      "failures": [
+        "request 1: HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate.",
+        "request 2: HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate."
+      ],
+      "kind": "changed_meaning_pair",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        },
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_changed_controlled_vs_bypass",
+      "elapsed_seconds": 2.775,
+      "failures": [
+        "request 1: HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate.",
+        "request 2: HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate."
+      ],
+      "kind": "changed_meaning_pair",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        },
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_known_possession_corridor",
+      "elapsed_seconds": 1.371,
+      "failures": [
+        "HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate."
+      ],
+      "kind": "single",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_known_high_bypass",
+      "elapsed_seconds": 1.405,
+      "failures": [
+        "HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate."
+      ],
+      "kind": "single",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_known_first_time_relay",
+      "elapsed_seconds": 1.582,
+      "failures": [
+        "HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate."
+      ],
+      "kind": "single",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_novel_sequence_rate",
+      "elapsed_seconds": 1.506,
+      "failures": [
+        "HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate."
+      ],
+      "kind": "single",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_refusal_body_orientation",
+      "elapsed_seconds": 1.583,
+      "failures": [
+        "HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate."
+      ],
+      "kind": "single",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_refusal_pass_probability",
+      "elapsed_seconds": 1.443,
+      "failures": [
+        "HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate."
+      ],
+      "kind": "single",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_refusal_player_intent",
+      "elapsed_seconds": 1.534,
+      "failures": [
+        "HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate."
+      ],
+      "kind": "single",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_refusal_video_modality",
+      "elapsed_seconds": 1.784,
+      "failures": [
+        "HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate."
+      ],
+      "kind": "single",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_clarification_support_definition",
+      "elapsed_seconds": 1.435,
+      "failures": [
+        "HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate.",
+        "first turn outcome was exception, not clarification_required"
+      ],
+      "kind": "clarification_turn",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_clarification_distance_threshold",
+      "elapsed_seconds": 1.377,
+      "failures": [
+        "HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate.",
+        "first turn outcome was exception, not clarification_required"
+      ],
+      "kind": "clarification_turn",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: No Codex credentials stored. Run `hermes auth` to authenticate.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    }
+  ]
+}

@@ -1,0 +1,296 @@
+{
+  "case_set_ref": "delivery/packets/scp2-2-dev-cases.json",
+  "case_set_sha256": "07a10d76b1f3322e94131090068f19157975fbea65aefbebdb8e17aba2da4b7a",
+  "elapsed_seconds": 59.858,
+  "finished_at_utc": "2026-07-10T09:41:04.881920Z",
+  "long_run_flag": false,
+  "long_run_threshold_seconds": 300.0,
+  "model_tier": {
+    "billing_surface": "chatgpt_subscription",
+    "model": "gpt-5.6-sol",
+    "provider": "openai-codex"
+  },
+  "pack_path": "generated/tactical-knowledge-pack.json",
+  "pack_sha256": "6b8821a462bd30c03ea4ebd65fefd2e33fc951ffc7f789f9cd577689c306177a",
+  "schema_version": "scp2_2.eval_results.v0",
+  "started_at_utc": "2026-07-10T09:40:05.023589Z",
+  "summary": {
+    "fail": 15,
+    "pass": 0,
+    "total": 15
+  },
+  "verdicts": [
+    {
+      "case_id": "dev_same_meaning_controlled_pass",
+      "elapsed_seconds": 6.491,
+      "failures": [
+        "request 1: HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+        "request 2: HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "kind": "same_meaning_pair",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        },
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_same_meaning_sequence_rate",
+      "elapsed_seconds": 6.014,
+      "failures": [
+        "request 1: HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+        "request 2: HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "kind": "same_meaning_pair",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        },
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_same_meaning_line_break_support",
+      "elapsed_seconds": 5.927,
+      "failures": [
+        "request 1: HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+        "request 2: HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "kind": "same_meaning_pair",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        },
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_changed_rate_vs_count",
+      "elapsed_seconds": 5.94,
+      "failures": [
+        "request 1: HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+        "request 2: HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "kind": "changed_meaning_pair",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        },
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_changed_controlled_vs_bypass",
+      "elapsed_seconds": 6.201,
+      "failures": [
+        "request 1: HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+        "request 2: HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "kind": "changed_meaning_pair",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        },
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_known_possession_corridor",
+      "elapsed_seconds": 2.997,
+      "failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "kind": "single",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_known_high_bypass",
+      "elapsed_seconds": 3.286,
+      "failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "kind": "single",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_known_first_time_relay",
+      "elapsed_seconds": 2.794,
+      "failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "kind": "single",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_novel_sequence_rate",
+      "elapsed_seconds": 2.814,
+      "failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "kind": "single",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_refusal_body_orientation",
+      "elapsed_seconds": 2.814,
+      "failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "kind": "single",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_refusal_pass_probability",
+      "elapsed_seconds": 2.721,
+      "failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "kind": "single",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_refusal_player_intent",
+      "elapsed_seconds": 3.427,
+      "failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "kind": "single",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_refusal_video_modality",
+      "elapsed_seconds": 2.755,
+      "failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "kind": "single",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_clarification_support_definition",
+      "elapsed_seconds": 2.825,
+      "failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+        "first turn outcome was exception, not clarification_required"
+      ],
+      "kind": "clarification_turn",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_clarification_distance_threshold",
+      "elapsed_seconds": 2.851,
+      "failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+        "first turn outcome was exception, not clarification_required"
+      ],
+      "kind": "clarification_turn",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    }
+  ]
+}

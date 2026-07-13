@@ -1,0 +1,12 @@
+{
+  "branch": "packet/hermes-2",
+  "git_commit": "0546e0da939db5bd355aa6addf5cdc45bb84eb56",
+  "git_tree": "e2e12adc4310c7fa63e2fe117d871c2875a05e6f",
+  "model": "gpt-5.6-sol",
+  "phase": "landing",
+  "producing_script": "scripts/packets/hermes2_evidence.py",
+  "producing_script_sha256": "7c9ae363d70d8aa4ca58d584f38372871b149f34e43547dfc82544a78f2e148a",
+  "provider": "openai-codex",
+  "run_started_at_utc": "2026-07-10T09:10:05.841553Z",
+  "schema_version": "hermes2.evidence.v1"
+}

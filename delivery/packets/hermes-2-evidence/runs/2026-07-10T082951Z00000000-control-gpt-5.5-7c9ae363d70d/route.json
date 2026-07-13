@@ -1,0 +1,22 @@
+{
+  "billing_surface": "chatgpt_subscription",
+  "bridge_path": "src/tqe/workshop/hermes_invocation.py",
+  "bridge_sha256": "3204cd03f6c651f2fcbe4d2d81f2d413a62cb6087a1b09b4db99c7a1a2cb4047",
+  "configured_model": "gpt-5.5",
+  "configured_provider": "openai-codex",
+  "configured_reasoning_effort": "xhigh",
+  "effort_parser": {
+    "max": null,
+    "xhigh": {
+      "effort": "xhigh",
+      "enabled": true
+    }
+  },
+  "fallback_chain": [],
+  "hermes_executable": "/Users/luisrevilla/.local/bin/hermes",
+  "hermes_home": "/Users/luisrevilla/.hermes-priori",
+  "hermes_python": "/Users/luisrevilla/.local/src/hermes-agent/venv/bin/python3",
+  "hermes_version": "Hermes Agent v0.17.0 (2026.6.19) \u00b7 upstream 2a58fee1\nProject: /Users/luisrevilla/.local/src/hermes-agent\nPython: 3.11.15\nOpenAI SDK: 2.24.0\nUpdate available: 103 commits behind \u2014 run 'hermes update'",
+  "max_accepted": false,
+  "selected_effort": "xhigh"
+}

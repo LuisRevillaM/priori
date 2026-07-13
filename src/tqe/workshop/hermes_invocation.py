@@ -139,24 +139,13 @@ def run_hermes_agent(
     with open(os.devnull, "w", encoding="utf-8") as devnull:
         with redirect_stdout(devnull), redirect_stderr(devnull):
             try:
-                if max_output_tokens is None:
-                    from hermes_cli.oneshot import _run_agent
-
-                    response = _run_agent(
-                        prompt,
-                        model=model,
-                        provider=provider,
-                        toolsets=[toolset],
-                        use_config_toolsets=False,
-                    )
-                else:
-                    response = _run_agent_with_max_output_tokens(
-                        prompt,
-                        model=model,
-                        provider=provider,
-                        toolsets=[toolset],
-                        max_output_tokens=max_output_tokens,
-                    )
+                response = _run_agent_with_product_config(
+                    prompt,
+                    model=model,
+                    provider=provider,
+                    toolsets=[toolset],
+                    max_output_tokens=max_output_tokens,
+                )
             except BaseException as exc:  # noqa: BLE001
                 return {"exit_code": 1, "stdout": "", "stderr": str(exc)}
     if not (response or "").strip():
@@ -164,13 +153,27 @@ def run_hermes_agent(
     return {"exit_code": 0, "stdout": response, "stderr": ""}
 
 
-def _run_agent_with_max_output_tokens(
+def configured_reasoning_config(config: dict[str, Any]) -> dict[str, Any] | None:
+    """Resolve the persisted effort without silently demoting an invalid value."""
+    from hermes_constants import parse_reasoning_effort
+
+    agent_config = config.get("agent") or {}
+    if not isinstance(agent_config, dict):
+        agent_config = {}
+    effort = str(agent_config.get("reasoning_effort") or "").strip()
+    parsed = parse_reasoning_effort(effort)
+    if effort and parsed is None:
+        raise ValueError(f"Hermes rejected configured reasoning_effort {effort!r}")
+    return parsed
+
+
+def _run_agent_with_product_config(
     prompt: str,
     *,
     model: str,
     provider: str,
     toolsets: object,
-    max_output_tokens: int,
+    max_output_tokens: int | None,
 ) -> str:
     from hermes_cli.config import load_config
     from hermes_cli.fallback_config import get_fallback_chain
@@ -241,6 +244,7 @@ def _run_agent_with_max_output_tokens(
         fallback_model=get_fallback_chain(cfg) or None,
         clarify_callback=_oneshot_clarify_callback,
         max_tokens=max_output_tokens,
+        reasoning_config=configured_reasoning_config(cfg),
     )
     agent.suppress_status_output = True
     agent.stream_delta_callback = None

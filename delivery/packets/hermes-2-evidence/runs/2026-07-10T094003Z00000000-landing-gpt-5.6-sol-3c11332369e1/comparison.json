@@ -1,0 +1,241 @@
+{
+  "baseline_path": "delivery/packets/scp2-2-dev-results.json",
+  "baseline_sha256": "dee1e7c76ec349f193e58998b518d30b572da1c74aaa7eeee5b13223ee698218",
+  "baseline_summary": {
+    "fail": 8,
+    "pass": 7,
+    "total": 15
+  },
+  "candidate_summary": {
+    "fail": 15,
+    "pass": 0,
+    "total": 15
+  },
+  "flip_gate": {
+    "human_wrong_answer_review_required": true,
+    "model_access_closed": false,
+    "newly_failing_cases_requiring_wrong_answer_review": [
+      "dev_changed_controlled_vs_bypass",
+      "dev_known_high_bypass",
+      "dev_novel_sequence_rate",
+      "dev_refusal_body_orientation",
+      "dev_refusal_pass_probability",
+      "dev_refusal_player_intent",
+      "dev_refusal_video_modality"
+    ],
+    "pass_count_at_least_historical_baseline": false
+  },
+  "model_access_failure_cases": [
+    "dev_same_meaning_controlled_pass",
+    "dev_same_meaning_sequence_rate",
+    "dev_same_meaning_line_break_support",
+    "dev_changed_rate_vs_count",
+    "dev_changed_controlled_vs_bypass",
+    "dev_known_possession_corridor",
+    "dev_known_high_bypass",
+    "dev_known_first_time_relay",
+    "dev_novel_sequence_rate",
+    "dev_refusal_body_orientation",
+    "dev_refusal_pass_probability",
+    "dev_refusal_player_intent",
+    "dev_refusal_video_modality",
+    "dev_clarification_support_definition",
+    "dev_clarification_distance_threshold"
+  ],
+  "rows": [
+    {
+      "baseline_elapsed_seconds": 47.931,
+      "baseline_status": "FAIL",
+      "candidate_elapsed_seconds": 6.491,
+      "candidate_failure_attribution": "model_access_failure",
+      "candidate_failures": [
+        "request 1: HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+        "request 2: HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "candidate_status": "FAIL",
+      "case_id": "dev_same_meaning_controlled_pass",
+      "transition": "unchanged_fail"
+    },
+    {
+      "baseline_elapsed_seconds": 188.228,
+      "baseline_status": "FAIL",
+      "candidate_elapsed_seconds": 6.014,
+      "candidate_failure_attribution": "model_access_failure",
+      "candidate_failures": [
+        "request 1: HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+        "request 2: HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "candidate_status": "FAIL",
+      "case_id": "dev_same_meaning_sequence_rate",
+      "transition": "unchanged_fail"
+    },
+    {
+      "baseline_elapsed_seconds": 89.993,
+      "baseline_status": "FAIL",
+      "candidate_elapsed_seconds": 5.927,
+      "candidate_failure_attribution": "model_access_failure",
+      "candidate_failures": [
+        "request 1: HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+        "request 2: HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "candidate_status": "FAIL",
+      "case_id": "dev_same_meaning_line_break_support",
+      "transition": "unchanged_fail"
+    },
+    {
+      "baseline_elapsed_seconds": 117.798,
+      "baseline_status": "FAIL",
+      "candidate_elapsed_seconds": 5.94,
+      "candidate_failure_attribution": "model_access_failure",
+      "candidate_failures": [
+        "request 1: HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+        "request 2: HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "candidate_status": "FAIL",
+      "case_id": "dev_changed_rate_vs_count",
+      "transition": "unchanged_fail"
+    },
+    {
+      "baseline_elapsed_seconds": 40.463,
+      "baseline_status": "PASS",
+      "candidate_elapsed_seconds": 6.201,
+      "candidate_failure_attribution": "model_access_failure",
+      "candidate_failures": [
+        "request 1: HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+        "request 2: HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "candidate_status": "FAIL",
+      "case_id": "dev_changed_controlled_vs_bypass",
+      "transition": "newly_failing"
+    },
+    {
+      "baseline_elapsed_seconds": 22.656,
+      "baseline_status": "FAIL",
+      "candidate_elapsed_seconds": 2.997,
+      "candidate_failure_attribution": "model_access_failure",
+      "candidate_failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "candidate_status": "FAIL",
+      "case_id": "dev_known_possession_corridor",
+      "transition": "unchanged_fail"
+    },
+    {
+      "baseline_elapsed_seconds": 24.712,
+      "baseline_status": "PASS",
+      "candidate_elapsed_seconds": 3.286,
+      "candidate_failure_attribution": "model_access_failure",
+      "candidate_failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "candidate_status": "FAIL",
+      "case_id": "dev_known_high_bypass",
+      "transition": "newly_failing"
+    },
+    {
+      "baseline_elapsed_seconds": 25.017,
+      "baseline_status": "FAIL",
+      "candidate_elapsed_seconds": 2.794,
+      "candidate_failure_attribution": "model_access_failure",
+      "candidate_failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "candidate_status": "FAIL",
+      "case_id": "dev_known_first_time_relay",
+      "transition": "unchanged_fail"
+    },
+    {
+      "baseline_elapsed_seconds": 71.564,
+      "baseline_status": "PASS",
+      "candidate_elapsed_seconds": 2.814,
+      "candidate_failure_attribution": "model_access_failure",
+      "candidate_failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "candidate_status": "FAIL",
+      "case_id": "dev_novel_sequence_rate",
+      "transition": "newly_failing"
+    },
+    {
+      "baseline_elapsed_seconds": 6.326,
+      "baseline_status": "PASS",
+      "candidate_elapsed_seconds": 2.814,
+      "candidate_failure_attribution": "model_access_failure",
+      "candidate_failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "candidate_status": "FAIL",
+      "case_id": "dev_refusal_body_orientation",
+      "transition": "newly_failing"
+    },
+    {
+      "baseline_elapsed_seconds": 5.932,
+      "baseline_status": "PASS",
+      "candidate_elapsed_seconds": 2.721,
+      "candidate_failure_attribution": "model_access_failure",
+      "candidate_failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "candidate_status": "FAIL",
+      "case_id": "dev_refusal_pass_probability",
+      "transition": "newly_failing"
+    },
+    {
+      "baseline_elapsed_seconds": 6.441,
+      "baseline_status": "PASS",
+      "candidate_elapsed_seconds": 3.427,
+      "candidate_failure_attribution": "model_access_failure",
+      "candidate_failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "candidate_status": "FAIL",
+      "case_id": "dev_refusal_player_intent",
+      "transition": "newly_failing"
+    },
+    {
+      "baseline_elapsed_seconds": 5.52,
+      "baseline_status": "PASS",
+      "candidate_elapsed_seconds": 2.755,
+      "candidate_failure_attribution": "model_access_failure",
+      "candidate_failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "candidate_status": "FAIL",
+      "case_id": "dev_refusal_video_modality",
+      "transition": "newly_failing"
+    },
+    {
+      "baseline_elapsed_seconds": 76.596,
+      "baseline_status": "FAIL",
+      "candidate_elapsed_seconds": 2.825,
+      "candidate_failure_attribution": "model_access_failure",
+      "candidate_failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+        "first turn outcome was exception, not clarification_required"
+      ],
+      "candidate_status": "FAIL",
+      "case_id": "dev_clarification_support_definition",
+      "transition": "unchanged_fail"
+    },
+    {
+      "baseline_elapsed_seconds": 32.377,
+      "baseline_status": "FAIL",
+      "candidate_elapsed_seconds": 2.851,
+      "candidate_failure_attribution": "model_access_failure",
+      "candidate_failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+        "first turn outcome was exception, not clarification_required"
+      ],
+      "candidate_status": "FAIL",
+      "case_id": "dev_clarification_distance_threshold",
+      "transition": "unchanged_fail"
+    }
+  ],
+  "run_valid_for_model_comparison": false,
+  "transition_counts": {
+    "newly_failing": 7,
+    "newly_passing": 0,
+    "unchanged_fail": 8,
+    "unchanged_pass": 0
+  }
+}
