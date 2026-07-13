@@ -31,9 +31,11 @@ doctrine v2 (docs/VISION_TRAINING_DOCTRINE.md).
 
 1. [DIRECTOR] Delight pass on a real device (the stack's last
    automated-adjacent gate); then [OWNER+DIRECTOR] calibration.
-2. [any-steward] HERMES-2 landing rerun (flip evidence 8/15 parked on
-   packet/hermes-2; flip committed, landing run blocked twice by
-   subscription/capacity walls).
+2. [OWNER-BLOCKED] HERMES-2 landing: the openai-codex credential is
+   GONE from ~/.hermes-priori (root cause of all THREE access-invalid
+   landings — auth, never capacity). Owner runs in a real terminal:
+   HERMES_HOME=~/.hermes-priori hermes auth add openai-codex
+   Then any steward reruns the landing (evidence machinery is ready).
 3. [any-steward] Ask-timeout cancellation fix (counsel finding: timed
    out public asks keep consuming resources).
 4. [any-steward] SHADOW-1 (Gate 2 shadow lane, tactical-first per
