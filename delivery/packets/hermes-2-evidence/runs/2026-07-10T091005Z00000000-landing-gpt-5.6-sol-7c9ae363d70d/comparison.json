@@ -1,0 +1,216 @@
+{
+  "baseline_path": "delivery/packets/scp2-2-dev-results.json",
+  "baseline_sha256": "dee1e7c76ec349f193e58998b518d30b572da1c74aaa7eeee5b13223ee698218",
+  "baseline_summary": {
+    "fail": 8,
+    "pass": 7,
+    "total": 15
+  },
+  "candidate_summary": {
+    "fail": 14,
+    "pass": 1,
+    "total": 15
+  },
+  "flip_gate": {
+    "human_wrong_answer_review_required": true,
+    "newly_failing_cases_requiring_wrong_answer_review": [
+      "dev_changed_controlled_vs_bypass",
+      "dev_known_high_bypass",
+      "dev_novel_sequence_rate",
+      "dev_refusal_body_orientation",
+      "dev_refusal_pass_probability",
+      "dev_refusal_player_intent",
+      "dev_refusal_video_modality"
+    ],
+    "pass_count_at_least_historical_baseline": false
+  },
+  "rows": [
+    {
+      "baseline_elapsed_seconds": 47.931,
+      "baseline_status": "FAIL",
+      "candidate_elapsed_seconds": 174.006,
+      "candidate_failure_attribution": "genuine_gap",
+      "candidate_failures": [
+        "request 1 synthesis failed: BindError: unsupported_evidence_field at draft_plan.requested_evidence[0].field: episodes is not available on controlled_pass_episode.episodes; unsupported_evidence_field at draft_plan.requested_evidence[1].field: anchors is not available on controlled_pass_episode.anchors"
+      ],
+      "candidate_status": "FAIL",
+      "case_id": "dev_same_meaning_controlled_pass",
+      "transition": "unchanged_fail"
+    },
+    {
+      "baseline_elapsed_seconds": 188.228,
+      "baseline_status": "FAIL",
+      "candidate_elapsed_seconds": 185.944,
+      "candidate_failure_attribution": "genuine_gap",
+      "candidate_failures": [
+        "same-meaning synthesized document hashes differ"
+      ],
+      "candidate_status": "FAIL",
+      "case_id": "dev_same_meaning_sequence_rate",
+      "transition": "unchanged_fail"
+    },
+    {
+      "baseline_elapsed_seconds": 89.993,
+      "baseline_status": "FAIL",
+      "candidate_elapsed_seconds": 122.102,
+      "candidate_failure_attribution": "genuine_gap",
+      "candidate_failures": [
+        "request 1 synthesis failed: SynthesisError: No catalog provider exposes one or more required target fields.",
+        "request 2 synthesis failed: SynthesisError: Providers exist, but bounded search could not satisfy the required reusable composition."
+      ],
+      "candidate_status": "FAIL",
+      "case_id": "dev_same_meaning_line_break_support",
+      "transition": "unchanged_fail"
+    },
+    {
+      "baseline_elapsed_seconds": 117.798,
+      "baseline_status": "FAIL",
+      "candidate_elapsed_seconds": 154.845,
+      "candidate_failure_attribution": null,
+      "candidate_failures": [],
+      "candidate_status": "PASS",
+      "case_id": "dev_changed_rate_vs_count",
+      "transition": "newly_passing"
+    },
+    {
+      "baseline_elapsed_seconds": 40.463,
+      "baseline_status": "PASS",
+      "candidate_elapsed_seconds": 26.055,
+      "candidate_failure_attribution": "genuine_gap",
+      "candidate_failures": [
+        "request 2: HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "candidate_status": "FAIL",
+      "case_id": "dev_changed_controlled_vs_bypass",
+      "transition": "newly_failing"
+    },
+    {
+      "baseline_elapsed_seconds": 22.656,
+      "baseline_status": "FAIL",
+      "candidate_elapsed_seconds": 3.542,
+      "candidate_failure_attribution": "genuine_gap",
+      "candidate_failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "candidate_status": "FAIL",
+      "case_id": "dev_known_possession_corridor",
+      "transition": "unchanged_fail"
+    },
+    {
+      "baseline_elapsed_seconds": 24.712,
+      "baseline_status": "PASS",
+      "candidate_elapsed_seconds": 3.481,
+      "candidate_failure_attribution": "genuine_gap",
+      "candidate_failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "candidate_status": "FAIL",
+      "case_id": "dev_known_high_bypass",
+      "transition": "newly_failing"
+    },
+    {
+      "baseline_elapsed_seconds": 25.017,
+      "baseline_status": "FAIL",
+      "candidate_elapsed_seconds": 3.338,
+      "candidate_failure_attribution": "genuine_gap",
+      "candidate_failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "candidate_status": "FAIL",
+      "case_id": "dev_known_first_time_relay",
+      "transition": "unchanged_fail"
+    },
+    {
+      "baseline_elapsed_seconds": 71.564,
+      "baseline_status": "PASS",
+      "candidate_elapsed_seconds": 2.354,
+      "candidate_failure_attribution": "genuine_gap",
+      "candidate_failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "candidate_status": "FAIL",
+      "case_id": "dev_novel_sequence_rate",
+      "transition": "newly_failing"
+    },
+    {
+      "baseline_elapsed_seconds": 6.326,
+      "baseline_status": "PASS",
+      "candidate_elapsed_seconds": 2.515,
+      "candidate_failure_attribution": "genuine_gap",
+      "candidate_failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "candidate_status": "FAIL",
+      "case_id": "dev_refusal_body_orientation",
+      "transition": "newly_failing"
+    },
+    {
+      "baseline_elapsed_seconds": 5.932,
+      "baseline_status": "PASS",
+      "candidate_elapsed_seconds": 2.421,
+      "candidate_failure_attribution": "genuine_gap",
+      "candidate_failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "candidate_status": "FAIL",
+      "case_id": "dev_refusal_pass_probability",
+      "transition": "newly_failing"
+    },
+    {
+      "baseline_elapsed_seconds": 6.441,
+      "baseline_status": "PASS",
+      "candidate_elapsed_seconds": 2.387,
+      "candidate_failure_attribution": "genuine_gap",
+      "candidate_failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "candidate_status": "FAIL",
+      "case_id": "dev_refusal_player_intent",
+      "transition": "newly_failing"
+    },
+    {
+      "baseline_elapsed_seconds": 5.52,
+      "baseline_status": "PASS",
+      "candidate_elapsed_seconds": 2.378,
+      "candidate_failure_attribution": "genuine_gap",
+      "candidate_failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "candidate_status": "FAIL",
+      "case_id": "dev_refusal_video_modality",
+      "transition": "newly_failing"
+    },
+    {
+      "baseline_elapsed_seconds": 76.596,
+      "baseline_status": "FAIL",
+      "candidate_elapsed_seconds": 2.388,
+      "candidate_failure_attribution": "genuine_gap",
+      "candidate_failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+        "first turn outcome was exception, not clarification_required"
+      ],
+      "candidate_status": "FAIL",
+      "case_id": "dev_clarification_support_definition",
+      "transition": "unchanged_fail"
+    },
+    {
+      "baseline_elapsed_seconds": 32.377,
+      "baseline_status": "FAIL",
+      "candidate_elapsed_seconds": 2.621,
+      "candidate_failure_attribution": "genuine_gap",
+      "candidate_failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+        "first turn outcome was exception, not clarification_required"
+      ],
+      "candidate_status": "FAIL",
+      "case_id": "dev_clarification_distance_threshold",
+      "transition": "unchanged_fail"
+    }
+  ],
+  "transition_counts": {
+    "newly_failing": 7,
+    "newly_passing": 1,
+    "unchanged_fail": 7,
+    "unchanged_pass": 0
+  }
+}

@@ -1,0 +1,459 @@
+{
+  "case_set_ref": "delivery/packets/scp2-2-dev-cases.json",
+  "case_set_sha256": "07a10d76b1f3322e94131090068f19157975fbea65aefbebdb8e17aba2da4b7a",
+  "elapsed_seconds": 690.378,
+  "finished_at_utc": "2026-07-10T09:26:47.587554Z",
+  "long_run_flag": true,
+  "long_run_threshold_seconds": 300.0,
+  "model_tier": {
+    "billing_surface": "chatgpt_subscription",
+    "model": "gpt-5.6-sol",
+    "provider": "openai-codex"
+  },
+  "pack_path": "generated/tactical-knowledge-pack.json",
+  "pack_sha256": "6b8821a462bd30c03ea4ebd65fefd2e33fc951ffc7f789f9cd577689c306177a",
+  "schema_version": "scp2_2.eval_results.v0",
+  "started_at_utc": "2026-07-10T09:10:06.680238Z",
+  "summary": {
+    "fail": 14,
+    "pass": 1,
+    "total": 15
+  },
+  "verdicts": [
+    {
+      "case_id": "dev_same_meaning_controlled_pass",
+      "elapsed_seconds": 174.006,
+      "failures": [
+        "request 1 synthesis failed: BindError: unsupported_evidence_field at draft_plan.requested_evidence[0].field: episodes is not available on controlled_pass_episode.episodes; unsupported_evidence_field at draft_plan.requested_evidence[1].field: anchors is not available on controlled_pass_episode.anchors"
+      ],
+      "kind": "same_meaning_pair",
+      "observations": [
+        {
+          "concept_identity": "controlled_pass_episode",
+          "expression_document_hash": "c476704181dfa4d171a7311c426e080928dca80eaf360b2aab5c88eefa623141",
+          "expression_id": "controlled_pass_episodes",
+          "operators": [],
+          "outcome": "expression",
+          "synthesis_error": "BindError: unsupported_evidence_field at draft_plan.requested_evidence[0].field: episodes is not available on controlled_pass_episode.episodes; unsupported_evidence_field at draft_plan.requested_evidence[1].field: anchors is not available on controlled_pass_episode.anchors",
+          "transcript": {
+            "completion_hash": "ca0c8418e61e4ac7cc4c82b467b81af500530a0fe35eda00ce76505d4e5afd93",
+            "invocation": {
+              "max_output_tokens": 32768,
+              "rejected_attempts": [],
+              "repair_attempt_count": 0,
+              "request_text": "Find controlled pass episodes for the home and away teams."
+            },
+            "model_name": "gpt-5.6-sol",
+            "model_provider": "openai-codex",
+            "prompt_hash": "2528f6e05c56ee9a7dae0039ac9c641a087de13fe6da859bba38a1f274809354",
+            "raw_completion": "{\"outcome\":\"expression\",\"expression\":{\"schema_version\":\"meaning_expression.v0\",\"expression_id\":\"controlled_pass_episodes\",\"expression_version\":\"0.1.0\",\"concept_identity\":\"controlled_pass_episode\",\"concept_refs\":[\"controlled_pass_episode\"],\"display_name\":\"Controlled Pass Episodes\",\"meaning_clauses\":[{\"subject\":\"controlled_pass_episode\",\"action\":\"requires\",\"field\":\"controlled_pass_status\",\"operator\":\"eq\",\"value\":\"PASS\"}],\"operator_applications\":[],\"population\":{\"match_ids\":[],\"periods\":[],\"perspective_team_roles\":[\"home\",\"away\"]},\"group_by\":[],\"target\":{\"target_id\":\"controlled_pass_episodes_v0\",\"held_out\":true,\"multi_step\":false},\"target_contract\":{\"claim_boundary\":\"Observed completed pass candidates where event data supplies the passer and receiver and tracking confirms physical release and controlled reception; no tactical intention, pass optimality, or decision-quality claim.\",\"composition_constraints\":[],\"desired_output\":\"classification\",\"required_evidence\":[\"episodes\",\"anchors\",\"controlled_pass_status\"],\"required_modalities\":[\"tracking\",\"events\",\"tracking_event_synchronized\"],\"status_semantics\":[{\"field\":\"controlled_pass_status\",\"operator\":\"eq\",\"required_value\":\"PASS\"}]},\"team_perspective\":{\"required\":true,\"same_team_enforced\":false,\"statement\":\"Controlled pass episodes are evaluated for both requested perspective team roles.\",\"team_role_field\":\"team_role\"}}}"
+          }
+        },
+        {
+          "concept_identity": "settled_completed_pass_retention",
+          "expression_document_hash": "ab3f8b9eb0fe03e5d8f1de766802de89217f65895c4029543f397475762be9bc",
+          "expression_id": "settled_completed_pass_retention",
+          "operators": [],
+          "outcome": "expression",
+          "population_terminal": null,
+          "synthesized_document_hash": "ad8e0f142672d4e5924aeae9e5238746239889e8e1695a4cb8997646c9a70fbe",
+          "terminal_provider": "join_episode_sets",
+          "transcript": {
+            "completion_hash": "89e0d55e45893c62f57533b083a127a892387fa520d98f329cd7246d53408f49",
+            "invocation": {
+              "max_output_tokens": 32768,
+              "rejected_attempts": [],
+              "repair_attempt_count": 0,
+              "request_text": "Show the settled completed passes where the receiving team keeps control."
+            },
+            "model_name": "gpt-5.6-sol",
+            "model_provider": "openai-codex",
+            "prompt_hash": "2528f6e05c56ee9a7dae0039ac9c641a087de13fe6da859bba38a1f274809354",
+            "raw_completion": "{\"outcome\":\"expression\",\"expression\":{\"schema_version\":\"meaning_expression.v0\",\"expression_id\":\"settled_completed_pass_retention\",\"expression_version\":\"0.1.0\",\"concept_identity\":\"settled_completed_pass_retention\",\"display_name\":\"Settled Completed Pass Retention\",\"concept_refs\":[\"controlled_pass_episode\",\"controlled_pass_team_keyed_anchors\",\"outcome_window\"],\"correspondence_clauses\":[{\"name\":\"composition\",\"value\":\"outcome_window evaluates team-keyed controlled-pass anchors after controlled reception.\"},{\"name\":\"claim_boundary\",\"value\":\"Observed completed controlled passes followed by settled same-team possession only; no pass quality, intent, causation, or optimality claim.\"}],\"fixture_notes\":[],\"group_by\":[],\"meaning_clauses\":[{\"subject\":\"completed pass\",\"action\":\"requires\",\"field\":\"controlled_pass_status\",\"operator\":\"eq\",\"value\":\"PASS\"},{\"subject\":\"post-reception possession window\",\"action\":\"requires\",\"field\":\"outcome_window_status\",\"operator\":\"eq\",\"value\":\"PASS\"},{\"subject\":\"receiving-team possession phase\",\"action\":\"requires\",\"field\":\"possession_phase_status\",\"operator\":\"eq\",\"value\":\"SETTLED\"}],\"operator_applications\":[],\"population\":{\"match_ids\":[],\"periods\":[\"firstHalf\",\"secondHalf\"],\"perspective_team_roles\":[\"home\",\"away\"]},\"target\":{\"target_id\":\"settled_completed_pass_retention_v0\",\"held_out\":true,\"multi_step\":true},\"target_contract\":{\"claim_boundary\":\"Observed controlled passes with a same-team post-reception possession phase that reaches SETTLED under the outcome_window defaults only; does not infer pass quality, intent, causation, or optimality.\",\"composition_constraints\":[{\"kind\":\"same_anchor_identity\",\"parameters\":[{\"name\":\"left_key_field\",\"unit\":\"none\",\"value\":\"anchor_id\"},{\"name\":\"right_key_field\",\"unit\":\"none\",\"value\":\"anchor_id\"}],\"left_composition_constraints\":[],\"right_composition_constraints\":[],\"numerator_composition_constraints\":[],\"denominator_composition_constraints\":[],\"population_composition_constraints\":[],\"left_input_context\":[],\"right_input_context\":[]}],\"desired_output\":\"classification\",\"required_evidence\":[\"anchor_id\",\"team_role\",\"pass_episode_id\",\"receiver_id\",\"controlled_reception_frame_id\",\"controlled_pass_status\",\"outcome_window_status\",\"outcome_window_reason\",\"possession_phase_status\",\"outcome_window_start_frame_id\",\"outcome_window_end_frame_id\",\"settled_start_frame_id\",\"settled_end_frame_id\",\"loss_frame_id\",\"stoppage_frame_id\"],\"required_modalities\":[],\"status_semantics\":[{\"field\":\"controlled_pass_status\",\"operator\":\"eq\",\"required_value\":\"PASS\"},{\"field\":\"outcome_window_status\",\"operator\":\"eq\",\"required_value\":\"PASS\"},{\"field\":\"possession_phase_status\",\"operator\":\"eq\",\"required_value\":\"SETTLED\"}]},\"team_perspective\":{\"required\":true,\"same_team_enforced\":true,\"statement\":\"The outcome window evaluates possession retained by the same team that completed the controlled pass.\",\"team_role_field\":\"team_role\"}}}"
+          }
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_same_meaning_sequence_rate",
+      "elapsed_seconds": 185.944,
+      "failures": [
+        "same-meaning synthesized document hashes differ"
+      ],
+      "kind": "same_meaning_pair",
+      "observations": [
+        {
+          "concept_identity": "counterattack_initiation_sequence_rate",
+          "expression_document_hash": "e0c11b68494cde9863457fc382245a79bfb44885e63aa12aa7fced9f5c6bb18c",
+          "expression_id": "counterattack_initiation_sequence_rate",
+          "operators": [
+            "sequence_pattern",
+            "aggregate_over",
+            "rate"
+          ],
+          "outcome": "expression",
+          "population_terminal": "operator:sequence_pattern",
+          "synthesized_document_hash": "8235e51ed5674d63e68cf0c427036d9d52ec8a726ca1a0685a112d4354758327",
+          "terminal_provider": "operator:rate",
+          "transcript": {
+            "completion_hash": "9ad8e48a9603003f9c6d036c0a98ad9cebd6f5d32e23aee1e4acb376128e809f",
+            "invocation": {
+              "max_output_tokens": 32768,
+              "rejected_attempts": [],
+              "repair_attempt_count": 0,
+              "request_text": "For each team and match, rate counterattack initiation chains where a regain is followed by a progressive carry of at least 3 metres within 5 seconds and then a controlled pass within 4 seconds."
+            },
+            "model_name": "gpt-5.6-sol",
+            "model_provider": "openai-codex",
+            "prompt_hash": "2528f6e05c56ee9a7dae0039ac9c641a087de13fe6da859bba38a1f274809354",
+            "raw_completion": "{\"outcome\":\"expression\",\"expression\":{\"schema_version\":\"meaning_expression.v0\",\"expression_id\":\"counterattack_initiation_sequence_rate\",\"expression_version\":\"0.1.0\",\"concept_identity\":\"counterattack_initiation_sequence_rate\",\"display_name\":\"Counterattack Initiation Sequence Rate\",\"concept_refs\":[\"transition_anchor\",\"carry_episode\",\"controlled_pass_episode\",\"controlled_pass_team_keyed_anchors\"],\"meaning_clauses\":[{\"subject\":\"sequence_pattern\",\"action\":\"links\",\"field\":\"chain_status\",\"operator\":\"from\",\"value\":\"regain to progressive carry to controlled pass\"},{\"subject\":\"stage_2\",\"action\":\"requires\",\"field\":\"carry_forward_progression_m\",\"operator\":\"gte\",\"value\":3.0,\"unit\":\"metre\"},{\"subject\":\"aggregate_over\",\"action\":\"counts\",\"field\":\"chain_status\",\"operator\":\"eq\",\"value\":\"PASS\"},{\"subject\":\"rate\",\"action\":\"rates\",\"field\":\"chain_status\",\"operator\":\"over\",\"value\":\"stage_1_status PASS regain starts\"}],\"correspondence_clauses\":[{\"name\":\"composition\",\"value\":\"rate over sequence_pattern(regain, progressive carry, controlled pass), with aggregate_over(count) as the companion chain count\"},{\"name\":\"claim_boundary\",\"value\":\"Interval rate and count only; no tactical quality, intent, value, or causation.\"}],\"operator_applications\":[{\"operator\":\"sequence_pattern\",\"parameters\":[{\"name\":\"match_policy\",\"unit\":\"none\",\"value\":\"first\"},{\"name\":\"overlap_policy\",\"unit\":\"none\",\"value\":\"allow_overlaps\"},{\"name\":\"stage_2_window_seconds\",\"unit\":\"second\",\"value\":5.0},{\"name\":\"stage_3_window_seconds\",\"unit\":\"second\",\"value\":4.0},{\"name\":\"stage_2_minimum_numeric_field\",\"unit\":\"none\",\"value\":\"carry_forward_progression_m\"},{\"name\":\"stage_2_minimum_numeric_value\",\"unit\":\"metre\",\"value\":3.0},{\"name\":\"same_possession_required\",\"unit\":\"none\",\"value\":true},{\"name\":\"possession_continuity_source\",\"unit\":\"none\",\"value\":\"observed_possession_stream\"}]},{\"operator\":\"aggregate_over\",\"parameters\":[{\"name\":\"aggregation_kind\",\"unit\":\"none\",\"value\":\"count\"},{\"name\":\"group_by_fields\",\"unit\":\"none\",\"value\":[\"team_role\",\"match_id\"]},{\"name\":\"status_field\",\"unit\":\"none\",\"value\":\"chain_status\"}]},{\"operator\":\"rate\",\"parameters\":[{\"name\":\"rate_kind\",\"unit\":\"none\",\"value\":\"rate\"},{\"name\":\"group_by_fields\",\"unit\":\"none\",\"value\":[\"team_role\",\"match_id\"]},{\"name\":\"numerator_status_field\",\"unit\":\"none\",\"value\":\"chain_status\"},{\"name\":\"denominator_status_field\",\"unit\":\"none\",\"value\":\"stage_1_status\"}]}],\"group_by\":[\"team_role\",\"match_id\"],\"population\":{\"match_ids\":[],\"periods\":[],\"perspective_team_roles\":[\"home\",\"away\"]},\"target\":{\"target_id\":\"counterattack_initiation_sequence_rate_v0\",\"held_out\":true,\"multi_step\":true},\"target_contract\":{\"claim_boundary\":\"Interval rate of observed regain-to-progressive-carry-to-controlled-pass chains only; no counterattack quality, intent, causation, decision correctness, or value claim.\",\"desired_output\":\"classification\",\"required_evidence\":[\"rate_kind\",\"population_expression\",\"group_by_fields\",\"group_key\",\"numerator_status_field\",\"denominator_status_field\",\"subset_declaration\",\"constraint_opt_out_reason\",\"rate_status\",\"observed\",\"lower_bound\",\"upper_bound\",\"observed_denominator_count\",\"a_count\",\"b_count\",\"c_count\",\"d1_count\",\"d2_count\",\"e_count\",\"numerator_count_interval\",\"denominator_count_interval\",\"numerator_source_node_id\",\"numerator_source_output_name\",\"denominator_source_node_id\",\"denominator_source_output_name\"],\"required_modalities\":[],\"status_semantics\":[{\"field\":\"chain_status\",\"required_value\":\"PASS\"}],\"composition_constraints\":[{\"kind\":\"rate\",\"parameters\":[{\"name\":\"rate_kind\",\"unit\":\"none\",\"value\":\"rate\"},{\"name\":\"population_expression\",\"unit\":\"none\",\"value\":\"counterattack initiation completed chains over regain starts\"},{\"name\":\"group_by_fields\",\"unit\":\"none\",\"value\":[\"team_role\",\"match_id\"]},{\"name\":\"numerator_status_field\",\"unit\":\"none\",\"value\":\"chain_status\"},{\"name\":\"denominator_status_field\",\"unit\":\"none\",\"value\":\"stage_1_status\"},{\"name\":\"subset_declaration\",\"unit\":\"none\",\"value\":\"chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records\"},{\"name\":\"subset_predicate_fields\",\"unit\":\"none\",\"value\":[\"stage_2_status\",\"stage_3_status\"]},{\"name\":\"removed_denominator_predicate_fields\",\"unit\":\"none\",\"value\":[]},{\"name\":\"same_team_perspective_required\",\"unit\":\"none\",\"value\":true},{\"name\":\"entity_identity_preserved_required\",\"unit\":\"none\",\"value\":false},{\"name\":\"frame_alignment_required\",\"unit\":\"none\",\"value\":false},{\"name\":\"constraint_opt_out_reason\",\"unit\":\"none\",\"value\":\"entity identity and frame alignment are not part of this sequence rate denominator\"},{\"name\":\"team_role_field\",\"unit\":\"none\",\"value\":\"team_role\"},{\"name\":\"numerator_required_fields\",\"unit\":\"none\",\"value\":[\"chain_status\",\"stage_1_status\",\"stage_2_status\",\"stage_3_status\",\"team_role\",\"match_id\",\"stage_1_anchor_id\",\"stage_2_anchor_id\",\"stage_3_anchor_id\",\"stage_2_window_seconds\",\"stage_3_window_seconds\"]},{\"name\":\"denominator_required_fields\",\"unit\":\"none\",\"value\":[\"chain_status\",\"stage_1_status\",\"stage_2_status\",\"stage_3_status\",\"team_role\",\"match_id\",\"stage_1_anchor_id\",\"stage_2_anchor_id\",\"stage_3_anchor_id\",\"stage_2_window_seconds\",\"stage_3_window_seconds\"]}],\"numerator_composition_constraints\":[{\"kind\":\"sequence_pattern\",\"parameters\":[{\"name\":\"stage_count\",\"unit\":\"count\",\"value\":3},{\"name\":\"match_policy\",\"unit\":\"none\",\"value\":\"first\"},{\"name\":\"overlap_policy\",\"unit\":\"none\",\"value\":\"allow_overlaps\"},{\"name\":\"window_boundary_policy\",\"unit\":\"none\",\"value\":\"exclusive_start_inclusive_end\"},{\"name\":\"frame_rate_hz\",\"unit\":\"hertz\",\"value\":25.0},{\"name\":\"stage_2_window_seconds\",\"unit\":\"second\",\"value\":5.0},{\"name\":\"stage_3_window_seconds\",\"unit\":\"second\",\"value\":4.0},{\"name\":\"stage_1_required_fields\",\"unit\":\"none\",\"value\":[\"anchor_id\",\"anchor_frame_id\",\"transition_status\",\"transition_frame_id\",\"new_team_role\",\"possession_id\"]},{\"name\":\"stage_2_required_fields\",\"unit\":\"none\",\"value\":[\"anchor_id\",\"anchor_frame_id\",\"carry_status\",\"carry_start_frame_id\",\"carry_end_frame_id\",\"carry_forward_progression_m\",\"team_role\",\"possession_id\"]},{\"name\":\"stage_3_required_fields\",\"unit\":\"none\",\"value\":[\"anchor_id\",\"anchor_frame_id\",\"controlled_pass_status\",\"controlled_reception_frame_id\",\"team_role\"]},{\"name\":\"stage_1_status_field\",\"unit\":\"none\",\"value\":\"transition_status\"},{\"name\":\"stage_2_status_field\",\"unit\":\"none\",\"value\":\"carry_status\"},{\"name\":\"stage_3_status_field\",\"unit\":\"none\",\"value\":\"controlled_pass_status\"},{\"name\":\"stage_1_frame_field\",\"unit\":\"none\",\"value\":\"transition_frame_id\"},{\"name\":\"stage_2_frame_field\",\"unit\":\"none\",\"value\":\"carry_start_frame_id\"},{\"name\":\"stage_3_frame_field\",\"unit\":\"none\",\"value\":\"controlled_reception_frame_id\"},{\"name\":\"stage_1_end_frame_field\",\"unit\":\"none\",\"value\":\"none\"},{\"name\":\"stage_2_end_frame_field\",\"unit\":\"none\",\"value\":\"carry_end_frame_id\"},{\"name\":\"stage_3_end_frame_field\",\"unit\":\"none\",\"value\":\"controlled_reception_frame_id\"},{\"name\":\"stage_1_team_role_field\",\"unit\":\"none\",\"value\":\"new_team_role\"},{\"name\":\"stage_2_team_role_field\",\"unit\":\"none\",\"value\":\"team_role\"},{\"name\":\"stage_3_team_role_field\",\"unit\":\"none\",\"value\":\"team_role\"},{\"name\":\"stage_1_possession_id_field\",\"unit\":\"none\",\"value\":\"possession_id\"},{\"name\":\"stage_2_possession_id_field\",\"unit\":\"none\",\"value\":\"possession_id\"},{\"name\":\"stage_3_possession_id_field\",\"unit\":\"none\",\"value\":\"none\"},{\"name\":\"stage_1_player_id_field\",\"unit\":\"none\",\"value\":\"none\"},{\"name\":\"stage_2_player_id_field\",\"unit\":\"none\",\"value\":\"carrier_id\"},{\"name\":\"stage_3_player_id_field\",\"unit\":\"none\",\"value\":\"none\"},{\"name\":\"stage_2_minimum_numeric_field\",\"unit\":\"none\",\"value\":\"carry_forward_progression_m\"},{\"name\":\"stage_2_minimum_numeric_value\",\"unit\":\"metre\",\"value\":3.0},{\"name\":\"same_team_perspective_required\",\"unit\":\"none\",\"value\":true},{\"name\":\"same_possession_required\",\"unit\":\"none\",\"value\":true},{\"name\":\"possession_continuity_source\",\"unit\":\"none\",\"value\":\"observed_possession_stream\"},{\"name\":\"same_player_required\",\"unit\":\"none\",\"value\":false},{\"name\":\"constraint_opt_out_reason\",\"unit\":\"none\",\"value\":\"entity identity is not part of this team-level chain\"},{\"name\":\"team_role_field\",\"unit\":\"none\",\"value\":\"team_role\"}]}],\"denominator_composition_constraints\":[{\"kind\":\"sequence_pattern\",\"parameters\":[{\"name\":\"stage_count\",\"unit\":\"count\",\"value\":3},{\"name\":\"match_policy\",\"unit\":\"none\",\"value\":\"first\"},{\"name\":\"overlap_policy\",\"unit\":\"none\",\"value\":\"allow_overlaps\"},{\"name\":\"window_boundary_policy\",\"unit\":\"none\",\"value\":\"exclusive_start_inclusive_end\"},{\"name\":\"frame_rate_hz\",\"unit\":\"hertz\",\"value\":25.0},{\"name\":\"stage_2_window_seconds\",\"unit\":\"second\",\"value\":5.0},{\"name\":\"stage_3_window_seconds\",\"unit\":\"second\",\"value\":4.0},{\"name\":\"stage_1_required_fields\",\"unit\":\"none\",\"value\":[\"anchor_id\",\"anchor_frame_id\",\"transition_status\",\"transition_frame_id\",\"new_team_role\",\"possession_id\"]},{\"name\":\"stage_2_required_fields\",\"unit\":\"none\",\"value\":[\"anchor_id\",\"anchor_frame_id\",\"carry_status\",\"carry_start_frame_id\",\"carry_end_frame_id\",\"carry_forward_progression_m\",\"team_role\",\"possession_id\"]},{\"name\":\"stage_3_required_fields\",\"unit\":\"none\",\"value\":[\"anchor_id\",\"anchor_frame_id\",\"controlled_pass_status\",\"controlled_reception_frame_id\",\"team_role\"]},{\"name\":\"stage_1_status_field\",\"unit\":\"none\",\"value\":\"transition_status\"},{\"name\":\"stage_2_status_field\",\"unit\":\"none\",\"value\":\"carry_status\"},{\"name\":\"stage_3_status_field\",\"unit\":\"none\",\"value\":\"controlled_pass_status\"},{\"name\":\"stage_1_frame_field\",\"unit\":\"none\",\"value\":\"transition_frame_id\"},{\"name\":\"stage_2_frame_field\",\"unit\":\"none\",\"value\":\"carry_start_frame_id\"},{\"name\":\"stage_3_frame_field\",\"unit\":\"none\",\"value\":\"controlled_reception_frame_id\"},{\"name\":\"stage_1_end_frame_field\",\"unit\":\"none\",\"value\":\"none\"},{\"name\":\"stage_2_end_frame_field\",\"unit\":\"none\",\"value\":\"carry_end_frame_id\"},{\"name\":\"stage_3_end_frame_field\",\"unit\":\"none\",\"value\":\"controlled_reception_frame_id\"},{\"name\":\"stage_1_team_role_field\",\"unit\":\"none\",\"value\":\"new_team_role\"},{\"name\":\"stage_2_team_role_field\",\"unit\":\"none\",\"value\":\"team_role\"},{\"name\":\"stage_3_team_role_field\",\"unit\":\"none\",\"value\":\"team_role\"},{\"name\":\"stage_1_possession_id_field\",\"unit\":\"none\",\"value\":\"possession_id\"},{\"name\":\"stage_2_possession_id_field\",\"unit\":\"none\",\"value\":\"possession_id\"},{\"name\":\"stage_3_possession_id_field\",\"unit\":\"none\",\"value\":\"none\"},{\"name\":\"stage_1_player_id_field\",\"unit\":\"none\",\"value\":\"none\"},{\"name\":\"stage_2_player_id_field\",\"unit\":\"none\",\"value\":\"carrier_id\"},{\"name\":\"stage_3_player_id_field\",\"unit\":\"none\",\"value\":\"none\"},{\"name\":\"stage_2_minimum_numeric_field\",\"unit\":\"none\",\"value\":\"carry_forward_progression_m\"},{\"name\":\"stage_2_minimum_numeric_value\",\"unit\":\"metre\",\"value\":3.0},{\"name\":\"same_team_perspective_required\",\"unit\":\"none\",\"value\":true},{\"name\":\"same_possession_required\",\"unit\":\"none\",\"value\":true},{\"name\":\"possession_continuity_source\",\"unit\":\"none\",\"value\":\"observed_possession_stream\"},{\"name\":\"same_player_required\",\"unit\":\"none\",\"value\":false},{\"name\":\"constraint_opt_out_reason\",\"unit\":\"none\",\"value\":\"entity identity is not part of this team-level chain\"},{\"name\":\"team_role_field\",\"unit\":\"none\",\"value\":\"team_role\"}]}]},{\"kind\":\"aggregate_over\",\"parameters\":[{\"name\":\"aggregation_kind\",\"unit\":\"none\",\"value\":\"count\"},{\"name\":\"population_expression\",\"unit\":\"none\",\"value\":\"counterattack initiation chains by team and match\"},{\"name\":\"group_by_fields\",\"unit\":\"none\",\"value\":[\"team_role\",\"match_id\"]},{\"name\":\"status_field\",\"unit\":\"none\",\"value\":\"chain_status\"},{\"name\":\"same_team_perspective_required\",\"unit\":\"none\",\"value\":true},{\"name\":\"entity_identity_preserved_required\",\"unit\":\"none\",\"value\":false},{\"name\":\"frame_alignment_required\",\"unit\":\"none\",\"value\":false},{\"name\":\"constraint_opt_out_reason\",\"unit\":\"none\",\"value\":\"entity identity is not part of this team-level chain count\"},{\"name\":\"team_role_field\",\"unit\":\"none\",\"value\":\"team_role\"},{\"name\":\"population_required_fields\",\"unit\":\"none\",\"value\":[\"chain_status\",\"stage_1_status\",\"stage_2_status\",\"stage_3_status\",\"team_role\",\"match_id\",\"stage_1_anchor_id\",\"stage_2_anchor_id\",\"stage_3_anchor_id\",\"stage_2_window_seconds\",\"stage_3_window_seconds\"]}],\"population_composition_constraints\":[{\"kind\":\"sequence_pattern\",\"parameters\":[{\"name\":\"stage_count\",\"unit\":\"count\",\"value\":3},{\"name\":\"match_policy\",\"unit\":\"none\",\"value\":\"first\"},{\"name\":\"overlap_policy\",\"unit\":\"none\",\"value\":\"allow_overlaps\"},{\"name\":\"window_boundary_policy\",\"unit\":\"none\",\"value\":\"exclusive_start_inclusive_end\"},{\"name\":\"frame_rate_hz\",\"unit\":\"hertz\",\"value\":25.0},{\"name\":\"stage_2_window_seconds\",\"unit\":\"second\",\"value\":5.0},{\"name\":\"stage_3_window_seconds\",\"unit\":\"second\",\"value\":4.0},{\"name\":\"stage_1_required_fields\",\"unit\":\"none\",\"value\":[\"anchor_id\",\"anchor_frame_id\",\"transition_status\",\"transition_frame_id\",\"new_team_role\",\"possession_id\"]},{\"name\":\"stage_2_required_fields\",\"unit\":\"none\",\"value\":[\"anchor_id\",\"anchor_frame_id\",\"carry_status\",\"carry_start_frame_id\",\"carry_end_frame_id\",\"carry_forward_progression_m\",\"team_role\",\"possession_id\"]},{\"name\":\"stage_3_required_fields\",\"unit\":\"none\",\"value\":[\"anchor_id\",\"anchor_frame_id\",\"controlled_pass_status\",\"controlled_reception_frame_id\",\"team_role\"]},{\"name\":\"stage_1_status_field\",\"unit\":\"none\",\"value\":\"transition_status\"},{\"name\":\"stage_2_status_field\",\"unit\":\"none\",\"value\":\"carry_status\"},{\"name\":\"stage_3_status_field\",\"unit\":\"none\",\"value\":\"controlled_pass_status\"},{\"name\":\"stage_1_frame_field\",\"unit\":\"none\",\"value\":\"transition_frame_id\"},{\"name\":\"stage_2_frame_field\",\"unit\":\"none\",\"value\":\"carry_start_frame_id\"},{\"name\":\"stage_3_frame_field\",\"unit\":\"none\",\"value\":\"controlled_reception_frame_id\"},{\"name\":\"stage_1_end_frame_field\",\"unit\":\"none\",\"value\":\"none\"},{\"name\":\"stage_2_end_frame_field\",\"unit\":\"none\",\"value\":\"carry_end_frame_id\"},{\"name\":\"stage_3_end_frame_field\",\"unit\":\"none\",\"value\":\"controlled_reception_frame_id\"},{\"name\":\"stage_1_team_role_field\",\"unit\":\"none\",\"value\":\"new_team_role\"},{\"name\":\"stage_2_team_role_field\",\"unit\":\"none\",\"value\":\"team_role\"},{\"name\":\"stage_3_team_role_field\",\"unit\":\"none\",\"value\":\"team_role\"},{\"name\":\"stage_1_possession_id_field\",\"unit\":\"none\",\"value\":\"possession_id\"},{\"name\":\"stage_2_possession_id_field\",\"unit\":\"none\",\"value\":\"possession_id\"},{\"name\":\"stage_3_possession_id_field\",\"unit\":\"none\",\"value\":\"none\"},{\"name\":\"stage_1_player_id_field\",\"unit\":\"none\",\"value\":\"none\"},{\"name\":\"stage_2_player_id_field\",\"unit\":\"none\",\"value\":\"carrier_id\"},{\"name\":\"stage_3_player_id_field\",\"unit\":\"none\",\"value\":\"none\"},{\"name\":\"stage_2_minimum_numeric_field\",\"unit\":\"none\",\"value\":\"carry_forward_progression_m\"},{\"name\":\"stage_2_minimum_numeric_value\",\"unit\":\"metre\",\"value\":3.0},{\"name\":\"same_team_perspective_required\",\"unit\":\"none\",\"value\":true},{\"name\":\"same_possession_required\",\"unit\":\"none\",\"value\":true},{\"name\":\"possession_continuity_source\",\"unit\":\"none\",\"value\":\"observed_possession_stream\"},{\"name\":\"same_player_required\",\"unit\":\"none\",\"value\":false},{\"name\":\"constraint_opt_out_reason\",\"unit\":\"none\",\"value\":\"entity identity is not part of this team-level chain\"},{\"name\":\"team_role_field\",\"unit\":\"none\",\"value\":\"team_role\"}]}]}]},\"team_perspective\":{\"required\":true,\"same_team_enforced\":true,\"statement\":\"sequence_pattern enforces same-team witnesses before aggregate_over counts and rate partitions chain outcomes.\",\"team_role_field\":\"team_role\"}}}"
+          }
+        },
+        {
+          "concept_identity": "regain_progressive_carry_controlled_pass_rate",
+          "expression_document_hash": "d4c92a264bc1d13660785f9cb6305b57dfd01abb5a402ee2b563297790c73279",
+          "expression_id": "regain_progressive_carry_controlled_pass_rate_by_team_match",
+          "operators": [
+            "sequence_pattern",
+            "rate"
+          ],
+          "outcome": "expression",
+          "population_terminal": "operator:sequence_pattern",
+          "synthesized_document_hash": "d78dca0c4ad382f22a78856f40eab96534b153af3a6a451d799e4010abd26301",
+          "terminal_provider": "operator:rate",
+          "transcript": {
+            "completion_hash": "23ffba879eef9bfa2981c743886a21dd9d0262b78f22f943589cce08f37081c2",
+            "invocation": {
+              "max_output_tokens": 32768,
+              "rejected_attempts": [],
+              "repair_attempt_count": 0,
+              "request_text": "Measure regains that turn into a 3 metre progressive carry and then a controlled pass, reported as a per-regain rate by team and match."
+            },
+            "model_name": "gpt-5.6-sol",
+            "model_provider": "openai-codex",
+            "prompt_hash": "2528f6e05c56ee9a7dae0039ac9c641a087de13fe6da859bba38a1f274809354",
+            "raw_completion": "{\"outcome\":\"expression\",\"expression\":{\"schema_version\":\"meaning_expression.v0\",\"expression_id\":\"regain_progressive_carry_controlled_pass_rate_by_team_match\",\"expression_version\":\"0.1.0\",\"concept_identity\":\"regain_progressive_carry_controlled_pass_rate\",\"display_name\":\"Regain to Progressive Carry to Controlled Pass Rate by Team and Match\",\"concept_refs\":[\"transition_anchor\",\"carry_episode\",\"controlled_pass_episode\",\"controlled_pass_team_keyed_anchors\"],\"correspondence_clauses\":[{\"name\":\"composition\",\"value\":\"rate over sequence_pattern(regain, progressive carry, controlled pass)\"},{\"name\":\"claim_boundary\",\"value\":\"Interval rate of observed completed chains over observed regain starts only; no tactical quality, intent, causation, or value claim.\"}],\"meaning_clauses\":[{\"subject\":\"sequence_pattern\",\"action\":\"links\",\"field\":\"chain_status\",\"operator\":\"from\",\"value\":\"regain to progressive carry to controlled pass\"},{\"subject\":\"stage_2\",\"action\":\"requires\",\"field\":\"carry_forward_progression_m\",\"operator\":\"gte\",\"value\":3.0,\"unit\":\"metre\"},{\"subject\":\"rate\",\"action\":\"rates\",\"field\":\"chain_status\",\"operator\":\"over\",\"value\":\"stage_1_status PASS regain starts\"}],\"operator_applications\":[{\"operator\":\"sequence_pattern\",\"parameters\":[{\"name\":\"match_policy\",\"unit\":\"none\",\"value\":\"first\"},{\"name\":\"overlap_policy\",\"unit\":\"none\",\"value\":\"allow_overlaps\"},{\"name\":\"stage_2_window_seconds\",\"unit\":\"none\",\"value\":5.0},{\"name\":\"stage_3_window_seconds\",\"unit\":\"none\",\"value\":4.0},{\"name\":\"stage_2_minimum_numeric_field\",\"unit\":\"none\",\"value\":\"carry_forward_progression_m\"},{\"name\":\"stage_2_minimum_numeric_value\",\"unit\":\"none\",\"value\":3.0},{\"name\":\"same_possession_required\",\"unit\":\"none\",\"value\":true},{\"name\":\"possession_continuity_source\",\"unit\":\"none\",\"value\":\"observed_possession_stream\"}]},{\"operator\":\"rate\",\"parameters\":[{\"name\":\"rate_kind\",\"unit\":\"none\",\"value\":\"rate\"},{\"name\":\"group_by_fields\",\"unit\":\"none\",\"value\":[\"team_role\",\"match_id\"]},{\"name\":\"numerator_status_field\",\"unit\":\"none\",\"value\":\"chain_status\"},{\"name\":\"denominator_status_field\",\"unit\":\"none\",\"value\":\"stage_1_status\"}]}],\"group_by\":[\"team_role\",\"match_id\"],\"population\":{\"match_ids\":[],\"periods\":[\"firstHalf\",\"secondHalf\"],\"perspective_team_roles\":[\"home\",\"away\"]},\"target\":{\"target_id\":\"regain_progressive_carry_controlled_pass_rate_by_team_match_v0\",\"held_out\":true,\"multi_step\":true},\"target_contract\":{\"claim_boundary\":\"Interval rate of observed regain to at-least-3-metre progressive-carry to controlled-pass chains over observed regain starts only; no counterattack quality, intent, causation, decision quality, optimality, or value claim.\",\"desired_output\":\"classification\",\"required_evidence\":[\"rate_kind\",\"population_expression\",\"group_by_fields\",\"group_key\",\"numerator_status_field\",\"denominator_status_field\",\"subset_declaration\",\"constraint_opt_out_reason\",\"rate_status\",\"observed\",\"lower_bound\",\"upper_bound\",\"observed_denominator_count\",\"a_count\",\"b_count\",\"c_count\",\"d1_count\",\"d2_count\",\"e_count\",\"numerator_count_interval\",\"denominator_count_interval\",\"numerator_source_node_id\",\"numerator_source_output_name\",\"denominator_source_node_id\",\"denominator_source_output_name\"],\"required_modalities\":[],\"status_semantics\":[{\"field\":\"chain_status\",\"operator\":\"eq\",\"required_value\":\"PASS\"}],\"composition_constraints\":[{\"kind\":\"rate\",\"parameters\":[{\"name\":\"rate_kind\",\"unit\":\"none\",\"value\":\"rate\"},{\"name\":\"population_expression\",\"unit\":\"none\",\"value\":\"counterattack initiation completed chains over regain starts\"},{\"name\":\"group_by_fields\",\"unit\":\"none\",\"value\":[\"team_role\",\"match_id\"]},{\"name\":\"numerator_status_field\",\"unit\":\"none\",\"value\":\"chain_status\"},{\"name\":\"denominator_status_field\",\"unit\":\"none\",\"value\":\"stage_1_status\"},{\"name\":\"subset_declaration\",\"unit\":\"none\",\"value\":\"chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same sequence_pattern source records\"},{\"name\":\"subset_predicate_fields\",\"unit\":\"none\",\"value\":[\"stage_2_status\",\"stage_3_status\"]},{\"name\":\"removed_denominator_predicate_fields\",\"unit\":\"none\",\"value\":[]},{\"name\":\"same_team_perspective_required\",\"unit\":\"none\",\"value\":true},{\"name\":\"entity_identity_preserved_required\",\"unit\":\"none\",\"value\":false},{\"name\":\"frame_alignment_required\",\"unit\":\"none\",\"value\":false},{\"name\":\"constraint_opt_out_reason\",\"unit\":\"none\",\"value\":\"entity identity and frame alignment are not part of this sequence rate denominator\"},{\"name\":\"team_role_field\",\"unit\":\"none\",\"value\":\"team_role\"},{\"name\":\"numerator_required_fields\",\"unit\":\"none\",\"value\":[\"chain_status\",\"stage_1_status\",\"stage_2_status\",\"stage_3_status\",\"team_role\",\"match_id\",\"stage_1_anchor_id\",\"stage_2_anchor_id\",\"stage_3_anchor_id\",\"stage_2_window_seconds\",\"stage_3_window_seconds\"]},{\"name\":\"denominator_required_fields\",\"unit\":\"none\",\"value\":[\"chain_status\",\"stage_1_status\",\"stage_2_status\",\"stage_3_status\",\"team_role\",\"match_id\",\"stage_1_anchor_id\",\"stage_2_anchor_id\",\"stage_3_anchor_id\",\"stage_2_window_seconds\",\"stage_3_window_seconds\"]}],\"numerator_composition_constraints\":[{\"kind\":\"sequence_pattern\",\"parameters\":[{\"name\":\"stage_count\",\"unit\":\"none\",\"value\":3},{\"name\":\"match_policy\",\"unit\":\"none\",\"value\":\"first\"},{\"name\":\"overlap_policy\",\"unit\":\"none\",\"value\":\"allow_overlaps\"},{\"name\":\"window_boundary_policy\",\"unit\":\"none\",\"value\":\"exclusive_start_inclusive_end\"},{\"name\":\"frame_rate_hz\",\"unit\":\"none\",\"value\":25.0},{\"name\":\"stage_2_window_seconds\",\"unit\":\"none\",\"value\":5.0},{\"name\":\"stage_3_window_seconds\",\"unit\":\"none\",\"value\":4.0},{\"name\":\"stage_1_required_fields\",\"unit\":\"none\",\"value\":[\"anchor_id\",\"anchor_frame_id\",\"transition_status\",\"transition_frame_id\",\"new_team_role\",\"possession_id\"]},{\"name\":\"stage_2_required_fields\",\"unit\":\"none\",\"value\":[\"anchor_id\",\"anchor_frame_id\",\"carry_status\",\"carry_start_frame_id\",\"carry_end_frame_id\",\"carry_forward_progression_m\",\"team_role\",\"possession_id\"]},{\"name\":\"stage_3_required_fields\",\"unit\":\"none\",\"value\":[\"anchor_id\",\"anchor_frame_id\",\"controlled_pass_status\",\"controlled_reception_frame_id\",\"team_role\"]},{\"name\":\"stage_1_status_field\",\"unit\":\"none\",\"value\":\"transition_status\"},{\"name\":\"stage_2_status_field\",\"unit\":\"none\",\"value\":\"carry_status\"},{\"name\":\"stage_3_status_field\",\"unit\":\"none\",\"value\":\"controlled_pass_status\"},{\"name\":\"stage_1_frame_field\",\"unit\":\"none\",\"value\":\"transition_frame_id\"},{\"name\":\"stage_2_frame_field\",\"unit\":\"none\",\"value\":\"carry_start_frame_id\"},{\"name\":\"stage_3_frame_field\",\"unit\":\"none\",\"value\":\"controlled_reception_frame_id\"},{\"name\":\"stage_1_end_frame_field\",\"unit\":\"none\",\"value\":\"none\"},{\"name\":\"stage_2_end_frame_field\",\"unit\":\"none\",\"value\":\"carry_end_frame_id\"},{\"name\":\"stage_3_end_frame_field\",\"unit\":\"none\",\"value\":\"controlled_reception_frame_id\"},{\"name\":\"stage_1_team_role_field\",\"unit\":\"none\",\"value\":\"new_team_role\"},{\"name\":\"stage_2_team_role_field\",\"unit\":\"none\",\"value\":\"team_role\"},{\"name\":\"stage_3_team_role_field\",\"unit\":\"none\",\"value\":\"team_role\"},{\"name\":\"stage_1_possession_id_field\",\"unit\":\"none\",\"value\":\"possession_id\"},{\"name\":\"stage_2_possession_id_field\",\"unit\":\"none\",\"value\":\"possession_id\"},{\"name\":\"stage_3_possession_id_field\",\"unit\":\"none\",\"value\":\"none\"},{\"name\":\"stage_1_player_id_field\",\"unit\":\"none\",\"value\":\"none\"},{\"name\":\"stage_2_player_id_field\",\"unit\":\"none\",\"value\":\"carrier_id\"},{\"name\":\"stage_3_player_id_field\",\"unit\":\"none\",\"value\":\"none\"},{\"name\":\"stage_2_minimum_numeric_field\",\"unit\":\"none\",\"value\":\"carry_forward_progression_m\"},{\"name\":\"stage_2_minimum_numeric_value\",\"unit\":\"none\",\"value\":3.0},{\"name\":\"same_team_perspective_required\",\"unit\":\"none\",\"value\":true},{\"name\":\"same_possession_required\",\"unit\":\"none\",\"value\":true},{\"name\":\"possession_continuity_source\",\"unit\":\"none\",\"value\":\"observed_possession_stream\"},{\"name\":\"same_player_required\",\"unit\":\"none\",\"value\":false},{\"name\":\"constraint_opt_out_reason\",\"unit\":\"none\",\"value\":\"entity identity is not part of this team-level chain\"},{\"name\":\"team_role_field\",\"unit\":\"none\",\"value\":\"team_role\"}]}],\"denominator_composition_constraints\":[{\"kind\":\"sequence_pattern\",\"parameters\":[{\"name\":\"stage_count\",\"unit\":\"none\",\"value\":3},{\"name\":\"match_policy\",\"unit\":\"none\",\"value\":\"first\"},{\"name\":\"overlap_policy\",\"unit\":\"none\",\"value\":\"allow_overlaps\"},{\"name\":\"window_boundary_policy\",\"unit\":\"none\",\"value\":\"exclusive_start_inclusive_end\"},{\"name\":\"frame_rate_hz\",\"unit\":\"none\",\"value\":25.0},{\"name\":\"stage_2_window_seconds\",\"unit\":\"none\",\"value\":5.0},{\"name\":\"stage_3_window_seconds\",\"unit\":\"none\",\"value\":4.0},{\"name\":\"stage_1_required_fields\",\"unit\":\"none\",\"value\":[\"anchor_id\",\"anchor_frame_id\",\"transition_status\",\"transition_frame_id\",\"new_team_role\",\"possession_id\"]},{\"name\":\"stage_2_required_fields\",\"unit\":\"none\",\"value\":[\"anchor_id\",\"anchor_frame_id\",\"carry_status\",\"carry_start_frame_id\",\"carry_end_frame_id\",\"carry_forward_progression_m\",\"team_role\",\"possession_id\"]},{\"name\":\"stage_3_required_fields\",\"unit\":\"none\",\"value\":[\"anchor_id\",\"anchor_frame_id\",\"controlled_pass_status\",\"controlled_reception_frame_id\",\"team_role\"]},{\"name\":\"stage_1_status_field\",\"unit\":\"none\",\"value\":\"transition_status\"},{\"name\":\"stage_2_status_field\",\"unit\":\"none\",\"value\":\"carry_status\"},{\"name\":\"stage_3_status_field\",\"unit\":\"none\",\"value\":\"controlled_pass_status\"},{\"name\":\"stage_1_frame_field\",\"unit\":\"none\",\"value\":\"transition_frame_id\"},{\"name\":\"stage_2_frame_field\",\"unit\":\"none\",\"value\":\"carry_start_frame_id\"},{\"name\":\"stage_3_frame_field\",\"unit\":\"none\",\"value\":\"controlled_reception_frame_id\"},{\"name\":\"stage_1_end_frame_field\",\"unit\":\"none\",\"value\":\"none\"},{\"name\":\"stage_2_end_frame_field\",\"unit\":\"none\",\"value\":\"carry_end_frame_id\"},{\"name\":\"stage_3_end_frame_field\",\"unit\":\"none\",\"value\":\"controlled_reception_frame_id\"},{\"name\":\"stage_1_team_role_field\",\"unit\":\"none\",\"value\":\"new_team_role\"},{\"name\":\"stage_2_team_role_field\",\"unit\":\"none\",\"value\":\"team_role\"},{\"name\":\"stage_3_team_role_field\",\"unit\":\"none\",\"value\":\"team_role\"},{\"name\":\"stage_1_possession_id_field\",\"unit\":\"none\",\"value\":\"possession_id\"},{\"name\":\"stage_2_possession_id_field\",\"unit\":\"none\",\"value\":\"possession_id\"},{\"name\":\"stage_3_possession_id_field\",\"unit\":\"none\",\"value\":\"none\"},{\"name\":\"stage_1_player_id_field\",\"unit\":\"none\",\"value\":\"none\"},{\"name\":\"stage_2_player_id_field\",\"unit\":\"none\",\"value\":\"carrier_id\"},{\"name\":\"stage_3_player_id_field\",\"unit\":\"none\",\"value\":\"none\"},{\"name\":\"stage_2_minimum_numeric_field\",\"unit\":\"none\",\"value\":\"carry_forward_progression_m\"},{\"name\":\"stage_2_minimum_numeric_value\",\"unit\":\"none\",\"value\":3.0},{\"name\":\"same_team_perspective_required\",\"unit\":\"none\",\"value\":true},{\"name\":\"same_possession_required\",\"unit\":\"none\",\"value\":true},{\"name\":\"possession_continuity_source\",\"unit\":\"none\",\"value\":\"observed_possession_stream\"},{\"name\":\"same_player_required\",\"unit\":\"none\",\"value\":false},{\"name\":\"constraint_opt_out_reason\",\"unit\":\"none\",\"value\":\"entity identity is not part of this team-level chain\"},{\"name\":\"team_role_field\",\"unit\":\"none\",\"value\":\"team_role\"}]}]}]},\"team_perspective\":{\"required\":true,\"same_team_enforced\":true,\"statement\":\"sequence_pattern enforces same-team witnesses before rate partitions completed chains over regain starts.\",\"team_role_field\":\"team_role\"}}}"
+          }
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_same_meaning_line_break_support",
+      "elapsed_seconds": 122.102,
+      "failures": [
+        "request 1 synthesis failed: SynthesisError: No catalog provider exposes one or more required target fields.",
+        "request 2 synthesis failed: SynthesisError: Providers exist, but bounded search could not satisfy the required reusable composition."
+      ],
+      "kind": "same_meaning_pair",
+      "observations": [
+        {
+          "concept_identity": "line_break_support_after_receiver_crossing",
+          "expression_document_hash": "3fe54a8f3e4326d8183d16cd7c22c7f2dce4ac4522b57c385bd5edc997664f31",
+          "expression_id": "line_break_support_after_receiver_crossing",
+          "operators": [],
+          "outcome": "expression",
+          "synthesis_error": "SynthesisError: No catalog provider exposes one or more required target fields.",
+          "transcript": {
+            "completion_hash": "6991f3385c2f561fb744b367f22df9f9c6eafa26ac61e0cde5b72c718f44c3c1",
+            "invocation": {
+              "max_output_tokens": 32768,
+              "rejected_attempts": [],
+              "repair_attempt_count": 0,
+              "request_text": "Show line breaks where a support option arrives after the receiver crosses the line."
+            },
+            "model_name": "gpt-5.6-sol",
+            "model_provider": "openai-codex",
+            "prompt_hash": "2528f6e05c56ee9a7dae0039ac9c641a087de13fe6da859bba38a1f274809354",
+            "raw_completion": "{\"outcome\":\"expression\",\"expression\":{\"schema_version\":\"meaning_expression.v0\",\"expression_id\":\"line_break_support_after_receiver_crossing\",\"concept_identity\":\"line_break_support_after_receiver_crossing\",\"display_name\":\"Line-Break Support After Receiver Crossing\",\"concept_refs\":[\"controlled_pass_episode\",\"defensive_line_model\",\"relative_position_to_line\",\"controlled_line_break_episode\",\"support_arrival_relation\"],\"correspondence_clauses\":[{\"name\":\"composition\",\"value\":\"Support arrival is evaluated from the controlled-reception anchor of an observed receiver transition from not beyond to beyond a supplied geometric defensive line.\"},{\"name\":\"claim_boundary\",\"value\":\"Observed controlled-pass line transition and geometric teammate support arrival only; no tactical line taxonomy, intent, causation, decision quality, or optimality.\"}],\"meaning_clauses\":[{\"subject\":\"controlled receiver line transition\",\"action\":\"requires\",\"field\":\"line_break_status\",\"operator\":\"eq\",\"value\":\"PASS\"},{\"subject\":\"support option after controlled reception\",\"action\":\"requires\",\"field\":\"support_arrival_status\",\"frame_scope\":\"within 2.0 seconds after the controlled-reception anchor\",\"operator\":\"eq\",\"value\":\"PASS\"}],\"operator_applications\":[],\"population\":{\"match_ids\":[],\"periods\":[],\"perspective_team_roles\":[\"home\",\"away\"]},\"group_by\":[],\"target\":{\"target_id\":\"line_break_support_after_receiver_crossing\",\"held_out\":true,\"multi_step\":true},\"target_contract\":{\"claim_boundary\":\"Observed receiver transition from not beyond to beyond a supplied geometric defensive line during a controlled pass, followed by observed same-team support arrival around the controlled reception within the declared window only; does not identify a tactical defensive-line role or infer intent, causation, support quality, decision quality, or optimality.\",\"desired_output\":\"classification\",\"required_evidence\":[\"line_break_status\",\"line_break_reason\",\"pass_episode_id\",\"physical_release_frame_id\",\"controlled_reception_frame_id\",\"line_x_m\",\"release_relative_position_status\",\"release_signed_distance_to_line_m\",\"reception_relative_position_status\",\"reception_signed_distance_to_line_m\",\"support_arrival_status\",\"support_arrival_reason\",\"support_anchor_frame_id\",\"support_window_start_frame_id\",\"support_window_end_frame_id\",\"maximum_arrival_seconds\",\"minimum_duration_seconds\",\"maximum_support_distance_m\",\"minimum_supporting_players\",\"supporting_player_ids\",\"first_arrival_frame_id\",\"first_arrival_seconds_after_anchor\"],\"required_modalities\":[\"tracking_event_synchronized\"],\"status_semantics\":[{\"field\":\"line_break_status\",\"operator\":\"eq\",\"required_value\":\"PASS\"},{\"field\":\"support_arrival_status\",\"operator\":\"eq\",\"required_value\":\"PASS\"}],\"composition_constraints\":[{\"kind\":\"relation_on_anchor\",\"parameters\":[{\"name\":\"anchor_frame_field\",\"unit\":\"none\",\"value\":\"controlled_reception_frame_id\"},{\"name\":\"anchor_status_field\",\"unit\":\"none\",\"value\":\"line_break_status\"},{\"name\":\"anchor_status_value\",\"unit\":\"none\",\"value\":\"PASS\"},{\"name\":\"candidate_scope\",\"unit\":\"none\",\"value\":\"perspective_outfield\"},{\"name\":\"maximum_arrival_seconds\",\"unit\":\"second\",\"value\":2.0},{\"name\":\"maximum_support_distance_m\",\"unit\":\"metre\",\"value\":8.0},{\"name\":\"minimum_duration_seconds\",\"unit\":\"second\",\"value\":0.4},{\"name\":\"minimum_supporting_players\",\"unit\":\"count\",\"value\":1},{\"name\":\"relation_status_field\",\"unit\":\"none\",\"value\":\"support_arrival_status\"},{\"name\":\"support_region_mode\",\"unit\":\"none\",\"value\":\"WITHIN_DISTANCE_OF_REFERENCE_POINT\"}],\"left_composition_constraints\":[],\"right_composition_constraints\":[],\"population_composition_constraints\":[],\"numerator_composition_constraints\":[],\"denominator_composition_constraints\":[],\"left_input_context\":[],\"right_input_context\":[]}]},\"team_perspective\":{\"required\":true,\"same_team_enforced\":true,\"statement\":\"The support candidate scope is the perspective outfield team associated with the controlled-pass line-transition anchor.\",\"team_role_field\":\"team_role\"}}}"
+          }
+        },
+        {
+          "concept_identity": "receiver_line_transition_underneath_support_arrival",
+          "expression_document_hash": "5d3ec817117bd6ee8c2015cf901f965e04450f3fb55e146e6fcc7d5206d51840",
+          "expression_id": "receiver_line_transition_underneath_support_arrival",
+          "operators": [],
+          "outcome": "expression",
+          "synthesis_error": "SynthesisError: Providers exist, but bounded search could not satisfy the required reusable composition.",
+          "transcript": {
+            "completion_hash": "62b46f3f62e7eb717fd7811feb634f8cb57bf61010c2f0dbe3dd5d47f7c9b014",
+            "invocation": {
+              "max_output_tokens": 32768,
+              "rejected_attempts": [],
+              "repair_attempt_count": 0,
+              "request_text": "Find receiver line transitions during passes with an underneath support arrival response."
+            },
+            "model_name": "gpt-5.6-sol",
+            "model_provider": "openai-codex",
+            "prompt_hash": "2528f6e05c56ee9a7dae0039ac9c641a087de13fe6da859bba38a1f274809354",
+            "raw_completion": "{\"outcome\":\"expression\",\"expression\":{\"schema_version\":\"meaning_expression.v0\",\"expression_id\":\"receiver_line_transition_underneath_support_arrival\",\"expression_version\":\"0.1.0\",\"concept_identity\":\"receiver_line_transition_underneath_support_arrival\",\"display_name\":\"Receiver Line Transition With Underneath Support Arrival\",\"concept_refs\":[\"one_touch_relay_episode\",\"defensive_line_model\",\"relative_position_to_line\",\"receiver_line_transition_during_pass_leg\",\"support_arrival_relation\"],\"correspondence_clauses\":[{\"name\":\"composition\",\"value\":\"Observed receiver line-transition anchors are evaluated for same-team support arrival in the behind-ball outlet region.\"},{\"name\":\"claim_boundary\",\"value\":\"Observed receiver/relay-player transition relative to a supplied geometric line and observed underneath support arrival only; no tactical line identity, intent, causation, support quality, decision quality, or optimality.\"}],\"meaning_clauses\":[{\"subject\":\"receiver during the pass leg\",\"action\":\"transitions from not beyond to beyond the supplied observed line\",\"field\":\"receiver_line_transition_status\",\"operator\":\"eq\",\"value\":\"PASS\"},{\"subject\":\"perspective-team support\",\"action\":\"arrives in the behind-ball outlet region\",\"field\":\"support_arrival_status\",\"frame_scope\":\"within 2.0 seconds after the transition anchor\",\"operator\":\"eq\",\"value\":\"PASS\"}],\"operator_applications\":[],\"population\":{\"match_ids\":[],\"periods\":[],\"perspective_team_roles\":[]},\"group_by\":[],\"target\":{\"target_id\":\"receiver_line_transition_underneath_support_arrival\",\"held_out\":true,\"multi_step\":true},\"target_contract\":{\"claim_boundary\":\"Observed receiver/relay-player line transition during a pass leg co-occurring with observed same-team support arrival in the behind-ball outlet region only; does not infer tactical line identity, causation, intent, communication, support quality, decision quality, or optimality.\",\"desired_output\":\"classification\",\"required_evidence\":[\"anchor_id\",\"anchor_frame_id\",\"input_pass_episode_id\",\"input_physical_release_frame_id\",\"relay_touch_frame_id\",\"receiver_line_transition_status\",\"receiver_line_transition_reason\",\"line_x_m\",\"release_relative_position_status\",\"release_signed_distance_to_line_m\",\"relay_relative_position_status\",\"relay_signed_distance_to_line_m\",\"support_arrival_status\",\"support_arrival_reason\",\"support_anchor_frame_id\",\"support_window_start_frame_id\",\"support_window_end_frame_id\",\"support_region_mode\",\"maximum_arrival_seconds\",\"minimum_duration_seconds\",\"maximum_support_distance_m\",\"minimum_supporting_players\",\"supporting_player_ids\",\"first_arrival_frame_id\",\"first_arrival_seconds_after_anchor\",\"support_duration_seconds\"],\"required_modalities\":[\"tracking_event_synchronized\"],\"status_semantics\":[{\"field\":\"receiver_line_transition_status\",\"operator\":\"eq\",\"required_value\":\"PASS\"},{\"field\":\"support_arrival_status\",\"operator\":\"eq\",\"required_value\":\"PASS\"}],\"composition_constraints\":[{\"kind\":\"relation_on_anchor\",\"parameters\":[{\"name\":\"anchor_frame_field\",\"unit\":\"none\",\"value\":\"anchor_frame_id\"},{\"name\":\"anchor_status_field\",\"unit\":\"none\",\"value\":\"receiver_line_transition_status\"},{\"name\":\"anchor_status_value\",\"unit\":\"none\",\"value\":\"PASS\"},{\"name\":\"candidate_scope\",\"unit\":\"none\",\"value\":\"perspective_outfield\"},{\"name\":\"maximum_arrival_seconds\",\"unit\":\"second\",\"value\":2.0},{\"name\":\"minimum_duration_seconds\",\"unit\":\"second\",\"value\":0.4},{\"name\":\"maximum_support_distance_m\",\"unit\":\"metre\",\"value\":8.0},{\"name\":\"minimum_supporting_players\",\"unit\":\"count\",\"value\":1},{\"name\":\"relation_status_field\",\"unit\":\"none\",\"value\":\"support_arrival_status\"},{\"name\":\"support_region_mode\",\"unit\":\"none\",\"value\":\"BEHIND_BALL_OUTLET\"}],\"left_composition_constraints\":[],\"right_composition_constraints\":[],\"numerator_composition_constraints\":[],\"denominator_composition_constraints\":[],\"population_composition_constraints\":[],\"left_input_context\":[],\"right_input_context\":[]}]},\"team_perspective\":{\"required\":true,\"same_team_enforced\":true,\"statement\":\"Support candidates are perspective-team outfield players evaluated around the receiver line-transition anchor.\",\"team_role_field\":\"team_role\"}}}"
+          }
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_changed_rate_vs_count",
+      "elapsed_seconds": 154.845,
+      "failures": [],
+      "kind": "changed_meaning_pair",
+      "observations": [
+        {
+          "concept_identity": "regain_progressive_carry_controlled_pass_chain_count",
+          "expression_document_hash": "30c6322469b161d17ea4f6c9c490538a40a934f02bfdc40c3d3554971d6a115e",
+          "expression_id": "regain_progressive_carry_controlled_pass_chain_count",
+          "operators": [
+            "sequence_pattern",
+            "aggregate_over"
+          ],
+          "outcome": "expression",
+          "population_terminal": "operator:sequence_pattern",
+          "synthesized_document_hash": "5319a6da2d5b328a0521780365ecd2a59ca397e2edd581e2e7eaab900c24df19",
+          "terminal_provider": "operator:aggregate_over",
+          "transcript": {
+            "completion_hash": "bcac10cd7739517917c5b592a1558fa7f3ad473fa1e24e13e9fa96c5fbab0aad",
+            "invocation": {
+              "max_output_tokens": 32768,
+              "rejected_attempts": [],
+              "repair_attempt_count": 0,
+              "request_text": "Count regain to progressive carry to controlled pass chains by team and match."
+            },
+            "model_name": "gpt-5.6-sol",
+            "model_provider": "openai-codex",
+            "prompt_hash": "2528f6e05c56ee9a7dae0039ac9c641a087de13fe6da859bba38a1f274809354",
+            "raw_completion": "{\"outcome\":\"expression\",\"expression\":{\"schema_version\":\"meaning_expression.v0\",\"expression_id\":\"regain_progressive_carry_controlled_pass_chain_count\",\"expression_version\":\"0.1.0\",\"concept_identity\":\"regain_progressive_carry_controlled_pass_chain_count\",\"display_name\":\"Regain to Progressive Carry to Controlled Pass Chain Count\",\"concept_refs\":[\"transition_anchor\",\"carry_episode\",\"controlled_pass_episode\",\"controlled_pass_team_keyed_anchors\"],\"correspondence_clauses\":[{\"name\":\"composition\",\"value\":\"aggregate_over(count) over sequence_pattern(regain, progressive carry, controlled pass)\"},{\"name\":\"population\",\"value\":\"Observed regain to progressive-carry to controlled-pass chains.\"},{\"name\":\"group_by_fields\",\"value\":[\"team_role\",\"match_id\"]},{\"name\":\"claim_boundary\",\"value\":\"Interval count of observed chains only; no counterattack quality, intent, causation, value, or optimality claim.\"}],\"meaning_clauses\":[{\"subject\":\"sequence_pattern\",\"action\":\"links\",\"field\":\"chain_status\",\"operator\":\"from\",\"value\":\"regain to progressive carry to controlled pass\"},{\"subject\":\"stage_2\",\"action\":\"requires\",\"field\":\"carry_forward_progression_m\",\"operator\":\"gte\",\"value\":3.0,\"unit\":\"metre\"},{\"subject\":\"aggregate_over\",\"action\":\"counts\",\"field\":\"chain_status\",\"operator\":\"eq\",\"value\":\"PASS\"},{\"subject\":\"groups\",\"action\":\"are keyed by\",\"field\":\"group_by_fields\",\"operator\":\"in\",\"value\":[\"team_role\",\"match_id\"]}],\"operator_applications\":[{\"operator\":\"sequence_pattern\",\"parameters\":[{\"name\":\"match_policy\",\"unit\":\"none\",\"value\":\"first\"},{\"name\":\"overlap_policy\",\"unit\":\"none\",\"value\":\"allow_overlaps\"},{\"name\":\"frame_rate_hz\",\"unit\":\"hertz\",\"value\":25.0},{\"name\":\"stage_2_window_seconds\",\"unit\":\"second\",\"value\":5.0},{\"name\":\"stage_3_window_seconds\",\"unit\":\"second\",\"value\":4.0},{\"name\":\"stage_2_minimum_numeric_field\",\"unit\":\"none\",\"value\":\"carry_forward_progression_m\"},{\"name\":\"stage_2_minimum_numeric_value\",\"unit\":\"metre\",\"value\":3.0},{\"name\":\"same_possession_required\",\"unit\":\"none\",\"value\":true},{\"name\":\"possession_continuity_source\",\"unit\":\"none\",\"value\":\"observed_possession_stream\"}]},{\"operator\":\"aggregate_over\",\"parameters\":[{\"name\":\"aggregation_kind\",\"unit\":\"none\",\"value\":\"count\"},{\"name\":\"population_expression\",\"unit\":\"none\",\"value\":\"regain to progressive carry to controlled pass chains\"},{\"name\":\"group_by_fields\",\"unit\":\"none\",\"value\":[\"team_role\",\"match_id\"]},{\"name\":\"status_field\",\"unit\":\"none\",\"value\":\"chain_status\"},{\"name\":\"same_team_perspective_required\",\"unit\":\"none\",\"value\":true},{\"name\":\"entity_identity_preserved_required\",\"unit\":\"none\",\"value\":false},{\"name\":\"frame_alignment_required\",\"unit\":\"none\",\"value\":false},{\"name\":\"constraint_opt_out_reason\",\"unit\":\"none\",\"value\":\"entity identity and frame alignment are not part of this team-level chain count\"},{\"name\":\"team_role_field\",\"unit\":\"none\",\"value\":\"team_role\"}]}],\"population\":{\"match_ids\":[],\"periods\":[],\"perspective_team_roles\":[\"home\",\"away\"]},\"group_by\":[\"team_role\",\"match_id\"],\"target\":{\"target_id\":\"regain_progressive_carry_controlled_pass_chain_count_v0\",\"held_out\":true,\"multi_step\":true},\"target_contract\":{\"claim_boundary\":\"Interval count of observed regain to progressive-carry to controlled-pass chains only; no counterattack quality, tactical intent, causation, value, decision quality, or optimality claim.\",\"desired_output\":\"classification\",\"required_evidence\":[\"aggregation_kind\",\"population_expression\",\"group_by_fields\",\"group_key\",\"status_field\",\"observed\",\"lower_bound\",\"upper_bound\",\"unknown_count\",\"population_count\",\"pass_count\",\"fail_count\",\"source_node_id\",\"source_output_name\"],\"required_modalities\":[],\"status_semantics\":[{\"field\":\"chain_status\",\"operator\":\"eq\",\"required_value\":\"PASS\"}],\"composition_constraints\":[{\"kind\":\"aggregate_over\",\"parameters\":[{\"name\":\"aggregation_kind\",\"unit\":\"none\",\"value\":\"count\"},{\"name\":\"population_expression\",\"unit\":\"none\",\"value\":\"regain to progressive carry to controlled pass chains by team and match\"},{\"name\":\"group_by_fields\",\"unit\":\"none\",\"value\":[\"team_role\",\"match_id\"]},{\"name\":\"status_field\",\"unit\":\"none\",\"value\":\"chain_status\"},{\"name\":\"same_team_perspective_required\",\"unit\":\"none\",\"value\":true},{\"name\":\"entity_identity_preserved_required\",\"unit\":\"none\",\"value\":false},{\"name\":\"frame_alignment_required\",\"unit\":\"none\",\"value\":false},{\"name\":\"constraint_opt_out_reason\",\"unit\":\"none\",\"value\":\"entity identity and frame alignment are not part of this team-level chain count\"},{\"name\":\"team_role_field\",\"unit\":\"none\",\"value\":\"team_role\"},{\"name\":\"population_required_fields\",\"unit\":\"none\",\"value\":[\"chain_status\",\"stage_1_status\",\"stage_2_status\",\"stage_3_status\",\"team_role\",\"match_id\",\"stage_1_anchor_id\",\"stage_2_anchor_id\",\"stage_3_anchor_id\",\"stage_2_window_seconds\",\"stage_3_window_seconds\"]}],\"left_composition_constraints\":[],\"right_composition_constraints\":[],\"numerator_composition_constraints\":[],\"denominator_composition_constraints\":[],\"population_composition_constraints\":[{\"kind\":\"sequence_pattern\",\"parameters\":[{\"name\":\"stage_count\",\"unit\":\"count\",\"value\":3},{\"name\":\"match_policy\",\"unit\":\"none\",\"value\":\"first\"},{\"name\":\"overlap_policy\",\"unit\":\"none\",\"value\":\"allow_overlaps\"},{\"name\":\"window_boundary_policy\",\"unit\":\"none\",\"value\":\"exclusive_start_inclusive_end\"},{\"name\":\"frame_rate_hz\",\"unit\":\"hertz\",\"value\":25.0},{\"name\":\"stage_2_window_seconds\",\"unit\":\"second\",\"value\":5.0},{\"name\":\"stage_3_window_seconds\",\"unit\":\"second\",\"value\":4.0},{\"name\":\"stage_1_required_fields\",\"unit\":\"none\",\"value\":[\"anchor_id\",\"anchor_frame_id\",\"transition_status\",\"transition_frame_id\",\"new_team_role\",\"possession_id\"]},{\"name\":\"stage_2_required_fields\",\"unit\":\"none\",\"value\":[\"anchor_id\",\"anchor_frame_id\",\"carry_status\",\"carry_start_frame_id\",\"carry_end_frame_id\",\"carry_forward_progression_m\",\"team_role\",\"possession_id\"]},{\"name\":\"stage_3_required_fields\",\"unit\":\"none\",\"value\":[\"anchor_id\",\"anchor_frame_id\",\"controlled_pass_status\",\"controlled_reception_frame_id\",\"team_role\"]},{\"name\":\"stage_1_status_field\",\"unit\":\"none\",\"value\":\"transition_status\"},{\"name\":\"stage_2_status_field\",\"unit\":\"none\",\"value\":\"carry_status\"},{\"name\":\"stage_3_status_field\",\"unit\":\"none\",\"value\":\"controlled_pass_status\"},{\"name\":\"stage_1_frame_field\",\"unit\":\"none\",\"value\":\"transition_frame_id\"},{\"name\":\"stage_2_frame_field\",\"unit\":\"none\",\"value\":\"carry_start_frame_id\"},{\"name\":\"stage_3_frame_field\",\"unit\":\"none\",\"value\":\"controlled_reception_frame_id\"},{\"name\":\"stage_1_end_frame_field\",\"unit\":\"none\",\"value\":\"none\"},{\"name\":\"stage_2_end_frame_field\",\"unit\":\"none\",\"value\":\"carry_end_frame_id\"},{\"name\":\"stage_3_end_frame_field\",\"unit\":\"none\",\"value\":\"controlled_reception_frame_id\"},{\"name\":\"stage_1_team_role_field\",\"unit\":\"none\",\"value\":\"new_team_role\"},{\"name\":\"stage_2_team_role_field\",\"unit\":\"none\",\"value\":\"team_role\"},{\"name\":\"stage_3_team_role_field\",\"unit\":\"none\",\"value\":\"team_role\"},{\"name\":\"stage_1_possession_id_field\",\"unit\":\"none\",\"value\":\"possession_id\"},{\"name\":\"stage_2_possession_id_field\",\"unit\":\"none\",\"value\":\"possession_id\"},{\"name\":\"stage_3_possession_id_field\",\"unit\":\"none\",\"value\":\"none\"},{\"name\":\"stage_1_player_id_field\",\"unit\":\"none\",\"value\":\"none\"},{\"name\":\"stage_2_player_id_field\",\"unit\":\"none\",\"value\":\"carrier_id\"},{\"name\":\"stage_3_player_id_field\",\"unit\":\"none\",\"value\":\"none\"},{\"name\":\"stage_2_minimum_numeric_field\",\"unit\":\"none\",\"value\":\"carry_forward_progression_m\"},{\"name\":\"stage_2_minimum_numeric_value\",\"unit\":\"metre\",\"value\":3.0},{\"name\":\"same_team_perspective_required\",\"unit\":\"none\",\"value\":true},{\"name\":\"same_possession_required\",\"unit\":\"none\",\"value\":true},{\"name\":\"possession_continuity_source\",\"unit\":\"none\",\"value\":\"observed_possession_stream\"},{\"name\":\"same_player_required\",\"unit\":\"none\",\"value\":false},{\"name\":\"constraint_opt_out_reason\",\"unit\":\"none\",\"value\":\"entity identity is not part of this team-level chain\"},{\"name\":\"team_role_field\",\"unit\":\"none\",\"value\":\"team_role\"}],\"left_composition_constraints\":[],\"right_composition_constraints\":[],\"numerator_composition_constraints\":[],\"denominator_composition_constraints\":[],\"population_composition_constraints\":[],\"left_input_context\":[],\"right_input_context\":[]}],\"left_input_context\":[],\"right_input_context\":[]}]},\"team_perspective\":{\"required\":true,\"same_team_enforced\":true,\"statement\":\"sequence_pattern enforces same-team witnesses before aggregate_over counts chain outcomes by team and match.\",\"team_role_field\":\"team_role\"}}}"
+          }
+        },
+        {
+          "concept_identity": "regain_progressive_carry_controlled_pass_rate",
+          "expression_document_hash": "aba67a155e0d1724768f8e546fdddd1e7cf74c988204511b523369d399e039de",
+          "expression_id": "regain_progressive_carry_controlled_pass_rate",
+          "operators": [
+            "sequence_pattern",
+            "rate"
+          ],
+          "outcome": "expression",
+          "population_terminal": "operator:sequence_pattern",
+          "synthesized_document_hash": "be389a1c6e620cc7470944a8b9e07857da086205e84ec62ac390cb102a2adb85",
+          "terminal_provider": "operator:rate",
+          "transcript": {
+            "completion_hash": "1ef0d21c191423d3e4cf2e8d90ce6b9c114bfd704f4dae4f3332f75ab511fcd9",
+            "invocation": {
+              "max_output_tokens": 32768,
+              "rejected_attempts": [],
+              "repair_attempt_count": 0,
+              "request_text": "Report the per-regain rate of regain to progressive carry to controlled pass chains by team and match."
+            },
+            "model_name": "gpt-5.6-sol",
+            "model_provider": "openai-codex",
+            "prompt_hash": "2528f6e05c56ee9a7dae0039ac9c641a087de13fe6da859bba38a1f274809354",
+            "raw_completion": "{\"outcome\":\"expression\",\"expression\":{\"schema_version\":\"meaning_expression.v0\",\"expression_id\":\"regain_progressive_carry_controlled_pass_rate\",\"expression_version\":\"0.1.0\",\"concept_identity\":\"regain_progressive_carry_controlled_pass_rate\",\"display_name\":\"Regain to Progressive Carry to Controlled Pass Rate\",\"concept_refs\":[\"transition_anchor\",\"carry_episode\",\"controlled_pass_episode\",\"controlled_pass_team_keyed_anchors\"],\"group_by\":[\"team_role\",\"match_id\"],\"meaning_clauses\":[{\"subject\":\"regain-to-progressive-carry-to-controlled-pass chain\",\"action\":\"requires\",\"field\":\"chain_status\",\"operator\":\"eq\",\"value\":\"PASS\"},{\"subject\":\"progressive carry stage\",\"action\":\"requires\",\"field\":\"carry_forward_progression_m\",\"operator\":\"gte\",\"value\":3.0,\"unit\":\"metre\"},{\"subject\":\"per-regain denominator\",\"action\":\"requires\",\"field\":\"stage_1_status\",\"operator\":\"eq\",\"value\":\"PASS\"},{\"subject\":\"reported groups\",\"action\":\"are keyed by\",\"field\":\"group_by_fields\",\"operator\":\"eq\",\"value\":[\"team_role\",\"match_id\"]}],\"operator_applications\":[{\"operator\":\"sequence_pattern\",\"parameters\":[{\"name\":\"match_policy\",\"unit\":\"none\",\"value\":\"first\"},{\"name\":\"overlap_policy\",\"unit\":\"none\",\"value\":\"allow_overlaps\"},{\"name\":\"stage_2_window_seconds\",\"unit\":\"second\",\"value\":5.0},{\"name\":\"stage_3_window_seconds\",\"unit\":\"second\",\"value\":4.0},{\"name\":\"stage_2_minimum_numeric_field\",\"unit\":\"none\",\"value\":\"carry_forward_progression_m\"},{\"name\":\"stage_2_minimum_numeric_value\",\"unit\":\"metre\",\"value\":3.0},{\"name\":\"same_possession_required\",\"unit\":\"none\",\"value\":true},{\"name\":\"possession_continuity_source\",\"unit\":\"none\",\"value\":\"observed_possession_stream\"}]},{\"operator\":\"rate\",\"parameters\":[{\"name\":\"rate_kind\",\"unit\":\"none\",\"value\":\"rate\"},{\"name\":\"group_by_fields\",\"unit\":\"none\",\"value\":[\"team_role\",\"match_id\"]},{\"name\":\"numerator_status_field\",\"unit\":\"none\",\"value\":\"chain_status\"},{\"name\":\"denominator_status_field\",\"unit\":\"none\",\"value\":\"stage_1_status\"}]}],\"population\":{\"match_ids\":[],\"periods\":[],\"perspective_team_roles\":[\"home\",\"away\"]},\"target\":{\"target_id\":\"regain_progressive_carry_controlled_pass_rate\",\"held_out\":true,\"multi_step\":true},\"target_contract\":{\"claim_boundary\":\"Interval rate of observed regain-to-progressive-carry-to-controlled-pass chains over observed regain starts only; no tactical quality, intent, causation, decision-quality, or value claim.\",\"desired_output\":\"classification\",\"required_evidence\":[\"rate_kind\",\"population_expression\",\"group_by_fields\",\"group_key\",\"numerator_status_field\",\"denominator_status_field\",\"subset_declaration\",\"constraint_opt_out_reason\",\"rate_status\",\"observed\",\"lower_bound\",\"upper_bound\",\"observed_denominator_count\",\"a_count\",\"b_count\",\"c_count\",\"d1_count\",\"d2_count\",\"e_count\",\"numerator_count_interval\",\"denominator_count_interval\",\"numerator_source_node_id\",\"numerator_source_output_name\",\"denominator_source_node_id\",\"denominator_source_output_name\"],\"required_modalities\":[],\"status_semantics\":[{\"field\":\"chain_status\",\"operator\":\"eq\",\"required_value\":\"PASS\"}],\"composition_constraints\":[{\"kind\":\"rate\",\"parameters\":[{\"name\":\"rate_kind\",\"unit\":\"none\",\"value\":\"rate\"},{\"name\":\"population_expression\",\"unit\":\"none\",\"value\":\"completed regain-to-progressive-carry-to-controlled-pass chains over regain starts\"},{\"name\":\"group_by_fields\",\"unit\":\"none\",\"value\":[\"team_role\",\"match_id\"]},{\"name\":\"numerator_status_field\",\"unit\":\"none\",\"value\":\"chain_status\"},{\"name\":\"denominator_status_field\",\"unit\":\"none\",\"value\":\"stage_1_status\"},{\"name\":\"subset_declaration\",\"unit\":\"none\",\"value\":\"chain_status PASS is the completed-chain subset of stage_1_status PASS regain starts from the same source records\"},{\"name\":\"subset_predicate_fields\",\"unit\":\"none\",\"value\":[\"stage_2_status\",\"stage_3_status\"]},{\"name\":\"removed_denominator_predicate_fields\",\"unit\":\"none\",\"value\":[]},{\"name\":\"same_team_perspective_required\",\"unit\":\"none\",\"value\":true},{\"name\":\"entity_identity_preserved_required\",\"unit\":\"none\",\"value\":false},{\"name\":\"frame_alignment_required\",\"unit\":\"none\",\"value\":false},{\"name\":\"constraint_opt_out_reason\",\"unit\":\"none\",\"value\":\"entity identity and frame alignment are not part of this team-level sequence rate denominator\"},{\"name\":\"team_role_field\",\"unit\":\"none\",\"value\":\"team_role\"},{\"name\":\"numerator_required_fields\",\"unit\":\"none\",\"value\":[\"chain_status\",\"stage_1_status\",\"stage_2_status\",\"stage_3_status\",\"team_role\",\"match_id\",\"stage_1_anchor_id\",\"stage_2_anchor_id\",\"stage_3_anchor_id\",\"stage_2_window_seconds\",\"stage_3_window_seconds\"]},{\"name\":\"denominator_required_fields\",\"unit\":\"none\",\"value\":[\"chain_status\",\"stage_1_status\",\"stage_2_status\",\"stage_3_status\",\"team_role\",\"match_id\",\"stage_1_anchor_id\",\"stage_2_anchor_id\",\"stage_3_anchor_id\",\"stage_2_window_seconds\",\"stage_3_window_seconds\"]}],\"numerator_composition_constraints\":[{\"kind\":\"sequence_pattern\",\"parameters\":[{\"name\":\"stage_count\",\"unit\":\"count\",\"value\":3},{\"name\":\"match_policy\",\"unit\":\"none\",\"value\":\"first\"},{\"name\":\"overlap_policy\",\"unit\":\"none\",\"value\":\"allow_overlaps\"},{\"name\":\"window_boundary_policy\",\"unit\":\"none\",\"value\":\"exclusive_start_inclusive_end\"},{\"name\":\"frame_rate_hz\",\"unit\":\"hertz\",\"value\":25.0},{\"name\":\"stage_2_window_seconds\",\"unit\":\"second\",\"value\":5.0},{\"name\":\"stage_3_window_seconds\",\"unit\":\"second\",\"value\":4.0},{\"name\":\"stage_1_required_fields\",\"unit\":\"none\",\"value\":[\"anchor_id\",\"anchor_frame_id\",\"transition_status\",\"transition_frame_id\",\"new_team_role\",\"possession_id\"]},{\"name\":\"stage_2_required_fields\",\"unit\":\"none\",\"value\":[\"anchor_id\",\"anchor_frame_id\",\"carry_status\",\"carry_start_frame_id\",\"carry_end_frame_id\",\"carry_forward_progression_m\",\"team_role\",\"possession_id\"]},{\"name\":\"stage_3_required_fields\",\"unit\":\"none\",\"value\":[\"anchor_id\",\"anchor_frame_id\",\"controlled_pass_status\",\"controlled_reception_frame_id\",\"team_role\"]},{\"name\":\"stage_1_status_field\",\"unit\":\"none\",\"value\":\"transition_status\"},{\"name\":\"stage_2_status_field\",\"unit\":\"none\",\"value\":\"carry_status\"},{\"name\":\"stage_3_status_field\",\"unit\":\"none\",\"value\":\"controlled_pass_status\"},{\"name\":\"stage_1_frame_field\",\"unit\":\"none\",\"value\":\"transition_frame_id\"},{\"name\":\"stage_2_frame_field\",\"unit\":\"none\",\"value\":\"carry_start_frame_id\"},{\"name\":\"stage_3_frame_field\",\"unit\":\"none\",\"value\":\"controlled_reception_frame_id\"},{\"name\":\"stage_1_end_frame_field\",\"unit\":\"none\",\"value\":\"none\"},{\"name\":\"stage_2_end_frame_field\",\"unit\":\"none\",\"value\":\"carry_end_frame_id\"},{\"name\":\"stage_3_end_frame_field\",\"unit\":\"none\",\"value\":\"controlled_reception_frame_id\"},{\"name\":\"stage_1_team_role_field\",\"unit\":\"none\",\"value\":\"new_team_role\"},{\"name\":\"stage_2_team_role_field\",\"unit\":\"none\",\"value\":\"team_role\"},{\"name\":\"stage_3_team_role_field\",\"unit\":\"none\",\"value\":\"team_role\"},{\"name\":\"stage_1_possession_id_field\",\"unit\":\"none\",\"value\":\"possession_id\"},{\"name\":\"stage_2_possession_id_field\",\"unit\":\"none\",\"value\":\"possession_id\"},{\"name\":\"stage_3_possession_id_field\",\"unit\":\"none\",\"value\":\"none\"},{\"name\":\"stage_1_player_id_field\",\"unit\":\"none\",\"value\":\"none\"},{\"name\":\"stage_2_player_id_field\",\"unit\":\"none\",\"value\":\"carrier_id\"},{\"name\":\"stage_3_player_id_field\",\"unit\":\"none\",\"value\":\"none\"},{\"name\":\"stage_2_minimum_numeric_field\",\"unit\":\"none\",\"value\":\"carry_forward_progression_m\"},{\"name\":\"stage_2_minimum_numeric_value\",\"unit\":\"metre\",\"value\":3.0},{\"name\":\"same_team_perspective_required\",\"unit\":\"none\",\"value\":true},{\"name\":\"same_possession_required\",\"unit\":\"none\",\"value\":true},{\"name\":\"possession_continuity_source\",\"unit\":\"none\",\"value\":\"observed_possession_stream\"},{\"name\":\"same_player_required\",\"unit\":\"none\",\"value\":false},{\"name\":\"constraint_opt_out_reason\",\"unit\":\"none\",\"value\":\"entity identity is not part of this team-level chain\"},{\"name\":\"team_role_field\",\"unit\":\"none\",\"value\":\"team_role\"}]}],\"denominator_composition_constraints\":[{\"kind\":\"sequence_pattern\",\"parameters\":[{\"name\":\"stage_count\",\"unit\":\"count\",\"value\":3},{\"name\":\"match_policy\",\"unit\":\"none\",\"value\":\"first\"},{\"name\":\"overlap_policy\",\"unit\":\"none\",\"value\":\"allow_overlaps\"},{\"name\":\"window_boundary_policy\",\"unit\":\"none\",\"value\":\"exclusive_start_inclusive_end\"},{\"name\":\"frame_rate_hz\",\"unit\":\"hertz\",\"value\":25.0},{\"name\":\"stage_2_window_seconds\",\"unit\":\"second\",\"value\":5.0},{\"name\":\"stage_3_window_seconds\",\"unit\":\"second\",\"value\":4.0},{\"name\":\"stage_1_required_fields\",\"unit\":\"none\",\"value\":[\"anchor_id\",\"anchor_frame_id\",\"transition_status\",\"transition_frame_id\",\"new_team_role\",\"possession_id\"]},{\"name\":\"stage_2_required_fields\",\"unit\":\"none\",\"value\":[\"anchor_id\",\"anchor_frame_id\",\"carry_status\",\"carry_start_frame_id\",\"carry_end_frame_id\",\"carry_forward_progression_m\",\"team_role\",\"possession_id\"]},{\"name\":\"stage_3_required_fields\",\"unit\":\"none\",\"value\":[\"anchor_id\",\"anchor_frame_id\",\"controlled_pass_status\",\"controlled_reception_frame_id\",\"team_role\"]},{\"name\":\"stage_1_status_field\",\"unit\":\"none\",\"value\":\"transition_status\"},{\"name\":\"stage_2_status_field\",\"unit\":\"none\",\"value\":\"carry_status\"},{\"name\":\"stage_3_status_field\",\"unit\":\"none\",\"value\":\"controlled_pass_status\"},{\"name\":\"stage_1_frame_field\",\"unit\":\"none\",\"value\":\"transition_frame_id\"},{\"name\":\"stage_2_frame_field\",\"unit\":\"none\",\"value\":\"carry_start_frame_id\"},{\"name\":\"stage_3_frame_field\",\"unit\":\"none\",\"value\":\"controlled_reception_frame_id\"},{\"name\":\"stage_1_end_frame_field\",\"unit\":\"none\",\"value\":\"none\"},{\"name\":\"stage_2_end_frame_field\",\"unit\":\"none\",\"value\":\"carry_end_frame_id\"},{\"name\":\"stage_3_end_frame_field\",\"unit\":\"none\",\"value\":\"controlled_reception_frame_id\"},{\"name\":\"stage_1_team_role_field\",\"unit\":\"none\",\"value\":\"new_team_role\"},{\"name\":\"stage_2_team_role_field\",\"unit\":\"none\",\"value\":\"team_role\"},{\"name\":\"stage_3_team_role_field\",\"unit\":\"none\",\"value\":\"team_role\"},{\"name\":\"stage_1_possession_id_field\",\"unit\":\"none\",\"value\":\"possession_id\"},{\"name\":\"stage_2_possession_id_field\",\"unit\":\"none\",\"value\":\"possession_id\"},{\"name\":\"stage_3_possession_id_field\",\"unit\":\"none\",\"value\":\"none\"},{\"name\":\"stage_1_player_id_field\",\"unit\":\"none\",\"value\":\"none\"},{\"name\":\"stage_2_player_id_field\",\"unit\":\"none\",\"value\":\"carrier_id\"},{\"name\":\"stage_3_player_id_field\",\"unit\":\"none\",\"value\":\"none\"},{\"name\":\"stage_2_minimum_numeric_field\",\"unit\":\"none\",\"value\":\"carry_forward_progression_m\"},{\"name\":\"stage_2_minimum_numeric_value\",\"unit\":\"metre\",\"value\":3.0},{\"name\":\"same_team_perspective_required\",\"unit\":\"none\",\"value\":true},{\"name\":\"same_possession_required\",\"unit\":\"none\",\"value\":true},{\"name\":\"possession_continuity_source\",\"unit\":\"none\",\"value\":\"observed_possession_stream\"},{\"name\":\"same_player_required\",\"unit\":\"none\",\"value\":false},{\"name\":\"constraint_opt_out_reason\",\"unit\":\"none\",\"value\":\"entity identity is not part of this team-level chain\"},{\"name\":\"team_role_field\",\"unit\":\"none\",\"value\":\"team_role\"}]}]}]},\"team_perspective\":{\"required\":true,\"same_team_enforced\":true,\"statement\":\"Same-team witnesses are enforced before chain outcomes are partitioned into completed-chain and regain-start populations.\",\"team_role_field\":\"team_role\"}}}"
+          }
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "case_id": "dev_changed_controlled_vs_bypass",
+      "elapsed_seconds": 26.055,
+      "failures": [
+        "request 2: HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "kind": "changed_meaning_pair",
+      "observations": [
+        {
+          "concept_identity": "controlled_passes",
+          "expression_document_hash": "59488de03d84613a63fbdfec067bd44f56faceccfa610c2b5ec0c85ee000e548",
+          "expression_id": "controlled_passes",
+          "operators": [],
+          "outcome": "expression",
+          "population_terminal": null,
+          "synthesized_document_hash": "cd793521d4e7197d9ef9861e813efa66ef712bc8a0794ddc85f72a9213aa6367",
+          "terminal_provider": "controlled_pass_episode",
+          "transcript": {
+            "completion_hash": "b51af6d6efeaa66f74741daf1d8e8461a4bc59c6b6e1e495dba83fd8d502700e",
+            "invocation": {
+              "max_output_tokens": 32768,
+              "rejected_attempts": [],
+              "repair_attempt_count": 0,
+              "request_text": "Show controlled passes."
+            },
+            "model_name": "gpt-5.6-sol",
+            "model_provider": "openai-codex",
+            "prompt_hash": "2528f6e05c56ee9a7dae0039ac9c641a087de13fe6da859bba38a1f274809354",
+            "raw_completion": "{\"outcome\":\"expression\",\"expression\":{\"schema_version\":\"meaning_expression.v0\",\"expression_id\":\"controlled_passes\",\"expression_version\":\"0.1.0\",\"concept_identity\":\"controlled_passes\",\"concept_refs\":[\"controlled_pass_episode\"],\"display_name\":\"Controlled Passes\",\"meaning_clauses\":[{\"subject\":\"controlled pass episodes\",\"action\":\"requires\",\"field\":\"controlled_pass_status\",\"operator\":\"eq\",\"value\":\"PASS\"}],\"operator_applications\":[],\"population\":{\"match_ids\":[],\"periods\":[\"firstHalf\",\"secondHalf\"],\"perspective_team_roles\":[\"home\",\"away\"]},\"group_by\":[],\"target\":{\"target_id\":\"controlled_passes_v0\",\"held_out\":true,\"multi_step\":false},\"target_contract\":{\"claim_boundary\":\"Observed completed pass candidates where event data supplies the candidate passer and receiver and tracking confirms physical release plus controlled reception; no tactical intention, pass optimality, or decision-quality claim.\",\"composition_constraints\":[],\"desired_output\":\"classification\",\"required_evidence\":[\"controlled_pass_status\",\"forward_progression_m\",\"physical_release_frame_id\",\"controlled_reception_frame_id\",\"passer_id\",\"receiver_id\"],\"required_modalities\":[\"tracking_event_synchronized\"],\"status_semantics\":[{\"field\":\"controlled_pass_status\",\"operator\":\"eq\",\"required_value\":\"PASS\"}]},\"team_perspective\":{\"required\":true,\"same_team_enforced\":true,\"statement\":\"Controlled pass episodes are evaluated for each configured perspective team role.\",\"team_role_field\":\"team_role\"}}}"
+          }
+        },
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_known_possession_corridor",
+      "elapsed_seconds": 3.542,
+      "failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "kind": "single",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_known_high_bypass",
+      "elapsed_seconds": 3.481,
+      "failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "kind": "single",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_known_first_time_relay",
+      "elapsed_seconds": 3.338,
+      "failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "kind": "single",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_novel_sequence_rate",
+      "elapsed_seconds": 2.354,
+      "failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "kind": "single",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_refusal_body_orientation",
+      "elapsed_seconds": 2.515,
+      "failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "kind": "single",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_refusal_pass_probability",
+      "elapsed_seconds": 2.421,
+      "failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "kind": "single",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_refusal_player_intent",
+      "elapsed_seconds": 2.387,
+      "failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "kind": "single",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_refusal_video_modality",
+      "elapsed_seconds": 2.378,
+      "failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response."
+      ],
+      "kind": "single",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_clarification_support_definition",
+      "elapsed_seconds": 2.388,
+      "failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+        "first turn outcome was exception, not clarification_required"
+      ],
+      "kind": "clarification_turn",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "dev_clarification_distance_threshold",
+      "elapsed_seconds": 2.621,
+      "failures": [
+        "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+        "first turn outcome was exception, not clarification_required"
+      ],
+      "kind": "clarification_turn",
+      "observations": [
+        {
+          "exception": "HermesNLAccessError: Hermes model invocation failed: Hermes produced no final response.",
+          "exception_type": "HermesNLAccessError",
+          "outcome": "exception"
+        }
+      ],
+      "status": "FAIL"
+    }
+  ]
+}

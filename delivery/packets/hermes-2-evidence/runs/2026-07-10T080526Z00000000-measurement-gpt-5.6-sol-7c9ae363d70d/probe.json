@@ -1,0 +1,35 @@
+{
+  "binds": null,
+  "completion_hash": "38e2694edcf8b69e519d482f415540da83b104d2dd00311d13ac961cb06108b4",
+  "elapsed_seconds": 15.334,
+  "ok": true,
+  "outcome": "understood_but_not_expressible",
+  "outcome_payload": {
+    "gap_code": "BODY_ORIENTATION",
+    "message": "Player body orientation immediately before ball reception is understood, but no body-orientation primitive is available.",
+    "missing_capability": "body orientation primitive",
+    "outcome": "understood_but_not_expressible",
+    "refusal": null,
+    "transcript": {
+      "completion_hash": "38e2694edcf8b69e519d482f415540da83b104d2dd00311d13ac961cb06108b4",
+      "invocation": {
+        "max_output_tokens": 32768,
+        "rejected_attempts": [],
+        "repair_attempt_count": 0,
+        "request_text": "Show player body orientation immediately before receiving the ball."
+      },
+      "model_name": "gpt-5.6-sol",
+      "model_provider": "openai-codex",
+      "pack_sha256": "6b8821a462bd30c03ea4ebd65fefd2e33fc951ffc7f789f9cd577689c306177a",
+      "prompt_hash": "2528f6e05c56ee9a7dae0039ac9c641a087de13fe6da859bba38a1f274809354",
+      "raw_completion": "{\"outcome\":\"understood_but_not_expressible\",\"gap_code\":\"BODY_ORIENTATION\",\"missing_capability\":\"body orientation primitive\",\"message\":\"Player body orientation immediately before ball reception is understood, but no body-orientation primitive is available.\"}"
+    }
+  },
+  "prompt_hash": "2528f6e05c56ee9a7dae0039ac9c641a087de13fe6da859bba38a1f274809354",
+  "request_text": "Show player body orientation immediately before receiving the ball.",
+  "requested_model": "gpt-5.6-sol",
+  "requested_provider": "openai-codex",
+  "started_at_utc": "2026-07-10T08:05:26.963792Z",
+  "transcript_model": "gpt-5.6-sol",
+  "transcript_provider": "openai-codex"
+}

@@ -45,7 +45,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--pack-path", default=DEFAULT_KNOWLEDGE_PACK_PATH, type=Path)
     parser.add_argument("--coverage-map", default=DEFAULT_COVERAGE_MAP_PATH, type=Path)
     parser.add_argument("--provider", default=os.environ.get("HERMES_SCP2_2_PROVIDER", "openai-codex"))
-    parser.add_argument("--model", default=os.environ.get("HERMES_SCP2_2_MODEL", "gpt-5.5"))
+    parser.add_argument("--model", default=os.environ.get("HERMES_SCP2_2_MODEL", "gpt-5.6-sol"))
     parser.add_argument("--long-threshold-seconds", default=300.0, type=float)
     args = parser.parse_args(argv)
 
