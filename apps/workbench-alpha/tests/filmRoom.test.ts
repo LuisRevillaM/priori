@@ -6,14 +6,18 @@ import {
   filmRoomErrorViewModel,
   filmRoomOutcomeClass,
   headerChipsFromResponse,
+  intervalCertificationChip,
   intervalHeadline,
   momentCoverageText,
   momentCollectionLabel,
   orderedFilmRoomMoments,
+  partitionVisibilityNote,
+  provenanceArtifactLabels,
   provenanceTreeView,
   replayMatchClock,
   replaySamplingLabel,
-  refusalViewModel
+  refusalViewModel,
+  visibleWitnessLabels
 } from "../src/FilmRoom";
 import {
   deriveQuestionClauseKeys,
@@ -219,7 +223,14 @@ const chips = headerChipsFromResponse({
     certified_evidence_rows: [],
     runtime_evidence_rows: [],
     evidence_rows_kind: "runtime",
-    interval_metric: null,
+    interval_metric: {
+      label: "Certified interval",
+      observed: 0.5,
+      lower: 0.2,
+      upper: 0.8,
+      unknown_count: 5,
+      source: { evidence_kind: "certified" }
+    },
     moments: [],
     moment_total_count: 0,
     visible_moment_count: 0,
@@ -237,7 +248,8 @@ const chips = headerChipsFromResponse({
   clarification: null,
   refusal: null
 } as FilmRoomAskResponse);
-assert.deepEqual(chips, ["2 matches", "home team", "evidence pipeline: certified"]);
+assert.deepEqual(chips, ["2 matches", "home team", "metric interval: certified"]);
+assert.equal(intervalCertificationChip(null), "metric interval: loading");
 assert.deepEqual(provenanceTreeView(null), {
   text: "not recorded",
   title: "Tree hash not recorded in this build"
@@ -250,6 +262,11 @@ assert.deepEqual(provenanceTreeView("0123456789abcdef"), {
   text: "0123456789ab",
   title: "0123456789abcdef"
 });
+assert.deepEqual(provenanceArtifactLabels("d8179abcdef", "d8179abcdef"), ["PLAN = DOC d8179abcdef"]);
+assert.deepEqual(provenanceArtifactLabels("plan123456789", "doc123456789"), [
+  "PLAN plan12345678",
+  "DOC doc123456789"
+]);
 
 assert.equal(chainStatusLabel(null), "no chain selected");
 assert.equal(
@@ -434,16 +451,48 @@ const sampledReplay = {
     { frame_id: 121_890, entities: [] }
   ]
 } as ReplayPayload;
-assert.equal(replaySamplingLabel(sampledReplay), "25 fps source · every 5th frame · 2.4 s window");
+assert.equal(replaySamplingLabel(sampledReplay), "every 5th frame · 2.4 s window");
 assert.equal(replayMatchClock(sampledReplay.frames[0], sampledReplay, passMoment), "63:10.80");
+
+const witnessLabels = [
+  { stage: 1, frame_id: 100 },
+  { stage: 2, frame_id: 110 },
+  { stage: 3, frame_id: 120 }
+];
+assert.deepEqual(visibleWitnessLabels(witnessLabels, 99), []);
+assert.deepEqual(visibleWitnessLabels(witnessLabels, 110).map((label) => label.stage), [1, 2]);
+assert.deepEqual(visibleWitnessLabels(witnessLabels, 999).map((label) => label.stage), [1, 2, 3]);
+assert.equal(partitionVisibilityNote(1, 2811), "segment enlarged to be visible — true share 0.04%");
+assert.equal(partitionVisibilityNote(10, 100), null);
 
 assert.deepEqual(FILM_ROOM_STATUS_TOKENS, { COMPLETE: "#FFB13D", UNKNOWN: "#8B93A0" });
 const css = readFileSync(resolve(process.cwd(), "src/styles.css"), "utf8");
 for (const selector of [".momentStatus.unknown", ".momentItem.unknown.selected", ".stageKeyChip.evidenceUnknown"]) {
   const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const rule = css.match(new RegExp(`${escapedSelector}\\s*\\{([^}]*)\\}`));
+  const rule = css.match(new RegExp(`^${escapedSelector}\\s*\\{([^}]*)\\}`, "m"));
   assert.ok(rule, `status token lint selector missing: ${selector}`);
   assert.match(rule[1].toUpperCase(), /#8B93A0/, `UNKNOWN selector escaped slate: ${selector}`);
 }
+
+const cssRule = (selector: string) => {
+  const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const rules = Array.from(css.matchAll(new RegExp(`^${escapedSelector}\\s*\\{([^}]*)\\}`, "gm")));
+  const rule = rules.at(-1);
+  assert.ok(rule, `composition selector missing: ${selector}`);
+  return rule[1].toUpperCase();
+};
+assert.match(cssRule(".intervalRange"), /BACKGROUND:\s*#8B93A0/);
+assert.doesNotMatch(cssRule(".intervalRange"), /OPACITY/);
+assert.match(cssRule(".intervalObserved"), /BACKGROUND:\s*#FFB13D/);
+assert.match(cssRule(".partitionUnknown"), /BACKGROUND:\s*#8B93A0/);
+assert.match(cssRule(".unknownStrip"), /BACKGROUND:\s*#8B93A0/);
+assert.match(cssRule(".stageLeader.evidenceUnknown"), /STROKE:\s*#8B93A0/);
+assert.match(cssRule(".metricObserved b"), /COLOR:\s*#FFB13D/);
+assert.doesNotMatch(css, /\.partitionLegend\s*\{/);
+
+const filmRoomSource = readFileSync(resolve(process.cwd(), "src/FilmRoom.tsx"), "utf8");
+assert.equal((filmRoomSource.match(/momentCoverageText\(response\?\.answer\)/g) ?? []).length, 1);
+assert.equal((filmRoomSource.match(/placeholder=\{response\?\.answer \? "Ask another…"/g) ?? []).length, 1);
+assert.match(filmRoomSource, /className=\{`stageLeader/);
 
 console.log("film room tests passed");
