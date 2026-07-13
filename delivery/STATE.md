@@ -1,7 +1,7 @@
 # STATE — Entrelíneas
 
 Updated: 2026-07-13 (DIRECTOR-grade)
-**Phase:** Gate 1 — clause-keyed story gallery LIVE; perceptual stack running
+**Phase:** Gate 1 — perceptual stack automated gates PASSED; human gates remain
 **Read order:** STATE → PLAN → STEWARDSHIP → LEDGER → active packet
 
 ## Where we are
@@ -29,9 +29,8 @@ doctrine v2 (docs/VISION_TRAINING_DOCTRINE.md).
 
 ## Next actions (in order)
 
-1. [DIRECTOR] Perceptual stack run 1 vs the live surface: golden
-   screens from the DEPLOYED URL, multimodal critic panel vs the
-   constitution, genuinely-fresh cold walkthrough, delight pass.
+1. [DIRECTOR] Delight pass on a real device (the stack's last
+   automated-adjacent gate); then [OWNER+DIRECTOR] calibration.
 2. [any-steward] HERMES-2 landing rerun (flip evidence 8/15 parked on
    packet/hermes-2; flip committed, landing run blocked twice by
    subscription/capacity walls).
