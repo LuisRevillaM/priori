@@ -190,10 +190,20 @@ def public_ask_cancellation_checkpoint() -> None:
         cancellation.checkpoint()
 
 
+def _close_public_ask_pipes(process: "subprocess.Popen[str]") -> None:
+    for stream in (process.stdout, process.stderr, process.stdin):
+        if stream is not None and not stream.closed:
+            try:
+                stream.close()
+            except OSError:
+                pass
+
+
 def terminate_public_ask_process(process: subprocess.Popen[str]) -> None:
     """Terminate the isolated Hermes process group, escalating after a short grace."""
 
     if process.poll() is not None:
+        _close_public_ask_pipes(process)
         return
     try:
         if os.name == "posix":
@@ -204,6 +214,7 @@ def terminate_public_ask_process(process: subprocess.Popen[str]) -> None:
         return
     try:
         process.wait(timeout=PUBLIC_ASK_PROCESS_TERMINATE_GRACE_SECONDS)
+        _close_public_ask_pipes(process)
         return
     except subprocess.TimeoutExpired:
         pass
@@ -213,11 +224,13 @@ def terminate_public_ask_process(process: subprocess.Popen[str]) -> None:
         else:
             process.kill()
     except ProcessLookupError:
+        _close_public_ask_pipes(process)
         return
     try:
         process.wait(timeout=PUBLIC_ASK_PROCESS_TERMINATE_GRACE_SECONDS)
     except subprocess.TimeoutExpired:
         pass
+    _close_public_ask_pipes(process)
 
 
 N1D_ATTESTATION_PATH = Path("delivery/n1d/n1d1-attestation.json")
