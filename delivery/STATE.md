@@ -31,15 +31,15 @@ doctrine v2 (docs/VISION_TRAINING_DOCTRINE.md).
 
 1. [DIRECTOR] Delight pass on a real device (the stack's last
    automated-adjacent gate); then [OWNER+DIRECTOR] calibration.
-2. [OWNER-BLOCKED] HERMES-2 landing: the openai-codex credential is
-   GONE from ~/.hermes-priori (root cause of all THREE access-invalid
-   landings — auth, never capacity). Owner runs in a real terminal:
-   HERMES_HOME=~/.hermes-priori hermes auth add openai-codex
-   Then any steward reruns the landing (evidence machinery is ready).
-3. [any-steward] Ask-timeout cancellation fix (counsel finding: timed
-   out public asks keep consuming resources).
-4. [any-steward] SHADOW-1 (Gate 2 shadow lane, tactical-first per
-   ADR 0017 R-0017-7) — vision repo + worktree, parallel-safe.
+2. [DONE 2026-07-13] HERMES-2 CLOSED: owner re-authed; valid landing
+   9/15 vs 7/15 baseline; the compiler runs gpt-5.6-sol (latency at
+   max effort is the ask-path watch item).
+3. [DONE 2026-07-13] Ask-timeout cancellation: merged + deployed,
+   live oracle PASS.
+4. [DONE 2026-07-13] SHADOW-1 ACCEPTED: fully VACUOUS survival table
+   (see PLAN Gate 2) — possession inference is the evidence-priced
+   first training investment; canonical-tracking adapter committed as
+   INT-0's first shape.
 5. [OWNER+DIRECTOR] Taste calibration session (constitution §6).
 6. [OWNER+DIRECTOR] Sealed exam SCP2-E under the two-sided bar — the
    Gate 1 closer (floor predeclared in writing before the set runs).
