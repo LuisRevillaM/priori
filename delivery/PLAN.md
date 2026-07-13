@@ -48,6 +48,14 @@ never presented as observation; the query-fidelity table states
 per-question what survives broadcast-grade tracking.
 Entry: Gate 1 passed. Work: INT-0 (vision coords through the
 canonical port), INT-1 (fidelity table), upload runbook + queue.
+SHADOW-1 evidence (2026-07-13, thresholds predeclared): the survival
+table is FULLY VACUOUS on current vision streams — the pipeline
+carries no possession/ball-state evidence, so every possession-shaped
+family is 100% UNKNOWN; physics vetoes gate 91.73% of best-position
+frames. Consequence: D-3 (temporal game-state: ball + possession
+jointly) is the evidence-priced first training investment, and Gate 2
+promises nothing possession-shaped until it lands. Full table:
+delivery/packets/SHADOW-1-REVIEW.md.
 Response ladder if vision-grade UNKNOWN share makes flagship queries
 vacuous on real footage (amended 2026-07-07 after the owner caught a
 vision drift in the original rule): (1) PRIMARY: the insist path —

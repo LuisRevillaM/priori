@@ -958,8 +958,22 @@ class TacticalQueryExecutor:
             .reset_index(drop=True)
         )
         raw_tracking = self.raw_root / match_id / "tracking.xml"
-        state = stream_ball_state(raw_tracking, period)
-        full_frame = ball.merge(state, on="frame_id").sort_values("frame_id").reset_index(drop=True)
+        canonical_frame_state = (
+            self.canonical_root
+            / "frame_state"
+            / f"match_id={match_id}"
+            / f"period={period}.parquet"
+        )
+        if canonical_frame_state.is_file():
+            state = stream_canonical_frame_state(canonical_frame_state)
+            full_frame = (
+                state.merge(ball, on="frame_id", how="left")
+                .sort_values("frame_id")
+                .reset_index(drop=True)
+            )
+        else:
+            state = stream_ball_state(raw_tracking, period)
+            full_frame = ball.merge(state, on="frame_id").sort_values("frame_id").reset_index(drop=True)
         analysis_rate_hz = params.integer("analysis_rate_hz")
         if FRAME_RATE_HZ % analysis_rate_hz != 0:
             raise RuntimeError(f"analysis_rate_hz={analysis_rate_hz} must divide source {FRAME_RATE_HZ} Hz")
@@ -1000,7 +1014,7 @@ class TacticalQueryExecutor:
             frame_ids=frame_ids,
             ball_y=frame.y_m.to_numpy(dtype=float),
             possession_role=frame.possession_team_role.to_numpy(dtype=object),
-            ball_alive=frame.ball_alive.to_numpy(dtype=bool),
+            ball_alive=nullable_bool_array(frame.ball_alive),
             defender_count=defenders.groupby("frame_id").entity_id.nunique(),
             defender_centroid_y=defenders.groupby("frame_id").y_m.mean().sort_index(),
         )
@@ -1363,6 +1377,7 @@ def data_scope_manifest_entries(
     paths = [
         canonical_root / "positions" / f"match_id={match_id}" / f"period={period}.parquet",
         canonical_root / "frames" / f"match_id={match_id}" / f"period={period}.parquet",
+        canonical_root / "frame_state" / f"match_id={match_id}" / f"period={period}.parquet",
         canonical_root / "events" / f"match_id={match_id}.parquet",
         canonical_root / "orientation.parquet",
         canonical_root / "players.parquet",
@@ -3817,6 +3832,35 @@ def stream_ball_state(raw_tracking_xml: Path, period: str) -> pd.DataFrame:
     if not rows:
         raise RuntimeError(f"No ball tracking state found for {raw_tracking_xml} {period}")
     return pd.DataFrame(rows)
+
+
+def stream_canonical_frame_state(path: Path) -> pd.DataFrame:
+    """Load provider-neutral ball/possession state without filling UNKNOWN values."""
+
+    frame = parquet_rows(
+        path,
+        [
+            "frame_id",
+            "possession_team_role",
+            "ball_alive",
+            "possession_evidence",
+            "ball_evidence",
+        ],
+    ).sort_values("frame_id").reset_index(drop=True)
+    for row in frame.itertuples(index=False):
+        if str(row.possession_evidence) == "UNKNOWN" and not pd.isna(row.possession_team_role):
+            raise RuntimeError(f"UNKNOWN possession evidence carries a team role in {path}")
+        if str(row.ball_evidence) == "UNKNOWN" and not pd.isna(row.ball_alive):
+            raise RuntimeError(f"UNKNOWN ball evidence carries ball state in {path}")
+    frame["possession_team_role"] = frame["possession_team_role"].where(
+        frame["possession_evidence"] == "KNOWN", None
+    )
+    frame["ball_alive"] = frame["ball_alive"].where(frame["ball_evidence"] == "KNOWN", None)
+    return frame
+
+
+def nullable_bool_array(series: pd.Series) -> np.ndarray:
+    return series.to_numpy(dtype=object if series.isna().any() else bool)
 
 
 def outfield_player_ids(canonical_root: Path, match_id: str, team_role: str) -> set[str]:
