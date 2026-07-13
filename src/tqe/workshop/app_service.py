@@ -14,6 +14,7 @@ import mimetypes
 import os
 import queue
 import re
+import signal
 import shutil
 import sqlite3
 import subprocess
@@ -110,6 +111,9 @@ DEMO_ACCESS_TOKEN = os.environ.get("DEMO_ACCESS_TOKEN", "").strip()
 DEMO_ACCESS_QUERY_TOKEN_ENABLED = os.environ.get("DEMO_ACCESS_QUERY_TOKEN_ENABLED", "").strip() == "1"
 TQE_PUBLIC_MODE = os.environ.get("TQE_PUBLIC_MODE", "").strip() == "1"
 TQE_PUBLIC_ASK_TIMEOUT_SECONDS = float(os.environ.get("TQE_PUBLIC_ASK_TIMEOUT_SECONDS", "120"))
+PUBLIC_ASK_CANCELLATION_POLL_SECONDS = 0.05
+PUBLIC_ASK_PROCESS_TERMINATE_GRACE_SECONDS = 0.25
+PUBLIC_ASK_WORKER_TERMINATE_GRACE_SECONDS = 1.0
 WORKBENCH_PREWARM_EXECUTION_CACHE = os.environ.get("WORKBENCH_PREWARM_EXECUTION_CACHE", "").strip() == "1"
 WORKBENCH_PREWARM_RESULT_LIMIT = int(os.environ.get("WORKBENCH_PREWARM_RESULT_LIMIT", "3"))
 WORKBENCH_PREWARM_FILM_ROOM = os.environ.get("WORKBENCH_PREWARM_FILM_ROOM", "0").strip() != "0"
@@ -133,6 +137,89 @@ FILM_ROOM_HYDRATION_DIR = "film-room-hydration"
 FILM_ROOM_DESCRIPTOR_INDEX_FILE = "film-room-descriptor-index.json"
 FILM_ROOM_EXECUTION_CACHE_METADATA_BYTES = 1024 * 1024
 FILM_ROOM_REBUILD_MAX_PAYLOAD_BYTES = 64 * 1024 * 1024
+
+
+class PublicAskCancelled(RuntimeError):
+    """Raised inside a public ask worker after its request deadline expires."""
+
+
+class PublicAskCancellation:
+    """Request-scoped cancellation that also owns active Hermes processes."""
+
+    def __init__(self) -> None:
+        self._cancelled = threading.Event()
+        self._lock = threading.Lock()
+        self._processes: set[subprocess.Popen[str]] = set()
+
+    def checkpoint(self) -> None:
+        if self._cancelled.is_set():
+            raise PublicAskCancelled("public Film Room ask was cancelled")
+
+    def register_process(self, process: subprocess.Popen[str]) -> None:
+        with self._lock:
+            cancelled = self._cancelled.is_set()
+            if not cancelled:
+                self._processes.add(process)
+        if cancelled:
+            terminate_public_ask_process(process)
+            self.checkpoint()
+
+    def unregister_process(self, process: subprocess.Popen[str]) -> None:
+        with self._lock:
+            self._processes.discard(process)
+
+    def cancel(self) -> None:
+        self._cancelled.set()
+        with self._lock:
+            processes = tuple(self._processes)
+        for process in processes:
+            terminate_public_ask_process(process)
+
+
+PUBLIC_ASK_CANCELLATION_LOCAL = threading.local()
+
+
+def active_public_ask_cancellation() -> PublicAskCancellation | None:
+    cancellation = getattr(PUBLIC_ASK_CANCELLATION_LOCAL, "cancellation", None)
+    return cancellation if isinstance(cancellation, PublicAskCancellation) else None
+
+
+def public_ask_cancellation_checkpoint() -> None:
+    cancellation = active_public_ask_cancellation()
+    if cancellation is not None:
+        cancellation.checkpoint()
+
+
+def terminate_public_ask_process(process: subprocess.Popen[str]) -> None:
+    """Terminate the isolated Hermes process group, escalating after a short grace."""
+
+    if process.poll() is not None:
+        return
+    try:
+        if os.name == "posix":
+            os.killpg(process.pid, signal.SIGTERM)
+        else:
+            process.terminate()
+    except ProcessLookupError:
+        return
+    try:
+        process.wait(timeout=PUBLIC_ASK_PROCESS_TERMINATE_GRACE_SECONDS)
+        return
+    except subprocess.TimeoutExpired:
+        pass
+    try:
+        if os.name == "posix":
+            os.killpg(process.pid, signal.SIGKILL)
+        else:
+            process.kill()
+    except ProcessLookupError:
+        return
+    try:
+        process.wait(timeout=PUBLIC_ASK_PROCESS_TERMINATE_GRACE_SECONDS)
+    except subprocess.TimeoutExpired:
+        pass
+
+
 N1D_ATTESTATION_PATH = Path("delivery/n1d/n1d1-attestation.json")
 N1D_MANIFEST_PATH = Path("delivery/n1d/n1d-canonical-freeze-manifest.json")
 N1D_ORIGIN_BUNDLE_PATH = Path("delivery/n1d/n1f-origin-bundle.json")
@@ -1888,15 +1975,53 @@ def run_hermes_invocation(
             "workshop_output_root": cloud_safe_path(workshop_output_root),
         },
     )
-    completed = subprocess.run(
-        [hermes_python, "-m", "tqe.workshop.hermes_invocation", *args],
-        check=False,
-        capture_output=True,
-        text=True,
-        timeout=timeout,
-        env=env,
-        cwd=REPO_ROOT,
-    )
+    command = [hermes_python, "-m", "tqe.workshop.hermes_invocation", *args]
+    cancellation = active_public_ask_cancellation()
+    if cancellation is None:
+        completed = subprocess.run(
+            command,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            env=env,
+            cwd=REPO_ROOT,
+        )
+    else:
+        cancellation.checkpoint()
+        process = subprocess.Popen(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            env=env,
+            cwd=REPO_ROOT,
+            start_new_session=os.name == "posix",
+        )
+        cancellation.register_process(process)
+        deadline = time.monotonic() + timeout
+        try:
+            while True:
+                cancellation.checkpoint()
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    terminate_public_ask_process(process)
+                    stdout, stderr = process.communicate()
+                    raise subprocess.TimeoutExpired(command, timeout, output=stdout, stderr=stderr)
+                try:
+                    stdout, stderr = process.communicate(
+                        timeout=min(PUBLIC_ASK_CANCELLATION_POLL_SECONDS, remaining)
+                    )
+                    break
+                except subprocess.TimeoutExpired:
+                    continue
+            cancellation.checkpoint()
+            completed = subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
+        finally:
+            cancellation.unregister_process(process)
+            if process.poll() is None:
+                terminate_public_ask_process(process)
+            process.communicate()
     log_hermes_event(
         "subprocess_complete",
         {
@@ -2613,7 +2738,9 @@ def film_room_ask_request(payload: dict[str, Any], *, output_root: Path) -> dict
     os.environ.setdefault("HERMES_SCP2_2_MODEL", HERMES_MODEL)
     started_at = time.monotonic()
     hermes_started_at = time.monotonic()
+    public_ask_cancellation_checkpoint()
     outcome = compile_nl_request(text, context=film_room_compile_context(payload))
+    public_ask_cancellation_checkpoint()
     hermes_latency_ms = int((time.monotonic() - hermes_started_at) * 1000)
     hermes_payload = outcome.model_dump(mode="json")
     response: dict[str, Any] = {
@@ -2645,6 +2772,7 @@ def film_room_ask_request(payload: dict[str, Any], *, output_root: Path) -> dict
     coverage_path = Path("generated/coverage-map.json")
     coverage_rows = read_json(coverage_path) if coverage_path.exists() else None
     synthesis_started_at = time.monotonic()
+    public_ask_cancellation_checkpoint()
     try:
         synthesized = synthesize_and_bind(outcome.expression, coverage_rows=coverage_rows)
     except SynthesisError as exc:
@@ -2670,6 +2798,7 @@ def film_room_ask_request(payload: dict[str, Any], *, output_root: Path) -> dict
             "total": int(response["latency_ms"]),
         }
         return validate_public_response("FilmRoomAskResponse", response)
+    public_ask_cancellation_checkpoint()
     synthesis_latency_ms = int((time.monotonic() - synthesis_started_at) * 1000)
     execution_started_at = time.monotonic()
     answer = film_room_answer_from_document(
@@ -2679,6 +2808,7 @@ def film_room_ask_request(payload: dict[str, Any], *, output_root: Path) -> dict
         synthesized_document_hash=str(synthesized["document_hash"]),
         output_root=output_root,
     )
+    public_ask_cancellation_checkpoint()
     execution_latency_ms = int((time.monotonic() - execution_started_at) * 1000)
     answer["compiled_chips"] = film_room_compiled_chips(hermes_payload.get("expression_json"), synthesized["document"])
     response["answer"] = answer
@@ -2694,18 +2824,24 @@ def film_room_ask_request(payload: dict[str, Any], *, output_root: Path) -> dict
 
 def public_film_room_ask_with_timeout(payload: dict[str, Any], *, output_root: Path) -> tuple[dict[str, Any], HTTPStatus]:
     result_queue: queue.Queue[tuple[str, Any]] = queue.Queue(maxsize=1)
+    cancellation = PublicAskCancellation()
 
     def run() -> None:
+        PUBLIC_ASK_CANCELLATION_LOCAL.cancellation = cancellation
         try:
             result_queue.put(("response", film_room_ask_request(payload, output_root=output_root)))
         except Exception as exc:  # noqa: BLE001 - transported to request thread for typed rendering.
             result_queue.put(("exception", exc))
+        finally:
+            del PUBLIC_ASK_CANCELLATION_LOCAL.cancellation
 
     worker = threading.Thread(target=run, name="public-film-room-ask", daemon=True)
     worker.start()
     try:
         kind, value = result_queue.get(timeout=TQE_PUBLIC_ASK_TIMEOUT_SECONDS)
     except queue.Empty:
+        cancellation.cancel()
+        worker.join(timeout=PUBLIC_ASK_WORKER_TERMINATE_GRACE_SECONDS)
         timeout = TimeoutError(f"public Film Room ask exceeded {TQE_PUBLIC_ASK_TIMEOUT_SECONDS:g}s")
         correlation_id = log_internal_error(timeout, path="/api/film-room/ask")
         return (
@@ -2893,6 +3029,7 @@ def film_room_answer_from_document(
 def film_room_execute_document(document_payload: dict[str, Any], *, output_root: Path) -> list[dict[str, Any]]:
     executions: list[dict[str, Any]] = []
     for role, document in film_room_role_documents(document_payload).items():
+        public_ask_cancellation_checkpoint()
         plan_document = TacticalQueryDocument.model_validate(deepcopy(document))
         source_label = f"film_room_{role}"
         submitted = submit_query_plan(
@@ -2900,6 +3037,7 @@ def film_room_execute_document(document_payload: dict[str, Any], *, output_root:
             output_root=output_root,
             caller_profile=CallerProfile.HOST_MANUAL,
         )
+        public_ask_cancellation_checkpoint()
         validation = validate_query_plan(
             ValidateQueryPlanRequest(draft_plan_id=submitted.draft_plan_id),
             output_root=output_root,
@@ -2907,18 +3045,22 @@ def film_room_execute_document(document_payload: dict[str, Any], *, output_root:
         )
         if not validation.ok or not validation.bound_plan_id:
             raise CapabilityGap(f"Film Room plan failed validation for {role}: {validation.issues}")
+        public_ask_cancellation_checkpoint()
         confirmation = host_confirm_bound_plan(
             validation.bound_plan_id,
             reviewer="film_room",
             output_root=output_root,
         )
+        public_ask_cancellation_checkpoint()
         execute_request = ExecuteQueryPlanRequest(
             bound_plan_id=validation.bound_plan_id,
             execution_authorization_id=confirmation.execution_authorization_id,
             result_limit=WORKBENCH_FILM_ROOM_RESULT_LIMIT,
         )
         cache_before = execution_cache_status(execute_request.model_dump(mode="json"), output_root=output_root)
+        public_ask_cancellation_checkpoint()
         executed = cached_execute_query_plan(execute_request, output_root=output_root)
+        public_ask_cancellation_checkpoint()
         execution_record = read_handle("executions", str(executed["execution"]["execution_id"]), output_root=output_root)
         provenance = execution_record.get("execution", {}).get("provenance", {})
         runtime_evidence_sources = (
@@ -2940,6 +3082,7 @@ def film_room_execute_document(document_payload: dict[str, Any], *, output_root:
                 "bound_record": read_handle("bound-plans", validation.bound_plan_id, output_root=output_root),
             }
         )
+        public_ask_cancellation_checkpoint()
     return [FilmRoomExecutionRecordResponse.model_validate(item).model_dump(mode="json") for item in executions]
 
 

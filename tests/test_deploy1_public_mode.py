@@ -7,7 +7,6 @@ import subprocess
 import sys
 import tempfile
 import threading
-import time
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -155,16 +154,41 @@ class Deploy1PublicModeTests(unittest.TestCase):
         ask_request.assert_not_called()
 
     def test_public_mode_live_ask_timeout_is_typed_internal_error(self) -> None:
+        real_popen = subprocess.Popen
+        child_processes: list[subprocess.Popen[str]] = []
+        worker_exited = threading.Event()
+
+        def slow_hermes_process(_command: list[str], **kwargs: object) -> subprocess.Popen[str]:
+            process = real_popen(
+                [sys.executable, "-c", "import time; time.sleep(30)"],
+                stdout=kwargs.get("stdout"),
+                stderr=kwargs.get("stderr"),
+                text=bool(kwargs.get("text")),
+                start_new_session=bool(kwargs.get("start_new_session")),
+            )
+            child_processes.append(process)
+            return process
+
         def slow_ask(_payload: dict[str, object], *, output_root: Path) -> dict[str, object]:
-            time.sleep(0.2)
-            return {"ok": True}
+            try:
+                app_service.run_hermes_invocation(
+                    "hermes",
+                    ["interpret", "--prompt", "deliberately slow"],
+                    timeout=30,
+                    output_root=output_root,
+                )
+                return {"ok": True}
+            finally:
+                worker_exited.set()
 
         with (
             patch("tqe.workshop.app_service.TQE_PUBLIC_MODE", True),
             patch("tqe.workshop.app_service.DEMO_ACCESS_TOKEN", "secret"),
-            patch("tqe.workshop.app_service.TQE_PUBLIC_ASK_TIMEOUT_SECONDS", 0.01),
+            patch("tqe.workshop.app_service.TQE_PUBLIC_ASK_TIMEOUT_SECONDS", 0.1),
             patch("tqe.workshop.app_service.film_room_ask_disabled_reason", return_value=None),
             patch("tqe.workshop.app_service.film_room_ask_request", side_effect=slow_ask),
+            patch("tqe.workshop.app_service.hermes_python_executable", return_value=sys.executable),
+            patch("tqe.workshop.app_service.subprocess.Popen", side_effect=slow_hermes_process),
         ):
             status, body = self.request(
                 "POST",
@@ -177,6 +201,11 @@ class Deploy1PublicModeTests(unittest.TestCase):
         self.assertEqual(False, body["ok"])
         self.assertEqual("INTERNAL_ERROR", body["error_code"])
         self.assertEqual("public_ask_timeout", body["details"]["reason"])
+        self.assertTrue(worker_exited.wait(timeout=0.5), "timed-out ask worker was left running")
+        self.assertEqual(1, len(child_processes))
+        self.assertIsNotNone(child_processes[0].poll(), "timed-out Hermes process was orphaned")
+        self.assertTrue(child_processes[0].stdout is None or child_processes[0].stdout.closed)
+        self.assertTrue(child_processes[0].stderr is None or child_processes[0].stderr.closed)
 
     def test_provisioning_rejects_cache_hash_mismatch(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
