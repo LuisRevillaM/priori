@@ -46,7 +46,9 @@ from tqe.runtime.values import FrameSignal
 
 
 def primitive_possession_segment(state: PeriodState, node: BoundCatalogNode) -> None:
-    possession_mask = (state.possession_role == state.perspective_team_role) & state.ball_alive
+    possession_mask = (
+        state.possession_role == state.perspective_team_role
+    ) & _known_ball_alive_mask(state.ball_alive)
     minimum_frames = int(round(state.params.number("minimum_possession_seconds") * state.params.integer("analysis_rate_hz")))
     segments = [
         {
@@ -118,12 +120,58 @@ def primitive_transition_anchor(state: PeriodState, node: BoundCatalogNode) -> N
     previous_role_required = state.defending_team_role if transition_type == "regain" else state.perspective_team_role
     new_role_required = state.perspective_team_role if transition_type == "regain" else state.defending_team_role
     for idx in range(1, len(state.frame_ids)):
-        previous_role = str(state.possession_role[idx - 1])
-        new_role = str(state.possession_role[idx])
-        if previous_role != previous_role_required or new_role != new_role_required:
-            continue
+        previous_raw = state.possession_role[idx - 1]
+        new_raw = state.possession_role[idx]
+        alive_raw = state.ball_alive[idx]
         frame_id = int(state.frame_ids[idx])
         previous_frame_id = int(state.frame_ids[idx - 1])
+        if any(_tracking_value_unknown(value) for value in (previous_raw, new_raw, alive_raw)):
+            zone = zone_evaluation_at_frame(
+                state=state,
+                frame_id=frame_id,
+                zone_name=zone_filter if zone_filter != "any" else "any",
+                attack_x_sign=attack_x_sign,
+                zone_boundary_buffer_m=zone_boundary_buffer_m,
+            )
+            entity_refs = [state.perspective_team_id]
+            records.append(
+                {
+                    "anchor_id": anchor_record_id(
+                        match_id=state.match_id,
+                        period=state.period,
+                        anchor_frame_id=frame_id,
+                        start_frame_id=previous_frame_id,
+                        end_frame_id=frame_id,
+                        entity_refs=entity_refs,
+                    ),
+                    "match_id": state.match_id,
+                    "period": state.period,
+                    "anchor_frame_id": frame_id,
+                    "start_frame_id": previous_frame_id,
+                    "end_frame_id": frame_id,
+                    "entity_refs": entity_refs,
+                    "transition_status": "UNKNOWN",
+                    "transition_reason": "possession_or_ball_evidence_unknown",
+                    "transition_type": transition_type,
+                    "possession_id": None,
+                    "transition_frame_id": frame_id,
+                    "previous_frame_id": previous_frame_id,
+                    "previous_team_role": previous_role_required,
+                    "new_team_role": new_role_required,
+                    "observed_previous_team_role": None,
+                    "observed_new_team_role": None,
+                    "prior_possession_frame_count": 0,
+                    "minimum_prior_possession_seconds": minimum_prior_possession_seconds,
+                    "transition_match_time_ms": frame_match_time_ms(state, frame_id),
+                    "attacking_direction": attack_x_sign,
+                    **zone,
+                }
+            )
+            continue
+        previous_role = str(previous_raw)
+        new_role = str(new_raw)
+        if previous_role != previous_role_required or new_role != new_role_required:
+            continue
         prior_start = max(0, idx - prior_frames_required)
         prior_slice = state.possession_role[prior_start:idx]
         prior_alive = state.ball_alive[prior_start:idx]
@@ -200,6 +248,22 @@ def primitive_transition_anchor(state: PeriodState, node: BoundCatalogNode) -> N
         ),
         "transition_status_records": records,
     }
+
+
+def _tracking_value_unknown(value: Any) -> bool:
+    if value is None:
+        return True
+    try:
+        return bool(pd.isna(value))
+    except (TypeError, ValueError):
+        return False
+
+
+def _known_ball_alive_mask(values: np.ndarray) -> np.ndarray:
+    return np.asarray(
+        [False if _tracking_value_unknown(value) else bool(value) for value in values],
+        dtype=bool,
+    )
 
 
 def primitive_structured_zone(state: PeriodState, node: BoundCatalogNode) -> None:
