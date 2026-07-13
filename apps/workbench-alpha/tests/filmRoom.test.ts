@@ -490,6 +490,15 @@ assert.match(cssRule(".stageLeader.evidenceUnknown"), /STROKE:\s*#8B93A0/);
 assert.match(cssRule(".metricObserved b"), /COLOR:\s*#FFB13D/);
 assert.doesNotMatch(css, /\.partitionLegend\s*\{/);
 
+// T1 lint extension (perceptual run 3): form controls must not leak native
+// grays — the scrubber track/thumb wear tokens in every engine.
+assert.match(css, /input\[type="range"\]::-webkit-slider-runnable-track/);
+assert.match(css, /input\[type="range"\]::-moz-range-track/);
+assert.match(css, /input\[type="range"\]::-webkit-slider-thumb/);
+assert.match(cssRule('.filmControls input[type="range"]::-moz-range-progress'), /BACKGROUND:\s*#FFB13D/);
+const rawGrays = css.match(/#(3B3B3B|858585|808080|D3D3D3)/gi);
+assert.equal(rawGrays, null, `raw native grays leaked into css: ${rawGrays}`);
+
 const filmRoomSource = readFileSync(resolve(process.cwd(), "src/FilmRoom.tsx"), "utf8");
 assert.equal((filmRoomSource.match(/momentCoverageText\(response\?\.answer\)/g) ?? []).length, 1);
 assert.equal((filmRoomSource.match(/placeholder=\{response\?\.answer \? "Ask another…"/g) ?? []).length, 1);
