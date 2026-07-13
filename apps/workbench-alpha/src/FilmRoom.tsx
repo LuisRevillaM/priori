@@ -30,7 +30,7 @@ function formatPercent(value: number | null | undefined) {
 }
 
 function formatCount(value: unknown) {
-  return typeof value === "number" && Number.isFinite(value) ? String(value) : "0";
+  return typeof value === "number" && Number.isFinite(value) ? Math.round(value).toLocaleString("en-US") : "0";
 }
 
 function periodLabel(period: string) {
@@ -615,6 +615,7 @@ function PitchReplay({
           min="0"
           max={Math.max(0, replay.frames.length - 1)}
           value={frameIndex}
+          style={{ "--played": `${(frameIndex / Math.max(1, replay.frames.length - 1)) * 100}%` } as React.CSSProperties}
           onChange={(event) => setFrameIndex(Number(event.currentTarget.value))}
           aria-label="Replay frame"
         />
@@ -701,7 +702,11 @@ function ProvenanceStrip({ response, replay }: { response: FilmRoomAskResponse |
       <span title={tree.title}>TREE {tree.text}</span>
       <span>REPLAY {replay?.replay_window_id ?? provenance?.replay_window_id ?? "none"}</span>
       <span>METRIC {response?.answer?.interval_metric?.label ?? "pending"}</span>
-      <span>Hermes {timing(latency?.hermes)} · Synthesis {timing(latency?.synthesis)} · Execution {timing(latency?.execution)}</span>
+      <span title={`Hermes ${timing(latency?.hermes)} · Synthesis ${timing(latency?.synthesis)} · Execution ${timing(latency?.execution)}`}>
+        {latency?.hermes || latency?.synthesis || latency?.execution
+          ? `answered in ${(latency?.hermes ?? 0) + (latency?.synthesis ?? 0) + (latency?.execution ?? 0)} ms`
+          : "timings not measured"}
+      </span>
     </section>
   );
 }

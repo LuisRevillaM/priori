@@ -2608,3 +2608,56 @@ summary:focus-visible {
     grid-column: 1 / -1;
   }
 }
+
+/* Scrubber: tokened track (T1) — the film room's most-touched control.
+   Raw browser grays are the one color law a native range leaks. */
+.filmControls input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 22px;
+  background: transparent;
+  cursor: pointer;
+}
+.filmControls input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(to right, #ffb13d var(--played, 0%), #0e1411 var(--played, 0%));
+  border: 1px solid #1c2620;
+}
+.filmControls input[type="range"]::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: #0e1411;
+  border: 1px solid #1c2620;
+}
+.filmControls input[type="range"]::-moz-range-progress {
+  height: 4px;
+  border-radius: 2px;
+  background: #ffb13d;
+}
+.filmControls input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background: #ffb13d;
+  border: 1px solid #0b0f0d;
+}
+.filmControls input[type="range"]::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ffb13d;
+  border: 1px solid #0b0f0d;
+}
+.filmControls input[type="range"]:focus-visible {
+  outline: none;
+}
+.filmControls input[type="range"]:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 2px #0b0f0d, 0 0 0 4px #ffb13d;
+}
+.filmControls input[type="range"]:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 2px #0b0f0d, 0 0 0 4px #ffb13d;
+}
