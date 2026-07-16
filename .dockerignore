@@ -15,3 +15,5 @@ review-packets
 test-results
 docs/learnings.zip
 .DS_Store
+.gallery2-executor/
+.*-executor/

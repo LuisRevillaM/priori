@@ -1,0 +1,83 @@
+Prewarming Film Room flagship from certified table delivery/packets/gallery-2-pressing-map/pressing_map_regain_thirds_table.json...
+Prewarmed Film Room flagship from certified table delivery/packets/gallery-2-pressing-map/pressing_map_regain_thirds_table.json: moments=0 elapsed_ms=281
+Prewarming Film Room flagship from certified table delivery/packets/r2-2-flagship/fragile_retention_rate_table.json...
+Prewarmed Film Room flagship from certified table delivery/packets/r2-2-flagship/fragile_retention_rate_table.json: moments=0 elapsed_ms=71
+Prewarming Film Room flagship from certified table delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json...
+Prewarmed Film Room flagship from certified table delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json: moments=28 elapsed_ms=107
+Loading Film Room descriptor metadata for delivery/packets/gallery-2-pressing-map/pressing_map_regain_thirds_v0.json...
+Loaded Film Room descriptor metadata for delivery/packets/gallery-2-pressing-map/pressing_map_regain_thirds_v0.json: descriptors=2811 full_payloads_opened=0 upgrade_applied=True elapsed_ms=3261
+Loading Film Room descriptor metadata for delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json...
+Loaded Film Room descriptor metadata for delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json: descriptors=0 full_payloads_opened=0 upgrade_applied=False
+Loading Film Room descriptor metadata for delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_v0.json...
+Loaded Film Room descriptor metadata for delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_v0.json: descriptors=0 full_payloads_opened=0 upgrade_applied=False
+Film Room descriptor index load complete.
+Film Room execution prewarm disabled; disk descriptor index is loaded independently.
+{
+  "bootstrap_state": "ready",
+  "cgroup_limit_bytes": 2147483648,
+  "counterattack_servable": true,
+  "descriptor_count": 2811,
+  "execution_prewarm": false,
+  "fragment_summaries": [
+    {
+      "descriptor_count": 1407,
+      "flagship_key": "pressing_map",
+      "fragment_path": "/tmp/gallery2-local-proof-igxtv825/cache/film-room-descriptor-fragments/pressing_map-away.json",
+      "fragment_sha256": "dfd3a78e51f0331c1401a0d19050e906fa0e60e7179cf49222b87b6d405139aa",
+      "role": "away"
+    },
+    {
+      "descriptor_count": 1404,
+      "flagship_key": "pressing_map",
+      "fragment_path": "/tmp/gallery2-local-proof-igxtv825/cache/film-room-descriptor-fragments/pressing_map-home.json",
+      "fragment_sha256": "4e12bd1ee1a39549a07c8bf684c1139b76a000829cfe659ae9ac0d79deb73c02",
+      "role": "home"
+    },
+    {
+      "descriptor_count": 0,
+      "flagship_key": "fragile_retention",
+      "fragment_path": "/tmp/gallery2-local-proof-igxtv825/cache/film-room-descriptor-fragments/fragile_retention-away.json",
+      "fragment_sha256": "beec3ad449a08fd47623cf65f02727e0bdb6f7603669d7499c4eef2bbea408c9",
+      "role": "away"
+    },
+    {
+      "descriptor_count": 0,
+      "flagship_key": "fragile_retention",
+      "fragment_path": "/tmp/gallery2-local-proof-igxtv825/cache/film-room-descriptor-fragments/fragile_retention-home.json",
+      "fragment_sha256": "b8f356b9f5bf9bc3303fc92d8400eb8ebd861203377dda00acdaf53166f49c68",
+      "role": "home"
+    },
+    {
+      "descriptor_count": 0,
+      "flagship_key": "counterattack_sequence_rate",
+      "fragment_path": "/tmp/gallery2-local-proof-igxtv825/cache/film-room-descriptor-fragments/counterattack_sequence_rate-away.json",
+      "fragment_sha256": "616df4cc5a26a2232f2dca6d53d0391a056a29e66b277651f1c55225cc8d14e1",
+      "role": "away"
+    },
+    {
+      "descriptor_count": 0,
+      "flagship_key": "counterattack_sequence_rate",
+      "fragment_path": "/tmp/gallery2-local-proof-igxtv825/cache/film-room-descriptor-fragments/counterattack_sequence_rate-home.json",
+      "fragment_sha256": "b769cb1beef3475f4d46f9f0523155da4a7f502cdf47f5eee6fbe2f7c3480c97",
+      "role": "home"
+    }
+  ],
+  "headroom_bytes": 1631739904,
+  "hydrations": [
+    {
+      "frame_count": 101,
+      "replay_window_id": "replay_7bc0f3abe7dfe4ec",
+      "stage_label_count": 1
+    },
+    {
+      "frame_count": 101,
+      "replay_window_id": "replay_f91e88ee52165137",
+      "stage_label_count": 1
+    }
+  ],
+  "memory_peak_bytes": 515743744,
+  "memory_peak_source": "cgroup",
+  "pressing_map_servable": true,
+  "schema_version": "gallery_2_local_proof.v1",
+  "sealed_2gib_proof": true
+}
