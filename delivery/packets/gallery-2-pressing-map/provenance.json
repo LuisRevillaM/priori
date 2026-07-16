@@ -1,0 +1,11 @@
+{
+  "fallback_rung": "a_thirds",
+  "meaning_expression_hash": "151e7b88cc72d591b962abcebb65550e18e8dd9cf708f51a5b3319abad5aa5e7",
+  "moment_records_hash": "a88e02b6fef62582226a22fa3da62041f414144290e87a2104ce3c5bf2d31902",
+  "period_records_hash": "e603fb66ea5c3ee2fbe2802d21a52352f438a101bff5ff3d7eddfb6005936175",
+  "plan_hash": "41d80fb5308a7e90ad633327e4422f11ef3c5c404d01f6012aa90e080317925c",
+  "population_count": 2811,
+  "registry_modified": false,
+  "schema_version": "gallery_2_pressing_map_provenance.v1",
+  "table_hash": "e40f1abc02d142eb96b644e12841e6ac5714b60c1f94817aecfbeda2d482e97e"
+}

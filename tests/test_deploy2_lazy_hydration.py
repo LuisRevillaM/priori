@@ -196,6 +196,51 @@ class Deploy2LazyHydrationTests(unittest.TestCase):
 
         self.assertEqual(1, summary["descriptor_count"])
 
+    def test_pressing_map_certified_population_builds_lazy_descriptors_without_execution(self) -> None:
+        table = read_json(app_service.FILM_ROOM_GALLERY_2_TABLE_PATH)
+        pressing_spec = next(
+            spec for spec in film_room_flagship_specs() if spec["key"] == "pressing_map"
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            cache = root / "cache"
+            with (
+                patch("tqe.workshop.app_service.CACHE_ROOT", cache),
+                patch(
+                    "tqe.workshop.app_service.film_room_flagship_specs",
+                    return_value=[pressing_spec],
+                ),
+            ):
+                index = build_film_room_descriptor_index(output_root=root / "runtime")
+
+            fragments = [
+                read_json(
+                    cache
+                    / app_service.FILM_ROOM_DESCRIPTOR_FRAGMENT_DIR
+                    / f"pressing_map-{role}.json"
+                )
+                for role in ("away", "home")
+            ]
+            fragment = fragments[0]
+            first = fragment["moments"][0]
+            hydration = read_json(cache / first["hydration_path"])
+
+        self.assertEqual(
+            table["totals"]["population_count"],
+            sum(len(item["moments"]) for item in fragments),
+        )
+        self.assertEqual(table["totals"]["population_count"], index["flagships"]["pressing_map"]["descriptor_count"])
+        self.assertEqual("result", first["descriptor"]["source_kind"])
+        self.assertEqual("REGAIN_LOCATION", first["descriptor"]["classification"])
+        self.assertIn("zone_name", first["descriptor"]["requested_evidence"])
+        self.assertNotIn("frames", first["descriptor"])
+        self.assertIn("moment_record", hydration)
+        self.assertNotIn("frames", hydration)
+        self.assertEqual(
+            "certified_moment_records",
+            app_service.FILM_ROOM_PREWARM_STATE["descriptor_rebuild"]["source"],
+        )
+
     def test_prewarm_off_startup_loads_metadata_without_execution_or_full_payloads(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -289,7 +334,7 @@ class Deploy2LazyHydrationTests(unittest.TestCase):
             for record in bootstrap["prewarm_records"]
             if record.get("prewarm_kind") == "descriptor_index_load"
         ]
-        self.assertEqual(2, len(descriptor_records))
+        self.assertEqual(3, len(descriptor_records))
         fragile_record = next(
             record
             for record in bootstrap["prewarm_records"]
@@ -390,7 +435,7 @@ class Deploy2LazyHydrationTests(unittest.TestCase):
         self.assertEqual("ready", bootstrap["state"])
         self.assertEqual(1, len(bootstrap["answer"]["moments"]))
         self.assertEqual("disk-cache", hydrated_marker)
-        self.assertEqual(4, len(rebuild_records))
+        self.assertEqual(6, len(rebuild_records))
         self.assertTrue(
             all("cache-key miss" in record["rebuild_reason"] for record in rebuild_records)
         )

@@ -109,6 +109,9 @@ function observedCarryMetres(moment: FilmRoomMoment, replay?: ReplayPayload | nu
 }
 
 export function unknownMomentText(moment: FilmRoomMoment): string {
+  if (moment.source_kind === "result") {
+    return "the regain is observed, but its pitch third stays location unknown";
+  }
   const reason = String(moment.chain_reason ?? moment.unknown_reason ?? "");
   if (reason === "stage_2_window_truncated") return "couldn't see whether ② happened — half ended";
   if (reason === "stage_3_window_truncated") return "couldn't see whether ③ happened — half ended";
@@ -123,6 +126,14 @@ export function unknownMomentText(moment: FilmRoomMoment): string {
 }
 
 export function momentCardText(moment: FilmRoomMoment, replay?: ReplayPayload | null): string {
+  if (moment.source_kind === "result") {
+    const evidence = asRecord(moment.requested_evidence);
+    const team = String(evidence.team_name ?? "Team not recorded");
+    const zone = typeof evidence.zone_name === "string"
+      ? evidence.zone_name.replace("final_third", "attacking third").replaceAll("_", " ")
+      : "location unknown";
+    return `${matchClock(moment)} · ${team} win it back · ${zone}`;
+  }
   if (moment.chain_status === "UNKNOWN") return unknownMomentText(moment);
   const carry = observedCarryMetres(moment, replay);
   const carryText = carry == null ? "watching the carry…" : `+${carry.toFixed(1)} m carry`;

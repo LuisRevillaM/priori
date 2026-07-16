@@ -132,13 +132,14 @@ test('N8 cold walkthrough: "read the question, watch one replay, narrate which p
   };
   bootstrap.prewarmed_response = response;
   bootstrap.answer = response.answer;
+  let galleryMoments = [unknownMoment, passMoment];
 
   await page.route("**/api/film-room/bootstrap", async (route) => {
     await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(bootstrap) });
   });
   await page.route("**/api/film-room/replay-window**", async (route) => {
     const replayWindowId = new URL(route.request().url()).searchParams.get("replay_window_id");
-    const moment = [unknownMoment, passMoment].find((item) => item?.replay_window_id === replayWindowId);
+    const moment = galleryMoments.find((item) => item?.replay_window_id === replayWindowId);
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -225,5 +226,91 @@ test('N8 cold walkthrough: "read the question, watch one replay, narrate which p
   await expect(page.getByText("80% observed")).toBeVisible();
   if (candidateRoot) {
     await captureCandidate(page, resolve(candidateRoot, "ratio-first-answer.png"));
+  }
+
+  const pressingTable = loadJson(
+    resolve(
+      repoRoot,
+      "delivery/packets/gallery-2-pressing-map/pressing_map_regain_thirds_table.json"
+    )
+  );
+  const pressingMoments = pressingTable.moment_records.slice(0, 2).map((record: Record<string, unknown>) => ({
+    result_id: record.anchor_id,
+    source_kind: "result",
+    classification: "REGAIN_LOCATION",
+    match_id: record.match_id,
+    period: record.period,
+    anchor_frame_id: record.anchor_frame_id,
+    start_frame_id: record.start_frame_id,
+    end_frame_id: record.end_frame_id,
+    match_time_ms: record.transition_match_time_ms,
+    requested_evidence: record,
+    replay_window_id: `pressing-${record.anchor_id}`,
+    replay_start_frame_id: Number(record.anchor_frame_id) - 50,
+    replay_end_frame_id: Number(record.anchor_frame_id) + 50,
+    evidence_row: record,
+    unknown_reason: record.location_status === "UNKNOWN" ? record.zone_reason : null,
+    chain_status: record.location_status,
+    chain_reason: record.zone_reason,
+    evidence_overlay: {
+      stage_labels: [{ stage: 0, label: `regain · ${String(record.zone_name).replaceAll("_", " ")}`, frame_id: record.anchor_frame_id, status: record.location_status }],
+      anchor_markers: [{ stage: 0, frame_id: record.anchor_frame_id, status: record.location_status }],
+      carry_trails: [],
+      unknown: { is_unknown: record.location_status === "UNKNOWN", reason: record.zone_reason }
+    }
+  }));
+  const pressingResponse = structuredClone(response);
+  pressingResponse.request_text = "Where does each team win the ball back?";
+  pressingResponse.answer.meaning_expression = loadJson(
+    resolve(repoRoot, "delivery/packets/gallery-2-pressing-map/meaning-expression.json")
+  );
+  pressingResponse.answer.certified_evidence_rows = pressingTable.rows;
+  pressingResponse.answer.interval_metric = {
+    label: "CERTIFIED interval (observed regain location)",
+    observed: pressingTable.totals.rate_observed,
+    lower: pressingTable.totals.rate_lower_bound,
+    upper: pressingTable.totals.rate_upper_bound,
+    unknown_count: pressingTable.totals.unknown_count,
+    source: {
+      evidence_kind: "certified",
+      population_count: pressingTable.totals.population_count,
+      a_count: pressingTable.totals.a_count,
+      b_count: 0,
+      c_count: pressingTable.totals.c_count,
+      d1_count: 0,
+      d2_count: 0,
+      e_count: 0
+    }
+  };
+  pressingResponse.answer.moments = pressingMoments;
+  pressingResponse.answer.moment_total_count = pressingTable.totals.population_count;
+  pressingResponse.answer.visible_moment_count = pressingMoments.length;
+  pressingResponse.answer.raw_evidence = {
+    certified_table: pressingTable,
+    descriptor_index: {
+      coverage: {
+        schema_version: "film_room.replay_coverage.v1",
+        reason_code: "certified_regain_preimages",
+        shown_count: pressingTable.totals.population_count,
+        population_count: pressingTable.totals.population_count,
+        replay_partition_count: 28,
+        completed_partition_count: 28
+      }
+    }
+  };
+  galleryMoments = [...pressingMoments, unknownMoment, passMoment];
+  bootstrap.flagship_responses = {
+    pressing_map: pressingResponse,
+    counterattack_sequence_rate: response
+  };
+  await page.reload();
+  await expect(page.locator(".metricPanel.rateFirst.pressingMapPanel")).toBeVisible();
+  await expect(page.getByText("2,811 regains mapped")).toBeVisible();
+  await page.getByRole("button", { name: "After a regain, do they keep it?" }).click();
+  await expect(page.getByText("80% observed")).toBeVisible();
+  await page.getByRole("button", { name: "Where do they win it back?" }).click();
+  await expect(page.getByText("1,204").first()).toBeVisible();
+  if (candidateRoot) {
+    await captureCandidate(page, resolve(candidateRoot, "pressing-map-answer.png"));
   }
 });

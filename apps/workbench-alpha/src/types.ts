@@ -328,7 +328,7 @@ export type FilmRoomAskResponse = Omit<GeneratedFilmRoomAskResponse, "answer" | 
   } | null;
 };
 
-export type FilmRoomBootstrapResponse = Omit<GeneratedFilmRoomBootstrapResponse, "prewarmed_response"> & {
+export type FilmRoomBootstrapResponse = Omit<GeneratedFilmRoomBootstrapResponse, "prewarmed_response" | "flagship_responses"> & {
   ok: true;
   state: "ready" | "warming";
   provider: string;
@@ -338,6 +338,7 @@ export type FilmRoomBootstrapResponse = Omit<GeneratedFilmRoomBootstrapResponse,
   prewarm_records: JsonObject[];
   warming?: JsonObject | null;
   prewarmed_response?: FilmRoomAskResponse | null;
+  flagship_responses: Record<string, FilmRoomAskResponse>;
   answer?: FilmRoomAskResponse["answer"] | null;
   provenance?: JsonObject | null;
 };

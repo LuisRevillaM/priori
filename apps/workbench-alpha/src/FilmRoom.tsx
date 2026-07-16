@@ -11,6 +11,9 @@ import {
 import type { FilmRoomAskResponse, FilmRoomBootstrapResponse, FilmRoomIntervalMetric, FilmRoomMoment, JsonObject, ReplayEntity, ReplayFrame, ReplayPayload } from "./types";
 
 const FLAGSHIP_ASK = "After a regain, how often does the team progress the ball by carry and keep it with a controlled pass?";
+const PRESSING_MAP_ASK = "Where does each team win the ball back?";
+const PRESSING_MAP_KEY = "pressing_map";
+const RETENTION_CHAIN_KEY = "counterattack_sequence_rate";
 
 function asRecord(value: unknown): JsonObject {
   return value && typeof value === "object" && !Array.isArray(value) ? (value as JsonObject) : {};
@@ -294,6 +297,67 @@ export function momentCoverageText(answer: FilmRoomAskResponse["answer"] | null 
   return `${base} — replay coverage reason not recorded.`;
 }
 
+export type PressingMapRow = {
+  auditRole: string;
+  matchId: string;
+  teamName: string;
+  defensive: number;
+  middle: number;
+  attacking: number;
+  unknown: number;
+  total: number;
+};
+
+export type PressingMapView = {
+  population: number;
+  located: number;
+  unknown: number;
+  thirds: { defensive: number; middle: number; attacking: number };
+  rows: PressingMapRow[];
+};
+
+export function pressingMapViewModel(response: FilmRoomAskResponse | null): PressingMapView | null {
+  if (response?.request_text !== PRESSING_MAP_ASK) return null;
+  const raw = asRecord(response.answer?.raw_evidence);
+  const table = asRecord(raw.certified_table);
+  const totals = asRecord(table.totals);
+  const thirds = asRecord(totals.third_counts);
+  const rows = asArray(table.rows).map(asRecord).map((row) => {
+    const counts = asRecord(row.third_counts);
+    return {
+      auditRole: String(row.audit_role ?? ""),
+      matchId: String(row.match_id ?? ""),
+      teamName: String(row.team_name ?? "Team not recorded"),
+      defensive: finiteNumber(counts.defensive_third) ?? 0,
+      middle: finiteNumber(counts.middle_third) ?? 0,
+      attacking: finiteNumber(counts.final_third) ?? 0,
+      unknown: finiteNumber(row.location_unknown_count) ?? 0,
+      total: finiteNumber(row.population_count) ?? 0
+    };
+  });
+  const population = finiteNumber(totals.population_count) ?? 0;
+  const unknown = finiteNumber(totals.location_unknown_count) ?? 0;
+  if (!population || rows.length === 0) return null;
+  return {
+    population,
+    located: population - unknown,
+    unknown,
+    thirds: {
+      defensive: finiteNumber(thirds.defensive_third) ?? 0,
+      middle: finiteNumber(thirds.middle_third) ?? 0,
+      attacking: finiteNumber(thirds.final_third) ?? 0
+    },
+    rows
+  };
+}
+
+export function flagshipTabResponse(
+  responses: Record<string, FilmRoomAskResponse>,
+  key: string
+): FilmRoomAskResponse | null {
+  return responses[key] ?? null;
+}
+
 export function provenanceTreeView(tree: string | null | undefined): { text: string; title: string } {
   const value = tree?.trim() ?? "";
   if (!value || value.toLowerCase() === "unknown") {
@@ -367,6 +431,56 @@ function IntervalCard({ metric, scope }: { metric: FilmRoomIntervalMetric | null
         {unknown > 0 ? <span className="partitionUnknownLabel">{formatCount(unknown)} unknown</span> : null}
       </div>
       {enlargementNote ? <div className="partitionScaleNote">{enlargementNote}</div> : null}
+    </section>
+  );
+}
+
+function PressingMapCard({ response }: { response: FilmRoomAskResponse | null }) {
+  const view = pressingMapViewModel(response);
+  const metric = response?.answer?.interval_metric;
+  if (!view || !metric) return null;
+  const presentation = intervalPresentation(assertIntervalMetric(metric));
+  const locatedPercent = view.population ? view.located / view.population : 0;
+  const thirdRows = [
+    ["Defensive third", view.thirds.defensive],
+    ["Middle third", view.thirds.middle],
+    ["Attacking third", view.thirds.attacking]
+  ] as const;
+  return (
+    <section className={`filmPanel metricPanel pressingMapPanel ${presentation.findingFirst ? "findingFirst" : "rateFirst"}`}>
+      <div className="filmPanelHeader">
+        <span>Answer</span>
+        <span>{formatCount(view.population)} regains · {formatCount(view.unknown)} location unknown</span>
+      </div>
+      <div className="answeredScope">both teams across 7 matches</div>
+      <div className="metricFinding">{formatCount(view.population)} regains mapped</div>
+      <div className="metricObserved">
+        <b>{formatPercent(locatedPercent)}</b><span> located to a registered pitch third</span>
+      </div>
+      <div className="metricSubtitle">
+        {formatCount(view.located)} have a third. {formatCount(view.unknown)} stay location unknown at a boundary or without ball position.
+      </div>
+      <div className="pressingThirds" aria-label="Regains by orientation-aware pitch third">
+        {thirdRows.map(([label, value]) => (
+          <div className="pressingThird" key={label}>
+            <span>{label}</span>
+            <i><b style={{ width: `${(value / view.population) * 100}%` }} /></i>
+            <strong>{formatCount(value)}</strong>
+          </div>
+        ))}
+      </div>
+      <div className="pressingTeamHeader">
+        <span>{view.rows.length} team-match rows</span>
+        <span>D · M · A · unknown · total</span>
+      </div>
+      <div className="pressingTeamRows">
+        {view.rows.map((row) => (
+          <div className="pressingTeamRow" key={`${row.matchId}-${row.auditRole}`}>
+            <span><strong>{row.teamName}</strong><small>{row.matchId}</small></span>
+            <b>{formatCount(row.defensive)} · {formatCount(row.middle)} · {formatCount(row.attacking)} · {formatCount(row.unknown)} · {formatCount(row.total)}</b>
+          </div>
+        ))}
+      </div>
     </section>
   );
 }
@@ -676,7 +790,9 @@ function MomentList({
             onClick={() => setSelected(index)}
           >
             <strong className={`momentStatus ${moment.chain_status === "PASS" ? "complete" : "unknown"}`}>
-              {moment.chain_status === "PASS" ? "COMPLETE" : "UNKNOWN"}
+              {moment.source_kind === "result"
+                ? moment.chain_status === "PASS" ? "LOCATED" : "LOCATION UNKNOWN"
+                : moment.chain_status === "PASS" ? "COMPLETE" : "UNKNOWN"}
             </strong>
             <span>{momentCardText(moment, index === selected ? replay : null)}</span>
           </button>
@@ -823,6 +939,8 @@ export function FilmRoom() {
   const [bootstrapWarming, setBootstrapWarming] = useState<string | null>(null);
   const [selectedMoment, setSelectedMoment] = useState(0);
   const [frameIndex, setFrameIndex] = useState(0);
+  const [flagshipResponses, setFlagshipResponses] = useState<Record<string, FilmRoomAskResponse>>({});
+  const [activeFlagship, setActiveFlagship] = useState(PRESSING_MAP_KEY);
   const moments = useMemo(
     () => orderedFilmRoomMoments(response?.answer?.moments ?? []),
     [response?.answer?.moments]
@@ -869,9 +987,13 @@ export function FilmRoom() {
           return;
         }
         const prewarmed = payload.prewarmed_response ?? null;
-        setResponse(prewarmed);
-        if (prewarmed?.answer) setQuery("");
-        setReplay(prewarmed?.answer?.replay ?? null);
+        const gallery = payload.flagship_responses ?? {};
+        const initial = flagshipTabResponse(gallery, PRESSING_MAP_KEY) ?? prewarmed;
+        setFlagshipResponses(gallery);
+        setActiveFlagship(initial?.request_text === PRESSING_MAP_ASK ? PRESSING_MAP_KEY : RETENTION_CHAIN_KEY);
+        setResponse(initial);
+        if (initial?.answer) setQuery("");
+        setReplay(initial?.answer?.replay ?? null);
         setLoadingBootstrap(false);
       })
       .catch((event) => {
@@ -951,7 +1073,35 @@ export function FilmRoom() {
           <ProvenanceStrip response={response} replay={replay} />
         </div>
         <aside className="filmRail">
-          {response?.answer?.interval_metric ? (
+          <nav className="filmTabs filmChips" aria-label="Gallery questions">
+            {[
+              [PRESSING_MAP_KEY, "Where do they win it back?"],
+              [RETENTION_CHAIN_KEY, "After a regain, do they keep it?"]
+            ].map(([key, label]) => (
+              <button
+                type="button"
+                key={key}
+                aria-pressed={activeFlagship === key}
+                className={activeFlagship === key ? "active" : ""}
+                disabled={!flagshipTabResponse(flagshipResponses, key)}
+                onClick={() => {
+                  const next = flagshipTabResponse(flagshipResponses, key);
+                  if (!next) return;
+                  setActiveFlagship(key);
+                  setResponse(next);
+                  setReplay(next.answer?.replay ?? null);
+                  setSelectedMoment(0);
+                  setFrameIndex(0);
+                  setError(null);
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </nav>
+          {pressingMapViewModel(response) ? (
+            <PressingMapCard response={response} />
+          ) : response?.answer?.interval_metric ? (
             <IntervalCard metric={response.answer.interval_metric} scope={answeredQuestionScope(response)} />
           ) : null}
           <MomentList
