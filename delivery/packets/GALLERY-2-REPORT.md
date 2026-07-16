@@ -231,11 +231,14 @@ The committed proof producer is
   `3459e916d2e847a96747cd40fedd99232730694d8b0315f49ba26f7a83739691`
   (home).
 
-An independent `shasum -a 256` matched the manifest. The manifest honestly
-records `source_dirty=true`: `.git` is read-only in this sandbox, so the data
-producer ran from the clean-ordered hotfix diff rather than a scribe commit.
-During the run the checked-out frontier advanced from requested `a048e523` to
-its ledger-only descendant `1439b841`; no hotfix source was overwritten.
+An independent `shasum -a 256` matched the manifest. The first pack honestly
+recorded the then-staged tree as dirty. After `.git` recovered, the source was
+committed at `b75a2f2c`; the bundle was rebuilt from that commit and reproduced
+the exact archive SHA and size. The final manifest records
+`source_commit=b75a2f2cc0463ca4bd52ecf3cd785734842c2a1d` and
+`source_dirty=false`. During the run the checked-out frontier advanced from
+requested `a048e523` to its ledger-only descendant `1439b841`; no hotfix source
+was overwritten.
 
 AWS upload stopped before any write. The required account-first identity check
 could not reach `https://sts.us-east-1.amazonaws.com/`, so account
