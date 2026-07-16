@@ -45,3 +45,11 @@
   log). Deploys are now an explicit director act via the API, always
   followed by the stability window + oracle. Re-enable only with a
   health-gated zero-downtime setup.
+- GALLERY-2 live regression (2026-07-16, rolled back in minutes): a
+  new flagship whose disk evidence was absent took down EXISTING asks
+  (retention served 0). New law via hotfix: FLAGSHIP ISOLATION — each
+  ask's descriptor build succeeds or fails alone; absence reports
+  itself with a typed reason while every other ask serves. Also
+  ledgered: executor clones must live OUTSIDE the repo tree (docker
+  context bloat broke builds); docker builder cache is a standing
+  disk hazard on this host (18GB pruned).
