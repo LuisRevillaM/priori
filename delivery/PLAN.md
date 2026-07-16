@@ -94,6 +94,13 @@ field-domain mechanism; CAR ladder rungs 1-2 when a pitch needs them.
 4. EXAM-1 remaining sessions (window sweeps, E2, E3) — director.
 5. SCP2-E sealed exam under the two-sided bar — the Gate 1 closer.
 
+GEO era (ADR 0018, owner-opened 2026-07-16): three substrate laws
+then six primitives (between_observed_lines, pitch_region_membership,
+point_pair_metric, team_distribution_relative_to_reference,
+ball_control_episode, pass_attempt_episode) + fourteen ratified
+recipes closing the owner's demand-evidence list. Build order fixed;
+one packet one risk.
+
 Post-Gate-1 era (SCP-3, per ADR 0017): Move 1 (external-correspondence
 evaluation system — absorbs CAP-1) then Move 2 (canonical CoachQueryIR,
 proof-carrying composition, bounded search demoted to offline
