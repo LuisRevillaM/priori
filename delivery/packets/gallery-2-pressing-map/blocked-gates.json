@@ -1,0 +1,22 @@
+{
+  "docker_2gib_proof": {
+    "command": "docker version --format '{{.Server.Version}}'",
+    "error": "permission denied connecting to unix:///Users/luisrevilla/.docker/run/docker.sock: operation not permitted",
+    "status": "BLOCKED_BY_SANDBOX"
+  },
+  "http_oracle_and_playwright": {
+    "error": "PermissionError: [Errno 1] Operation not permitted while binding 127.0.0.1",
+    "impacted_gates": [
+      "delivery/oracles/GALLERY-2/gallery_smoke.py against a local URL",
+      "apps/workbench-alpha/tests/legibility1.spec.ts",
+      "seven existing WorkbenchServer socket tests"
+    ],
+    "status": "BLOCKED_BY_SANDBOX"
+  },
+  "schema_version": "gallery_2_blocked_gates.v1",
+  "unsealed_memory_observation": {
+    "evidence": "delivery/packets/gallery-2-pressing-map/local-proof-unsealed.json",
+    "memory_peak_bytes": 351059968,
+    "sealed_2gib_proof": false
+  }
+}

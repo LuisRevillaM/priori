@@ -12,11 +12,13 @@ import {
   momentCollectionLabel,
   orderedFilmRoomMoments,
   partitionVisibilityNote,
+  pressingMapViewModel,
   provenanceArtifactLabels,
   provenanceTreeView,
   replayMatchClock,
   replaySamplingLabel,
   refusalViewModel,
+  flagshipTabResponse,
   visibleWitnessLabels
 } from "../src/FilmRoom";
 import {
@@ -196,6 +198,7 @@ assert.equal(
     billing_surface: "subscription",
     flagship_plan_hashes: {},
     prewarm_records: [],
+    flagship_responses: {},
     warming: {
       items: [
         { key: "fragile_retention", status: "ready" },
@@ -208,6 +211,71 @@ assert.equal(
   }),
   "Warming counterattack sequence rate."
 );
+
+const pressingTable = JSON.parse(
+  readFileSync(
+    resolve(
+      process.cwd(),
+      "../../delivery/packets/gallery-2-pressing-map/pressing_map_regain_thirds_table.json"
+    ),
+    "utf8"
+  )
+);
+const pressingResponse = {
+  ...baseResponse,
+  outcome: "expression",
+  request_text: "Where does each team win the ball back?",
+  answer: {
+    status: "answer_ready",
+    compiled_chips: [],
+    document: {},
+    certified_evidence_rows: pressingTable.rows,
+    runtime_evidence_rows: [],
+    evidence_rows_kind: "certified",
+    interval_metric: {
+      label: "CERTIFIED interval",
+      observed: pressingTable.totals.rate_observed,
+      lower: pressingTable.totals.rate_lower_bound,
+      upper: pressingTable.totals.rate_upper_bound,
+      unknown_count: pressingTable.totals.unknown_count,
+      source: {
+        evidence_kind: "certified",
+        population_count: pressingTable.totals.population_count,
+        a_count: pressingTable.totals.a_count,
+        b_count: 0,
+        c_count: pressingTable.totals.c_count,
+        d1_count: 0,
+        d2_count: 0,
+        e_count: 0
+      }
+    },
+    moments: [],
+    moment_total_count: 0,
+    visible_moment_count: 0,
+    replay: null,
+    executions: [],
+    raw_evidence: { certified_table: pressingTable },
+    provenance: {
+      plan_hash: pressingTable.plan_hash,
+      synthesized_document_hash: pressingTable.plan_hash,
+      bound_plan_hashes: {},
+      canonical_sources: {}
+    }
+  },
+  clarification: null,
+  refusal: null
+} as FilmRoomAskResponse;
+const pressingView = pressingMapViewModel(pressingResponse);
+assert.ok(pressingView);
+assert.equal(pressingView.population, 2811);
+assert.equal(pressingView.located, 2758);
+assert.equal(pressingView.unknown, 53);
+assert.deepEqual(pressingView.thirds, { defensive: 1204, middle: 1054, attacking: 500 });
+assert.equal(pressingView.rows.length, 14);
+assert.equal(pressingView.rows.reduce((sum, row) => sum + row.total, 0), 2811);
+assert.equal(intervalPresentation(pressingResponse.answer!.interval_metric!).findingFirst, false);
+assert.equal(flagshipTabResponse({ pressing_map: pressingResponse }, "pressing_map"), pressingResponse);
+assert.equal(flagshipTabResponse({ pressing_map: pressingResponse }, "counterattack_sequence_rate"), null);
 
 const chips = headerChipsFromResponse({
   ...baseResponse,

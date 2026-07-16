@@ -1420,6 +1420,14 @@ export const apiSchemas = {
         "title": "Flagship Plan Hashes",
         "type": "object"
       },
+      "flagship_responses": {
+        "additionalProperties": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Flagship Responses",
+        "type": "object"
+      },
       "model": {
         "title": "Model",
         "type": "string"

@@ -1,0 +1,115 @@
+{
+  "concept_identity": "gallery_2_pressing_map",
+  "concept_refs": [
+    "transition_anchor"
+  ],
+  "correspondence_clauses": [
+    {
+      "name": "composition",
+      "value": "aggregate_over(count) over transition_anchor regain records in each registered orientation-aware pitch third"
+    },
+    {
+      "name": "fallback_rung",
+      "value": "thirds"
+    },
+    {
+      "name": "claim_boundary",
+      "value": "Observed possession-role changes and registered orientation-aware zone evidence only; no pressing intent, quality, or causation."
+    }
+  ],
+  "display_name": "Pressing Map Regain Counts",
+  "expression_id": "gallery_2_pressing_map",
+  "expression_version": "0.1.0",
+  "fixture_notes": [
+    "The generator stops at fallback rung (a): transition_anchor registers defensive_third, middle_third, and final_third and evaluates them in the perspective team's attacking direction."
+  ],
+  "group_by": [
+    "new_team_role"
+  ],
+  "meaning_clauses": [
+    {
+      "action": "observes",
+      "field": "transition_status",
+      "operator": "eq",
+      "subject": "transition_anchor",
+      "value": "PASS"
+    },
+    {
+      "action": "locates",
+      "field": "zone_name",
+      "operator": "eq",
+      "subject": "transition_anchor",
+      "value": "defensive_third"
+    },
+    {
+      "action": "locates",
+      "field": "zone_name",
+      "operator": "eq",
+      "subject": "transition_anchor",
+      "value": "middle_third"
+    },
+    {
+      "action": "locates",
+      "field": "zone_name",
+      "operator": "eq",
+      "subject": "transition_anchor",
+      "value": "final_third"
+    }
+  ],
+  "operator_applications": [],
+  "population": {
+    "match_ids": [
+      "J03WOH",
+      "J03WOY",
+      "J03WPY",
+      "J03WQQ",
+      "J03WR9",
+      "J03WMX",
+      "J03WN1"
+    ],
+    "periods": [
+      "firstHalf",
+      "secondHalf"
+    ],
+    "perspective_team_roles": [
+      "home",
+      "away"
+    ]
+  },
+  "schema_version": "meaning_expression.v0",
+  "target": {
+    "held_out": true,
+    "multi_step": false,
+    "target_id": "gallery_2_pressing_map_v0"
+  },
+  "target_contract": {
+    "claim_boundary": "Observed possession-role changes into the perspective team with registered orientation-aware zone evidence only; no pressing intent, tactical quality, or causation.",
+    "composition_constraints": [],
+    "desired_output": "classification",
+    "required_evidence": [
+      "transition_status",
+      "transition_reason",
+      "transition_type",
+      "transition_frame_id",
+      "new_team_role",
+      "zone_name",
+      "zone_status",
+      "zone_reason",
+      "zone_normalized_ball_x_m",
+      "attacking_direction"
+    ],
+    "required_modalities": [],
+    "status_semantics": [
+      {
+        "field": "transition_status",
+        "required_value": "PASS"
+      }
+    ]
+  },
+  "team_perspective": {
+    "required": true,
+    "same_team_enforced": true,
+    "statement": "transition_anchor emits possession-role changes into the perspective team and evaluates zone x in that team's attacking direction.",
+    "team_role_field": "new_team_role"
+  }
+}
