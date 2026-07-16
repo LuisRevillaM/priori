@@ -143,6 +143,8 @@ DATA_MANIFEST_PATH = Path(os.environ.get("TQE_DATA_MANIFEST_PATH", "config/deplo
 CACHE_ROOT = Path(os.environ["TQE_CACHE_ROOT"]) if os.environ.get("TQE_CACHE_ROOT") else None
 FILM_ROOM_DESCRIPTOR_INDEX_SCHEMA = "film_room.descriptor_index.v2"
 FILM_ROOM_HYDRATION_SCHEMA = "film_room.chain_hydration.v1"
+FILM_ROOM_BUNDLED_DESCRIPTOR_ABSENT = "FILM_ROOM_BUNDLED_DESCRIPTOR_EVIDENCE_ABSENT"
+FILM_ROOM_DESCRIPTOR_REBUILD_UNAVAILABLE = "FILM_ROOM_DESCRIPTOR_REBUILD_UNAVAILABLE"
 FILM_ROOM_DESCRIPTOR_FRAGMENT_DIR = "film-room-descriptor-fragments"
 FILM_ROOM_HYDRATION_DIR = "film-room-hydration"
 FILM_ROOM_DESCRIPTOR_INDEX_FILE = "film-room-descriptor-index.json"
@@ -3410,13 +3412,14 @@ def film_room_cache_path(output_root: Path, relative: str) -> Path:
 
 
 def film_room_descriptor_code_epoch() -> str:
-    """Bind derived Film Room caches to their producing application code."""
+    """Bind fragments to the descriptor contract, not unrelated service edits."""
 
     return stable_hash(
         {
-            "schema_version": "film_room.descriptor_code_epoch.v1",
+            "schema_version": "film_room.descriptor_code_epoch.v2",
             "descriptor_schema": FILM_ROOM_DESCRIPTOR_INDEX_SCHEMA,
-            "app_service_sha256": file_sha256(Path(__file__)),
+            "hydration_schema": FILM_ROOM_HYDRATION_SCHEMA,
+            "moment_fields": sorted(FilmRoomMomentResponse.model_fields),
         }
     )
 
@@ -3774,6 +3777,47 @@ def validate_film_room_descriptor_fragment(
             raise CapabilityGap(f"Film Room hydration shard failed verification: {replay_window_id}")
 
 
+def migrate_film_room_descriptor_fragment(
+    *,
+    fragment: dict[str, Any],
+    fragment_path: Path,
+    key: str,
+    role: str,
+    plan_hash: str,
+    output_root: Path,
+) -> dict[str, Any]:
+    """Strictly re-key a compatible small fragment without opening an execution payload."""
+
+    old_schema = str(fragment.get("schema_version") or "")
+    if old_schema not in {"film_room.descriptor_index.v1", FILM_ROOM_DESCRIPTOR_INDEX_SCHEMA}:
+        raise CapabilityGap(
+            f"Film Room descriptor fragment has no bounded migration: {fragment_path}"
+        )
+    migrated = deepcopy(fragment)
+    migrated["schema_version"] = FILM_ROOM_DESCRIPTOR_INDEX_SCHEMA
+    migrated["code_epoch"] = film_room_descriptor_code_epoch()
+    validate_film_room_descriptor_fragment(
+        fragment=migrated,
+        fragment_path=fragment_path,
+        key=key,
+        role=role,
+        plan_hash=plan_hash,
+        output_root=output_root,
+    )
+    write_film_room_cache_json(fragment_path, migrated)
+    return {
+        "flagship_key": key,
+        "role": role,
+        "from_schema": old_schema,
+        "to_schema": FILM_ROOM_DESCRIPTOR_INDEX_SCHEMA,
+        "descriptor_count": len(migrated.get("moments") or []),
+        "fragment_path": str(fragment_path),
+        "fragment_sha256": file_sha256(fragment_path),
+        "execution_cache_bytes_opened": 0,
+        "payload_loaded": False,
+    }
+
+
 def rebuild_film_room_descriptor_fragment(
     *,
     key: str,
@@ -3909,11 +3953,15 @@ def rebuild_film_room_descriptor_fragment(
     }
 
 
-def build_film_room_descriptor_index(*, output_root: Path) -> dict[str, Any]:
-    """Merge valid fragments or rebuild them from memory-bounded execution caches."""
+def _build_film_room_descriptor_index_for_specs(
+    *,
+    output_root: Path,
+    specs: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Build descriptor entries for a caller-selected, already isolated set."""
 
     flagships: dict[str, Any] = {}
-    for spec in film_room_flagship_specs():
+    for spec in specs:
         key = str(spec["key"])
         rebuild_source = (
             "certified_moment_records"
@@ -3934,6 +3982,7 @@ def build_film_room_descriptor_index(*, output_root: Path) -> dict[str, Any]:
                 f"{FILM_ROOM_DESCRIPTOR_FRAGMENT_DIR}/{key}-{role}.json",
             )
             fragment: dict[str, Any] | None = None
+            candidate: dict[str, Any] | None = None
             rebuild_reason = "missing"
             if fragment_path.is_file():
                 try:
@@ -3951,7 +4000,47 @@ def build_film_room_descriptor_index(*, output_root: Path) -> dict[str, Any]:
                     )
                 except Exception as exc:  # noqa: BLE001 - any invalid derived cache must MISS.
                     rebuild_reason = f"{type(exc).__name__}: {exc}"
+                    if isinstance(candidate, dict):
+                        try:
+                            migration = migrate_film_room_descriptor_fragment(
+                                fragment=candidate,
+                                fragment_path=fragment_path,
+                                key=key,
+                                role=role,
+                                plan_hash=plan_hash,
+                                output_root=output_root,
+                            )
+                        except Exception:
+                            pass
+                        else:
+                            fragment = read_json(fragment_path)
+                            rebuild_reason = "missing"
+                            with FILM_ROOM_PREWARM_LOCK:
+                                FILM_ROOM_PREWARM_RECORDS.append(
+                                    {
+                                        "key": key,
+                                        "role": role,
+                                        "prewarm_kind": "descriptor_fragment_migration",
+                                        "execution_performed": False,
+                                        **migration,
+                                    }
+                                )
+                            print(
+                                json.dumps(
+                                    {
+                                        "event": "film_room_descriptor_fragment_migrated",
+                                        **migration,
+                                    },
+                                    sort_keys=True,
+                                ),
+                                flush=True,
+                            )
             if fragment is None or rebuild_reason != "missing":
+                if spec.get("descriptor_source") == "certified_moment_records":
+                    raise CapabilityGap(
+                        "Bundled Film Room descriptor evidence is absent or invalid for "
+                        f"flagship={key} role={role}: {rebuild_reason}."
+                    )
                 with FILM_ROOM_PREWARM_LOCK:
                     FILM_ROOM_PREWARM_STATE["state"] = "warming"
                     FILM_ROOM_PREWARM_STATE["descriptor_rebuild"] = {
@@ -4052,6 +4141,89 @@ def build_film_room_descriptor_index(*, output_root: Path) -> dict[str, Any]:
             "descriptors": descriptors,
             "hydrations": hydrations,
         }
+    index = {
+        "schema_version": FILM_ROOM_DESCRIPTOR_INDEX_SCHEMA,
+        "code_epoch": film_room_descriptor_code_epoch(),
+        "flagships": flagships,
+    }
+    return index
+
+
+def film_room_flagship_descriptor_absence(
+    *,
+    spec: dict[str, Any],
+    error: Exception,
+) -> dict[str, str]:
+    bundled_only = spec.get("descriptor_source") == "certified_moment_records"
+    return {
+        "reason_code": (
+            FILM_ROOM_BUNDLED_DESCRIPTOR_ABSENT
+            if bundled_only
+            else FILM_ROOM_DESCRIPTOR_REBUILD_UNAVAILABLE
+        ),
+        "error_type": type(error).__name__,
+        "message": str(error),
+        "descriptor_source": (
+            "bundled_descriptor_fragments"
+            if bundled_only
+            else "disk_execution_cache"
+        ),
+    }
+
+
+def build_film_room_descriptor_index(*, output_root: Path) -> dict[str, Any]:
+    """Build each flagship alone so one absent cache cannot take down another."""
+
+    flagships: dict[str, Any] = {}
+    for spec in film_room_flagship_specs():
+        key = str(spec["key"])
+        try:
+            partial = _build_film_room_descriptor_index_for_specs(
+                output_root=output_root,
+                specs=[spec],
+            )
+            flagships[key] = partial["flagships"][key]
+        except Exception as exc:  # noqa: BLE001 - a flagship cache is an isolation boundary.
+            absence = film_room_flagship_descriptor_absence(spec=spec, error=exc)
+            plan_path = Path(spec["plan_path"])
+            document = read_json(plan_path) if plan_path.is_file() else {}
+            flagships[key] = {
+                "availability": "absent",
+                "absence": absence,
+                "plan_hash": stable_hash(document) if document else None,
+                "plan_path": str(plan_path),
+                "roles": sorted(film_room_role_documents(document)) if document else [],
+                "bound_plan_hashes": {},
+                "fragment_sha256": {},
+                "descriptor_count": 0,
+                "descriptors": [],
+                "hydrations": {},
+            }
+            with FILM_ROOM_PREWARM_LOCK:
+                FILM_ROOM_PREWARM_RECORDS.append(
+                    {
+                        "key": key,
+                        "prewarm_kind": "descriptor_flagship_absent",
+                        "execution_performed": False,
+                        "descriptor_count": 0,
+                        "absence": deepcopy(absence),
+                    }
+                )
+                for state_item in FILM_ROOM_PREWARM_STATE.get("items", []):
+                    if state_item.get("key") == key:
+                        state_item["execution_status"] = "absent"
+                        state_item["absence"] = deepcopy(absence)
+            print(
+                json.dumps(
+                    {
+                        "event": "film_room_flagship_descriptor_absent",
+                        "flagship_key": key,
+                        **absence,
+                    },
+                    sort_keys=True,
+                ),
+                flush=True,
+            )
     index = {
         "schema_version": FILM_ROOM_DESCRIPTOR_INDEX_SCHEMA,
         "code_epoch": film_room_descriptor_code_epoch(),
@@ -4811,6 +4983,54 @@ def film_room_descriptor_prewarmed_response(
     return validate_public_response("FilmRoomAskResponse", response)
 
 
+def film_room_absent_flagship_response(
+    *,
+    key: str,
+    question: str,
+    absence: dict[str, Any],
+) -> dict[str, Any]:
+    """Expose one unavailable gallery ask without concealing or spreading the failure."""
+
+    reason_code = str(
+        absence.get("reason_code") or FILM_ROOM_DESCRIPTOR_REBUILD_UNAVAILABLE
+    )
+    message = (
+        "This gallery answer is absent because its disk-backed moment evidence is not "
+        "installed for the current code epoch. Other gallery questions remain available."
+    )
+    response = {
+        "ok": True,
+        "outcome": "understood_but_not_expressible",
+        "request_text": question,
+        "provider": "prewarmed_descriptor_absence",
+        "model": "not_invoked",
+        "latency_ms": 0,
+        "latency_breakdown_ms": {
+            "hermes": 0,
+            "synthesis": 0,
+            "execution": 0,
+            "total": 0,
+        },
+        "hermes": {
+            "outcome": "understood_but_not_expressible",
+            "source": "descriptor_flagship_absent",
+            "flagship_key": key,
+            "execution_performed": False,
+            "billing_surface": "none for disk-backed descriptor bootstrap",
+        },
+        "answer": None,
+        "clarification": None,
+        "refusal": {
+            "outcome": "understood_but_not_expressible",
+            "gap_code": reason_code,
+            "missing_capability": "disk_backed_film_room_moment_evidence",
+            "message": message,
+            "details": deepcopy(absence),
+        },
+    }
+    return validate_public_response("FilmRoomAskResponse", response)
+
+
 def film_room_prewarmed_response(
     *,
     key: str,
@@ -5011,8 +5231,12 @@ def prewarm_film_room_flagships_from_certified_tables() -> None:
             flush=True,
         )
     with FILM_ROOM_PREWARM_LOCK:
-        gallery_ready = isinstance(
-            FILM_ROOM_PREWARMED_RESPONSES.get("counterattack_sequence_rate"), dict
+        counterattack_response = FILM_ROOM_PREWARMED_RESPONSES.get(
+            "counterattack_sequence_rate"
+        )
+        gallery_ready = (
+            isinstance(counterattack_response, dict)
+            and isinstance(counterattack_response.get("answer"), dict)
         )
         FILM_ROOM_PREWARM_STATE.update(
             {
@@ -5059,6 +5283,45 @@ def load_film_room_descriptor_index(*, output_root: Path) -> None:
                     item["execution_status"] = "running"
         flagships = descriptor_index.get("flagships") if isinstance(descriptor_index.get("flagships"), dict) else {}
         index_entry = flagships.get(str(spec["key"])) if isinstance(flagships.get(str(spec["key"])), dict) else {}
+        absence = (
+            index_entry.get("absence")
+            if isinstance(index_entry.get("absence"), dict)
+            else None
+        )
+        if index_entry.get("availability") == "absent" and absence is not None:
+            elapsed_ms = int((time.monotonic() - started_at) * 1000)
+            response = film_room_absent_flagship_response(
+                key=str(spec["key"]),
+                question=str(spec["question"]),
+                absence=absence,
+            )
+            record = {
+                "key": str(spec["key"]),
+                "plan": str(plan_path),
+                "prewarm_kind": "descriptor_index_load",
+                "execution_performed": False,
+                "upgrade_applied": False,
+                "elapsed_ms": elapsed_ms,
+                "index_build_elapsed_ms": index_elapsed_ms,
+                "descriptor_count": 0,
+                "full_execution_cache_payloads_opened": 0,
+                "reason": "flagship_absent",
+                "absence": deepcopy(absence),
+            }
+            with FILM_ROOM_PREWARM_LOCK:
+                FILM_ROOM_PREWARMED_RESPONSES[str(spec["key"])] = response
+                FILM_ROOM_PREWARM_RECORDS.append(record)
+                for item in FILM_ROOM_PREWARM_STATE["items"]:
+                    if item.get("key") == str(spec["key"]):
+                        item["execution_status"] = "absent"
+                        item["execution_elapsed_ms"] = elapsed_ms
+                        item["absence"] = deepcopy(absence)
+            print(
+                f"Loaded Film Room descriptor metadata for {plan_path}: "
+                f"descriptors=0 availability=absent reason_code={absence.get('reason_code')}",
+                flush=True,
+            )
+            continue
         if not index_entry.get("descriptors"):
             elapsed_ms = int((time.monotonic() - started_at) * 1000)
             record = {
@@ -5128,21 +5391,36 @@ def load_film_room_descriptor_index(*, output_root: Path) -> None:
             flush=True,
         )
     with FILM_ROOM_PREWARM_LOCK:
-        gallery_ready = isinstance(
-            FILM_ROOM_PREWARMED_RESPONSES.get("counterattack_sequence_rate"), dict
+        counterattack_response = FILM_ROOM_PREWARMED_RESPONSES.get(
+            "counterattack_sequence_rate"
         )
+        gallery_ready = (
+            isinstance(counterattack_response, dict)
+            and isinstance(counterattack_response.get("answer"), dict)
+        )
+        descriptor_absences = {
+            str(key): deepcopy(entry["absence"])
+            for key, entry in (
+                descriptor_index.get("flagships", {}).items()
+                if isinstance(descriptor_index.get("flagships"), dict)
+                else []
+            )
+            if isinstance(entry, dict) and isinstance(entry.get("absence"), dict)
+        }
+        rebuild = FILM_ROOM_PREWARM_STATE.get("descriptor_rebuild")
         FILM_ROOM_PREWARM_STATE.update(
             {
                 "state": "ready" if gallery_ready else "warming",
                 "descriptor_index_completed_at": utc_iso_seconds(),
-                "descriptor_rebuild": (
-                    {
-                        **FILM_ROOM_PREWARM_STATE["descriptor_rebuild"],
-                        "status": "complete",
-                    }
-                    if isinstance(FILM_ROOM_PREWARM_STATE.get("descriptor_rebuild"), dict)
-                    else None
-                ),
+                "descriptor_absences": descriptor_absences,
+                "descriptor_rebuild": {
+                    **(rebuild if isinstance(rebuild, dict) else {}),
+                    "status": (
+                        "complete_with_absences"
+                        if descriptor_absences
+                        else "complete"
+                    ),
+                },
                 "last_error": None,
             }
         )

@@ -1,0 +1,13 @@
+{
+  "docker_2gib": {
+    "command": "docker version",
+    "error": "permission denied connecting to unix:///Users/luisrevilla/.docker/run/docker.sock: operation not permitted",
+    "status": "blocked_before_container_start"
+  },
+  "s3_upload": {
+    "command": "$CODEX_HOME/skills/aws-account-ops/scripts/aws-account.sh identity",
+    "error": "Could not connect to https://sts.us-east-1.amazonaws.com/",
+    "status": "blocked_before_identity_verification_and_before_write"
+  },
+  "schema_version": "gallery_2_hotfix_blocked_gates.v1"
+}
