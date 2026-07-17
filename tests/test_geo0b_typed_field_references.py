@@ -105,9 +105,9 @@ class TypedFieldReferenceLawTests(unittest.TestCase):
             if parameter.payload_type == PayloadType.FIELD_REF
         ]
 
-        self.assertEqual(110, len(migrated))
+        self.assertEqual(112, len(migrated))
         self.assertEqual(
-            Counter(frame=41, entity=34, status=24, provenance=6, point=5),
+            Counter(frame=42, entity=35, status=24, provenance=6, point=5),
             Counter(parameter.field_reference_kind.value for parameter in migrated),
         )
         self.assertTrue(all(parameter.allowed_values is None for parameter in migrated))

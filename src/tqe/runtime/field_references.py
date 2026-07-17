@@ -47,6 +47,8 @@ CATALOG_FIELD_REFERENCE_KINDS: dict[CatalogParameterKey, FieldReferenceKind] = {
     ("change_across_anchor", "after_status_field"): FieldReferenceKind.STATUS,
     ("defensive_line_model", "anchor_frame_field"): FieldReferenceKind.FRAME,
     ("multi_line_model", "anchor_frame_field"): FieldReferenceKind.FRAME,
+    ("between_observed_lines", "entity_id_field"): FieldReferenceKind.ENTITY,
+    ("between_observed_lines", "entity_frame_field"): FieldReferenceKind.FRAME,
     ("relative_position_to_line", "entity_id_field"): FieldReferenceKind.ENTITY,
     ("relative_position_to_line", "entity_frame_field"): FieldReferenceKind.FRAME,
     ("lane_occupancy", "frame_field"): FieldReferenceKind.FRAME,

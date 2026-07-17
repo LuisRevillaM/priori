@@ -3128,6 +3128,8 @@ def build_entry(
         return build_change_across_anchor(context, entry, required_fields, depth=depth, input_context=input_context)
     if entry.name == "controlled_line_break_episode":
         return build_controlled_line_break_episode(context, entry, required_fields, depth=depth)
+    if entry.name == "between_observed_lines":
+        return build_between_observed_lines(context, entry, required_fields, depth=depth)
     if should_build_relation_on_anchor(context, entry, required_fields, input_context):
         return build_relation_on_anchor(context, entry, required_fields, depth=depth)
 
@@ -3269,6 +3271,111 @@ def build_controlled_line_break_episode(
             *reception_position.providers_used,
             entry.name,
         ],
+    )
+
+
+def build_between_observed_lines(
+    context: SearchContext,
+    entry: CatalogEntry,
+    required_fields: set[str],
+    *,
+    depth: int,
+) -> BuildResult:
+    """Build the ADR 0018 composition over one shared controlled-pass anchor stream."""
+
+    controlled_pass = build_entry(
+        context,
+        require_entry(context, "controlled_pass_episode"),
+        {
+            "anchor_id",
+            "controlled_pass_status",
+            "controlled_reception_frame_id",
+            "pass_episode_id",
+            "receiver_id",
+            "team_role",
+        },
+        depth=depth + 1,
+        input_context={"team_scope": "perspective_team"},
+    )
+    line_model = build_entry(
+        context,
+        require_entry(context, "multi_line_model"),
+        {
+            "anchor_id",
+            "attacking_direction",
+            "defender_observation_status",
+            "line_evaluation_frame_id",
+            "multi_line_status",
+            "observed_lines",
+            "player_track_coverage_status",
+            "target_line_rank",
+        },
+        depth=depth + 1,
+        input_context={
+            "anchors": controlled_pass,
+            "anchor_frame_field": "controlled_reception_frame_id",
+            "goal_side_buffer_m": 1.0,
+            "line_band_width_m": 2.0,
+            "minimum_line_defenders": 3.0,
+            "target_line_rank": 2.0,
+        },
+    )
+    node_id = context.node_id(entry.name)
+    nodes = [*controlled_pass.nodes, *line_model.nodes]
+    nodes.append(
+        catalog_node(
+            node_id,
+            entry,
+            inputs={
+                "line_evaluations": ref(
+                    line_model.terminal_node_id, line_model.terminal_output
+                ),
+                "entity_anchors": ref(
+                    controlled_pass.terminal_node_id,
+                    controlled_pass.terminal_output,
+                ),
+            },
+            parameters=infer_parameters(
+                entry,
+                input_builds=[controlled_pass, line_model],
+                input_context={},
+            ),
+        )
+    )
+    field_sources = {
+        **controlled_pass.field_sources,
+        **line_model.field_sources,
+    }
+    for field in context.catalog.field_set(entry):
+        field_sources.setdefault(
+            field,
+            (
+                node_id,
+                output_name_for_field(context.catalog, entry, field)
+                or "anchor_evaluations",
+            ),
+        )
+    return BuildResult(
+        nodes=dedupe_nodes(nodes),
+        terminal_node_id=node_id,
+        terminal_entry=entry.name,
+        terminal_output="anchor_evaluations",
+        field_sources=field_sources,
+        rules_used=[
+            *controlled_pass.rules_used,
+            *line_model.rules_used,
+            "between_observed_lines_shared_anchor_composition",
+        ],
+        providers_used=[
+            *controlled_pass.providers_used,
+            *line_model.providers_used,
+            entry.name,
+        ],
+        metadata={
+            "shared_anchor_provider": controlled_pass.terminal_entry,
+            "line_provider": line_model.terminal_entry,
+            "line_frame_field": "controlled_reception_frame_id",
+        },
     )
 
 
@@ -4209,11 +4316,13 @@ def infer_parameters(
     if entry.name == "multi_line_model":
         return {
             "anchor_frame_field": enum(str(input_context.get("anchor_frame_field", "physical_release_frame_id"))),
-            "goal_side_buffer_m": number(1.0, "metre"),
-            "line_band_width_m": number(2.5, "metre"),
-            "minimum_line_defenders": number(2.0, "count"),
-            "target_line_rank": number(2.0, "count"),
+            "goal_side_buffer_m": number(float(input_context.get("goal_side_buffer_m", 1.0)), "metre"),
+            "line_band_width_m": number(float(input_context.get("line_band_width_m", 2.5)), "metre"),
+            "minimum_line_defenders": number(float(input_context.get("minimum_line_defenders", 2.0)), "count"),
+            "target_line_rank": number(float(input_context.get("target_line_rank", 2.0)), "count"),
         }
+    if entry.name == "controlled_pass_episode" and "team_scope" in input_context:
+        return {"team_scope": enum(str(input_context["team_scope"]))}
     if entry.name == "controlled_line_break_episode":
         return {
             "line_buffer_m": number(0.5, "metre"),
@@ -4223,6 +4332,16 @@ def infer_parameters(
             "entity_id_field": enum(str(input_context.get("entity_id_field", "receiver_id"))),
             "entity_frame_field": enum(str(input_context.get("entity_frame_field", "controlled_reception_frame_id"))),
             "line_buffer_m": number(0.5, "metre"),
+        }
+    if entry.name == "between_observed_lines":
+        return {
+            "nearer_line_rank": number(1.0, "count"),
+            "farther_line_rank": number(2.0, "count"),
+            "line_selector": enum("declared_ranks"),
+            "entity_id_field": enum("receiver_id"),
+            "entity_frame_field": enum("controlled_reception_frame_id"),
+            "line_boundary_buffer_m": number(0.5, "metre"),
+            "minimum_interline_gap_m": number(0.0, "metre"),
         }
     if entry.name == "support_arrival_relation":
         return support_arrival_parameters(entry, input_context=input_context)

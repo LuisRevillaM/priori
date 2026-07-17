@@ -114,6 +114,7 @@ def primitive_action_event_anchor(state: PeriodState, node: BoundCatalogNode) ->
 
 def primitive_controlled_pass_episode(state: PeriodState, node: BoundCatalogNode) -> None:
     event_type_filter = node_parameter_event_type_filter(node)
+    team_scope = node_parameter_text(node, "team_scope")
     config = ControlledPassConfig(
         event_type_filter=event_type_filter,
         max_release_alignment_ms=node_parameter_number(node, "max_release_alignment_ms"),
@@ -130,11 +131,16 @@ def primitive_controlled_pass_episode(state: PeriodState, node: BoundCatalogNode
         periods=(state.period,),
         config=config,
     )
+    evaluations = controlled_pass_evaluations_for_team_scope(
+        output.anchor_evaluations,
+        team_scope=team_scope,
+        perspective_team_role=state.perspective_team_role,
+    )
     anchors = [
         record
         for record in (
             controlled_pass_anchor_record(state, evaluation)
-            for evaluation in output.anchor_evaluations
+            for evaluation in evaluations
         )
         if record is not None
     ]
@@ -146,7 +152,7 @@ def primitive_controlled_pass_episode(state: PeriodState, node: BoundCatalogNode
     ]
     frame_ids = [int(record["anchor_frame_id"]) for record in anchors]
     state.signals[node.node_id] = {
-        "candidate_evaluations_records": output.anchor_evaluations,
+        "candidate_evaluations_records": evaluations,
         "episodes": episodes,
         "episodes_records": episodes,
         "anchors": anchors,
@@ -171,6 +177,23 @@ def primitive_controlled_pass_episode(state: PeriodState, node: BoundCatalogNode
         ),
         "forward_progression_m_records": anchors,
     }
+
+
+def controlled_pass_evaluations_for_team_scope(
+    evaluations: list[dict[str, Any]],
+    *,
+    team_scope: str,
+    perspective_team_role: str,
+) -> list[dict[str, Any]]:
+    if team_scope == "all":
+        return list(evaluations)
+    if team_scope != "perspective_team":
+        raise RuntimeError(f"unsupported controlled-pass team_scope {team_scope}")
+    return [
+        evaluation
+        for evaluation in evaluations
+        if str(evaluation.get("team_role")) == perspective_team_role
+    ]
 
 def controlled_pass_anchor_record(state: PeriodState, evaluation: dict[str, Any]) -> dict[str, Any] | None:
     anchor_frame_id = optional_int(evaluation.get("controlled_reception_frame_id")) or optional_int(

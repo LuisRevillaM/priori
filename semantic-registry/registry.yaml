@@ -51,6 +51,14 @@ concepts:
     evidence_contract_ref: evidence.relative_position_to_observed_line.v1
     tags: [line, geometry, relative_position]
 
+  - id: concept.between_observed_lines
+    kind: Concept
+    display_name: Between Observed Lines
+    description: An entity's observed position classified against two declared observed geometric line boundaries in attacking-direction-normalized coordinates.
+    claim_contract_ref: claim.between_observed_lines.v1
+    evidence_contract_ref: evidence.between_observed_lines.v1
+    tags: [line, geometry, relative_position, coverage]
+
   - id: concept.controlled_pass_crosses_observed_line
     kind: Concept
     display_name: Controlled Pass Crosses Observed Line
@@ -522,6 +530,30 @@ operationalizations:
     lowering: [anchor_id_alignment, entity_position_lookup, attacking_direction_normalization, line_relative_position_classification]
     claim_contract_ref: claim.relative_position_to_observed_line.v1
     evidence_contract_ref: evidence.relative_position_to_observed_line.v1
+
+  - id: op.between_observed_lines.v1
+    kind: Operationalization
+    display_name: Between Observed Lines
+    description: Evaluate strict buffered entity inclusion between two selected observed geometric line bands while preserving GEO-0c coverage honesty.
+    concept_refs: [concept.between_observed_lines]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking]
+    applicability: [multi_line_evaluation_available, entity_anchor_available, entity_tracking_available, line_entity_frame_aligned]
+    inputs:
+      - name: line_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, quantity: multi_line_evaluation, unit: none, entity_scope: anchor}
+      - name: entity_anchors
+        type: {container: EpisodeSet, value: AnchorRef, quantity: entity_anchor, unit: none, entity_scope: anchor}
+      - name: tracking_window
+        type: {container: TrajectorySet, value: Position, unit: metre, coordinate_frame: pitch_absolute}
+    outputs:
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, quantity: between_observed_lines_evaluation, unit: none, entity_scope: anchor}
+      - name: between_observed_lines_status
+        type: {container: FrameSignal, value: Enum, quantity: between_observed_lines_status, unit: none, entity_scope: anchor}
+    lowering: [exact_anchor_alignment, entity_position_lookup, attacking_direction_normalization, observed_line_selector, signed_line_distances, boundary_buffer_check, geo0c_coverage_gate]
+    claim_contract_ref: claim.between_observed_lines.v1
+    evidence_contract_ref: evidence.between_observed_lines.v1
 
   - id: op.controlled_pass_crosses_observed_line.v1
     kind: Operationalization
@@ -1540,6 +1572,12 @@ implementations:
     description: Current observed relative-position-to-line implementation.
     implements: [op.relative_position_to_observed_line.v1]
     source_refs: [src/tqe/runtime/relative_position_to_line.py, src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+  - id: impl.between_observed_lines.python.v1
+    kind: Implementation
+    display_name: Between Observed Lines Python Implementation
+    description: Current signed-distance and coverage-aware observed-line interval implementation.
+    implements: [op.between_observed_lines.v1]
+    source_refs: [src/tqe/runtime/between_observed_lines.py, src/tqe/runtime/capabilities/lines_family.py, src/tqe/runtime/catalog.py]
   - id: impl.controlled_line_break_episode.python.v1
     kind: Implementation
     display_name: Controlled Line Break Episode Python Implementation
@@ -1838,6 +1876,11 @@ runtime_bindings:
       forward_progression_m: {runtime_port: forward_progression_m}
       anchors: {runtime_port: anchors}
     semantic_parameters:
+      - name: team_scope
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: all, unit: none}
+        allowed_values: [all, perspective_team]
       - name: release_search_before_seconds
         type: {container: Scalar, value: Scalar, unit: second}
         required: false
@@ -1886,6 +1929,7 @@ runtime_bindings:
         default: {payload_type: enum, value: Play_Pass, unit: none}
         allowed_values: [any, Play_Pass, ThrowIn_Play_Pass, FreeKick_Play_Pass, GoalKick_Play_Pass, KickOff_Play_Pass]
     parameter_bindings:
+      team_scope: team_scope
       release_search_before_seconds: release_search_before_seconds
       release_search_after_seconds: release_search_after_seconds
       reception_search_seconds: reception_search_seconds
@@ -2387,6 +2431,71 @@ runtime_bindings:
       entity_id_field: entity_id_field
       entity_frame_field: entity_frame_field
       line_buffer_m: line_buffer_m
+
+  - id: binding.primitive.between_observed_lines.0_1_0
+    kind: RuntimeBinding
+    display_name: between_observed_lines runtime binding
+    description: Canonical runtime binding for between_observed_lines 0.1.0.
+    runtime_capability: {id: between_observed_lines, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.between_observed_lines.python.v1
+    implements: [op.between_observed_lines.v1]
+    conformance_status: EXACT
+    known_deviations: []
+    input_bindings:
+      line_evaluations: {source: NODE_INPUT, runtime_port: line_evaluations}
+      entity_anchors: {source: NODE_INPUT, runtime_port: entity_anchors}
+      tracking_window: {source: RUNTIME_CONTEXT, context_ref: canonical_tracking_window}
+    output_bindings:
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+      between_observed_lines_status: {runtime_port: between_observed_lines_status}
+    semantic_parameters:
+      - name: nearer_line_rank
+        type: {container: Scalar, value: Scalar, unit: count}
+        required: false
+        default: {payload_type: number, value: 1, unit: count}
+        minimum: 1.0
+        maximum: 4.0
+      - name: farther_line_rank
+        type: {container: Scalar, value: Scalar, unit: count}
+        required: false
+        default: {payload_type: number, value: 2, unit: count}
+        minimum: 1.0
+        maximum: 4.0
+      - name: line_selector
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: declared_ranks, unit: none}
+        allowed_values: [declared_ranks, deepest_observed_line]
+      - name: entity_id_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: receiver_id, unit: none}
+        allowed_values: [receiver_id, passer_id, relay_player_id, terminal_receiver_id]
+      - name: entity_frame_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: controlled_reception_frame_id, unit: none}
+        allowed_values: [controlled_reception_frame_id, physical_release_frame_id, anchor_frame_id, input_physical_release_frame_id, relay_touch_frame_id, relay_physical_release_frame_id, terminal_controlled_reception_frame_id]
+      - name: line_boundary_buffer_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 0.5, unit: metre}
+        minimum: 0.0
+        maximum: 10.0
+      - name: minimum_interline_gap_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 0.0, unit: metre}
+        minimum: 0.0
+        maximum: 80.0
+    parameter_bindings:
+      nearer_line_rank: nearer_line_rank
+      farther_line_rank: farther_line_rank
+      line_selector: line_selector
+      entity_id_field: entity_id_field
+      entity_frame_field: entity_frame_field
+      line_boundary_buffer_m: line_boundary_buffer_m
+      minimum_interline_gap_m: minimum_interline_gap_m
 
   - id: binding.primitive.controlled_line_break_episode.0_1_0
     kind: RuntimeBinding
@@ -4161,6 +4270,14 @@ claim_contracts:
     permitted: [entity_position_classified_relative_to_supplied_line_under_declared_buffer]
     prohibited: [defensive_line_was_broken, tactical_line_role_identified, player_intent_inferred, pass_was_optimal, passer_intended_measured_outcome]
     unknown_conditions: [line_position_missing, entity_position_missing, attacking_direction_missing_or_invalid, anchor_correlation_missing]
+  - id: claim.between_observed_lines.v1
+    kind: ClaimContract
+    display_name: Between Observed Lines Claims
+    description: Claims permitted for signed entity geometry between selected observed line bands under declared parameters and certified coverage.
+    inherits: [claim.observed_multi_line_model.v1]
+    permitted: [entity_between_selected_observed_lines_under_declared_buffers, entity_outside_selected_observed_lines_when_evidence_complete, observed_interline_gap_measured, deepest_observed_geometric_line_selected]
+    prohibited: [tactical_line_role_identified, formation_inferred, legal_offside_inferred, defensive_line_was_broken, player_intent_inferred, pass_quality_inferred, pass_was_optimal]
+    unknown_conditions: [entity_position_missing, attacking_direction_missing_or_invalid, selected_line_missing_under_uncertain_coverage, line_entity_frame_misaligned, entity_within_line_boundary_buffer, selected_line_geometry_ambiguous]
   - id: claim.controlled_pass_crosses_observed_line.v1
     kind: ClaimContract
     display_name: Controlled Pass Crosses Observed Line Claims
@@ -4531,6 +4648,13 @@ evidence_contracts:
     required: [anchor_id, anchor_frame_id, relative_position_status, relative_position_reason, entity_id, entity_frame_id, line_x_m, entity_x_m, signed_distance_to_line_m, line_buffer_m]
     optional: [normalized_line_x_m, normalized_entity_x_m, distance_to_line_m, entity_y_m]
     replay_projection: [entity_marker, line_marker, distance_badge]
+  - id: evidence.between_observed_lines.v1
+    kind: EvidenceContract
+    display_name: Between Observed Lines Evidence
+    description: Evidence required for signed entity geometry between two selected observed line bands, including GEO-0c coverage witnesses.
+    required: [anchor_id, anchor_frame_id, between_observed_lines_status, between_observed_lines_reason, between_observed_lines_definition_version, entity_id, entity_frame_id, line_selector, nearer_line_rank, farther_line_rank, line_boundary_buffer_m, minimum_interline_gap_m, between_lines_line_model_status, between_lines_defender_observation_status, between_lines_player_track_coverage_status, between_lines_player_track_coverage_row_ids]
+    optional: [match_id, period, team_role, receiver_id, controlled_pass_status, controlled_reception_status, entity_x_m, entity_y_m, normalized_entity_x_m, selected_nearer_line, selected_farther_line, selected_nearer_line_id, selected_farther_line_id, selected_nearer_line_player_ids, selected_farther_line_player_ids, signed_distance_to_nearer_line_m, signed_distance_to_farther_line_m, interline_gap_m, between_lines_line_model_reason, between_lines_defender_observation_reason, between_lines_player_track_coverage_reason]
+    replay_projection: [entity_marker, selected_observed_line_bands, signed_distance_badges, interline_gap_badge, coverage_badge]
   - id: evidence.controlled_pass_crosses_observed_line.v1
     kind: EvidenceContract
     display_name: Controlled Pass Crosses Observed Line Evidence
@@ -4902,6 +5026,13 @@ exposure_policies:
     display_name: relative_position_to_line exposure
     description: Exposure policy for relative_position_to_line.
     subject_ref: runtime:primitive:relative_position_to_line:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+  - id: exposure.runtime.between_observed_lines.0_1_0
+    kind: ExposurePolicy
+    display_name: between_observed_lines exposure
+    description: Exposure policy for coverage-aware signed geometry between observed lines.
+    subject_ref: runtime:primitive:between_observed_lines:0.1.0
     ai_compiler: ALLOWED
     product: ALLOWED
   - id: exposure.runtime.controlled_line_break_episode.0_1_0
@@ -5575,6 +5706,16 @@ maturity_assessments:
     display_name: relative_position_to_line maturity
     description: Maturity assessment for relative_position_to_line.
     subject_ref: runtime:primitive:relative_position_to_line:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.runtime.between_observed_lines.0_1_0
+    kind: MaturityAssessment
+    display_name: between_observed_lines maturity
+    description: Maturity assessment for the ADR 0018 signed observed-line geometry primitive.
+    subject_ref: runtime:primitive:between_observed_lines:0.1.0
     semantic: REVIEWED
     implementation: IMPLEMENTED
     validation: VERIFIED
