@@ -1,0 +1,4 @@
+image=priori-legibility-hotfix-final:local
+image_id=sha256:c79d8b28b825590a09e9d9aa1ce27dcf2a699987ef06baf2d686548b48964688
+meaning_expression_sha256=e59bd793b8096bb5a266cff7774da9fc0bf3788936400f96d4241b2debc1e1f1
+meaning_expression_path=/app/delivery/packets/r2-4-flagship/meaning-expressions/counterattack_initiation_sequence_rate.v0.json

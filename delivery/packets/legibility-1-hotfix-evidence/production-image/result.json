@@ -1,0 +1,76 @@
+{
+  "bootstrap_state": "ready",
+  "code_epoch": "ded9390d1e2c3ee58dd4b95fef568f1d5f1b740df14b7b9c93a0d02cef82aebf",
+  "execution_prewarm": false,
+  "final_schema": "film_room.descriptor_index.v2",
+  "initial_fragment_schemas": {
+    "counterattack_sequence_rate-away.json": "film_room.descriptor_index.v1",
+    "counterattack_sequence_rate-home.json": "film_room.descriptor_index.v1",
+    "fragile_retention-away.json": "film_room.descriptor_index.v1",
+    "fragile_retention-home.json": "film_room.descriptor_index.v1"
+  },
+  "moment_count": 115,
+  "rebuilds": [
+    {
+      "descriptor_count": 0,
+      "execution_cache_bytes_opened": 1048576,
+      "execution_cache_path": "/proof/cache/0e5fdfa49182ece36ecad68d436311b39461030a5346d0ce8a84c78801f55afb.json",
+      "execution_id": "",
+      "execution_performed": false,
+      "flagship_key": "fragile_retention",
+      "fragment_path": "/proof/cache/film-room-descriptor-fragments/fragile_retention-away.json",
+      "fragment_sha256": "456badb416bf9b820bdef3e2e5009ca8c2742ce108d7ce2fc682d2b4679b2155",
+      "key": "fragile_retention",
+      "payload_loaded": false,
+      "prewarm_kind": "descriptor_fragment_rebuild",
+      "rebuild_reason": "CapabilityGap: Film Room descriptor fragment cache-key miss: /proof/cache/film-room-descriptor-fragments/fragile_retention-away.json",
+      "role": "away"
+    },
+    {
+      "descriptor_count": 0,
+      "execution_cache_bytes_opened": 1048576,
+      "execution_cache_path": "/proof/cache/bb9d4da088c37afd757791f0e50e4b2b4f25ac0657b4d7909e298be3590897d8.json",
+      "execution_id": "",
+      "execution_performed": false,
+      "flagship_key": "fragile_retention",
+      "fragment_path": "/proof/cache/film-room-descriptor-fragments/fragile_retention-home.json",
+      "fragment_sha256": "64479219acb22ebed07d58e3a382f21f316c1b285814d750899270105da00c94",
+      "key": "fragile_retention",
+      "payload_loaded": false,
+      "prewarm_kind": "descriptor_fragment_rebuild",
+      "rebuild_reason": "CapabilityGap: Film Room descriptor fragment cache-key miss: /proof/cache/film-room-descriptor-fragments/fragile_retention-home.json",
+      "role": "home"
+    },
+    {
+      "descriptor_count": 115,
+      "execution_cache_bytes_opened": 4403154,
+      "execution_cache_path": "/proof/cache/424007e5cb681951e4f537e1eca655c72b1fb9ff0312a4d17997e9f373518200.json",
+      "execution_id": "exec_633c9fa15bc1ade7",
+      "execution_performed": false,
+      "flagship_key": "counterattack_sequence_rate",
+      "fragment_path": "/proof/cache/film-room-descriptor-fragments/counterattack_sequence_rate-away.json",
+      "fragment_sha256": "720935dcd8a6cf416ca04a988a619350302461b7d4979bb0a8a3364de7f1e9bc",
+      "key": "counterattack_sequence_rate",
+      "payload_loaded": true,
+      "prewarm_kind": "descriptor_fragment_rebuild",
+      "rebuild_reason": "CapabilityGap: Film Room descriptor fragment cache-key miss: /proof/cache/film-room-descriptor-fragments/counterattack_sequence_rate-away.json",
+      "role": "away"
+    },
+    {
+      "descriptor_count": 0,
+      "execution_cache_bytes_opened": 2412577,
+      "execution_cache_path": "/proof/cache/9c7c5c84ef3677e99565e96d114aa1c12a5fd7952b9d05b816ed97d339a18dac.json",
+      "execution_id": "exec_0234839815e62c8b",
+      "execution_performed": false,
+      "flagship_key": "counterattack_sequence_rate",
+      "fragment_path": "/proof/cache/film-room-descriptor-fragments/counterattack_sequence_rate-home.json",
+      "fragment_sha256": "1b5268bc1980e7a34b47b1f45071bddf1d0446d708579b3afff1d882e101abc7",
+      "key": "counterattack_sequence_rate",
+      "payload_loaded": true,
+      "prewarm_kind": "descriptor_fragment_rebuild",
+      "rebuild_reason": "CapabilityGap: Film Room descriptor fragment cache-key miss: /proof/cache/film-room-descriptor-fragments/counterattack_sequence_rate-home.json",
+      "role": "home"
+    }
+  ],
+  "status": "PASS"
+}

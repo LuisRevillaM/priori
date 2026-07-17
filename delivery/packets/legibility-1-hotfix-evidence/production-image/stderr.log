@@ -1,0 +1,18 @@
+Prewarming Film Room flagship from certified table delivery/packets/r2-2-flagship/fragile_retention_rate_table.json...
+Prewarmed Film Room flagship from certified table delivery/packets/r2-2-flagship/fragile_retention_rate_table.json: moments=0 elapsed_ms=93
+Prewarming Film Room flagship from certified table delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json...
+Prewarmed Film Room flagship from certified table delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json: moments=28 elapsed_ms=43
+{"event": "film_room_descriptor_rebuild_started", "flagship_key": "fragile_retention", "reason": "CapabilityGap: Film Room descriptor fragment cache-key miss: /proof/cache/film-room-descriptor-fragments/fragile_retention-away.json", "role": "away", "source": "disk_execution_cache"}
+{"descriptor_count": 0, "event": "film_room_descriptor_rebuild_complete", "flagship_key": "fragile_retention", "payload_loaded": false, "role": "away"}
+{"event": "film_room_descriptor_rebuild_started", "flagship_key": "fragile_retention", "reason": "CapabilityGap: Film Room descriptor fragment cache-key miss: /proof/cache/film-room-descriptor-fragments/fragile_retention-home.json", "role": "home", "source": "disk_execution_cache"}
+{"descriptor_count": 0, "event": "film_room_descriptor_rebuild_complete", "flagship_key": "fragile_retention", "payload_loaded": false, "role": "home"}
+{"event": "film_room_descriptor_rebuild_started", "flagship_key": "counterattack_sequence_rate", "reason": "CapabilityGap: Film Room descriptor fragment cache-key miss: /proof/cache/film-room-descriptor-fragments/counterattack_sequence_rate-away.json", "role": "away", "source": "disk_execution_cache"}
+{"descriptor_count": 115, "event": "film_room_descriptor_rebuild_complete", "flagship_key": "counterattack_sequence_rate", "payload_loaded": true, "role": "away"}
+{"event": "film_room_descriptor_rebuild_started", "flagship_key": "counterattack_sequence_rate", "reason": "CapabilityGap: Film Room descriptor fragment cache-key miss: /proof/cache/film-room-descriptor-fragments/counterattack_sequence_rate-home.json", "role": "home", "source": "disk_execution_cache"}
+{"descriptor_count": 0, "event": "film_room_descriptor_rebuild_complete", "flagship_key": "counterattack_sequence_rate", "payload_loaded": true, "role": "home"}
+Loading Film Room descriptor metadata for delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json...
+Loaded Film Room descriptor metadata for delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json: descriptors=0 full_payloads_opened=0 upgrade_applied=False
+Loading Film Room descriptor metadata for delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_v0.json...
+Loaded Film Room descriptor metadata for delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_v0.json: descriptors=115 full_payloads_opened=0 upgrade_applied=True elapsed_ms=182
+Film Room descriptor index load complete.
+Film Room execution prewarm disabled; disk descriptor index is loaded independently.

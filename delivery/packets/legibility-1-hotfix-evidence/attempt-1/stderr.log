@@ -1,0 +1,17 @@
+Prewarming Film Room flagship from certified table delivery/packets/r2-2-flagship/fragile_retention_rate_table.json...
+Prewarmed Film Room flagship from certified table delivery/packets/r2-2-flagship/fragile_retention_rate_table.json: moments=0 elapsed_ms=15
+Prewarming Film Room flagship from certified table delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json...
+{"event": "film_room_descriptor_rebuild_started", "flagship_key": "fragile_retention", "reason": "CapabilityGap: Film Room descriptor fragment cache-key miss: /proof/cache/film-room-descriptor-fragments/fragile_retention-away.json", "role": "away", "source": "disk_execution_cache"}
+{"descriptor_count": 0, "event": "film_room_descriptor_rebuild_complete", "flagship_key": "fragile_retention", "payload_loaded": false, "role": "away"}
+{"event": "film_room_descriptor_rebuild_started", "flagship_key": "fragile_retention", "reason": "CapabilityGap: Film Room descriptor fragment cache-key miss: /proof/cache/film-room-descriptor-fragments/fragile_retention-home.json", "role": "home", "source": "disk_execution_cache"}
+{"descriptor_count": 0, "event": "film_room_descriptor_rebuild_complete", "flagship_key": "fragile_retention", "payload_loaded": false, "role": "home"}
+{"event": "film_room_descriptor_rebuild_started", "flagship_key": "counterattack_sequence_rate", "reason": "CapabilityGap: Film Room descriptor fragment cache-key miss: /proof/cache/film-room-descriptor-fragments/counterattack_sequence_rate-away.json", "role": "away", "source": "disk_execution_cache"}
+{"error_type": "CapabilityGap", "event": "film_room_descriptor_index_load_failed", "message": "Conflicting Film Room hydration shard: replay_0e2ba8014f63667a", "traceback": "Traceback (most recent call last):\n  File \"/app/src/tqe/workshop/app_service.py\", line 4780, in load_film_room_descriptor_index_safely\n    load_film_room_descriptor_index(output_root=output_root)\n  File \"/app/src/tqe/workshop/app_service.py\", line 4664, in load_film_room_descriptor_index\n    descriptor_index = build_film_room_descriptor_index(output_root=output_root)\n                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/src/tqe/workshop/app_service.py\", line 3665, in build_film_room_descriptor_index\n    rebuild = rebuild_film_room_descriptor_fragment(\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/src/tqe/workshop/app_service.py\", line 3578, in rebuild_film_room_descriptor_fragment\n    summary = write_film_room_descriptor_fragment(\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/src/tqe/workshop/app_service.py\", line 3410, in write_film_room_descriptor_fragment\n    raise CapabilityGap(f\"Conflicting Film Room hydration shard: {replay_window_id}\")\ntqe.workshop.m1_2.CapabilityGap: Conflicting Film Room hydration shard: replay_0e2ba8014f63667a\n"}
+Film Room execution prewarm disabled; disk descriptor index is loaded independently.
+Traceback (most recent call last):
+  File "/proof/evidence-producer.py", line 83, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/proof/evidence-producer.py", line 49, in main
+    raise AssertionError(
+AssertionError: descriptor migration did not restore the gallery: state=warming moments=0

@@ -1,0 +1,59 @@
+/Users/luisrevilla/code/priori/.venv/bin/python -m unittest discover -s tests
+Matplotlib is building the font cache; this may take a moment.
+..........................................................................................{"correlation_id": "err_a37880dc85a3", "event": "workbench_internal_error", "exception_type": "TimeoutError", "message": "public Film Room ask exceeded 0.01s", "path": "/api/film-room/ask", "traceback": "TimeoutError: public Film Room ask exceeded 0.01s\n"}
+.....Prewarming Film Room flagship from certified table delivery/packets/r2-2-flagship/fragile_retention_rate_table.json...
+Prewarmed Film Room flagship from certified table delivery/packets/r2-2-flagship/fragile_retention_rate_table.json: moments=0 elapsed_ms=98
+Prewarming Film Room flagship from certified table delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json...
+Prewarmed Film Room flagship from certified table delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json: moments=28 elapsed_ms=111
+.Film Room execution prewarm disabled; disk descriptor index is loaded independently.
+Film Room execution prewarm requested_but_retired; disk descriptor index is loaded independently.
+.Prewarming Film Room flagship from certified table delivery/packets/r2-2-flagship/fragile_retention_rate_table.json...
+Prewarmed Film Room flagship from certified table delivery/packets/r2-2-flagship/fragile_retention_rate_table.json: moments=0 elapsed_ms=43
+Prewarming Film Room flagship from certified table delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json...
+Prewarmed Film Room flagship from certified table delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json: moments=28 elapsed_ms=42
+Loading Film Room descriptor metadata for delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json...
+Loaded Film Room descriptor metadata for delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json: descriptors=0 full_payloads_opened=0 upgrade_applied=False
+Loading Film Room descriptor metadata for delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_v0.json...
+Loaded Film Room descriptor metadata for delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_v0.json: descriptors=0 full_payloads_opened=0 upgrade_applied=False
+Film Room descriptor index load complete.
+..Prewarming Film Room flagship from certified table delivery/packets/r2-2-flagship/fragile_retention_rate_table.json...
+Prewarmed Film Room flagship from certified table delivery/packets/r2-2-flagship/fragile_retention_rate_table.json: moments=0 elapsed_ms=51
+Prewarming Film Room flagship from certified table delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json...
+Prewarmed Film Room flagship from certified table delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json: moments=28 elapsed_ms=48
+{"error_type": "RuntimeError", "event": "film_room_descriptor_index_load_failed", "message": "descriptor index unavailable in proof", "traceback": "Traceback (most recent call last):\n  File \"/Users/luisrevilla/code/priori/src/tqe/workshop/app_service.py\", line 4803, in load_film_room_descriptor_index_safely\n    load_film_room_descriptor_index(output_root=output_root)\n  File \"/Users/luisrevilla/code/priori/src/tqe/workshop/app_service.py\", line 4687, in load_film_room_descriptor_index\n    descriptor_index = build_film_room_descriptor_index(output_root=output_root)\n                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py\", line 1139, in __call__\n    return self._mock_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py\", line 1143, in _mock_call\n    return self._execute_mock_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py\", line 1198, in _execute_mock_call\n    raise effect\nRuntimeError: descriptor index unavailable in proof\n"}
+.....Prewarming Film Room flagship from certified table delivery/packets/r2-2-flagship/fragile_retention_rate_table.json...
+Prewarmed Film Room flagship from certified table delivery/packets/r2-2-flagship/fragile_retention_rate_table.json: moments=0 elapsed_ms=42
+Prewarming Film Room flagship from certified table delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json...
+Prewarmed Film Room flagship from certified table delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json: moments=28 elapsed_ms=48
+{"event": "film_room_descriptor_rebuild_started", "flagship_key": "fragile_retention", "reason": "CapabilityGap: Film Room descriptor fragment cache-key miss: /private/var/folders/pw/h7l3qlzs7m30twmmssxhv37h0000gn/T/tmpr9af94rd/cache/film-room-descriptor-fragments/fragile_retention-away.json", "role": "away", "source": "disk_execution_cache"}
+{"descriptor_count": 0, "event": "film_room_descriptor_rebuild_complete", "flagship_key": "fragile_retention", "payload_loaded": false, "role": "away"}
+{"event": "film_room_descriptor_rebuild_started", "flagship_key": "fragile_retention", "reason": "CapabilityGap: Film Room descriptor fragment cache-key miss: /private/var/folders/pw/h7l3qlzs7m30twmmssxhv37h0000gn/T/tmpr9af94rd/cache/film-room-descriptor-fragments/fragile_retention-home.json", "role": "home", "source": "disk_execution_cache"}
+{"descriptor_count": 0, "event": "film_room_descriptor_rebuild_complete", "flagship_key": "fragile_retention", "payload_loaded": false, "role": "home"}
+{"event": "film_room_descriptor_rebuild_started", "flagship_key": "counterattack_sequence_rate", "reason": "CapabilityGap: Film Room descriptor fragment cache-key miss: /private/var/folders/pw/h7l3qlzs7m30twmmssxhv37h0000gn/T/tmpr9af94rd/cache/film-room-descriptor-fragments/counterattack_sequence_rate-away.json", "role": "away", "source": "disk_execution_cache"}
+{"descriptor_count": 1, "event": "film_room_descriptor_rebuild_complete", "flagship_key": "counterattack_sequence_rate", "payload_loaded": true, "role": "away"}
+{"event": "film_room_descriptor_rebuild_started", "flagship_key": "counterattack_sequence_rate", "reason": "CapabilityGap: Film Room descriptor fragment cache-key miss: /private/var/folders/pw/h7l3qlzs7m30twmmssxhv37h0000gn/T/tmpr9af94rd/cache/film-room-descriptor-fragments/counterattack_sequence_rate-home.json", "role": "home", "source": "disk_execution_cache"}
+{"descriptor_count": 0, "event": "film_room_descriptor_rebuild_complete", "flagship_key": "counterattack_sequence_rate", "payload_loaded": true, "role": "home"}
+Loading Film Room descriptor metadata for delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json...
+Loaded Film Room descriptor metadata for delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json: descriptors=0 full_payloads_opened=0 upgrade_applied=False
+Loading Film Room descriptor metadata for delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_v0.json...
+Loaded Film Room descriptor metadata for delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_v0.json: descriptors=1 full_payloads_opened=0 upgrade_applied=True elapsed_ms=45
+Film Room descriptor index load complete.
+Film Room execution prewarm disabled; disk descriptor index is loaded independently.
+.Prewarming Film Room flagship from certified table delivery/packets/r2-2-flagship/fragile_retention_rate_table.json...
+Prewarmed Film Room flagship from certified table delivery/packets/r2-2-flagship/fragile_retention_rate_table.json: moments=0 elapsed_ms=43
+Prewarming Film Room flagship from certified table delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json...
+Prewarmed Film Room flagship from certified table delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json: moments=28 elapsed_ms=37
+Loading Film Room descriptor metadata for delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json...
+Loaded Film Room descriptor metadata for delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json: descriptors=0 full_payloads_opened=0 upgrade_applied=False
+Loading Film Room descriptor metadata for delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_v0.json...
+Loaded Film Room descriptor metadata for delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_v0.json: descriptors=2 full_payloads_opened=0 upgrade_applied=True elapsed_ms=36
+Film Room descriptor index load complete.
+Film Room execution prewarm disabled; disk descriptor index is loaded independently.
+...{"event": "film_room_descriptor_rebuild_started", "flagship_key": "fragile_retention", "reason": "missing", "role": "away", "source": "disk_execution_cache"}
+{"error_type": "CapabilityGap", "event": "film_room_descriptor_index_load_failed", "message": "Film Room descriptor rebuild expected one execution cache for plan_id=search_r1_5_fragile_possession_state_v0 role=away bound_plan_hash=unknown; found 0.", "traceback": "Traceback (most recent call last):\n  File \"/Users/luisrevilla/code/priori/src/tqe/workshop/app_service.py\", line 4803, in load_film_room_descriptor_index_safely\n    load_film_room_descriptor_index(output_root=output_root)\n  File \"/Users/luisrevilla/code/priori/src/tqe/workshop/app_service.py\", line 4687, in load_film_room_descriptor_index\n    descriptor_index = build_film_room_descriptor_index(output_root=output_root)\n                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/luisrevilla/code/priori/src/tqe/workshop/app_service.py\", line 3688, in build_film_room_descriptor_index\n    rebuild = rebuild_film_room_descriptor_fragment(\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/luisrevilla/code/priori/src/tqe/workshop/app_service.py\", line 3541, in rebuild_film_room_descriptor_fragment\n    execution_cache_path_value, metadata = find_film_room_execution_cache(\n                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/luisrevilla/code/priori/src/tqe/workshop/app_service.py\", line 3298, in find_film_room_execution_cache\n    raise CapabilityGap(\ntqe.workshop.m1_2.CapabilityGap: Film Room descriptor rebuild expected one execution cache for plan_id=search_r1_5_fragile_possession_state_v0 role=away bound_plan_hash=unknown; found 0.\n"}
+...........................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
+----------------------------------------------------------------------
+Ran 599 tests in 828.585s
+
+OK
+{"attestation_status": "VERIFIED", "blocking_reasons": []}
