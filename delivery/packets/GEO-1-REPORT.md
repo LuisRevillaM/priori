@@ -7,7 +7,7 @@ Frontier: `079e3db686b63f0a507f1dee6e13708dda86607d`
 Executor clone: `/private/tmp/priori-geo1-executor.Pug8zR` (outside the
 repository tree)
 
-Status: **DESIGN SEALED — IMPLEMENTATION PENDING**
+Status: **IMPLEMENTED AND CERTIFIED — DIRECTOR REVIEW PENDING**
 
 ## Design brief (authored before implementation)
 
@@ -160,3 +160,166 @@ table byte changes, execution stops and reports the exact delta. Identity-only
 hash movement caused by the additive catalog/evidence contract will be
 disclosed, never presented as a value delta. No frozen expectation or existing
 certified table is rewritten on this branch.
+
+## Implementation record
+
+The design was sealed before implementation in `58110e69`. The pure geometry
+kernel, line-family runtime adapter, typed catalog contract, semantic registry
+mapping, generated projections, and direction/honesty tests landed in
+`bf243f86`. The certified composition and its producer landed in `7822f230`.
+The compiler-vocabulary additive-count ratchet was corrected in `a8dd4cf4`.
+
+`src/tqe/runtime/between_observed_lines.py` now implements the declared signed
+geometry independently of serving or recipe code. It selects declared ranks or
+the unique maximum-normalized-X `deepest_observed_line`, checks physical and
+normalized orientation agreement, emits line identity and defender membership,
+and applies the closed boundary buffer. The result cannot become `FAIL` unless
+the inherited GEO-0c defender-observation status is `ADEQUATE` and player-track
+coverage is `CERTIFIED`. Missing entity/frame/position, frame misalignment,
+orientation uncertainty, invalid line geometry, inadequate observation, and
+the boundary zone remain typed `UNKNOWN` outcomes.
+
+The runtime adapter preserves one same-anchor record and passes through the
+controlled-pass population fields needed by registered aggregation and rate
+operators. Catalog parameters use GEO-0b field references for `receiver_id` and
+`controlled_reception_frame_id`. The primitive is registered through the full
+concept → operationalization → implementation → runtime binding → claim →
+evidence → exposure → maturity chain, and the committed producers regenerate
+the catalog, capability context, tactical knowledge pack, SCP-0 projections,
+passport, parity report, and registry lock.
+
+The standard-envelope compiler needed one exact construction rule: one shared
+`controlled_pass_episode` stream feeds both `multi_line_model` and
+`between_observed_lines`; it never synthesizes two independently evaluated pass
+populations. The recipe adds an optional `team_scope` parameter to
+`controlled_pass_episode`. Its default is `all`, preserving every existing
+plan. GEO-1 alone binds `perspective_team`, preventing opponent pass rows from
+being interpreted against the declared team orientation. The bound recipe then
+adds registered `aggregate_over(group_by=receiver_id)` and `rate` terminals over
+the same geometry records.
+
+## Certified composition and the zero-PASS finding
+
+The committed standard-envelope artifacts live under
+`delivery/packets/geo-1-reception-between-lines/`. The generator executes all
+seven canonical matches, both team perspectives, and both periods. It asserts
+the one-shared-chain wiring, binds the complete composition, rejects any
+opposite-team row, reconciles every receiver group against both operators, and
+commits compact geometry/coverage witnesses.
+
+| Certified measure | Value |
+| --- | ---: |
+| Evaluated anchor rows | 4,189 |
+| `between_observed_lines=PASS` | 0 |
+| `between_observed_lines=FAIL` | 2,909 |
+| `between_observed_lines=UNKNOWN` | 1,280 |
+| Controlled-pass denominator PASS | 2,909 |
+| Controlled-pass denominator UNKNOWN | 804 |
+| Controlled-pass denominator FAIL | 476 |
+| Observed rate | 0 |
+| Joint-unknown lower bound | 0 |
+| Joint-unknown upper bound | 0.21653649340156209 |
+
+Reason totals are `selected_line_not_observed=2450`,
+`entity_frame_missing=1280`, and `entity_outside_observed_lines=459`. Plan hash
+is `b58f5a84796666eb6d42bd835bd9598f92be49c6e7953d26ecfcdde0e0e58e77`;
+table hash is
+`d302e36cff59deff1f393d11c66edb6d1d33bdad478f32e68342b91c01854e50`.
+The committed `--check` run re-executed all 4,189 rows and reproduced the plan,
+JSON table, Markdown table, and provenance byte for byte.
+
+The zero PASS count is a definition-level finding, not a failed data search and
+not something this packet silently repairs. The ratified round-1 definition
+says the normal pair is line ranks 1 and 2 goal-side of the ball. The certified
+recipe evaluates the receiver and `multi_line_model` at the same controlled-
+reception frame. At that frame the receiver is at the ball, while every line
+candidate is constructed strictly goal-side of the ball. Consequently every
+adequately observed pair places the receiver behind the nearer line; none can
+satisfy `s_nearer > b`. Changing the line model to include bands behind the
+ball, or evaluating reception geometry against release-frame lines, would be a
+new charter/recipe ruling. This executor did neither. The primitive remains a
+valid general geometry primitive for entity/frame compositions whose entity can
+lie between the declared observed bands, but this exact flagship composition is
+structurally incapable of a positive row under the current definitions.
+
+## Mutation evidence
+
+Two source mutations were applied separately and completely restored:
+
+1. The closed buffer test was changed from `<= b` to `< b`. The named oracle
+   `test_closed_boundary_buffer_is_unknown_at_both_lines` failed: an entity at
+   exactly 0.5 m changed from expected `UNKNOWN` to `FAIL` (exit 1). After
+   restoration the same oracle passed.
+2. The GEO-0c adequacy branch was bypassed for upstream `FAIL` line evidence.
+   `test_fail_status_without_adequate_coverage_is_forced_unknown` failed because
+   the licensed insufficient-observation reason was replaced by
+   `selected_line_not_observed` (exit 1). After restoration it passed.
+
+A source diff against `7822f230` proved neither mutation remained. The focused
+suite also exercises signed geometry in both attacking directions.
+
+## Certified-result STOP audit
+
+Control clone: `/private/tmp/priori-geo1-control.BDh1Ab`, detached at
+`079e3db686b63f0a507f1dee6e13708dda86607d`. The control and GEO-1 trees used
+the same canonical/raw corpus, one worker, and separate cold node-cache roots.
+
+| Certified surface | Untouched frontier control | GEO-1 | Value verdict |
+| --- | --- | --- | --- |
+| Q3 execution | PASS; 13 results; 0 evidence failures | exact same | no delta |
+| Q3 multi-line probe | PASS 142; FAIL 106; UNKNOWN 0; population 248 | exact same | no delta |
+| Q3 downstream probes | support FAIL 184 / UNKNOWN 64; action chain PASS 146 / FAIL 64 | exact same | no delta |
+| Q6 execution | PASS; honest zero; 0 results; 0 evidence failures | exact same | no delta |
+| Q6 line transition | PASS 1; FAIL 13; UNKNOWN 3; population 17 | exact same | no delta |
+| Q6 pressure / velocity | pressure PASS 5 / FAIL 7; velocity PASS 17 | exact same | no delta |
+
+The additive controlled-pass parameter changes bound-plan identity, as required
+by the cache-key law: Q3 moves from `88970ddc...` to `04bdaf58...`; Q6 moves
+from `f1a264b2...` to `ee2a97b6...`. Q3's 13 identity-bearing `result_id` values
+therefore move. Removing only `result_id`, the freshly executed control and
+GEO-1 result rows are byte-identical with SHA-256
+`c918f1e9ea07f95f0c703a69a4fa3bb1b96b4befd0ca4edb5425e3392911c1b9`.
+Q6 retains the canonical empty-row hash
+`4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945`.
+No status, population, classification, evidence value, or tactical result
+changed. No pre-existing plan, certified table, oracle, dev set, or frozen
+expectation was rewritten. Therefore **the certified-value STOP condition does
+not fire**.
+
+## Verification table
+
+| Gate | Result |
+| --- | --- |
+| GEO-1 primitive/recipe suite | PASS — 14 tests |
+| GEO substrate + line kernels + executor boundaries | PASS — 95 tests in 0.913 s |
+| Closed-buffer mutation | EXPECTED FAIL; restored oracle PASS; mutation absent |
+| GEO-0c guard mutation | EXPECTED FAIL; restored oracle PASS; mutation absent |
+| Standard-envelope generation | PASS — 4,189 rows across 28 scopes |
+| Byte-reproducing generator `--check` | PASS — plan/table/Markdown/provenance reproduced |
+| Q3/Q6 frontier-vs-GEO STOP comparison | PASS — exact values; identity-only movement disclosed |
+| SCP-0 generation and read-only verification | PASS — zero findings and 45 registry tests |
+| `compileall`, `git diff --check`, source restoration | PASS |
+| Initial full-suite attempt | INVALID ENVIRONMENT — 616 tests, 2 failures + 5 errors in 496.205 s; missing ignored canonical files plus one real additive-count ratchet |
+| Named-failure rerun after corpus copy and ratchet fix | PASS — 36 tests in 389.341 s |
+| Final canonical `make test` | PASS — 635 tests in 603.300 s; attestation `VERIFIED`; zero blockers |
+| Leg zero | PASS — charter, GEO-0a/0b/0c laws, existing certified artifacts, and frozen expectations unchanged |
+
+## Deviations and repository state
+
+- All work is confined to external executor clone
+  `/private/tmp/priori-geo1-executor.Pug8zR`; no clone was created inside the
+  repository tree.
+- The first full-suite attempt exposed that Git does not carry the ignored
+  canonical Parquet corpus into a clone. Environment variables covered executor
+  defaults, but six older tests intentionally use relative paths. A regular-file
+  copy of the same 182 MB canonical corpus was placed under the clone's ignored
+  `data/canonical/v1`; it creates no tracked diff. The complete red attempt is
+  reported above rather than erased.
+- The same first attempt caught the one legitimate missed ratchet: compiler
+  vocabulary increased from 37 to 38 primitives. Only that expected count was
+  changed; no fixture, oracle, frozen expectation, or certified value was
+  altered.
+- No serving, deployment, registry vocabulary beyond the ratified primitive,
+  memory path, or external service was touched. No 2 GiB proof applies.
+- No push was attempted. Pre-report packet commits are `58110e69`, `bf243f86`,
+  `7822f230`, and `a8dd4cf4`.
