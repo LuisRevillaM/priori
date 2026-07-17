@@ -1,7 +1,7 @@
 # Tactical Knowledge Pack
 
 Version: `m1.2-s2i-a.0`
-SHA-256: `6b8821a462bd30c03ea4ebd65fefd2e33fc951ffc7f789f9cd577689c306177a`
+SHA-256: `90c7a33c9bb1ce8ec0d57e1505671350d8491bee46d62cde0ae1c4e7db3e5cce`
 Generated: `reproducible_from_source_hashes`
 
 ## Architecture
@@ -224,23 +224,23 @@ Composition constraint kinds:
 - `config/query-plans/opposite_corridor_after_shift.experimental.v1.json`: `9244603037c2db474bd766688a87ed7b72d5d8695953ec225a4a71f1b0206b74`
 - `config/query-plans/possession_corridor_availability.experimental.v1.json`: `81ff93059b8b6bf5e0b5958610b2dc48a5814f0b7001f4bb4efc6956b2e94fde`
 - `generated/capability-context.json`: `0711668564b065ad27742dbad05fa3e0ed56f7d5aff7c7462abc73c5957e370a`
-- `generated/tactical-query-plan.schema.json`: `7904105efeba7b8297ee3d3dbd183b92c6b8d67f5f034e34da8c52f42b0b54ae`
-- `generated/tactical-query-plan.types.ts`: `5c027189c9b5f314bc62fd765656e30aeaebe163add038320f74cca932627ceb`
-- `src/tqe/runtime/binder.py`: `dbf680cc9a115b6039870eeff00c3c5d851296532ccd2d2465226f5ae2f0f40f`
-- `src/tqe/runtime/catalog.py`: `374140666a0e610f4279c6ac89f6ce4219be55cd165151beac3f63f3f7ae7519`
-- `src/tqe/runtime/executor.py`: `8ef82b68e84650b46e2e3a7f63ea9edb4d0a677eba980b042fa327f1616f8e5f`
-- `src/tqe/runtime/ir.py`: `33e4885a6ad75afa7b4e9df96b72eba43c49b92b24ac67c8d2979d0bde13eedd`
-- `src/tqe/runtime/operators/__init__.py`: `1d2d394ef971040862981964e221370b17d56daaefb6090c6d8047383a005c14`
+- `generated/tactical-query-plan.schema.json`: `73289de85bf8cb486ea27c166c8039f0cb002c6bd5a234f77631370e97941c5d`
+- `generated/tactical-query-plan.types.ts`: `b674c5091ce001e04f393defba6bed2f9ec9b93ec660bc679b7aa73b6d955223`
+- `src/tqe/runtime/binder.py`: `74326af6f81bc72028da0a3fd829891a6a2bc7d393804f71ef08e29cb289f1e9`
+- `src/tqe/runtime/catalog.py`: `51b0fb41e668a641713f1a1154c57d7048f9e4e8a828de5945896c25622d6628`
+- `src/tqe/runtime/executor.py`: `2299bd238aaef5889a8a330a3a81b7b7e58877b3063f6ac1eb100421bfc3bbad`
+- `src/tqe/runtime/ir.py`: `43507b1929ec3bee528b5dfff851d73ed73aad12e1a4e2dfe8223f50b1ca1c55`
+- `src/tqe/runtime/operators/__init__.py`: `20c6e5cfe7f575d3846a1511cbc610192881a8bc2845d4c5a85b79789a6e4fd3`
 - `src/tqe/runtime/operators/aggregate_over.py`: `1f883d7035795e97ad4ff12a78ce13deda417c857fc18244758e095608aa1b64`
 - `src/tqe/runtime/operators/delta_across_anchor.py`: `acd81710c06856c71aac2ac41e68a7e07d17262a69f597a92696a0721f77b806`
 - `src/tqe/runtime/operators/extremum_over_set.py`: `e9bf407db795f44600ffe65f6c0333a3cdaae3b8b234206e1157eed533eb15e3`
 - `src/tqe/runtime/operators/project_onto_axis.py`: `65159a823e7573cc19fd3728f425680a8cc80349e1bc8e790db890b589ecd9d0`
 - `src/tqe/runtime/operators/rate.py`: `b91e0475374e7b7295cdc511e545f7e21bbad28e9c5e08efff6470a6c8027d7c`
-- `src/tqe/runtime/operators/sequence_pattern.py`: `6826ac97639bcde8a4a441aa0e4fd474dd87a14577add8fbee0aa45ea3126921`
-- `src/tqe/runtime/operators/typed_join.py`: `8b897658f357f9cda39c287816daacf95733c3d75c69843d449c35fe8bd10af1`
+- `src/tqe/runtime/operators/sequence_pattern.py`: `34e9df3a816ab4b8949f4eaba3da5cd8d76505cf0782daea04f11f9445ad1246`
+- `src/tqe/runtime/operators/typed_join.py`: `a8fcd01ce6d39273da4e2bff4c3d6c206619a7c1da669c78d08bf88850209174`
 - `src/tqe/runtime/operators/window.py`: `c7247d0fb72c8c0c1705b75d71ced179d7c814c3c2aee93a2dbd9948c773188e`
 - `src/tqe/runtime/relations.py`: `eb305cd2ff4c9c5f886342eeb8c35253500e6dd777bdf7b4dc403469b771d8e0`
 - `src/tqe/verification/m1_2_gate_s2i.py`: `9397f1a8a6b11e28d1f0bb48105a44dfae9a2c49ca61ff44413108f1d85ce125`
 - `src/tqe/workshop/hermes_s2.py`: `ae2bb93b3444749d8fd131075e29404141e517820faf103fb58de2ebafcb1591`
 - `src/tqe/workshop/knowledge_pack.py`: `ff3ee2e2780e4535e40bad327fce72d98a6c0b25194de8287337e52b3d8d919a`
-- `src/tqe/workshop/m1_2.py`: `6b79d2d6390f32e9348440bd9e38defaa59922e7844d714dedc2cb94862245cb`
+- `src/tqe/workshop/m1_2.py`: `223dffe0621a14b666c6396b0f5db5ace9b7048e0019112236bc3913cd5aafe9`

@@ -852,11 +852,11 @@
       "shared_count": 48
     },
     "baseline_sources": {
-      "baseline_artifact_revision": "3aeed956dbdc0829d0df3f24a99a0bd06a4627876d8235a7e772222015e145f6",
+      "baseline_artifact_revision": "60c440a78370d1e681a21076ee090d0898ece88d74b821684925254238d20f73",
       "capability_catalog": {
         "exists": true,
         "path": "generated/capability-catalog.json",
-        "source_artifact_sha256": "5de851a0280b40fb7b523996a564b90a2ca8580ed22f4047783fa74934f3609f"
+        "source_artifact_sha256": "2c58b8ae510cba894fe2b55a0979af05ddff343e484396e9d7f83ddeccaf13ed"
       },
       "product_recipe_contracts": {
         "frozen_baseline": false,
@@ -867,7 +867,7 @@
       "tactical_knowledge_pack": {
         "exists": true,
         "path": "generated/tactical-knowledge-pack.json",
-        "source_artifact_sha256": "a15796dc62e03a929eb29cd74b8bf70e5c4b8d940ecc6cb81b2ba8ca336ba5fa"
+        "source_artifact_sha256": "c3cb14147df82c93a92d7d1df9cb3cdc3f163e470c79a008cd4312cfe756899a"
       }
     },
     "product": {
@@ -950,16 +950,16 @@
   },
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "3aeed956dbdc0829d0df3f24a99a0bd06a4627876d8235a7e772222015e145f6",
+    "baseline_artifact_revision": "60c440a78370d1e681a21076ee090d0898ece88d74b821684925254238d20f73",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "ed9d081cdc3f01fc2dbd383b5b9b8532ace5ce8df65e23a8d62065b9c258147b",
+    "lock_hash": "30453c87a335fe54f6f97e7d310bfe561cbd2480e2382894b8e2ff513a4e496c",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
     "registry_revision": "e7354e2c236fd3701cc65d8d01229bf4bc357748761fd60084375e01bf9a366b",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "2afa35322ca23d66fd226efa62985e06ce2cb131491f58800e17f3a3bc35b790",
+    "runtime_manifest_revision": "372b23876fc4f9340db2e031e97a93b924c49befa9ea54351eea8432e9456368",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"

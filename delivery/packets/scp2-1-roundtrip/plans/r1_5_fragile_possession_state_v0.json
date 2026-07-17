@@ -280,14 +280,20 @@
                 "value": 4.0
               },
               "anchor_frame_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "controlled_reception_frame_id"
+                "value": {
+                  "field": "controlled_reception_frame_id",
+                  "kind": "frame"
+                }
               },
               "anchor_status_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "controlled_pass_status"
+                "value": {
+                  "field": "controlled_pass_status",
+                  "kind": "status"
+                }
               },
               "anchor_status_value": {
                 "payload_type": "enum",
@@ -295,9 +301,12 @@
                 "value": "PASS"
               },
               "anchor_team_role_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "team_role"
+                "value": {
+                  "field": "team_role",
+                  "kind": "entity"
+                }
               },
               "before_duration_seconds": {
                 "payload_type": "number",
@@ -305,9 +314,12 @@
                 "value": 0.0
               },
               "continuity_end_frame_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "possession_end_frame_id"
+                "value": {
+                  "field": "possession_end_frame_id",
+                  "kind": "frame"
+                }
               },
               "continuity_overlap_policy": {
                 "payload_type": "enum",
@@ -320,14 +332,20 @@
                 "value": "same_possession"
               },
               "continuity_start_frame_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "possession_start_frame_id"
+                "value": {
+                  "field": "possession_start_frame_id",
+                  "kind": "frame"
+                }
               },
               "continuity_status_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "none"
+                "value": {
+                  "field": null,
+                  "kind": "status"
+                }
               },
               "continuity_status_value": {
                 "payload_type": "enum",
@@ -335,9 +353,12 @@
                 "value": "PASS"
               },
               "continuity_team_role_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "team_role"
+                "value": {
+                  "field": "team_role",
+                  "kind": "entity"
+                }
               },
               "frame_rate_hz": {
                 "payload_type": "number",
@@ -389,14 +410,20 @@
                 "value": "defending_outfield"
               },
               "carrier_id_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "receiver_id"
+                "value": {
+                  "field": "receiver_id",
+                  "kind": "entity"
+                }
               },
               "frame_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "controlled_reception_frame_id"
+                "value": {
+                  "field": "controlled_reception_frame_id",
+                  "kind": "frame"
+                }
               },
               "lookback_seconds": {
                 "payload_type": "number",
@@ -456,9 +483,12 @@
             "node_id": "support_arrival_point_pair",
             "parameters": {
               "anchor_frame_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "controlled_reception_frame_id"
+                "value": {
+                  "field": "controlled_reception_frame_id",
+                  "kind": "frame"
+                }
               },
               "candidate_scope": {
                 "payload_type": "enum",
@@ -486,9 +516,12 @@
                 "value": 1.0
               },
               "required_anchor_status_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "none"
+                "value": {
+                  "field": null,
+                  "kind": "status"
+                }
               },
               "required_anchor_status_value": {
                 "payload_type": "enum",
@@ -795,24 +828,36 @@
                 "value": "same_anchor"
               },
               "left_anchor_id_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "anchor_id"
+                "value": {
+                  "field": "anchor_id",
+                  "kind": "provenance"
+                }
               },
               "left_end_frame_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "none"
+                "value": {
+                  "field": null,
+                  "kind": "frame"
+                }
               },
               "left_entity_id_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "none"
+                "value": {
+                  "field": null,
+                  "kind": "entity"
+                }
               },
               "left_frame_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "pressure_frame_id"
+                "value": {
+                  "field": "pressure_frame_id",
+                  "kind": "frame"
+                }
               },
               "left_required_status_value": {
                 "payload_type": "enum",
@@ -820,19 +865,28 @@
                 "value": "PASS"
               },
               "left_start_frame_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "none"
+                "value": {
+                  "field": null,
+                  "kind": "frame"
+                }
               },
               "left_status_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "pressure_status"
+                "value": {
+                  "field": "pressure_status",
+                  "kind": "status"
+                }
               },
               "left_team_role_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "team_role"
+                "value": {
+                  "field": "team_role",
+                  "kind": "entity"
+                }
               },
               "maximum_frame_delta": {
                 "payload_type": "number",
@@ -850,24 +904,36 @@
                 "value": "PASS"
               },
               "right_anchor_id_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "anchor_id"
+                "value": {
+                  "field": "anchor_id",
+                  "kind": "provenance"
+                }
               },
               "right_end_frame_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "none"
+                "value": {
+                  "field": null,
+                  "kind": "frame"
+                }
               },
               "right_entity_id_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "none"
+                "value": {
+                  "field": null,
+                  "kind": "entity"
+                }
               },
               "right_frame_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "support_anchor_frame_id"
+                "value": {
+                  "field": "support_anchor_frame_id",
+                  "kind": "frame"
+                }
               },
               "right_required_status_value": {
                 "payload_type": "enum",
@@ -875,19 +941,28 @@
                 "value": "FAIL"
               },
               "right_start_frame_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "none"
+                "value": {
+                  "field": null,
+                  "kind": "frame"
+                }
               },
               "right_status_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "support_arrival_status"
+                "value": {
+                  "field": "support_arrival_status",
+                  "kind": "status"
+                }
               },
               "right_team_role_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "none"
+                "value": {
+                  "field": null,
+                  "kind": "entity"
+                }
               },
               "same_team_perspective_required": {
                 "payload_type": "boolean",
@@ -1304,24 +1379,36 @@
                 "value": "same_anchor"
               },
               "left_anchor_id_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "source_anchor_id"
+                "value": {
+                  "field": "source_anchor_id",
+                  "kind": "provenance"
+                }
               },
               "left_end_frame_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "none"
+                "value": {
+                  "field": null,
+                  "kind": "frame"
+                }
               },
               "left_entity_id_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "none"
+                "value": {
+                  "field": null,
+                  "kind": "entity"
+                }
               },
               "left_frame_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "source_anchor_frame_id"
+                "value": {
+                  "field": "source_anchor_frame_id",
+                  "kind": "frame"
+                }
               },
               "left_required_status_value": {
                 "payload_type": "enum",
@@ -1329,19 +1416,28 @@
                 "value": "PASS"
               },
               "left_start_frame_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "none"
+                "value": {
+                  "field": null,
+                  "kind": "frame"
+                }
               },
               "left_status_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "window_status"
+                "value": {
+                  "field": "window_status",
+                  "kind": "status"
+                }
               },
               "left_team_role_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "anchor_team_role"
+                "value": {
+                  "field": "anchor_team_role",
+                  "kind": "entity"
+                }
               },
               "maximum_frame_delta": {
                 "payload_type": "number",
@@ -1359,24 +1455,36 @@
                 "value": "PASS"
               },
               "right_anchor_id_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "left_anchor_id"
+                "value": {
+                  "field": "left_anchor_id",
+                  "kind": "provenance"
+                }
               },
               "right_end_frame_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "none"
+                "value": {
+                  "field": null,
+                  "kind": "frame"
+                }
               },
               "right_entity_id_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "none"
+                "value": {
+                  "field": null,
+                  "kind": "entity"
+                }
               },
               "right_frame_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "left_frame_id"
+                "value": {
+                  "field": "left_frame_id",
+                  "kind": "frame"
+                }
               },
               "right_required_status_value": {
                 "payload_type": "enum",
@@ -1384,19 +1492,28 @@
                 "value": "PASS"
               },
               "right_start_frame_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "none"
+                "value": {
+                  "field": null,
+                  "kind": "frame"
+                }
               },
               "right_status_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "typed_join_status"
+                "value": {
+                  "field": "typed_join_status",
+                  "kind": "status"
+                }
               },
               "right_team_role_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "left_team_role"
+                "value": {
+                  "field": "left_team_role",
+                  "kind": "entity"
+                }
               },
               "same_team_perspective_required": {
                 "payload_type": "boolean",
@@ -1973,14 +2090,20 @@
                 "value": 4.0
               },
               "anchor_frame_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "controlled_reception_frame_id"
+                "value": {
+                  "field": "controlled_reception_frame_id",
+                  "kind": "frame"
+                }
               },
               "anchor_status_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "controlled_pass_status"
+                "value": {
+                  "field": "controlled_pass_status",
+                  "kind": "status"
+                }
               },
               "anchor_status_value": {
                 "payload_type": "enum",
@@ -1988,9 +2111,12 @@
                 "value": "PASS"
               },
               "anchor_team_role_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "team_role"
+                "value": {
+                  "field": "team_role",
+                  "kind": "entity"
+                }
               },
               "before_duration_seconds": {
                 "payload_type": "number",
@@ -1998,9 +2124,12 @@
                 "value": 0.0
               },
               "continuity_end_frame_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "possession_end_frame_id"
+                "value": {
+                  "field": "possession_end_frame_id",
+                  "kind": "frame"
+                }
               },
               "continuity_overlap_policy": {
                 "payload_type": "enum",
@@ -2013,14 +2142,20 @@
                 "value": "same_possession"
               },
               "continuity_start_frame_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "possession_start_frame_id"
+                "value": {
+                  "field": "possession_start_frame_id",
+                  "kind": "frame"
+                }
               },
               "continuity_status_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "none"
+                "value": {
+                  "field": null,
+                  "kind": "status"
+                }
               },
               "continuity_status_value": {
                 "payload_type": "enum",
@@ -2028,9 +2163,12 @@
                 "value": "PASS"
               },
               "continuity_team_role_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "team_role"
+                "value": {
+                  "field": "team_role",
+                  "kind": "entity"
+                }
               },
               "frame_rate_hz": {
                 "payload_type": "number",
@@ -2082,14 +2220,20 @@
                 "value": "defending_outfield"
               },
               "carrier_id_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "receiver_id"
+                "value": {
+                  "field": "receiver_id",
+                  "kind": "entity"
+                }
               },
               "frame_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "controlled_reception_frame_id"
+                "value": {
+                  "field": "controlled_reception_frame_id",
+                  "kind": "frame"
+                }
               },
               "lookback_seconds": {
                 "payload_type": "number",
@@ -2149,9 +2293,12 @@
             "node_id": "support_arrival_point_pair",
             "parameters": {
               "anchor_frame_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "controlled_reception_frame_id"
+                "value": {
+                  "field": "controlled_reception_frame_id",
+                  "kind": "frame"
+                }
               },
               "candidate_scope": {
                 "payload_type": "enum",
@@ -2179,9 +2326,12 @@
                 "value": 1.0
               },
               "required_anchor_status_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "none"
+                "value": {
+                  "field": null,
+                  "kind": "status"
+                }
               },
               "required_anchor_status_value": {
                 "payload_type": "enum",
@@ -2488,24 +2638,36 @@
                 "value": "same_anchor"
               },
               "left_anchor_id_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "anchor_id"
+                "value": {
+                  "field": "anchor_id",
+                  "kind": "provenance"
+                }
               },
               "left_end_frame_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "none"
+                "value": {
+                  "field": null,
+                  "kind": "frame"
+                }
               },
               "left_entity_id_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "none"
+                "value": {
+                  "field": null,
+                  "kind": "entity"
+                }
               },
               "left_frame_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "pressure_frame_id"
+                "value": {
+                  "field": "pressure_frame_id",
+                  "kind": "frame"
+                }
               },
               "left_required_status_value": {
                 "payload_type": "enum",
@@ -2513,19 +2675,28 @@
                 "value": "PASS"
               },
               "left_start_frame_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "none"
+                "value": {
+                  "field": null,
+                  "kind": "frame"
+                }
               },
               "left_status_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "pressure_status"
+                "value": {
+                  "field": "pressure_status",
+                  "kind": "status"
+                }
               },
               "left_team_role_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "team_role"
+                "value": {
+                  "field": "team_role",
+                  "kind": "entity"
+                }
               },
               "maximum_frame_delta": {
                 "payload_type": "number",
@@ -2543,24 +2714,36 @@
                 "value": "PASS"
               },
               "right_anchor_id_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "anchor_id"
+                "value": {
+                  "field": "anchor_id",
+                  "kind": "provenance"
+                }
               },
               "right_end_frame_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "none"
+                "value": {
+                  "field": null,
+                  "kind": "frame"
+                }
               },
               "right_entity_id_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "none"
+                "value": {
+                  "field": null,
+                  "kind": "entity"
+                }
               },
               "right_frame_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "support_anchor_frame_id"
+                "value": {
+                  "field": "support_anchor_frame_id",
+                  "kind": "frame"
+                }
               },
               "right_required_status_value": {
                 "payload_type": "enum",
@@ -2568,19 +2751,28 @@
                 "value": "FAIL"
               },
               "right_start_frame_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "none"
+                "value": {
+                  "field": null,
+                  "kind": "frame"
+                }
               },
               "right_status_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "support_arrival_status"
+                "value": {
+                  "field": "support_arrival_status",
+                  "kind": "status"
+                }
               },
               "right_team_role_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "none"
+                "value": {
+                  "field": null,
+                  "kind": "entity"
+                }
               },
               "same_team_perspective_required": {
                 "payload_type": "boolean",
@@ -2997,24 +3189,36 @@
                 "value": "same_anchor"
               },
               "left_anchor_id_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "source_anchor_id"
+                "value": {
+                  "field": "source_anchor_id",
+                  "kind": "provenance"
+                }
               },
               "left_end_frame_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "none"
+                "value": {
+                  "field": null,
+                  "kind": "frame"
+                }
               },
               "left_entity_id_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "none"
+                "value": {
+                  "field": null,
+                  "kind": "entity"
+                }
               },
               "left_frame_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "source_anchor_frame_id"
+                "value": {
+                  "field": "source_anchor_frame_id",
+                  "kind": "frame"
+                }
               },
               "left_required_status_value": {
                 "payload_type": "enum",
@@ -3022,19 +3226,28 @@
                 "value": "PASS"
               },
               "left_start_frame_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "none"
+                "value": {
+                  "field": null,
+                  "kind": "frame"
+                }
               },
               "left_status_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "window_status"
+                "value": {
+                  "field": "window_status",
+                  "kind": "status"
+                }
               },
               "left_team_role_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "anchor_team_role"
+                "value": {
+                  "field": "anchor_team_role",
+                  "kind": "entity"
+                }
               },
               "maximum_frame_delta": {
                 "payload_type": "number",
@@ -3052,24 +3265,36 @@
                 "value": "PASS"
               },
               "right_anchor_id_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "left_anchor_id"
+                "value": {
+                  "field": "left_anchor_id",
+                  "kind": "provenance"
+                }
               },
               "right_end_frame_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "none"
+                "value": {
+                  "field": null,
+                  "kind": "frame"
+                }
               },
               "right_entity_id_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "none"
+                "value": {
+                  "field": null,
+                  "kind": "entity"
+                }
               },
               "right_frame_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "left_frame_id"
+                "value": {
+                  "field": "left_frame_id",
+                  "kind": "frame"
+                }
               },
               "right_required_status_value": {
                 "payload_type": "enum",
@@ -3077,19 +3302,28 @@
                 "value": "PASS"
               },
               "right_start_frame_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "none"
+                "value": {
+                  "field": null,
+                  "kind": "frame"
+                }
               },
               "right_status_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "typed_join_status"
+                "value": {
+                  "field": "typed_join_status",
+                  "kind": "status"
+                }
               },
               "right_team_role_field": {
-                "payload_type": "enum",
+                "payload_type": "field_ref",
                 "unit": "none",
-                "value": "left_team_role"
+                "value": {
+                  "field": "left_team_role",
+                  "kind": "entity"
+                }
               },
               "same_team_perspective_required": {
                 "payload_type": "boolean",

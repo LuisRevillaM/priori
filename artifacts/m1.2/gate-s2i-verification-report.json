@@ -2,8 +2,8 @@
   "checks": [
     {
       "details": {
-        "actual": "c152e0d09df79f02805851f67c1f0a752e072c42492ae7d0fa61572b4a192192",
-        "expected": "c152e0d09df79f02805851f67c1f0a752e072c42492ae7d0fa61572b4a192192"
+        "actual": "90c7a33c9bb1ce8ec0d57e1505671350d8491bee46d62cde0ae1c4e7db3e5cce",
+        "expected": "90c7a33c9bb1ce8ec0d57e1505671350d8491bee46d62cde0ae1c4e7db3e5cce"
       },
       "name": "pack.hash.matches_content",
       "ok": true
@@ -190,6 +190,45 @@
     },
     {
       "details": {
+        "operator_names": [
+          "aggregate_over",
+          "delta_across_anchor",
+          "extremum_over_set",
+          "project_onto_axis",
+          "rate",
+          "sequence_pattern",
+          "typed_join",
+          "window"
+        ]
+      },
+      "name": "pack.composition_grammar.includes_eight_operator_signatures",
+      "ok": true
+    },
+    {
+      "details": {
+        "constraint_kinds": [
+          "aggregate_over",
+          "before_after_same_anchor",
+          "delta_across_anchor",
+          "distinct_entity_fields",
+          "extremum_over_set",
+          "frame_alignment",
+          "rate",
+          "relation_on_anchor",
+          "same_anchor_identity",
+          "same_player_return",
+          "sequence_pattern",
+          "temporal_order",
+          "typed_join",
+          "vector_projection",
+          "window"
+        ]
+      },
+      "name": "pack.composition_grammar.includes_constraint_kinds",
+      "ok": true
+    },
+    {
+      "details": {
         "dimensions": [
           "DISTANCE_THRESHOLD",
           "SUPPORT_DEFINITION",
@@ -222,7 +261,7 @@
     },
     {
       "details": {
-        "count": 19
+        "count": 28
       },
       "name": "pack.source_hashes.present",
       "ok": true
@@ -236,8 +275,8 @@
     },
     {
       "details": {
-        "approx_tokens": 118658,
-        "json_chars": 474635
+        "approx_tokens": 193511,
+        "json_chars": 774047
       },
       "name": "pack.size.recorded",
       "ok": true
@@ -300,13 +339,20 @@
       "details": {},
       "name": "validator.rejects_hermes_bind_only_plan",
       "ok": true
+    },
+    {
+      "details": {
+        "drift": []
+      },
+      "name": "knowledge_pack.tracked_files_match_regeneration",
+      "ok": true
     }
   ],
   "gate": "S2I_A_tactical_knowledge_pack",
-  "generated_at": "2026-06-25T11:26:33+00:00",
+  "generated_at": "2026-07-17T19:06:30+00:00",
   "knowledge_pack_markdown_path": "generated/tactical-knowledge-pack.md",
   "knowledge_pack_path": "generated/tactical-knowledge-pack.json",
-  "knowledge_pack_sha256": "c152e0d09df79f02805851f67c1f0a752e072c42492ae7d0fa61572b4a192192",
+  "knowledge_pack_sha256": "90c7a33c9bb1ce8ec0d57e1505671350d8491bee46d62cde0ae1c4e7db3e5cce",
   "passed": true,
   "schema_version": "1.0"
 }

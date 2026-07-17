@@ -1,6 +1,6 @@
 {
   "passport_count": 48,
-  "passport_revision": "43c555af4225ec179387c37a28fe4c6f1414d8372fa576fb69fce21df8740046",
+  "passport_revision": "254d34439c1013f57575ea0a3fa835633f8fd8639132333f48afca9ad770f136",
   "passports": [
     {
       "binding": {
@@ -450,7 +450,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "69f09e5762f4a9f5062a63bd10097474d8932530233e853244302e4ea583af7b",
+      "passport_hash": "a321372dbd219ceaa70494984c596cf3b873e93f260ab329dc148aea22712209",
       "projection_membership": {
         "ai": false,
         "product": false
@@ -603,7 +603,15 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
+            "allow_legacy_enum": true,
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "anchor_frame_id"
+            },
+            "description": "Anchor-record frame field where acceleration is evaluated.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
               "anchor_frame_id",
               "physical_release_frame_id",
               "controlled_reception_frame_id",
@@ -611,33 +619,29 @@
               "carry_start_frame_id",
               "carry_end_frame_id"
             ],
-            "default": {
-              "payload_type": "enum",
-              "unit": "none",
-              "value": "anchor_frame_id"
-            },
-            "description": "Anchor-record frame field where acceleration is evaluated.",
             "name": "frame_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
           {
-            "allowed_values": [
-              "receiver_id",
-              "passer_id",
-              "relay_player_id",
-              "terminal_receiver_id",
-              "carrier_id"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "receiver_id"
             },
             "description": "Anchor-record field containing the tracked player id.",
+            "field_reference_kind": "entity",
+            "legacy_allowed_values": [
+              "receiver_id",
+              "passer_id",
+              "relay_player_id",
+              "terminal_receiver_id",
+              "carrier_id"
+            ],
             "name": "entity_id_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -3065,7 +3069,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "0a8ab9809d1ebb54cd44cf51f08091dffb5458958f58b4cd0122d7cc0e1785fc",
+      "passport_hash": "7ac75721bd306d8a5dc70f0e5dcc1f5e67c25624d356ac565d85a12b0cfd04c0",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -3220,39 +3224,43 @@
             "unit": "none"
           },
           {
-            "allowed_values": [
-              "line_status",
-              "multi_line_status",
-              "team_compactness_status",
-              "pressure_status"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "line_status"
             },
             "description": "Before-record status field that must be PASS.",
+            "field_reference_kind": "status",
+            "legacy_allowed_values": [
+              "line_status",
+              "multi_line_status",
+              "team_compactness_status",
+              "pressure_status"
+            ],
             "name": "before_status_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
           {
-            "allowed_values": [
-              "line_status",
-              "multi_line_status",
-              "team_compactness_status",
-              "pressure_status",
-              "none"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "line_status"
             },
             "description": "After-record status field that must be PASS, or none to compare the numeric value without requiring after status.",
+            "field_reference_kind": "status",
+            "legacy_allowed_values": [
+              "line_status",
+              "multi_line_status",
+              "team_compactness_status",
+              "pressure_status",
+              "none"
+            ],
             "name": "after_status_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -5021,7 +5029,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "daf8cd86f97b9dc3a552b263d89a6d724bb790718252135a757f9caa1fd6981b",
+      "passport_hash": "ffbf8ea31ac66be822aef5379fa016dcc60f6f245dff6526ed56b60b87bd9e5a",
       "projection_membership": {
         "ai": false,
         "product": false
@@ -5187,7 +5195,15 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
+            "allow_legacy_enum": true,
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "anchor_frame_id"
+            },
+            "description": "Anchor-record frame field where ball-target lane screening is evaluated.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
               "anchor_frame_id",
               "event_anchor_frame_id",
               "physical_release_frame_id",
@@ -5195,19 +5211,21 @@
               "carry_start_frame_id",
               "carry_end_frame_id"
             ],
-            "default": {
-              "payload_type": "enum",
-              "unit": "none",
-              "value": "anchor_frame_id"
-            },
-            "description": "Anchor-record frame field where ball-target lane screening is evaluated.",
             "name": "frame_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
           {
-            "allowed_values": [
+            "allow_legacy_enum": true,
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "receiver_id"
+            },
+            "description": "Anchor field containing the tracked target entity that defines the lane from the ball.",
+            "field_reference_kind": "entity",
+            "legacy_allowed_values": [
               "receiver_id",
               "passer_id",
               "relay_player_id",
@@ -5215,14 +5233,8 @@
               "carrier_id",
               "run_player_id"
             ],
-            "default": {
-              "payload_type": "enum",
-              "unit": "none",
-              "value": "receiver_id"
-            },
-            "description": "Anchor field containing the tracked target entity that defines the lane from the ball.",
             "name": "target_entity_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -5682,7 +5694,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "10bd223f8609afc35af206c5c4a8e636187f4ef89f55c06232b31c564c5a35a9",
+      "passport_hash": "491dfe71c07f620535369ed5181356c087916b843ecc64b29ef6cdf48abd0a65",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -5825,7 +5837,15 @@
             "unit": "count"
           },
           {
-            "allowed_values": [
+            "allow_legacy_enum": true,
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "anchor_frame_id"
+            },
+            "description": "Anchor-record frame field used to evaluate the observed line.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
               "anchor_frame_id",
               "physical_release_frame_id",
               "controlled_reception_frame_id",
@@ -5833,14 +5853,8 @@
               "relay_touch_frame_id",
               "relay_physical_release_frame_id"
             ],
-            "default": {
-              "payload_type": "enum",
-              "unit": "none",
-              "value": "anchor_frame_id"
-            },
-            "description": "Anchor-record frame field used to evaluate the observed line.",
             "name": "anchor_frame_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           }
@@ -6639,7 +6653,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "2487da69db0cc80ac67f7fa9058c63861569bcfedb7f8ed5251e513fe058d827",
+      "passport_hash": "ba9adc8eef26f30decdf4714dabb11d63d397f155d72538ca81b9ad1cc0e9ddd",
       "projection_membership": {
         "ai": false,
         "product": false
@@ -6797,65 +6811,57 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
-              "anchor_id",
-              "terminal_pass_id",
-              "input_pass_episode_id",
-              "relay_pass_episode_id",
-              "right_anchor_id"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "anchor_id"
             },
             "description": "Field read from each left episode to produce the join key.",
-            "name": "left_key_field",
-            "payload_type": "enum",
-            "required": false,
-            "unit": "none"
-          },
-          {
-            "allowed_values": [
+            "field_reference_kind": "provenance",
+            "legacy_allowed_values": [
               "anchor_id",
-              "pass_episode_id",
+              "terminal_pass_id",
               "input_pass_episode_id",
               "relay_pass_episode_id",
               "right_anchor_id"
             ],
+            "name": "left_key_field",
+            "payload_type": "field_ref",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "anchor_id"
             },
             "description": "Field read from each right episode to produce the join key.",
+            "field_reference_kind": "provenance",
+            "legacy_allowed_values": [
+              "anchor_id",
+              "pass_episode_id",
+              "input_pass_episode_id",
+              "relay_pass_episode_id",
+              "right_anchor_id"
+            ],
             "name": "right_key_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
           {
-            "allowed_values": [
-              "none",
-              "carry_status",
-              "change_status",
-              "one_touch_relay_status",
-              "pass_chain_status",
-              "join_status"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "none"
             },
             "description": "Optional status field on the left episode that must equal required_status_value.",
-            "name": "left_status_field",
-            "payload_type": "enum",
-            "required": false,
-            "unit": "none"
-          },
-          {
-            "allowed_values": [
+            "field_reference_kind": "status",
+            "legacy_allowed_values": [
               "none",
               "carry_status",
               "change_status",
@@ -6863,14 +6869,30 @@
               "pass_chain_status",
               "join_status"
             ],
+            "name": "left_status_field",
+            "payload_type": "field_ref",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "none"
             },
             "description": "Optional status field on the right episode that must equal required_status_value.",
+            "field_reference_kind": "status",
+            "legacy_allowed_values": [
+              "none",
+              "carry_status",
+              "change_status",
+              "one_touch_relay_status",
+              "pass_chain_status",
+              "join_status"
+            ],
             "name": "right_status_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -6910,28 +6932,15 @@
             "unit": "none"
           },
           {
-            "allowed_values": [
-              "anchor_frame_id",
-              "start_frame_id",
-              "end_frame_id",
-              "carry_start_frame_id",
-              "carry_end_frame_id",
-              "relay_touch_frame_id",
-              "terminal_controlled_reception_frame_id"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "anchor_frame_id"
             },
             "description": "Left frame field used by temporal relations that compare point frames.",
-            "name": "left_time_field",
-            "payload_type": "enum",
-            "required": false,
-            "unit": "none"
-          },
-          {
-            "allowed_values": [
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
               "anchor_frame_id",
               "start_frame_id",
               "end_frame_id",
@@ -6940,14 +6949,31 @@
               "relay_touch_frame_id",
               "terminal_controlled_reception_frame_id"
             ],
+            "name": "left_time_field",
+            "payload_type": "field_ref",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "anchor_frame_id"
             },
             "description": "Right frame field used by temporal relations that compare point frames.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
+              "anchor_frame_id",
+              "start_frame_id",
+              "end_frame_id",
+              "carry_start_frame_id",
+              "carry_end_frame_id",
+              "relay_touch_frame_id",
+              "terminal_controlled_reception_frame_id"
+            ],
             "name": "right_time_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -7350,7 +7376,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "13c288ff7b52ad38175342aa27fa17bf77f606815cdc423efc0882b4c55fdc86",
+      "passport_hash": "2368310073a47a7682a21188fceff78c94af33bb88735acc11034375ea876a99",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -7462,19 +7488,21 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
-              "anchor_frame_id",
-              "physical_release_frame_id",
-              "controlled_reception_frame_id"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "anchor_frame_id"
             },
             "description": "Anchor-record frame field used for lane evaluation.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
+              "anchor_frame_id",
+              "physical_release_frame_id",
+              "controlled_reception_frame_id"
+            ],
             "name": "frame_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -7933,7 +7961,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "71c0e8fcea5da7b67c187460bd85c344e2b486b05f41f80b2a51212eee17b3cf",
+      "passport_hash": "a24b2eb035d69c34f054b90bbbb85e0d22f6f9f55c86cf0a3e07b31f5c5a1cb0",
       "projection_membership": {
         "ai": false,
         "product": false
@@ -8089,7 +8117,15 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
+            "allow_legacy_enum": true,
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "anchor_frame_id"
+            },
+            "description": "Anchor-record frame field where observed marking proximity is evaluated.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
               "anchor_frame_id",
               "event_anchor_frame_id",
               "physical_release_frame_id",
@@ -8098,19 +8134,21 @@
               "carry_end_frame_id",
               "terminal_release_frame_id"
             ],
-            "default": {
-              "payload_type": "enum",
-              "unit": "none",
-              "value": "anchor_frame_id"
-            },
-            "description": "Anchor-record frame field where observed marking proximity is evaluated.",
             "name": "frame_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
           {
-            "allowed_values": [
+            "allow_legacy_enum": true,
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "receiver_id"
+            },
+            "description": "Anchor field containing the target player being checked for observed nearest-opponent proximity.",
+            "field_reference_kind": "entity",
+            "legacy_allowed_values": [
               "receiver_id",
               "passer_id",
               "relay_player_id",
@@ -8118,14 +8156,8 @@
               "carrier_id",
               "run_player_id"
             ],
-            "default": {
-              "payload_type": "enum",
-              "unit": "none",
-              "value": "receiver_id"
-            },
-            "description": "Anchor field containing the target player being checked for observed nearest-opponent proximity.",
             "name": "target_player_id_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -8572,7 +8604,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "a64dfe31478ef9a7f6a5e63d1a1de8548925af0402a853223aad032961673ba0",
+      "passport_hash": "c0c92e8e66a6d8e1aa288da370999eaba385bbd673db7da74669d1fccc6ecc97",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -8725,20 +8757,22 @@
             "unit": "count"
           },
           {
-            "allowed_values": [
-              "anchor_frame_id",
-              "physical_release_frame_id",
-              "controlled_reception_frame_id",
-              "event_anchor_frame_id"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "physical_release_frame_id"
             },
             "description": "Anchor-record frame field used to evaluate observed line bands.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
+              "anchor_frame_id",
+              "physical_release_frame_id",
+              "controlled_reception_frame_id",
+              "event_anchor_frame_id"
+            ],
             "name": "anchor_frame_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           }
@@ -9226,7 +9260,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "b0321f3a9d7fbdbfbbd62f6dfbaf72f3e67dbf42613cc941b13e7bdb12e621c3",
+      "passport_hash": "79272a59323b9709251af54f84f32100bff00d4515809c76cdfebeec95abd83a",
       "projection_membership": {
         "ai": false,
         "product": false
@@ -9378,20 +9412,22 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
-              "anchor_frame_id",
-              "event_anchor_frame_id",
-              "transition_frame_id",
-              "controlled_reception_frame_id"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "anchor_frame_id"
             },
             "description": "Anchor-record frame field where the run observation window starts.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
+              "anchor_frame_id",
+              "event_anchor_frame_id",
+              "transition_frame_id",
+              "controlled_reception_frame_id"
+            ],
             "name": "frame_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -11367,7 +11403,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "763290139406b698ff023cc6d68b6ccc50e73de3366fe58914dafb979b482af0",
+      "passport_hash": "bafb8b3390a6d119042e3fac6ce518a85581841bd74f62169fdedb84b817fe72",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -11515,19 +11551,21 @@
             "unit": "second"
           },
           {
-            "allowed_values": [
-              "none",
-              "transition_status",
-              "zone_status"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "transition_status"
             },
             "description": "Optional upstream status field that must match before the window is evaluated.",
+            "field_reference_kind": "status",
+            "legacy_allowed_values": [
+              "none",
+              "transition_status",
+              "zone_status"
+            ],
             "name": "required_anchor_status_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -11929,7 +11967,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "be6441e67d4d36a478db7831e9d2501731ea5622464e9e6570d509e0e0b55021",
+      "passport_hash": "5f012c2f74516a71ddeebc9e103ae6fceab9c27cf8e8e3da492f2e110fe5b2d0",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -12034,7 +12072,15 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
+            "allow_legacy_enum": true,
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "anchor_frame_id"
+            },
+            "description": "Anchor-record frame field where distance is measured.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
               "anchor_frame_id",
               "physical_release_frame_id",
               "controlled_reception_frame_id",
@@ -12042,52 +12088,50 @@
               "carry_end_frame_id",
               "terminal_release_frame_id"
             ],
-            "default": {
-              "payload_type": "enum",
-              "unit": "none",
-              "value": "anchor_frame_id"
-            },
-            "description": "Anchor-record frame field where distance is measured.",
             "name": "frame_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
           {
-            "allowed_values": [
-              "receiver_id",
-              "passer_id",
-              "relay_player_id",
-              "terminal_receiver_id",
-              "carrier_id"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "receiver_id"
             },
             "description": "Anchor field containing the first entity ID.",
+            "field_reference_kind": "entity",
+            "legacy_allowed_values": [
+              "receiver_id",
+              "passer_id",
+              "relay_player_id",
+              "terminal_receiver_id",
+              "carrier_id"
+            ],
             "name": "entity_a_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
           {
-            "allowed_values": [
-              "ball",
-              "receiver_id",
-              "passer_id",
-              "relay_player_id",
-              "terminal_receiver_id"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "ball"
             },
             "description": "Anchor field containing the second entity ID, or ball.",
+            "field_reference_kind": "entity",
+            "legacy_allowed_values": [
+              "ball",
+              "receiver_id",
+              "passer_id",
+              "relay_player_id",
+              "terminal_receiver_id"
+            ],
             "name": "entity_b_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -14417,7 +14461,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "6535cf78b150b6d8f410f69130b2a651bdae57c5bd9918fed1c474f104e4a46b",
+      "passport_hash": "faeea40e0a33463b01efd3a8571741dba11d86d7337cf54c3fff456dd7c1020c",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -14526,25 +14570,35 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
-              "receiver_id",
-              "passer_id",
-              "relay_player_id",
-              "terminal_receiver_id"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "receiver_id"
             },
             "description": "Entity-reference field read from the entity anchor record.",
+            "field_reference_kind": "entity",
+            "legacy_allowed_values": [
+              "receiver_id",
+              "passer_id",
+              "relay_player_id",
+              "terminal_receiver_id"
+            ],
             "name": "entity_id_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
           {
-            "allowed_values": [
+            "allow_legacy_enum": true,
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "controlled_reception_frame_id"
+            },
+            "description": "Frame field at which the entity position is evaluated.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
               "controlled_reception_frame_id",
               "physical_release_frame_id",
               "anchor_frame_id",
@@ -14553,14 +14607,8 @@
               "relay_physical_release_frame_id",
               "terminal_controlled_reception_frame_id"
             ],
-            "default": {
-              "payload_type": "enum",
-              "unit": "none",
-              "value": "controlled_reception_frame_id"
-            },
-            "description": "Frame field at which the entity position is evaluated.",
             "name": "entity_frame_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -15824,7 +15872,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "0a3eb6a06a19aa3021a1a757219a55f09b1a7b6ed4a6fbc2e0743bd6d1217d0b",
+      "passport_hash": "62ea4133428fa2f220a032914450ee08c41bf6b3d930eab6ad2e3519689fb066",
       "projection_membership": {
         "ai": false,
         "product": false
@@ -15974,20 +16022,22 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
-              "anchor_frame_id",
-              "transition_frame_id",
-              "carry_end_frame_id",
-              "controlled_reception_frame_id"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "anchor_frame_id"
             },
             "description": "Anchor-record frame field where sampled open-space geometry is evaluated.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
+              "anchor_frame_id",
+              "transition_frame_id",
+              "carry_end_frame_id",
+              "controlled_reception_frame_id"
+            ],
             "name": "frame_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -16434,7 +16484,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "5fbe24785a6e37320a91a6e5eadb955a4b43e74f759811b63feeff97dcbfbf49",
+      "passport_hash": "99213115c90794f8a95ed688d4bb6bc03ccca4f67c1b8a4c0342cb3909b5a48a",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -16530,20 +16580,22 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
-              "anchor_frame_id",
-              "transition_frame_id",
-              "physical_release_frame_id",
-              "controlled_reception_frame_id"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "anchor_frame_id"
             },
             "description": "Anchor-record frame field where ball-zone membership is evaluated.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
+              "anchor_frame_id",
+              "transition_frame_id",
+              "physical_release_frame_id",
+              "controlled_reception_frame_id"
+            ],
             "name": "frame_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -17459,7 +17511,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "f8cac080068288f77ab3606daa5ce679faa37743f683ee51b39d9a07c2dde533",
+      "passport_hash": "822b04555b8f6a5951352ab42f73a2f1682011c8a6cb050932d24e19f343cbdf",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -17557,19 +17609,21 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
-              "anchor_frame_id",
-              "physical_release_frame_id",
-              "controlled_reception_frame_id"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "anchor_frame_id"
             },
             "description": "Anchor-record frame field where team compactness is evaluated.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
+              "anchor_frame_id",
+              "physical_release_frame_id",
+              "controlled_reception_frame_id"
+            ],
             "name": "frame_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -18141,7 +18195,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "83d4b57866fd1d10ebf89933c8ef08fea922d27fa009cca6cb390bc1ead9ff25",
+      "passport_hash": "257a632d0ecb76f4596a3e525eff78ce0c35b3558939a3d36127aba4a03755c9",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -18267,20 +18321,22 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
-              "anchor_frame_id",
-              "transition_frame_id",
-              "physical_release_frame_id",
-              "controlled_reception_frame_id"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "anchor_frame_id"
             },
             "description": "Anchor-record frame field where reachability is evaluated.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
+              "anchor_frame_id",
+              "transition_frame_id",
+              "physical_release_frame_id",
+              "controlled_reception_frame_id"
+            ],
             "name": "frame_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -18302,20 +18358,22 @@
             "unit": "none"
           },
           {
-            "allowed_values": [
-              "receiver_id",
-              "passer_id",
-              "relay_player_id",
-              "terminal_receiver_id"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "receiver_id"
             },
             "description": "Anchor field containing the target player ID when target_mode=entity.",
+            "field_reference_kind": "entity",
+            "legacy_allowed_values": [
+              "receiver_id",
+              "passer_id",
+              "relay_player_id",
+              "terminal_receiver_id"
+            ],
             "name": "target_entity_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -18700,7 +18758,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "7e2df5fad5dc7d4c62546af9c8e1c7975d19cd48c84f765e13ab17b300bc883e",
+      "passport_hash": "d867a53e0962472c64708a5407c06b71ac80f202b5f88fc604ceac68c42f1c9a",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -18791,19 +18849,21 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
-              "anchor_frame_id",
-              "physical_release_frame_id",
-              "controlled_reception_frame_id"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "anchor_frame_id"
             },
             "description": "Anchor-record frame field where quality is evaluated.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
+              "anchor_frame_id",
+              "physical_release_frame_id",
+              "controlled_reception_frame_id"
+            ],
             "name": "frame_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           }
@@ -19691,7 +19751,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "9a8553cbfd5c436d5dca5f805f17f465df7ef4aaf414864a7deb7a1142133a54",
+      "passport_hash": "0c7556539e28c61fcecd52b3d2b89dd9c24647bfa7e4d7695dbab846a5f12d4e",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -19802,37 +19862,41 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
-              "anchor_frame_id",
-              "physical_release_frame_id",
-              "controlled_reception_frame_id"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "anchor_frame_id"
             },
             "description": "Anchor-record frame field where velocity is evaluated.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
+              "anchor_frame_id",
+              "physical_release_frame_id",
+              "controlled_reception_frame_id"
+            ],
             "name": "frame_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
           {
-            "allowed_values": [
-              "receiver_id",
-              "passer_id",
-              "relay_player_id",
-              "terminal_receiver_id"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "receiver_id"
             },
             "description": "Anchor-record field containing the tracked player id.",
+            "field_reference_kind": "entity",
+            "legacy_allowed_values": [
+              "receiver_id",
+              "passer_id",
+              "relay_player_id",
+              "terminal_receiver_id"
+            ],
             "name": "entity_id_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -20640,7 +20704,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "b99ac8547455e80383b72497f0f3eb27b0a25beb23ec27fe06f3dae79aa9726b",
+      "passport_hash": "551704f0ccea2589b1c12f1868998eb8f6b7879d8acbfe16934bf7496dfd789e",
       "projection_membership": {
         "ai": false,
         "product": false
@@ -20781,7 +20845,15 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
+            "allow_legacy_enum": true,
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "controlled_reception_frame_id"
+            },
+            "description": "Anchor-record frame field where defender distance candidates are evaluated.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
               "anchor_frame_id",
               "physical_release_frame_id",
               "controlled_reception_frame_id",
@@ -20789,19 +20861,21 @@
               "carry_end_frame_id",
               "terminal_release_frame_id"
             ],
-            "default": {
-              "payload_type": "enum",
-              "unit": "none",
-              "value": "controlled_reception_frame_id"
-            },
-            "description": "Anchor-record frame field where defender distance candidates are evaluated.",
             "name": "anchor_frame_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
           {
-            "allowed_values": [
+            "allow_legacy_enum": true,
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "receiver_id"
+            },
+            "description": "Anchor-record field containing the target player id.",
+            "field_reference_kind": "entity",
+            "legacy_allowed_values": [
               "receiver_id",
               "passer_id",
               "relay_player_id",
@@ -20809,14 +20883,8 @@
               "carrier_id",
               "run_player_id"
             ],
-            "default": {
-              "payload_type": "enum",
-              "unit": "none",
-              "value": "receiver_id"
-            },
-            "description": "Anchor-record field containing the target player id.",
             "name": "target_player_id_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -20837,21 +20905,23 @@
             "unit": "none"
           },
           {
-            "allowed_values": [
-              "none",
-              "controlled_pass_status",
-              "carry_status",
-              "join_status",
-              "transition_status"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "none"
             },
             "description": "Optional anchor status field that must equal required_anchor_status_value.",
+            "field_reference_kind": "status",
+            "legacy_allowed_values": [
+              "none",
+              "controlled_pass_status",
+              "carry_status",
+              "join_status",
+              "transition_status"
+            ],
             "name": "required_anchor_status_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -22681,7 +22751,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "d42620672a3d67debfb273fbda3e650ba78c950eca2a09436c3f3d5ebf9dc1fb",
+      "passport_hash": "733df545ece7c39f8b0be9d2aa3bfdab2684cdd6495bdc28c520fc0c97446091",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -22794,19 +22864,21 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
-              "anchor_frame_id",
-              "physical_release_frame_id",
-              "controlled_reception_frame_id"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "controlled_reception_frame_id"
             },
             "description": "Anchor record frame field where the local-number relation is evaluated.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
+              "anchor_frame_id",
+              "physical_release_frame_id",
+              "controlled_reception_frame_id"
+            ],
             "name": "frame_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -24106,7 +24178,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "71616dc7d8a2d3fab466611597955d2e0e3273218658a9208a232588686c8059",
+      "passport_hash": "4ae05e4141d758bf574b824af439176a0b243c4b11eacaf8377fbe3044407b89",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -24221,7 +24293,15 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
+            "allow_legacy_enum": true,
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "controlled_reception_frame_id"
+            },
+            "description": "Anchor-record frame field where pressure is evaluated.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
               "anchor_frame_id",
               "physical_release_frame_id",
               "controlled_reception_frame_id",
@@ -24229,33 +24309,29 @@
               "carry_end_frame_id",
               "terminal_release_frame_id"
             ],
-            "default": {
-              "payload_type": "enum",
-              "unit": "none",
-              "value": "controlled_reception_frame_id"
-            },
-            "description": "Anchor-record frame field where pressure is evaluated.",
             "name": "frame_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
           {
-            "allowed_values": [
-              "receiver_id",
-              "passer_id",
-              "relay_player_id",
-              "terminal_receiver_id",
-              "carrier_id"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "receiver_id"
             },
             "description": "Anchor-record field containing the pressured carrier id.",
+            "field_reference_kind": "entity",
+            "legacy_allowed_values": [
+              "receiver_id",
+              "passer_id",
+              "relay_player_id",
+              "terminal_receiver_id",
+              "carrier_id"
+            ],
             "name": "carrier_id_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -24838,7 +24914,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "a7480258e37db1edd6bd40dace10a56d7897fae54658931c71e3bd04dde98f70",
+      "passport_hash": "104b905458aef90658ebbd86b6c2fc39693e0adf7706cb201a3588fdb49fd12f",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -24961,18 +25037,20 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
-              "controlled_reception_frame_id",
-              "anchor_frame_id"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "controlled_reception_frame_id"
             },
             "description": "Anchor record frame field where support timing starts.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
+              "controlled_reception_frame_id",
+              "anchor_frame_id"
+            ],
             "name": "anchor_frame_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -25066,20 +25144,22 @@
             "unit": "count"
           },
           {
-            "allowed_values": [
-              "none",
-              "controlled_pass_status",
-              "line_break_status",
-              "receiver_line_transition_status"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "none"
             },
             "description": "Optional upstream status field that must equal the required value before support is evaluated.",
+            "field_reference_kind": "status",
+            "legacy_allowed_values": [
+              "none",
+              "controlled_pass_status",
+              "line_break_status",
+              "receiver_line_transition_status"
+            ],
             "name": "required_anchor_status_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -25593,7 +25673,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "8a5d5e5c3f75660a4a3cd83abf39b81a82604eecd64a06bb4b3cf1906180f005",
+      "passport_hash": "3fbe5204aedd774af85af3c9f728d629afd063a0ca791ebc0b215bd0508cc110",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -25717,18 +25797,20 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
-              "controlled_reception_frame_id",
-              "anchor_frame_id"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "controlled_reception_frame_id"
             },
             "description": "Anchor record frame field where support timing starts.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
+              "controlled_reception_frame_id",
+              "anchor_frame_id"
+            ],
             "name": "anchor_frame_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -25822,19 +25904,21 @@
             "unit": "count"
           },
           {
-            "allowed_values": [
-              "none",
-              "line_break_status",
-              "receiver_line_transition_status"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "none"
             },
             "description": "Optional upstream status field that must equal the required value before support is evaluated.",
+            "field_reference_kind": "status",
+            "legacy_allowed_values": [
+              "none",
+              "line_break_status",
+              "receiver_line_transition_status"
+            ],
             "name": "required_anchor_status_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -26381,7 +26465,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "aae0aa68dc85a569c113844b12b2e41f6d59d81d532cd14b6bff8192c9bd3483",
+      "passport_hash": "fa0012176166fbd0c799c24fdf3f9329f642545a0799d623474944745d275827",
       "projection_membership": {
         "ai": false,
         "product": false
@@ -26536,7 +26620,15 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
+            "allow_legacy_enum": true,
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "anchor_frame_id"
+            },
+            "description": "Anchor-record frame field where multi-defender pressure is evaluated.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
               "anchor_frame_id",
               "physical_release_frame_id",
               "controlled_reception_frame_id",
@@ -26544,33 +26636,29 @@
               "carry_end_frame_id",
               "terminal_release_frame_id"
             ],
-            "default": {
-              "payload_type": "enum",
-              "unit": "none",
-              "value": "anchor_frame_id"
-            },
-            "description": "Anchor-record frame field where multi-defender pressure is evaluated.",
             "name": "frame_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
           {
-            "allowed_values": [
-              "receiver_id",
-              "passer_id",
-              "relay_player_id",
-              "terminal_receiver_id",
-              "carrier_id"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "receiver_id"
             },
             "description": "Anchor-record field containing the pressured carrier id.",
+            "field_reference_kind": "entity",
+            "legacy_allowed_values": [
+              "receiver_id",
+              "passer_id",
+              "relay_player_id",
+              "terminal_receiver_id",
+              "carrier_id"
+            ],
             "name": "carrier_id_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -26699,16 +26787,16 @@
   "projection_id": "priori.capability_passport_projection.afl08",
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "3aeed956dbdc0829d0df3f24a99a0bd06a4627876d8235a7e772222015e145f6",
+    "baseline_artifact_revision": "60c440a78370d1e681a21076ee090d0898ece88d74b821684925254238d20f73",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "ed9d081cdc3f01fc2dbd383b5b9b8532ace5ce8df65e23a8d62065b9c258147b",
+    "lock_hash": "30453c87a335fe54f6f97e7d310bfe561cbd2480e2382894b8e2ff513a4e496c",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
     "registry_revision": "e7354e2c236fd3701cc65d8d01229bf4bc357748761fd60084375e01bf9a366b",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "2afa35322ca23d66fd226efa62985e06ce2cb131491f58800e17f3a3bc35b790",
+    "runtime_manifest_revision": "372b23876fc4f9340db2e031e97a93b924c49befa9ea54351eea8432e9456368",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"

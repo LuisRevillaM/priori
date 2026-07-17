@@ -8,7 +8,7 @@
         "message": "Meaning expression references out-of-pack concept:body_orientation; smallest missing capability is concept:body_orientation.",
         "missing_capability": "concept:body_orientation",
         "outcome": "understood_but_not_expressible",
-        "pack_sha256": "e81aedcf491285bf004e8dd42c760c839f2cecf3ec8d1b61d62516d537dc2bf2",
+        "pack_sha256": "90c7a33c9bb1ce8ec0d57e1505671350d8491bee46d62cde0ae1c4e7db3e5cce",
         "reference": "body_orientation",
         "vocabulary_section": "concept_refs"
       },
@@ -16,15 +16,15 @@
     },
     {
       "bind": {
-        "bundle_hash": "bc77278b3358106178749a72edfdc730b56b23bd6b6b650c60895598ac2edfbe",
+        "bundle_hash": "f902c33100671cb1e997e4fa50d5f89a7eee7f47704c22dbda65b7b8a27ab59f",
         "roles": {
           "away": {
-            "bound_plan_hash": "00cff655a21d8c769ff1ed86860f32cce24006e68f3d3f3cde2fd20349f696fa",
-            "plan_hash": "3683ea2246c10717e1721e6488f1008a2f0fd4a394689fa982d3f6186c2a5d71"
+            "bound_plan_hash": "2973ee68477906406eb76dcec2f4ce33455ebc01fa8274bfc13832ce2402a9bd",
+            "plan_hash": "87f6830eab70c7e5435614d9b3821d064041c410037217fa64f4d2ad9b166713"
           },
           "home": {
-            "bound_plan_hash": "ca21caf4f0944251a6afc3dfa985e22d4fc59f962a3f9d34ba9777368704b023",
-            "plan_hash": "3683ea2246c10717e1721e6488f1008a2f0fd4a394689fa982d3f6186c2a5d71"
+            "bound_plan_hash": "2aa7f39ac49a541ef676c8a793bdd9e677e8f4ecdec48e2a74bb786de19784f3",
+            "plan_hash": "87f6830eab70c7e5435614d9b3821d064041c410037217fa64f4d2ad9b166713"
           }
         },
         "status": "PASS"
@@ -1402,10 +1402,10 @@
         "terminal_provider": "operator:typed_join"
       },
       "concept": "fragile_possession_state",
-      "document_hash": "bc77278b3358106178749a72edfdc730b56b23bd6b6b650c60895598ac2edfbe",
+      "document_hash": "f902c33100671cb1e997e4fa50d5f89a7eee7f47704c22dbda65b7b8a27ab59f",
       "expression_id": "scp2_1_fragile_possession_state_known",
       "fixture": "delivery/packets/scp2-1-roundtrip/meaning-expressions/fragile_possession_state_known.v0.json",
-      "known_good_document_hash": "bc77278b3358106178749a72edfdc730b56b23bd6b6b650c60895598ac2edfbe",
+      "known_good_document_hash": "f902c33100671cb1e997e4fa50d5f89a7eee7f47704c22dbda65b7b8a27ab59f",
       "known_good_document_hash_match": true,
       "load_outcome": "accepted",
       "plan_path": "delivery/packets/scp2-1-roundtrip/plans/r1_5_fragile_possession_state_v0.json",
@@ -1414,8 +1414,8 @@
     },
     {
       "bind": {
-        "bound_plan_hash": "c802588f053160c63d963ed3c9576c1c5dfce15add0ca0b508c9a7c6091e0d5a",
-        "plan_hash": "65cbc666a9536af4d558ceb66ae63d07f8dbbe8c58692bc62f7b3ae1fc170726",
+        "bound_plan_hash": "ad8ea573cf3ff87c0216940f880b153734953124fe97af13bebf9c003923c316",
+        "plan_hash": "8f5e10524406c06689f8d772c95a60259d3e3de6aa293f6b24af6f7889fc430a",
         "status": "PASS"
       },
       "build": {
@@ -2221,7 +2221,7 @@
         "terminal_provider": "operator:aggregate_over"
       },
       "concept": "scp2_1_fragile_window_join_count",
-      "document_hash": "d1783f841729cf541687e6411aae74c5c2ba2cbdd6e9e3b212f42349a637af2e",
+      "document_hash": "e171168963095ce33853c94770a928a703444d576a15351e8e2fb423897e85b0",
       "execution": {
         "requested_evidence_failure_count": 0,
         "result_count": 13,
@@ -2237,13 +2237,13 @@
     }
   ],
   "knowledge_pack": {
-    "composition_constraint_kind_count": 14,
-    "composition_operator_count": 7,
+    "composition_constraint_kind_count": 15,
+    "composition_operator_count": 8,
     "gap_code_count": 14,
     "path": "generated/tactical-knowledge-pack.json",
     "predicate_operator_count": 8,
     "primitive_count": 37,
-    "sha256": "e81aedcf491285bf004e8dd42c760c839f2cecf3ec8d1b61d62516d537dc2bf2"
+    "sha256": "90c7a33c9bb1ce8ec0d57e1505671350d8491bee46d62cde0ae1c4e7db3e5cce"
   },
   "long_execution_threshold_seconds": 300.0,
   "schema_version": "scp2_1_roundtrip_report.v0"

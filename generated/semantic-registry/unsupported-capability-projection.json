@@ -158,7 +158,15 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
+            "allow_legacy_enum": true,
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "anchor_frame_id"
+            },
+            "description": "Anchor-record frame field where acceleration is evaluated.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
               "anchor_frame_id",
               "physical_release_frame_id",
               "controlled_reception_frame_id",
@@ -166,33 +174,29 @@
               "carry_start_frame_id",
               "carry_end_frame_id"
             ],
-            "default": {
-              "payload_type": "enum",
-              "unit": "none",
-              "value": "anchor_frame_id"
-            },
-            "description": "Anchor-record frame field where acceleration is evaluated.",
             "name": "frame_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
           {
-            "allowed_values": [
-              "receiver_id",
-              "passer_id",
-              "relay_player_id",
-              "terminal_receiver_id",
-              "carrier_id"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "receiver_id"
             },
             "description": "Anchor-record field containing the tracked player id.",
+            "field_reference_kind": "entity",
+            "legacy_allowed_values": [
+              "receiver_id",
+              "passer_id",
+              "relay_player_id",
+              "terminal_receiver_id",
+              "carrier_id"
+            ],
             "name": "entity_id_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -428,7 +432,15 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
+            "allow_legacy_enum": true,
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "anchor_frame_id"
+            },
+            "description": "Anchor-record frame field where acceleration is evaluated.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
               "anchor_frame_id",
               "physical_release_frame_id",
               "controlled_reception_frame_id",
@@ -436,33 +448,29 @@
               "carry_start_frame_id",
               "carry_end_frame_id"
             ],
-            "default": {
-              "payload_type": "enum",
-              "unit": "none",
-              "value": "anchor_frame_id"
-            },
-            "description": "Anchor-record frame field where acceleration is evaluated.",
             "name": "frame_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
           {
-            "allowed_values": [
-              "receiver_id",
-              "passer_id",
-              "relay_player_id",
-              "terminal_receiver_id",
-              "carrier_id"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "receiver_id"
             },
             "description": "Anchor-record field containing the tracked player id.",
+            "field_reference_kind": "entity",
+            "legacy_allowed_values": [
+              "receiver_id",
+              "passer_id",
+              "relay_player_id",
+              "terminal_receiver_id",
+              "carrier_id"
+            ],
             "name": "entity_id_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -847,7 +855,15 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
+            "allow_legacy_enum": true,
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "anchor_frame_id"
+            },
+            "description": "Anchor-record frame field where ball-target lane screening is evaluated.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
               "anchor_frame_id",
               "event_anchor_frame_id",
               "physical_release_frame_id",
@@ -855,19 +871,21 @@
               "carry_start_frame_id",
               "carry_end_frame_id"
             ],
-            "default": {
-              "payload_type": "enum",
-              "unit": "none",
-              "value": "anchor_frame_id"
-            },
-            "description": "Anchor-record frame field where ball-target lane screening is evaluated.",
             "name": "frame_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
           {
-            "allowed_values": [
+            "allow_legacy_enum": true,
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "receiver_id"
+            },
+            "description": "Anchor field containing the tracked target entity that defines the lane from the ball.",
+            "field_reference_kind": "entity",
+            "legacy_allowed_values": [
               "receiver_id",
               "passer_id",
               "relay_player_id",
@@ -875,14 +893,8 @@
               "carrier_id",
               "run_player_id"
             ],
-            "default": {
-              "payload_type": "enum",
-              "unit": "none",
-              "value": "receiver_id"
-            },
-            "description": "Anchor field containing the tracked target entity that defines the lane from the ball.",
             "name": "target_entity_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -1134,7 +1146,15 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
+            "allow_legacy_enum": true,
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "anchor_frame_id"
+            },
+            "description": "Anchor-record frame field where ball-target lane screening is evaluated.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
               "anchor_frame_id",
               "event_anchor_frame_id",
               "physical_release_frame_id",
@@ -1142,19 +1162,21 @@
               "carry_start_frame_id",
               "carry_end_frame_id"
             ],
-            "default": {
-              "payload_type": "enum",
-              "unit": "none",
-              "value": "anchor_frame_id"
-            },
-            "description": "Anchor-record frame field where ball-target lane screening is evaluated.",
             "name": "frame_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
           {
-            "allowed_values": [
+            "allow_legacy_enum": true,
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "receiver_id"
+            },
+            "description": "Anchor field containing the tracked target entity that defines the lane from the ball.",
+            "field_reference_kind": "entity",
+            "legacy_allowed_values": [
               "receiver_id",
               "passer_id",
               "relay_player_id",
@@ -1162,14 +1184,8 @@
               "carrier_id",
               "run_player_id"
             ],
-            "default": {
-              "payload_type": "enum",
-              "unit": "none",
-              "value": "receiver_id"
-            },
-            "description": "Anchor field containing the tracked target entity that defines the lane from the ball.",
             "name": "target_entity_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -1396,7 +1412,15 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
+            "allow_legacy_enum": true,
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "controlled_reception_frame_id"
+            },
+            "description": "Anchor-record frame field where defender distance candidates are evaluated.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
               "anchor_frame_id",
               "physical_release_frame_id",
               "controlled_reception_frame_id",
@@ -1404,19 +1428,21 @@
               "carry_end_frame_id",
               "terminal_release_frame_id"
             ],
-            "default": {
-              "payload_type": "enum",
-              "unit": "none",
-              "value": "controlled_reception_frame_id"
-            },
-            "description": "Anchor-record frame field where defender distance candidates are evaluated.",
             "name": "anchor_frame_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
           {
-            "allowed_values": [
+            "allow_legacy_enum": true,
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "receiver_id"
+            },
+            "description": "Anchor-record field containing the target player id.",
+            "field_reference_kind": "entity",
+            "legacy_allowed_values": [
               "receiver_id",
               "passer_id",
               "relay_player_id",
@@ -1424,14 +1450,8 @@
               "carrier_id",
               "run_player_id"
             ],
-            "default": {
-              "payload_type": "enum",
-              "unit": "none",
-              "value": "receiver_id"
-            },
-            "description": "Anchor-record field containing the target player id.",
             "name": "target_player_id_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -1452,21 +1472,23 @@
             "unit": "none"
           },
           {
-            "allowed_values": [
-              "none",
-              "controlled_pass_status",
-              "carry_status",
-              "join_status",
-              "transition_status"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "none"
             },
             "description": "Optional anchor status field that must equal required_anchor_status_value.",
+            "field_reference_kind": "status",
+            "legacy_allowed_values": [
+              "none",
+              "controlled_pass_status",
+              "carry_status",
+              "join_status",
+              "transition_status"
+            ],
             "name": "required_anchor_status_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -1651,7 +1673,15 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
+            "allow_legacy_enum": true,
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "controlled_reception_frame_id"
+            },
+            "description": "Anchor-record frame field where defender distance candidates are evaluated.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
               "anchor_frame_id",
               "physical_release_frame_id",
               "controlled_reception_frame_id",
@@ -1659,19 +1689,21 @@
               "carry_end_frame_id",
               "terminal_release_frame_id"
             ],
-            "default": {
-              "payload_type": "enum",
-              "unit": "none",
-              "value": "controlled_reception_frame_id"
-            },
-            "description": "Anchor-record frame field where defender distance candidates are evaluated.",
             "name": "anchor_frame_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
           {
-            "allowed_values": [
+            "allow_legacy_enum": true,
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "receiver_id"
+            },
+            "description": "Anchor-record field containing the target player id.",
+            "field_reference_kind": "entity",
+            "legacy_allowed_values": [
               "receiver_id",
               "passer_id",
               "relay_player_id",
@@ -1679,14 +1711,8 @@
               "carrier_id",
               "run_player_id"
             ],
-            "default": {
-              "payload_type": "enum",
-              "unit": "none",
-              "value": "receiver_id"
-            },
-            "description": "Anchor-record field containing the target player id.",
             "name": "target_player_id_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -1707,21 +1733,23 @@
             "unit": "none"
           },
           {
-            "allowed_values": [
-              "none",
-              "controlled_pass_status",
-              "carry_status",
-              "join_status",
-              "transition_status"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "none"
             },
             "description": "Optional anchor status field that must equal required_anchor_status_value.",
+            "field_reference_kind": "status",
+            "legacy_allowed_values": [
+              "none",
+              "controlled_pass_status",
+              "carry_status",
+              "join_status",
+              "transition_status"
+            ],
             "name": "required_anchor_status_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -1923,65 +1951,57 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
-              "anchor_id",
-              "terminal_pass_id",
-              "input_pass_episode_id",
-              "relay_pass_episode_id",
-              "right_anchor_id"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "anchor_id"
             },
             "description": "Field read from each left episode to produce the join key.",
-            "name": "left_key_field",
-            "payload_type": "enum",
-            "required": false,
-            "unit": "none"
-          },
-          {
-            "allowed_values": [
+            "field_reference_kind": "provenance",
+            "legacy_allowed_values": [
               "anchor_id",
-              "pass_episode_id",
+              "terminal_pass_id",
               "input_pass_episode_id",
               "relay_pass_episode_id",
               "right_anchor_id"
             ],
+            "name": "left_key_field",
+            "payload_type": "field_ref",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "anchor_id"
             },
             "description": "Field read from each right episode to produce the join key.",
+            "field_reference_kind": "provenance",
+            "legacy_allowed_values": [
+              "anchor_id",
+              "pass_episode_id",
+              "input_pass_episode_id",
+              "relay_pass_episode_id",
+              "right_anchor_id"
+            ],
             "name": "right_key_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
           {
-            "allowed_values": [
-              "none",
-              "carry_status",
-              "change_status",
-              "one_touch_relay_status",
-              "pass_chain_status",
-              "join_status"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "none"
             },
             "description": "Optional status field on the left episode that must equal required_status_value.",
-            "name": "left_status_field",
-            "payload_type": "enum",
-            "required": false,
-            "unit": "none"
-          },
-          {
-            "allowed_values": [
+            "field_reference_kind": "status",
+            "legacy_allowed_values": [
               "none",
               "carry_status",
               "change_status",
@@ -1989,14 +2009,30 @@
               "pass_chain_status",
               "join_status"
             ],
+            "name": "left_status_field",
+            "payload_type": "field_ref",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "none"
             },
             "description": "Optional status field on the right episode that must equal required_status_value.",
+            "field_reference_kind": "status",
+            "legacy_allowed_values": [
+              "none",
+              "carry_status",
+              "change_status",
+              "one_touch_relay_status",
+              "pass_chain_status",
+              "join_status"
+            ],
             "name": "right_status_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -2036,28 +2072,15 @@
             "unit": "none"
           },
           {
-            "allowed_values": [
-              "anchor_frame_id",
-              "start_frame_id",
-              "end_frame_id",
-              "carry_start_frame_id",
-              "carry_end_frame_id",
-              "relay_touch_frame_id",
-              "terminal_controlled_reception_frame_id"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "anchor_frame_id"
             },
             "description": "Left frame field used by temporal relations that compare point frames.",
-            "name": "left_time_field",
-            "payload_type": "enum",
-            "required": false,
-            "unit": "none"
-          },
-          {
-            "allowed_values": [
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
               "anchor_frame_id",
               "start_frame_id",
               "end_frame_id",
@@ -2066,14 +2089,31 @@
               "relay_touch_frame_id",
               "terminal_controlled_reception_frame_id"
             ],
+            "name": "left_time_field",
+            "payload_type": "field_ref",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "anchor_frame_id"
             },
             "description": "Right frame field used by temporal relations that compare point frames.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
+              "anchor_frame_id",
+              "start_frame_id",
+              "end_frame_id",
+              "carry_start_frame_id",
+              "carry_end_frame_id",
+              "relay_touch_frame_id",
+              "terminal_controlled_reception_frame_id"
+            ],
             "name": "right_time_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -2292,65 +2332,57 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
-              "anchor_id",
-              "terminal_pass_id",
-              "input_pass_episode_id",
-              "relay_pass_episode_id",
-              "right_anchor_id"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "anchor_id"
             },
             "description": "Field read from each left episode to produce the join key.",
-            "name": "left_key_field",
-            "payload_type": "enum",
-            "required": false,
-            "unit": "none"
-          },
-          {
-            "allowed_values": [
+            "field_reference_kind": "provenance",
+            "legacy_allowed_values": [
               "anchor_id",
-              "pass_episode_id",
+              "terminal_pass_id",
               "input_pass_episode_id",
               "relay_pass_episode_id",
               "right_anchor_id"
             ],
+            "name": "left_key_field",
+            "payload_type": "field_ref",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "anchor_id"
             },
             "description": "Field read from each right episode to produce the join key.",
+            "field_reference_kind": "provenance",
+            "legacy_allowed_values": [
+              "anchor_id",
+              "pass_episode_id",
+              "input_pass_episode_id",
+              "relay_pass_episode_id",
+              "right_anchor_id"
+            ],
             "name": "right_key_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
           {
-            "allowed_values": [
-              "none",
-              "carry_status",
-              "change_status",
-              "one_touch_relay_status",
-              "pass_chain_status",
-              "join_status"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "none"
             },
             "description": "Optional status field on the left episode that must equal required_status_value.",
-            "name": "left_status_field",
-            "payload_type": "enum",
-            "required": false,
-            "unit": "none"
-          },
-          {
-            "allowed_values": [
+            "field_reference_kind": "status",
+            "legacy_allowed_values": [
               "none",
               "carry_status",
               "change_status",
@@ -2358,14 +2390,30 @@
               "pass_chain_status",
               "join_status"
             ],
+            "name": "left_status_field",
+            "payload_type": "field_ref",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "none"
             },
             "description": "Optional status field on the right episode that must equal required_status_value.",
+            "field_reference_kind": "status",
+            "legacy_allowed_values": [
+              "none",
+              "carry_status",
+              "change_status",
+              "one_touch_relay_status",
+              "pass_chain_status",
+              "join_status"
+            ],
             "name": "right_status_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -2405,28 +2453,15 @@
             "unit": "none"
           },
           {
-            "allowed_values": [
-              "anchor_frame_id",
-              "start_frame_id",
-              "end_frame_id",
-              "carry_start_frame_id",
-              "carry_end_frame_id",
-              "relay_touch_frame_id",
-              "terminal_controlled_reception_frame_id"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "anchor_frame_id"
             },
             "description": "Left frame field used by temporal relations that compare point frames.",
-            "name": "left_time_field",
-            "payload_type": "enum",
-            "required": false,
-            "unit": "none"
-          },
-          {
-            "allowed_values": [
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
               "anchor_frame_id",
               "start_frame_id",
               "end_frame_id",
@@ -2435,14 +2470,31 @@
               "relay_touch_frame_id",
               "terminal_controlled_reception_frame_id"
             ],
+            "name": "left_time_field",
+            "payload_type": "field_ref",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "anchor_frame_id"
             },
             "description": "Right frame field used by temporal relations that compare point frames.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
+              "anchor_frame_id",
+              "start_frame_id",
+              "end_frame_id",
+              "carry_start_frame_id",
+              "carry_end_frame_id",
+              "relay_touch_frame_id",
+              "terminal_controlled_reception_frame_id"
+            ],
             "name": "right_time_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -2659,7 +2711,15 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
+            "allow_legacy_enum": true,
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "anchor_frame_id"
+            },
+            "description": "Anchor-record frame field where observed marking proximity is evaluated.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
               "anchor_frame_id",
               "event_anchor_frame_id",
               "physical_release_frame_id",
@@ -2668,19 +2728,21 @@
               "carry_end_frame_id",
               "terminal_release_frame_id"
             ],
-            "default": {
-              "payload_type": "enum",
-              "unit": "none",
-              "value": "anchor_frame_id"
-            },
-            "description": "Anchor-record frame field where observed marking proximity is evaluated.",
             "name": "frame_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
           {
-            "allowed_values": [
+            "allow_legacy_enum": true,
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "receiver_id"
+            },
+            "description": "Anchor field containing the target player being checked for observed nearest-opponent proximity.",
+            "field_reference_kind": "entity",
+            "legacy_allowed_values": [
               "receiver_id",
               "passer_id",
               "relay_player_id",
@@ -2688,14 +2750,8 @@
               "carrier_id",
               "run_player_id"
             ],
-            "default": {
-              "payload_type": "enum",
-              "unit": "none",
-              "value": "receiver_id"
-            },
-            "description": "Anchor field containing the target player being checked for observed nearest-opponent proximity.",
             "name": "target_player_id_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -2909,7 +2965,15 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
+            "allow_legacy_enum": true,
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "anchor_frame_id"
+            },
+            "description": "Anchor-record frame field where observed marking proximity is evaluated.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
               "anchor_frame_id",
               "event_anchor_frame_id",
               "physical_release_frame_id",
@@ -2918,19 +2982,21 @@
               "carry_end_frame_id",
               "terminal_release_frame_id"
             ],
-            "default": {
-              "payload_type": "enum",
-              "unit": "none",
-              "value": "anchor_frame_id"
-            },
-            "description": "Anchor-record frame field where observed marking proximity is evaluated.",
             "name": "frame_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
           {
-            "allowed_values": [
+            "allow_legacy_enum": true,
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "receiver_id"
+            },
+            "description": "Anchor field containing the target player being checked for observed nearest-opponent proximity.",
+            "field_reference_kind": "entity",
+            "legacy_allowed_values": [
               "receiver_id",
               "passer_id",
               "relay_player_id",
@@ -2938,14 +3004,8 @@
               "carrier_id",
               "run_player_id"
             ],
-            "default": {
-              "payload_type": "enum",
-              "unit": "none",
-              "value": "receiver_id"
-            },
-            "description": "Anchor field containing the target player being checked for observed nearest-opponent proximity.",
             "name": "target_player_id_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -3155,20 +3215,22 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
-              "anchor_frame_id",
-              "event_anchor_frame_id",
-              "transition_frame_id",
-              "controlled_reception_frame_id"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "anchor_frame_id"
             },
             "description": "Anchor-record frame field where the run observation window starts.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
+              "anchor_frame_id",
+              "event_anchor_frame_id",
+              "transition_frame_id",
+              "controlled_reception_frame_id"
+            ],
             "name": "frame_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -3434,20 +3496,22 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
-              "anchor_frame_id",
-              "event_anchor_frame_id",
-              "transition_frame_id",
-              "controlled_reception_frame_id"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "anchor_frame_id"
             },
             "description": "Anchor-record frame field where the run observation window starts.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
+              "anchor_frame_id",
+              "event_anchor_frame_id",
+              "transition_frame_id",
+              "controlled_reception_frame_id"
+            ],
             "name": "frame_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -4725,20 +4789,22 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
-              "anchor_frame_id",
-              "transition_frame_id",
-              "carry_end_frame_id",
-              "controlled_reception_frame_id"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "anchor_frame_id"
             },
             "description": "Anchor-record frame field where sampled open-space geometry is evaluated.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
+              "anchor_frame_id",
+              "transition_frame_id",
+              "carry_end_frame_id",
+              "controlled_reception_frame_id"
+            ],
             "name": "frame_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -5004,20 +5070,22 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
-              "anchor_frame_id",
-              "transition_frame_id",
-              "carry_end_frame_id",
-              "controlled_reception_frame_id"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "anchor_frame_id"
             },
             "description": "Anchor-record frame field where sampled open-space geometry is evaluated.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
+              "anchor_frame_id",
+              "transition_frame_id",
+              "carry_end_frame_id",
+              "controlled_reception_frame_id"
+            ],
             "name": "frame_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -5288,7 +5356,15 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
+            "allow_legacy_enum": true,
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "anchor_frame_id"
+            },
+            "description": "Anchor-record frame field where multi-defender pressure is evaluated.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
               "anchor_frame_id",
               "physical_release_frame_id",
               "controlled_reception_frame_id",
@@ -5296,33 +5372,29 @@
               "carry_end_frame_id",
               "terminal_release_frame_id"
             ],
-            "default": {
-              "payload_type": "enum",
-              "unit": "none",
-              "value": "anchor_frame_id"
-            },
-            "description": "Anchor-record frame field where multi-defender pressure is evaluated.",
             "name": "frame_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
           {
-            "allowed_values": [
-              "receiver_id",
-              "passer_id",
-              "relay_player_id",
-              "terminal_receiver_id",
-              "carrier_id"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "receiver_id"
             },
             "description": "Anchor-record field containing the pressured carrier id.",
+            "field_reference_kind": "entity",
+            "legacy_allowed_values": [
+              "receiver_id",
+              "passer_id",
+              "relay_player_id",
+              "terminal_receiver_id",
+              "carrier_id"
+            ],
             "name": "carrier_id_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -5603,7 +5675,15 @@
         ],
         "parameters": [
           {
-            "allowed_values": [
+            "allow_legacy_enum": true,
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "anchor_frame_id"
+            },
+            "description": "Anchor-record frame field where multi-defender pressure is evaluated.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
               "anchor_frame_id",
               "physical_release_frame_id",
               "controlled_reception_frame_id",
@@ -5611,33 +5691,29 @@
               "carry_end_frame_id",
               "terminal_release_frame_id"
             ],
-            "default": {
-              "payload_type": "enum",
-              "unit": "none",
-              "value": "anchor_frame_id"
-            },
-            "description": "Anchor-record frame field where multi-defender pressure is evaluated.",
             "name": "frame_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
           {
-            "allowed_values": [
-              "receiver_id",
-              "passer_id",
-              "relay_player_id",
-              "terminal_receiver_id",
-              "carrier_id"
-            ],
+            "allow_legacy_enum": true,
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "receiver_id"
             },
             "description": "Anchor-record field containing the pressured carrier id.",
+            "field_reference_kind": "entity",
+            "legacy_allowed_values": [
+              "receiver_id",
+              "passer_id",
+              "relay_player_id",
+              "terminal_receiver_id",
+              "carrier_id"
+            ],
             "name": "carrier_id_field",
-            "payload_type": "enum",
+            "payload_type": "field_ref",
             "required": false,
             "unit": "none"
           },
@@ -5765,16 +5841,16 @@
   ],
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "3aeed956dbdc0829d0df3f24a99a0bd06a4627876d8235a7e772222015e145f6",
+    "baseline_artifact_revision": "60c440a78370d1e681a21076ee090d0898ece88d74b821684925254238d20f73",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "ed9d081cdc3f01fc2dbd383b5b9b8532ace5ce8df65e23a8d62065b9c258147b",
+    "lock_hash": "30453c87a335fe54f6f97e7d310bfe561cbd2480e2382894b8e2ff513a4e496c",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
     "registry_revision": "e7354e2c236fd3701cc65d8d01229bf4bc357748761fd60084375e01bf9a366b",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "2afa35322ca23d66fd226efa62985e06ce2cb131491f58800e17f3a3bc35b790",
+    "runtime_manifest_revision": "372b23876fc4f9340db2e031e97a93b924c49befa9ea54351eea8432e9456368",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"
