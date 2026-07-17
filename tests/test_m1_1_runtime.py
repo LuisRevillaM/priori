@@ -10,6 +10,13 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from tqe.evidence.observation_manifest import (
+    ObservationCoverage,
+    ObservationCoverageRow,
+    ObservationManifestDocument,
+    ObservationModality,
+    ObservationWindow,
+)
 from tqe.runtime.binder import bind_document
 from tqe.runtime.capabilities.corridor_family import ball_entry_evaluation_into_destination_region
 from tqe.runtime.executor import (
@@ -443,6 +450,29 @@ def destination_entry_fixture_state(
         canonical_root=Path("unused"),
         raw_tracking=Path("unused"),
         data_scope_manifest_entries=[],
+        observation_coverage=ObservationCoverage(
+            ObservationManifestDocument(
+                schema_version="tqe.observation_manifest.v1",
+                manifest_id="destination-entry-fixture",
+                producer="tests.test_m1_1_runtime",
+                rows=(
+                    ObservationCoverageRow(
+                        row_id="FIXTURE:firstHalf:ball",
+                        modality=ObservationModality.BALL,
+                        match_id="FIXTURE",
+                        period="firstHalf",
+                        window=ObservationWindow(
+                            start_frame_id=min(frame_id_list),
+                            end_frame_id=max(frame_id_list),
+                        ),
+                        status="CERTIFIED",
+                        reason="fixture declares complete ball coverage",
+                        provenance_token="tests.test_m1_1_runtime:destination-entry",
+                    ),
+                ),
+            ),
+            manifest_path=None,
+        ),
         positions=positions,
         frame_ids=np.array(frame_id_list),
         ball_y=np.array([ball_points.get(frame_id, np.nan) for frame_id in frame_id_list]),

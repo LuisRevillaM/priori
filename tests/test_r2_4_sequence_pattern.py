@@ -3,6 +3,13 @@ from __future__ import annotations
 import unittest
 from types import SimpleNamespace
 
+from tqe.evidence.observation_manifest import (
+    ObservationCoverage,
+    ObservationCoverageRow,
+    ObservationManifestDocument,
+    ObservationModality,
+    ObservationWindow,
+)
 from tqe.runtime.ir import CatalogOutput, MissingDataSemantics, TypedValue
 from tqe.runtime.operators.aggregate_over import execute_aggregate_over
 from tqe.runtime.operators.sequence_pattern import SEQUENCE_PATTERN_SIGNATURE, execute_sequence_pattern
@@ -23,6 +30,30 @@ def typed_bool(value: bool) -> TypedValue:
 
 def typed_entity_set(values: list[str]) -> TypedValue:
     return TypedValue(payload_type="entity_set", value=values)
+
+
+def certified_observation_coverage() -> ObservationCoverage:
+    return ObservationCoverage(
+        ObservationManifestDocument(
+            schema_version="tqe.observation_manifest.v1",
+            manifest_id="sequence-pattern-test-certified",
+            producer="test",
+            rows=tuple(
+                ObservationCoverageRow(
+                    row_id=f"TST:firstHalf:{modality.value}",
+                    modality=modality,
+                    match_id="TST",
+                    period="firstHalf",
+                    window=ObservationWindow(start_frame_id=0, end_frame_id=1_000_000),
+                    status="CERTIFIED",
+                    reason="synthetic fixture declares complete observation",
+                    provenance_token="test:TST:firstHalf",
+                )
+                for modality in ObservationModality
+            ),
+        ),
+        manifest_path=None,
+    )
 
 
 def stage_output(name: str) -> CatalogOutput:
@@ -182,6 +213,7 @@ def run_sequence(
     parameter_overrides: dict[str, TypedValue] | None = None,
     possession_role: list[str] | None = None,
     ball_alive: list[bool] | None = None,
+    observation_coverage: ObservationCoverage | None = None,
 ) -> list[dict[str, object]]:
     state = SimpleNamespace(
         match_id="TST",
@@ -191,6 +223,7 @@ def run_sequence(
         possession_role=possession_role,
         ball_alive=ball_alive,
         signals={},
+        observation_coverage=observation_coverage or certified_observation_coverage(),
     )
     node = SimpleNamespace(
         node_id="sequence",
@@ -233,6 +266,17 @@ class SequencePatternOperatorTests(unittest.TestCase):
 
         self.assertEqual("FAIL", result["chain_status"])
         self.assertEqual("stage_2_fully_observed_empty_window", result["chain_reason"])
+
+    def test_empty_window_is_unknown_when_observation_manifest_is_absent(self) -> None:
+        result = run_sequence(
+            [regain(100)],
+            [],
+            [],
+            observation_coverage=ObservationCoverage.from_path(None),
+        )[0]
+
+        self.assertEqual("UNKNOWN", result["chain_status"])
+        self.assertIn("uncertified_observation_coverage[", result["chain_reason"])
         self.assertFalse(result["stage_2_window_truncated"])
 
     def test_truncated_window_is_unknown_not_fail(self) -> None:

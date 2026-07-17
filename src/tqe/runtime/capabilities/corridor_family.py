@@ -10,6 +10,7 @@ import hashlib
 from collections import Counter, defaultdict
 from typing import Any
 
+from tqe.evidence.observation_manifest import ObservationModality, gate_state_absence_status
 from tqe.runtime.executor import (
     FRAME_RATE_HZ,
     PeriodState,
@@ -635,14 +636,22 @@ def ball_entry_evaluation_into_destination_region(
             "unknown_reason": ",".join(unknown_reasons),
             "missing_ball_frame_count": len(missing_ball_frames),
         }
+    gated = gate_state_absence_status(
+        state=state,
+        start_frame_id=start_frame_id,
+        end_frame_id=observed_end_frame_id,
+        modalities=(ObservationModality.BALL,),
+        status="FAIL",
+        reason="destination_region_not_entered",
+    )
     return {
-        "entry_status": "FAIL",
+        "entry_status": gated.status,
         "entry": None,
-        "entry_mode": "NOT_ENTERED",
+        "entry_mode": "NOT_ENTERED" if gated.status == "FAIL" else "UNKNOWN",
         "time_to_entry_seconds": None,
         "observed_window_start_frame_id": start_frame_id,
         "observed_window_end_frame_id": observed_end_frame_id,
-        "unknown_reason": None,
+        "unknown_reason": None if gated.status == "FAIL" else gated.reason,
         "missing_ball_frame_count": 0,
     }
 
@@ -733,4 +742,3 @@ def experimental_predicate_traces_for_result(
         )
     )
     return rewritten
-

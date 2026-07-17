@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from tqe.evidence.observation_manifest import ObservationModality, gate_state_absence_status
 from tqe.runtime.ir import (
     Cardinality,
     CompositionOperatorSignature,
@@ -460,6 +461,31 @@ def execute_sequence_pattern(
                         )
                     )
                     continue
+                empty_status = "UNKNOWN" if window["window_truncated"] else "FAIL"
+                empty_reason = (
+                    f"stage_{next_stage}_window_truncated"
+                    if window["window_truncated"]
+                    else (
+                        f"stage_{next_stage}_policy_excluded"
+                        if window["policy_excluded_count"]
+                        else f"stage_{next_stage}_fully_observed_empty_window"
+                    )
+                )
+                if not window["window_truncated"] and not window["policy_excluded_count"]:
+                    gated = gate_state_absence_status(
+                        state=state,
+                        start_frame_id=reference_frame + 1,
+                        end_frame_id=window_end,
+                        modalities=(
+                            ObservationModality.EVENT,
+                            ObservationModality.BALL,
+                            ObservationModality.POSSESSION,
+                            ObservationModality.PLAYER_TRACK,
+                        ),
+                        status=empty_status,
+                        reason=empty_reason,
+                    )
+                    empty_status, empty_reason = gated.status, gated.reason
                 terminal_records.append(
                     _chain_record(
                         state=state,
@@ -467,16 +493,8 @@ def execute_sequence_pattern(
                         source_refs=source_refs,
                         witnesses=witnesses,
                         terminal_stage=next_stage,
-                        chain_status="UNKNOWN" if window["window_truncated"] else "FAIL",
-                        chain_reason=(
-                            f"stage_{next_stage}_window_truncated"
-                            if window["window_truncated"]
-                            else (
-                                f"stage_{next_stage}_policy_excluded"
-                                if window["policy_excluded_count"]
-                                else f"stage_{next_stage}_fully_observed_empty_window"
-                            )
-                        ),
+                        chain_status=empty_status,
+                        chain_reason=empty_reason,
                         windows={**windows, next_stage: window},
                     )
                 )

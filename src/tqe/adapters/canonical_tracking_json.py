@@ -10,6 +10,12 @@ from typing import Any
 import pyarrow as pa
 import pyarrow.parquet as pq
 
+from tqe.evidence.observation_manifest import (
+    ObservationCoverageRow,
+    ObservationManifestDocument,
+    ObservationModality,
+    ObservationWindow,
+)
 from tqe.ports.canonical_tracking import CanonicalTrackingExchange
 
 
@@ -51,6 +57,7 @@ def adapt_exchange(input_path: Path, canonical_root: Path) -> dict[str, Any]:
     player_rows: list[dict[str, Any]] = []
     orientation_rows: list[dict[str, Any]] = []
     summary_matches: list[dict[str, Any]] = []
+    observation_rows: list[ObservationCoverageRow] = []
 
     for match in exchange.matches:
         teams_by_role = {team.team_role: team for team in match.teams}
@@ -181,6 +188,65 @@ def adapt_exchange(input_path: Path, canonical_root: Path) -> dict[str, Any]:
         write_table(canonical_root / "frame_state" / base / f"period={match.period}.parquet", frame_state_rows)
         write_table(canonical_root / "positions" / base / f"period={match.period}.parquet", position_rows)
         write_table(canonical_root / "events" / f"match_id={match.match_id}.parquet", [], EVENT_SCHEMA)
+        if match.frames:
+            window = ObservationWindow(
+                start_frame_id=match.frames[0].frame_id,
+                end_frame_id=match.frames[-1].frame_id,
+            )
+            provenance_token = f"{exchange.source_adapter}:{match.match_id}:{match.period}"
+            fully_observed_player_tracks = all(
+                frame.position_evidence == "KNOWN"
+                and len(frame.positions) == len(match.entities)
+                for frame in match.frames
+            )
+            observation_rows.extend(
+                [
+                    ObservationCoverageRow(
+                        row_id=f"{match.match_id}:{match.period}:event",
+                        modality=ObservationModality.EVENT,
+                        match_id=match.match_id,
+                        period=match.period,
+                        window=window,
+                        status="UNCERTIFIED",
+                        reason="vision_adapter_did_not_supply_certified_event_coverage",
+                        provenance_token=provenance_token,
+                    ),
+                    ObservationCoverageRow(
+                        row_id=f"{match.match_id}:{match.period}:ball",
+                        modality=ObservationModality.BALL,
+                        match_id=match.match_id,
+                        period=match.period,
+                        window=window,
+                        status="UNCERTIFIED",
+                        reason="vision_adapter_ball_coverage_not_certified",
+                        provenance_token=provenance_token,
+                    ),
+                    ObservationCoverageRow(
+                        row_id=f"{match.match_id}:{match.period}:possession",
+                        modality=ObservationModality.POSSESSION,
+                        match_id=match.match_id,
+                        period=match.period,
+                        window=window,
+                        status="UNCERTIFIED",
+                        reason="vision_adapter_possession_coverage_not_certified",
+                        provenance_token=provenance_token,
+                    ),
+                    ObservationCoverageRow(
+                        row_id=f"{match.match_id}:{match.period}:player_track",
+                        modality=ObservationModality.PLAYER_TRACK,
+                        match_id=match.match_id,
+                        period=match.period,
+                        window=window,
+                        status="CERTIFIED" if fully_observed_player_tracks else "UNCERTIFIED",
+                        reason=(
+                            "every_declared_entity_observed_at_every_frame"
+                            if fully_observed_player_tracks
+                            else "position_gates_or_missing_entities_prevent_interval_certification"
+                        ),
+                        provenance_token=provenance_token,
+                    ),
+                ]
+            )
         summary_matches.append(
             {
                 "match_id": match.match_id,
@@ -195,10 +261,21 @@ def adapt_exchange(input_path: Path, canonical_root: Path) -> dict[str, Any]:
     write_table(canonical_root / "teams.parquet", team_rows)
     write_table(canonical_root / "players.parquet", player_rows)
     write_table(canonical_root / "orientation.parquet", orientation_rows)
+    observation_manifest = ObservationManifestDocument(
+        schema_version="tqe.observation_manifest.v1",
+        manifest_id=f"{exchange.source_adapter}.observation_manifest",
+        producer=exchange.source_adapter,
+        rows=tuple(observation_rows),
+    )
+    (canonical_root / "observation-manifest.json").write_text(
+        json.dumps(observation_manifest.model_dump(mode="json"), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     return {
         "schema_version": "canonical_tracking_adapter_summary.v1",
         "input_schema_version": exchange.schema_version,
         "source_adapter": exchange.source_adapter,
+        "observation_manifest_row_count": len(observation_rows),
         "matches": summary_matches,
     }
 

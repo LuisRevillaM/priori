@@ -13,6 +13,11 @@ node_modules/
 artifacts/
 data/raw/
 data/canonical/
+!data/canonical/
+data/canonical/*
+!data/canonical/v1/
+data/canonical/v1/*
+!data/canonical/v1/observation-manifest.json
 data/features/
 apps/workbench-alpha/dist/
 apps/workbench-alpha/vite.config.js

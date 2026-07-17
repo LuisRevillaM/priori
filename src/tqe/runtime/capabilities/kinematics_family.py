@@ -12,6 +12,7 @@ from typing import Any
 
 import numpy as np
 
+from tqe.evidence.observation_manifest import ObservationModality, gate_state_absence_status
 from tqe.runtime.executor import (
     FRAME_RATE_HZ,
     PeriodState,
@@ -644,6 +645,23 @@ def join_episode_sets_record(
                 joined=project_joined_record(left_record, right_record),
                 same_entity_fields=same_entity_fields,
             )
+    if status == "FAIL" and reason == "right_join_key_not_found":
+        start_frame_id = optional_int(left_record.get("start_frame_id")) or anchor_frame_id
+        end_frame_id = optional_int(left_record.get("end_frame_id")) or anchor_frame_id
+        gated = gate_state_absence_status(
+            state=state,
+            start_frame_id=start_frame_id,
+            end_frame_id=end_frame_id,
+            modalities=(
+                ObservationModality.EVENT,
+                ObservationModality.BALL,
+                ObservationModality.POSSESSION,
+                ObservationModality.PLAYER_TRACK,
+            ),
+            status=status,
+            reason=reason,
+        )
+        status, reason = gated.status, gated.reason
     joined = project_joined_record(left_record, right_record)
     distinct_fields = parse_distinct_entity_fields(distinct_entity_fields)
     distinct_values = {field: joined.get(field) for field in distinct_fields}
@@ -970,6 +988,21 @@ def lane_occupancy_anchor_record(
         config=LaneOccupancyConfig(),
     )
     payload = evaluation.to_dict()
+    lane_status = str(payload["status"])
+    lane_reason = str(payload["reason"])
+    absence_gate_forced_unknown = False
+    if lane_status == "FAIL":
+        ungated_status = lane_status
+        gated = gate_state_absence_status(
+            state=state,
+            start_frame_id=lane_evaluation_frame_id,
+            end_frame_id=lane_evaluation_frame_id,
+            modalities=(ObservationModality.PLAYER_TRACK,),
+            status=lane_status,
+            reason=lane_reason,
+        )
+        lane_status, lane_reason = gated.status, gated.reason
+        absence_gate_forced_unknown = ungated_status == "FAIL" and lane_status == "UNKNOWN"
     return {
         **anchor,
         "match_id": state.match_id,
@@ -979,8 +1012,8 @@ def lane_occupancy_anchor_record(
         "start_frame_id": optional_int(anchor.get("start_frame_id")) or anchor_frame_id,
         "end_frame_id": optional_int(anchor.get("end_frame_id")) or anchor_frame_id,
         "entity_refs": list(anchor.get("entity_refs") or []),
-        "lane_occupancy_status": str(payload["status"]),
-        "lane_occupancy_reason": payload["reason"],
+        "lane_occupancy_status": lane_status,
+        "lane_occupancy_reason": lane_reason,
         "lane_evaluation_frame_field": frame_field,
         "lane_evaluation_frame_id": lane_evaluation_frame_id,
         "lane_player_scope": player_scope,
@@ -999,7 +1032,7 @@ def lane_occupancy_anchor_record(
         "missing_frame_ids": list(payload["missing_frame_ids"]),
         "required_occupied_lane_count": payload["required_occupied_lane_count"],
         "requirement_aggregation": payload["requirement_aggregation"],
-        "coverage_status": payload["coverage_status"],
+        "coverage_status": "UNKNOWN" if absence_gate_forced_unknown else payload["coverage_status"],
         "lane_definitions": payload["lane_definitions"],
         "pitch_width_m": payload["pitch_width_m"],
         "coordinate_system": payload["coordinate_system"],

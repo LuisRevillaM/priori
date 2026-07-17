@@ -17,6 +17,11 @@ from typing import Any
 
 import pandas as pd
 
+from tqe.evidence.observation_manifest import (
+    ObservationCoverage,
+    ObservationModality,
+    gate_state_absence_status,
+)
 from tqe.runtime.controlled_pass import (
     DEFAULT_CANONICAL_ROOT,
     DEFAULT_PERIODS,
@@ -144,6 +149,7 @@ def evaluate_one_touch_relays(
                     control_distance_m=config.control_distance_m,
                     nearest_teammate_margin_m=config.nearest_teammate_margin_m,
                 ),
+                observation_coverage=ObservationCoverage.for_canonical_root(canonical_root),
             )
             for first, second in adjacent_event_linked_passes(period_events, config=config):
                 candidate_count += 1
@@ -416,7 +422,15 @@ def detect_relay_touch(
         return RelayTouchDetection(PASS, None, frame_id, ball_xy, player_xy, distance)
     if missing == (upper - lower + 1):
         return RelayTouchDetection(UNKNOWN, "relay_touch_tracking_missing", None, None, None, None)
-    return RelayTouchDetection(FAIL, "relay_touch_not_observed", None, None, None, None)
+    gated = gate_state_absence_status(
+        state=context,
+        start_frame_id=int(context.frame_ids[lower]),
+        end_frame_id=int(context.frame_ids[upper]),
+        modalities=(ObservationModality.BALL, ObservationModality.PLAYER_TRACK),
+        status=FAIL,
+        reason="relay_touch_not_observed",
+    )
+    return RelayTouchDetection(gated.status, gated.reason, None, None, None, None)
 
 
 def one_touch_status(

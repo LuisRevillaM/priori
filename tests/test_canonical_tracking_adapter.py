@@ -12,6 +12,7 @@ import pandas as pd
 import pyarrow.parquet as pq
 
 from tqe.adapters.canonical_tracking_json import adapt_exchange
+from tqe.evidence.observation_manifest import ObservationManifestDocument
 from tqe.runtime.catalog import default_catalog
 from tqe.runtime.capabilities.possession_family import primitive_transition_anchor
 from tqe.runtime.executor import RuntimeParameters, stream_canonical_frame_state
@@ -85,6 +86,16 @@ class CanonicalTrackingAdapterTests(unittest.TestCase):
             )
             self.assertEqual([None, None], state.possession_team_role.tolist())
             self.assertEqual([None, None], state.ball_alive.tolist())
+            observation_manifest = ObservationManifestDocument.model_validate_json(
+                (canonical / "observation-manifest.json").read_text(encoding="utf-8")
+            )
+            status_by_modality = {
+                row.modality.value: row.status for row in observation_manifest.rows
+            }
+            self.assertEqual("UNCERTIFIED", status_by_modality["event"])
+            self.assertEqual("UNCERTIFIED", status_by_modality["ball"])
+            self.assertEqual("UNCERTIFIED", status_by_modality["possession"])
+            self.assertEqual("UNCERTIFIED", status_by_modality["player_track"])
 
     def test_unknown_transition_boundaries_are_emitted_instead_of_dropped(self) -> None:
         catalog_entry = next(item for item in default_catalog().primitives if item.name == "transition_anchor")

@@ -19,6 +19,7 @@
     "players.parquet",
     "teams.parquet",
     "orientation.parquet",
+    "observation-manifest.json",
     "events/match_id=J03WOH.parquet",
     "events/match_id=J03WOY.parquet",
     "events/match_id=J03WPY.parquet",

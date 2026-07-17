@@ -14,6 +14,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+from tqe.evidence.observation_manifest import ObservationModality, gate_state_absence_status
 from tqe.runtime.executor import (
     FRAME_RATE_HZ,
     PITCH_HALF_LENGTH_M,
@@ -643,7 +644,15 @@ def space_region_generation_anchor_record(
     )
     if len(candidates) >= max(1, minimum_open_points):
         return base("PASS", "open_space_candidates_found", candidates=candidates)
-    return base("FAIL", "open_space_threshold_not_met", candidates=candidates)
+    gated = gate_state_absence_status(
+        state=state,
+        start_frame_id=frame_id,
+        end_frame_id=frame_id,
+        modalities=(ObservationModality.PLAYER_TRACK,),
+        status="FAIL",
+        reason="open_space_threshold_not_met",
+    )
+    return base(gated.status, gated.reason, candidates=candidates)
 
 
 def open_space_candidate_points(
@@ -809,6 +818,16 @@ def outcome_window_anchor_record(
             settled_start_frame_id = None
             settled_end_frame_id = None
     outcome_window_end_frame_id = int(window_frame_ids[-1]) if len(window_frame_ids) else anchor_frame_id
+    if status == "FAIL" and reason == "settled_threshold_not_met_within_window":
+        gated = gate_state_absence_status(
+            state=state,
+            start_frame_id=anchor_frame_id,
+            end_frame_id=outcome_window_end_frame_id,
+            modalities=(ObservationModality.BALL, ObservationModality.POSSESSION),
+            status=status,
+            reason=reason,
+        )
+        status, reason = gated.status, gated.reason
     possession_phase_status = "SETTLED" if status == "PASS" else ("UNKNOWN" if status == "UNKNOWN" else "NOT_SETTLED")
     return {
         **anchor,

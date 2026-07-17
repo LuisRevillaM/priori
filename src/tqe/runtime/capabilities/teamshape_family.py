@@ -13,6 +13,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+from tqe.evidence.observation_manifest import ObservationModality, gate_state_absence_status
 from tqe.runtime.executor import (
     FRAME_RATE_HZ,
     PITCH_HALF_WIDTH_M,
@@ -822,7 +823,15 @@ def cover_shadow_anchor_record(
     screens.sort(key=lambda item: (float(item["distance_to_lane_m"]), float(item["projection_fraction"]), str(item["player_id"])))
     if screens:
         return base("PASS", "screening_defender_on_ball_target_lane", screen=screens[0], all_screens=screens)
-    return base("FAIL", "no_screening_defender_on_ball_target_lane", all_screens=[])
+    gated = gate_state_absence_status(
+        state=state,
+        start_frame_id=frame_id,
+        end_frame_id=frame_id,
+        modalities=(ObservationModality.PLAYER_TRACK,),
+        status="FAIL",
+        reason="no_screening_defender_on_ball_target_lane",
+    )
+    return base(gated.status, gated.reason, all_screens=[])
 def lane_projection(
     *,
     start: tuple[float, float],
@@ -894,6 +903,24 @@ def pressure_on_carrier_anchor_record(
             status = "FAIL"
             evidence["pressure_status"] = "FAIL"
             evidence["pressure_reason"] = "pressure_duration_below_threshold"
+    absence_gate_forced_unknown = False
+    if status == "FAIL":
+        ungated_status = status
+        lookback_frames = max(1, int(math.ceil(max(lookback_seconds, 0.04) * FRAME_RATE_HZ - 1e-9)))
+        gated = gate_state_absence_status(
+            state=state,
+            start_frame_id=max(0, pressure_frame_id - lookback_frames),
+            end_frame_id=pressure_frame_id,
+            modalities=(ObservationModality.PLAYER_TRACK,),
+            status=status,
+            reason=str(evidence["pressure_reason"]),
+        )
+        status = gated.status
+        evidence["pressure_status"] = gated.status
+        evidence["pressure_reason"] = gated.reason
+        absence_gate_forced_unknown = ungated_status == "FAIL" and status == "UNKNOWN"
+        if absence_gate_forced_unknown:
+            evidence["coverage_status"] = "UNKNOWN"
     return {
         **anchor,
         "match_id": state.match_id,
@@ -1302,6 +1329,20 @@ def team_press_evidence_at_frame(
             failed.append("angle_spread")
         reason = "multi_defender_pressure_observed" if status == "PASS" else "team_press_threshold_not_met:" + ",".join(failed)
 
+    absence_gate_forced_unknown = False
+    if status == "FAIL":
+        ungated_status = status
+        gated = gate_state_absence_status(
+            state=state,
+            start_frame_id=max(0, previous_frame_id),
+            end_frame_id=frame_id,
+            modalities=(ObservationModality.PLAYER_TRACK,),
+            status=status,
+            reason=reason,
+        )
+        status, reason = gated.status, gated.reason
+        absence_gate_forced_unknown = ungated_status == "FAIL" and status == "UNKNOWN"
+
     return {
         **base,
         "team_press_status": status,
@@ -1316,7 +1357,11 @@ def team_press_evidence_at_frame(
         "pressure_actor_evidence": pressing[:8],
         "nearby_defender_evidence": nearby[:8],
         "carrier_point": point_from_xy(carrier_point[0], carrier_point[1]),
-        "coverage_status": "OBSERVED_ONLY" if missing_ids else "PASS",
+        "coverage_status": (
+            "UNKNOWN"
+            if absence_gate_forced_unknown
+            else ("OBSERVED_ONLY" if missing_ids else "PASS")
+        ),
     }
 def pressure_angle_spread(bearings: list[float]) -> float | None:
     if len(bearings) < 2:
@@ -1526,6 +1571,23 @@ def local_number_anchor_record(
         ),
     )
     payload = evaluation.to_dict()
+    local_number_status = str(payload["status"])
+    local_number_reason = str(payload["reason"])
+    absence_gate_forced_unknown = False
+    if local_number_status == "FAIL":
+        ungated_status = local_number_status
+        gated = gate_state_absence_status(
+            state=state,
+            start_frame_id=evaluation_frame_id,
+            end_frame_id=evaluation_frame_id,
+            modalities=(ObservationModality.PLAYER_TRACK,),
+            status=local_number_status,
+            reason=local_number_reason,
+        )
+        local_number_status, local_number_reason = gated.status, gated.reason
+        absence_gate_forced_unknown = (
+            ungated_status == "FAIL" and local_number_status == "UNKNOWN"
+        )
     return {
         **anchor,
         "match_id": state.match_id,
@@ -1535,8 +1597,8 @@ def local_number_anchor_record(
         "start_frame_id": optional_int(anchor.get("start_frame_id")) or anchor_frame_id,
         "end_frame_id": optional_int(anchor.get("end_frame_id")) or anchor_frame_id,
         "entity_refs": list(anchor.get("entity_refs") or []),
-        "local_number_status": str(payload["status"]),
-        "local_number_reason": payload["reason"],
+        "local_number_status": local_number_status,
+        "local_number_reason": local_number_reason,
         "local_number_frame_field": frame_field,
         "local_number_frame_id": evaluation_frame_id,
         "reference_point": reference_point,
@@ -1559,7 +1621,9 @@ def local_number_anchor_record(
         "duplicate_perspective_player_ids": list(payload["duplicate_perspective_player_ids"]),
         "duplicate_defending_player_ids": list(payload["duplicate_defending_player_ids"]),
         "per_player_evidence": payload["per_player_evidence"],
-        "coverage_status": payload["coverage_status"],
+        "coverage_status": (
+            "UNKNOWN" if absence_gate_forced_unknown else payload["coverage_status"]
+        ),
         "config_evidence": payload["config_evidence"],
         "perspective_team_role": state.perspective_team_role,
         "defending_team_role": state.defending_team_role,

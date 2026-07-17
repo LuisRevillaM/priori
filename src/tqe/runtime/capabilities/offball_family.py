@@ -10,6 +10,7 @@ from __future__ import annotations
 import math
 from typing import Any
 
+from tqe.evidence.observation_manifest import ObservationModality, gate_state_absence_status
 from tqe.runtime.executor import (
     FRAME_RATE_HZ,
     PeriodState,
@@ -469,6 +470,18 @@ def marking_anchor_record(
     nearest_point = (float(nearest["x_m"]), float(nearest["y_m"]))
     nearest_distance = math.dist(target_point, nearest_point)
     marked = nearest_distance <= float(maximum_marking_distance_m)
+    if not marked:
+        gated = gate_state_absence_status(
+            state=state,
+            start_frame_id=marking_frame_id,
+            end_frame_id=marking_frame_id,
+            modalities=(ObservationModality.PLAYER_TRACK,),
+            status="PASS",
+            reason="nearest_marker_outside_threshold",
+            absence_statuses=("PASS",),
+        )
+        if gated.status == "UNKNOWN":
+            return base("UNKNOWN", "UNKNOWN", gated.reason, **coverage_payload)
     return base(
         "PASS" if marked else "FAIL",
         "FAIL" if marked else "PASS",
@@ -665,10 +678,28 @@ def off_ball_run_anchor_record(
         reverse=True,
     )
     if not candidate_records:
-        return base("FAIL", "no_evaluable_off_ball_candidate", **coverage_payload)
+        gated = gate_state_absence_status(
+            state=state,
+            start_frame_id=start_frame_id,
+            end_frame_id=end_frame_id,
+            modalities=(ObservationModality.BALL, ObservationModality.PLAYER_TRACK),
+            status="FAIL",
+            reason="no_evaluable_off_ball_candidate",
+        )
+        return base(gated.status, gated.reason, **coverage_payload)
     best = candidate_records[0]
     status = str(best["candidate_status"])
     reason = str(best["candidate_reason"])
+    if status == "FAIL":
+        gated = gate_state_absence_status(
+            state=state,
+            start_frame_id=start_frame_id,
+            end_frame_id=end_frame_id,
+            modalities=(ObservationModality.BALL, ObservationModality.PLAYER_TRACK),
+            status=status,
+            reason=reason,
+        )
+        status, reason = gated.status, gated.reason
     return base(
         status,
         reason,
@@ -1013,7 +1044,24 @@ def time_to_arrival_anchor_record(
     else:
         status = "FAIL"
         reason = "arrival_threshold_not_met"
-    coverage_status = "COMPLETE" if not missing_candidate_ids else "OBSERVED_ONLY"
+    absence_gate_forced_unknown = False
+    if status == "FAIL":
+        ungated_status = status
+        gated = gate_state_absence_status(
+            state=state,
+            start_frame_id=frame_id,
+            end_frame_id=frame_id,
+            modalities=(ObservationModality.PLAYER_TRACK,),
+            status=status,
+            reason=reason,
+        )
+        status, reason = gated.status, gated.reason
+        absence_gate_forced_unknown = ungated_status == "FAIL" and status == "UNKNOWN"
+    coverage_status = (
+        "UNKNOWN"
+        if absence_gate_forced_unknown
+        else ("COMPLETE" if not missing_candidate_ids else "OBSERVED_ONLY")
+    )
     return {
         **anchor,
         "match_id": state.match_id,
@@ -1174,6 +1222,21 @@ def support_arrival_anchor_record(
         ),
     )
     payload = evaluation.to_dict()
+    support_status = str(payload["status"])
+    support_reason = str(payload["reason"])
+    absence_gate_forced_unknown = False
+    if support_status == "FAIL":
+        ungated_status = support_status
+        gated = gate_state_absence_status(
+            state=state,
+            start_frame_id=support_anchor_frame_id,
+            end_frame_id=support_window_end_frame_id,
+            modalities=(ObservationModality.PLAYER_TRACK,),
+            status=support_status,
+            reason=support_reason,
+        )
+        support_status, support_reason = gated.status, gated.reason
+        absence_gate_forced_unknown = ungated_status == "FAIL" and support_status == "UNKNOWN"
     return {
         **anchor,
         "match_id": state.match_id,
@@ -1183,8 +1246,8 @@ def support_arrival_anchor_record(
         "start_frame_id": optional_int(anchor.get("start_frame_id")) or anchor_frame_id,
         "end_frame_id": optional_int(anchor.get("end_frame_id")) or anchor_frame_id,
         "entity_refs": list(anchor.get("entity_refs") or []),
-        "support_arrival_status": str(payload["status"]),
-        "support_arrival_reason": payload["reason"],
+        "support_arrival_status": support_status,
+        "support_arrival_reason": support_reason,
         "support_anchor_frame_field": anchor_frame_field,
         "support_anchor_frame_id": support_anchor_frame_id,
         "support_window_start_frame_id": payload["support_window_start_frame_id"],
@@ -1216,7 +1279,7 @@ def support_arrival_anchor_record(
         "invalid_reference_frame_ids": list(payload["invalid_reference_frame_ids"]),
         "duplicate_reference_frame_ids": list(payload["duplicate_reference_frame_ids"]),
         "per_player_evidence": payload["per_player_evidence"],
-        "coverage_status": payload["coverage_status"],
+        "coverage_status": "UNKNOWN" if absence_gate_forced_unknown else payload["coverage_status"],
         "config_evidence": payload["config_evidence"],
         "reference_player_id": payload["reference_player_id"],
         "reference_point": reference_point,
