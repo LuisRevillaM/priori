@@ -38,6 +38,7 @@ from tqe.runtime.ir import (  # noqa: E402
     CatalogOutput,
     ExecutionStatus,
     NodeKind,
+    PayloadType,
     TacticalQueryDocument,
     Unit,
     stable_hash,
@@ -3673,7 +3674,7 @@ def allowed_parameter_values(entry: CatalogEntry, parameter_name: str) -> list[s
         if parameter.name != parameter_name:
             continue
         values = []
-        for allowed in parameter.allowed_values or []:
+        for allowed in parameter.allowed_values or parameter.legacy_allowed_values or []:
             value = getattr(allowed, "value", allowed)
             values.append(str(value))
         if values:
@@ -3701,7 +3702,7 @@ def validate_input_context_for_evaluator(
         string_value = str(value)
         parameter = declared[key]
         allowed = []
-        for allowed_value in parameter.allowed_values or []:
+        for allowed_value in parameter.allowed_values or parameter.legacy_allowed_values or []:
             value_text = getattr(allowed_value, "value", allowed_value)
             allowed.append(str(value_text))
         if allowed and string_value not in allowed:
@@ -4883,7 +4884,7 @@ def catalog_node(
     if inputs:
         node["inputs"] = inputs
     if parameters:
-        node["parameters"] = parameters
+        node["parameters"] = typed_field_parameters(parameters, entry.parameters)
     return node
 
 
@@ -4907,7 +4908,7 @@ def operator_node(
         "node_id": node_id,
         "operator": {"name": operator_name, "version": version},
         "inputs": inputs,
-        "parameters": parameters,
+        "parameters": typed_field_parameters(parameters, signature.parameters),
         "outputs": outputs,
     }
 
@@ -4921,6 +4922,34 @@ def operator_signature(operator_name: str, version: str) -> Any:
         "No declared operator signature for generated operator node.",
         {"operator_name": operator_name, "operator_version": version},
     )
+
+
+def typed_field_parameters(
+    parameters: dict[str, Any],
+    definitions: list[Any],
+) -> dict[str, Any]:
+    declared = {parameter.name: parameter for parameter in definitions}
+    typed: dict[str, Any] = {}
+    for name, value in parameters.items():
+        definition = declared.get(name)
+        if (
+            definition is None
+            or definition.payload_type != PayloadType.FIELD_REF
+            or not isinstance(value, dict)
+            or value.get("payload_type") != PayloadType.ENUM.value
+        ):
+            typed[name] = value
+            continue
+        field = value.get("value")
+        typed[name] = {
+            "payload_type": PayloadType.FIELD_REF.value,
+            "unit": "none",
+            "value": {
+                "kind": definition.field_reference_kind.value,
+                "field": None if field == "none" else str(field),
+            },
+        }
+    return typed
 
 
 def document(

@@ -298,14 +298,21 @@ class ProjectOntoAxisTests(unittest.TestCase):
         ]
         self.assertEqual(1, len(support_nodes))
         parameters = support_nodes[0]["parameters"]
-        self.assertEqual("controlled_reception_frame_id", parameters["anchor_frame_field"]["value"])
+        self.assertEqual("field_ref", parameters["anchor_frame_field"]["payload_type"])
+        self.assertEqual(
+            {"kind": "frame", "field": "controlled_reception_frame_id"},
+            parameters["anchor_frame_field"]["value"],
+        )
         self.assertEqual("perspective_outfield", parameters["candidate_scope"]["value"])
         self.assertEqual("WITHIN_DISTANCE_OF_REFERENCE_POINT", parameters["support_region_mode"]["value"])
         self.assertEqual(3.0, parameters["maximum_arrival_seconds"]["value"])
         self.assertEqual(0.0, parameters["minimum_duration_seconds"]["value"])
         self.assertEqual(30.0, parameters["maximum_support_distance_m"]["value"])
         self.assertEqual(1.0, parameters["minimum_supporting_players"]["value"])
-        self.assertEqual("controlled_pass_status", parameters["required_anchor_status_field"]["value"])
+        self.assertEqual(
+            {"kind": "status", "field": "controlled_pass_status"},
+            parameters["required_anchor_status_field"]["value"],
+        )
         self.assertEqual("PASS", parameters["required_anchor_status_value"]["value"])
         source_metadata = build.metadata["source_build_metadata"]
         self.assertEqual(

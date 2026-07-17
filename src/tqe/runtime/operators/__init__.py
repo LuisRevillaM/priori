@@ -12,6 +12,7 @@ from importlib import import_module
 from typing import Any
 
 from tqe.runtime.ir import CompositionOperatorSignature
+from tqe.runtime.field_references import migrate_operator_field_references
 from tqe.runtime.operators.aggregate_over import AGGREGATE_OVER_SIGNATURE
 from tqe.runtime.operators.delta_across_anchor import DELTA_ACROSS_ANCHOR_SIGNATURE
 from tqe.runtime.operators.extremum_over_set import EXTREMUM_OVER_SET_SIGNATURE
@@ -25,25 +26,29 @@ OperatorImplementation = Callable[..., None]
 OperatorKey = tuple[str, str]
 
 
-OPERATOR_SIGNATURES: tuple[CompositionOperatorSignature, ...] = (
-    PROJECT_ONTO_AXIS_SIGNATURE,
-    DELTA_ACROSS_ANCHOR_SIGNATURE,
-    EXTREMUM_OVER_SET_SIGNATURE,
-    WINDOW_SIGNATURE,
-    TYPED_JOIN_SIGNATURE,
-    AGGREGATE_OVER_SIGNATURE,
-    RATE_SIGNATURE,
-    SEQUENCE_PATTERN_SIGNATURE,
+OPERATOR_SIGNATURES: tuple[CompositionOperatorSignature, ...] = tuple(
+    migrate_operator_field_references(signature)
+    for signature in (
+        PROJECT_ONTO_AXIS_SIGNATURE,
+        DELTA_ACROSS_ANCHOR_SIGNATURE,
+        EXTREMUM_OVER_SET_SIGNATURE,
+        WINDOW_SIGNATURE,
+        TYPED_JOIN_SIGNATURE,
+        AGGREGATE_OVER_SIGNATURE,
+        RATE_SIGNATURE,
+        SEQUENCE_PATTERN_SIGNATURE,
+    )
 )
+_OPERATOR_SIGNATURES_BY_NAME = {signature.name: signature for signature in OPERATOR_SIGNATURES}
 OPERATOR_SIGNATURES_BY_CONSTRAINT_KIND: dict[str, CompositionOperatorSignature] = {
-    "aggregate_over": AGGREGATE_OVER_SIGNATURE,
-    "delta_across_anchor": DELTA_ACROSS_ANCHOR_SIGNATURE,
-    "extremum_over_set": EXTREMUM_OVER_SET_SIGNATURE,
-    "rate": RATE_SIGNATURE,
-    "typed_join": TYPED_JOIN_SIGNATURE,
-    "vector_projection": PROJECT_ONTO_AXIS_SIGNATURE,
-    "window": WINDOW_SIGNATURE,
-    "sequence_pattern": SEQUENCE_PATTERN_SIGNATURE,
+    "aggregate_over": _OPERATOR_SIGNATURES_BY_NAME["aggregate_over"],
+    "delta_across_anchor": _OPERATOR_SIGNATURES_BY_NAME["delta_across_anchor"],
+    "extremum_over_set": _OPERATOR_SIGNATURES_BY_NAME["extremum_over_set"],
+    "rate": _OPERATOR_SIGNATURES_BY_NAME["rate"],
+    "typed_join": _OPERATOR_SIGNATURES_BY_NAME["typed_join"],
+    "vector_projection": _OPERATOR_SIGNATURES_BY_NAME["project_onto_axis"],
+    "window": _OPERATOR_SIGNATURES_BY_NAME["window"],
+    "sequence_pattern": _OPERATOR_SIGNATURES_BY_NAME["sequence_pattern"],
 }
 LEGACY_COMPOSITION_CONSTRAINT_KIND_SCHEMAS: dict[str, dict[str, Any]] = {
     "before_after_same_anchor": {

@@ -14,7 +14,9 @@ from tqe.runtime.ir import (
     PayloadType,
     TacticalQueryDocument,
     TypedValue,
+    field_reference,
     model_payload,
+    parameter_accepts_payload,
     stable_hash,
 )
 from tqe.semantic_compiler.models import (
@@ -151,10 +153,18 @@ def _validate_parameter_overrides(
 
 
 def _parameter_mismatch(parameter: ParameterDefinition, value: TypedValue) -> str | None:
-    if value.payload_type != parameter.payload_type:
+    if not parameter_accepts_payload(parameter, value):
         return (
             f"Parameter {parameter.name} expects {parameter.payload_type.value}, "
             f"got {value.payload_type.value}"
+        )
+    if (
+        value.payload_type == PayloadType.FIELD_REF
+        and field_reference(value).kind != parameter.field_reference_kind
+    ):
+        return (
+            f"Parameter {parameter.name} expects {parameter.field_reference_kind.value}, "
+            f"got {field_reference(value).kind.value}"
         )
     if value.unit != parameter.unit:
         return f"Parameter {parameter.name} expects {parameter.unit.value}, got {value.unit.value}"
@@ -169,6 +179,16 @@ def _parameter_mismatch(parameter: ParameterDefinition, value: TypedValue) -> st
         and str(value.value) not in set(parameter.allowed_values)
     ):
         return f"Parameter {parameter.name} must be one of {sorted(parameter.allowed_values)}"
+    if (
+        value.payload_type == PayloadType.ENUM
+        and parameter.payload_type == PayloadType.FIELD_REF
+        and parameter.legacy_allowed_values is not None
+        and str(value.value) not in set(parameter.legacy_allowed_values)
+    ):
+        return (
+            f"Parameter {parameter.name} legacy enum must be one of "
+            f"{sorted(parameter.legacy_allowed_values)}"
+        )
     return None
 
 
