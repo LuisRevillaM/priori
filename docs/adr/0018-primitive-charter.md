@@ -47,3 +47,20 @@ under the CURRENT compiler; the future CoachQueryIR (ADR 0017 Move 2)
 inherits the registry unchanged. Certification through the standard
 envelope; each primitive lands with its recipe(s) as certified
 compositions and Film Room N8 rendering where user-facing.
+
+## Amendment A1 (2026-07-18, director's ruling on GEO-1's finding)
+
+The converged charter's between_observed_lines pair selection ("line
+ranks 1 and 2 goal-side of the ball") is struck for reception-anchored
+compositions: at the reception frame the receiver is at the ball, so
+every adequately observed pair lies beyond the receiver and zero PASS
+is structurally impossible — GEO-1's certified table proved this
+(0/2,909 with the honest reasons enumerated). Amended law: pair
+selection is RECEIVER-RELATIVE — the adjacent observed opposing-team
+line pair that BRACKETS the subject entity at the evaluation frame
+(one band goal-side of the entity, one ball-side), with
+deepest_observed_line semantics unchanged and no tactical-role naming,
+per the original anti-goals. Ball-anchored compositions may still
+declare ball-relative selection explicitly. GEO-1b implements the
+amended recipe; the zero-PASS table stays in evidence as the finding's
+proof, never presented as the flagship answer.
