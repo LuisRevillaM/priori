@@ -2680,7 +2680,16 @@
         "observed_line_count",
         "observed_lines",
         "line_x_m",
-        "defensive_line_player_ids"
+        "defensive_line_player_ids",
+        "defender_observation_status",
+        "defender_observation_reason",
+        "observed_outfield_defender_count",
+        "valid_observed_outfield_defender_count",
+        "invalid_observed_outfield_defender_ids",
+        "required_observed_outfield_defender_count",
+        "player_track_coverage_status",
+        "player_track_coverage_reason",
+        "player_track_coverage_row_ids"
       ],
       "executable": true,
       "inputs": [
@@ -2729,7 +2738,16 @@
             "selected_line",
             "line_x_m",
             "normalized_line_x_m",
-            "defensive_line_player_ids"
+            "defensive_line_player_ids",
+            "defender_observation_status",
+            "defender_observation_reason",
+            "observed_outfield_defender_count",
+            "valid_observed_outfield_defender_count",
+            "invalid_observed_outfield_defender_ids",
+            "required_observed_outfield_defender_count",
+            "player_track_coverage_status",
+            "player_track_coverage_reason",
+            "player_track_coverage_row_ids"
           ],
           "missing_data_semantics": "unknown",
           "name": "anchor_evaluations",
@@ -9303,6 +9321,6 @@
       "unit": "none"
     }
   ],
-  "runtime_manifest_revision": "372b23876fc4f9340db2e031e97a93b924c49befa9ea54351eea8432e9456368",
+  "runtime_manifest_revision": "6a77bb9a82d6a7f8fd431a77eeb38f5caa044e30abcdfa99fc4d6678ea0142b4",
   "schema_version": "1.0"
 }

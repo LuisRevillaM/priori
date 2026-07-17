@@ -782,11 +782,11 @@ operationalizations:
   - id: op.observed_multi_line_model.v1
     kind: Operationalization
     display_name: Observed Multi-Line Model
-    description: Fit ranked observed geometric defending line bands at supplied anchor frames.
+    description: Fit ranked observed geometric defending line bands at supplied anchor frames only when manifest coverage and the declared defender-count floor make the rank identifiable.
     concept_refs: [concept.observed_multi_line_model]
     semantic_basis: DETERMINISTIC
     required_modalities: [tracking]
-    applicability: [anchor_available, ball_position_available, defending_outfield_positions_available]
+    applicability: [anchor_available, ball_position_available, defending_outfield_positions_available, player_track_coverage_certified, defender_population_identifiable]
     inputs:
       - name: anchors
         type: {container: EpisodeSet, value: AnchorRef, quantity: anchor, unit: none, entity_scope: anchor}
@@ -799,7 +799,7 @@ operationalizations:
         type: {container: EpisodeSet, value: AnchorRef, quantity: multi_line_evaluation, unit: none, entity_scope: anchor}
       - name: multi_line_status
         type: {container: FrameSignal, value: Enum, quantity: multi_line_status, unit: none, entity_scope: anchor}
-    lowering: [attacking_direction_normalization, goal_side_filter, ranked_compact_line_bands, target_rank_selection]
+    lowering: [player_track_coverage_gate, defender_identifiability_check, attacking_direction_normalization, goal_side_filter, ranked_compact_line_bands, target_rank_selection]
     claim_contract_ref: claim.observed_multi_line_model.v1
     evidence_contract_ref: evidence.observed_multi_line_model.v1
 
@@ -4610,8 +4610,8 @@ evidence_contracts:
   - id: evidence.observed_multi_line_model.v1
     kind: EvidenceContract
     display_name: Observed Multi-Line Model Evidence
-    description: Evidence required for ranked observed geometric line bands.
-    required: [anchor_id, anchor_frame_id, multi_line_status, multi_line_reason, line_evaluation_frame_id, target_line_rank, observed_line_count]
+    description: Evidence required for ranked observed geometric line bands, including the coverage and structural-identifiability witnesses that license FAIL.
+    required: [anchor_id, anchor_frame_id, multi_line_status, multi_line_reason, line_evaluation_frame_id, target_line_rank, observed_line_count, defender_observation_status, defender_observation_reason, observed_outfield_defender_count, valid_observed_outfield_defender_count, invalid_observed_outfield_defender_ids, required_observed_outfield_defender_count, player_track_coverage_status, player_track_coverage_reason, player_track_coverage_row_ids]
     optional: [observed_lines, selected_line, line_x_m, normalized_line_x_m, defensive_line_player_ids]
     replay_projection: [ball_marker, ranked_line_bands, selected_line_badge]
   - id: evidence.observed_pressure_on_carrier.v1

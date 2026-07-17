@@ -1,6 +1,6 @@
 {
   "passport_count": 48,
-  "passport_revision": "254d34439c1013f57575ea0a3fa835633f8fd8639132333f48afca9ad770f136",
+  "passport_revision": "c0dae440b8bec4a584a8f46cbb84c435493e7a34e957964615b4332ca4769ad7",
   "passports": [
     {
       "binding": {
@@ -8424,11 +8424,20 @@
           "required": [
             "anchor_frame_id",
             "anchor_id",
+            "defender_observation_reason",
+            "defender_observation_status",
+            "invalid_observed_outfield_defender_ids",
             "line_evaluation_frame_id",
             "multi_line_reason",
             "multi_line_status",
             "observed_line_count",
-            "target_line_rank"
+            "observed_outfield_defender_count",
+            "player_track_coverage_reason",
+            "player_track_coverage_row_ids",
+            "player_track_coverage_status",
+            "required_observed_outfield_defender_count",
+            "target_line_rank",
+            "valid_observed_outfield_defender_count"
           ]
         }
       ],
@@ -8500,14 +8509,16 @@
           "applicability": [
             "anchor_available",
             "ball_position_available",
-            "defending_outfield_positions_available"
+            "defending_outfield_positions_available",
+            "player_track_coverage_certified",
+            "defender_population_identifiable"
           ],
           "claim_contract_ref": "claim.observed_multi_line_model.v1",
           "concept_refs": [
             "concept.observed_multi_line_model"
           ],
           "created_from": [],
-          "description": "Fit ranked observed geometric defending line bands at supplied anchor frames.",
+          "description": "Fit ranked observed geometric defending line bands at supplied anchor frames only when manifest coverage and the declared defender-count floor make the rank identifiable.",
           "display_name": "Observed Multi-Line Model",
           "evidence_contract_ref": "evidence.observed_multi_line_model.v1",
           "id": "op.observed_multi_line_model.v1",
@@ -8557,6 +8568,8 @@
           ],
           "kind": "Operationalization",
           "lowering": [
+            "player_track_coverage_gate",
+            "defender_identifiability_check",
             "attacking_direction_normalization",
             "goal_side_filter",
             "ranked_compact_line_bands",
@@ -8604,7 +8617,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "c0c92e8e66a6d8e1aa288da370999eaba385bbd673db7da74669d1fccc6ecc97",
+      "passport_hash": "5929261f0a02cbb10e61732c0ca8300286fa02b190a6f786b4a704cd50763092",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -8623,7 +8636,16 @@
           "observed_line_count",
           "observed_lines",
           "line_x_m",
-          "defensive_line_player_ids"
+          "defensive_line_player_ids",
+          "defender_observation_status",
+          "defender_observation_reason",
+          "observed_outfield_defender_count",
+          "valid_observed_outfield_defender_count",
+          "invalid_observed_outfield_defender_ids",
+          "required_observed_outfield_defender_count",
+          "player_track_coverage_status",
+          "player_track_coverage_reason",
+          "player_track_coverage_row_ids"
         ],
         "executable": true,
         "inputs": [
@@ -8672,7 +8694,16 @@
               "selected_line",
               "line_x_m",
               "normalized_line_x_m",
-              "defensive_line_player_ids"
+              "defensive_line_player_ids",
+              "defender_observation_status",
+              "defender_observation_reason",
+              "observed_outfield_defender_count",
+              "valid_observed_outfield_defender_count",
+              "invalid_observed_outfield_defender_ids",
+              "required_observed_outfield_defender_count",
+              "player_track_coverage_status",
+              "player_track_coverage_reason",
+              "player_track_coverage_row_ids"
             ],
             "missing_data_semantics": "unknown",
             "name": "anchor_evaluations",
@@ -26787,16 +26818,16 @@
   "projection_id": "priori.capability_passport_projection.afl08",
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "60c440a78370d1e681a21076ee090d0898ece88d74b821684925254238d20f73",
+    "baseline_artifact_revision": "2106c32c5a837f90bcb322e9eac89480e1af637f3b34c0452d381322d97583b5",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "30453c87a335fe54f6f97e7d310bfe561cbd2480e2382894b8e2ff513a4e496c",
+    "lock_hash": "9ea3dbeeadba012ce64f3beeb4637448a3484f1c14fdb32c79b9e8c9e51a728e",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "e7354e2c236fd3701cc65d8d01229bf4bc357748761fd60084375e01bf9a366b",
+    "registry_revision": "0a989c48244f8275bfc67decdd9e6a25fe2594b9db34e6650a6a42e33f246218",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "372b23876fc4f9340db2e031e97a93b924c49befa9ea54351eea8432e9456368",
+    "runtime_manifest_revision": "6a77bb9a82d6a7f8fd431a77eeb38f5caa044e30abcdfa99fc4d6678ea0142b4",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"
