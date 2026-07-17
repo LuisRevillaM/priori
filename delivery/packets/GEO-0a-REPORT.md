@@ -7,7 +7,8 @@ Requested frontier: `ccfcefa3`
 Packet commit brought onto the frontier: `d9800654` (packet text only; its
 parent is `ccfcefa3`)
 
-Status: **IMPLEMENTED; CERTIFIED-RESULT STOP AUDIT IN PROGRESS; NOT PUSHED**
+Status: **IMPLEMENTED; CERTIFIED-RESULT STOP AUDIT PASS; COMMITTED LOCALLY;
+NOT PUSHED**
 
 ## Outcome
 
@@ -108,13 +109,29 @@ Fresh full R2-1 executions then matched byte-for-byte:
 | GEO-0a tree | `68d8100793a3cf907a177a7b25c5a7625b03691fb4855850ec40833702c47a30` | `15ddf8d7e1c998a35428993dbf020dc876fc148a9ef92f0a80c395597d301945` | PASS 145; FAIL 2,615; UNKNOWN 5,654; population 8,414 |
 
 The fenced committed R2-1 table was restored unchanged after the comparison.
-No re-certification occurred. R2-2/R2-4 fresh-result controls remain to be
-recorded below before final packet closure.
+No re-certification occurred.
+
+Fresh R2-2 and R2-4 producer controls also matched exactly:
+
+| Certified result | Untouched frontier | GEO-0a | Outcome |
+| --- | --- | --- | --- |
+| R2-2 fragile retention | table SHA `58e34c6ddc1971605d235c780c147783131ebad00400dfe8e3387a8fc48305cf`; period hash `1a263f547ac10216bfbf7e764e69547c3a0227392568f62830ca69e7f95bd7d2`; plan hash `df155f08757cc9e5b136ac6752c0bb0765c2cad5fe1a4d98baa4338518e84f6a` | exact same three hashes | PASS — all 14 rows reconcile; source population 8,414; A=145, B=77, C=54, D1=0, D2=2,560, E=5,578 |
+| R2-4 counterattack sequence | table SHA `68a81c8c8779048aa0d66e87c728fa5b4e3b4930bc5603080dad0e7cb1f8e163`; period hash `3fb270eda29fc14f57746491881afacaee388f7799284ee9f6caf2bf74416afd`; plan hash `d8179a5a1af54ecdd45514e4fa3403b3ab515977fb79dd29b4a62f2ecfd9bb7e` | exact same three hashes | PASS — 28 period records; population 2,811; PASS 1; FAIL 0; UNKNOWN 2,810 |
+
+R2-4 ran from external trees against identical absolute canonical/raw roots:
+GEO at `/private/tmp/priori-geo0a-89d6a0f6`, frontier at
+`/private/tmp/priori-geo0a-r24-frontier.QocgBI`. The elapsed sidecars differed
+(440.872s versus 433.947s), but timing is local, uncommitted, and not part of
+the certified tactical value.
 
 The GALLERY-2 committed check also reproduced 2,811 regain moments with
 1,204 defensive-third, 1,054 middle-third, 500 final-third, and 53
 location-UNKNOWN records; table semantic hash
 `e40f1abc02d142eb96b644e12841e6ac5714b60c1f94817aecfbeda2d482e97e`.
+The SHADOW/canonical-adapter tests passed with event, ball, possession, and
+player-track rows explicitly UNCERTIFIED for the gated fixture. Therefore the
+inventory of existing certified surfaces shows no value delta. **The packet's
+STOP condition does not fire.**
 
 ## Oracle and mutation evidence
 
@@ -138,15 +155,25 @@ tests passed. No mutation remains in the worktree.
 | Restored named law tests after mutation | PASS — 3 tests |
 | `compileall` over evidence/runtime and `git diff --check` | PASS |
 | Ruff | NOT RUN — `.venv/bin/ruff` is not installed |
-| First canonical `make test` | FAIL — 613 tests in 586.093s: 1 failure, 11 errors |
+| Fresh R2-1 frontier-vs-GEO control | PASS — exact table and period-record hashes |
+| Fresh R2-2 frontier-vs-GEO control | PASS — exact table, period, and plan hashes |
+| Fresh R2-4 frontier-vs-GEO control | PASS — exact table, period, and plan hashes |
+| GALLERY-2 committed producer `--check` | PASS — 2,811 moments reproduce |
+| First canonical `make test` before fixture fixes/commit | FAIL — 613 tests in 586.093s: 1 failure, 11 errors |
+| Committed-tree validation factory + destination-entry regression | PASS — 5 tests in 73.664s |
+| Final canonical `make test` on `89d6a0f6` | ENVIRONMENT-BLOCKED — 613 tests in 582.241s; 0 failures, 7 errors, 606 passes; attestation `VERIFIED` |
 
 The first broad run found three GEO fixture-constructor regressions, which are
 fixed by the fail-closed `PeriodState` default and explicit destination-entry
-fixture certification. Eight errors are sandbox `PermissionError` failures at
-localhost `WorkbenchServer` bind in `test_deploy1_public_mode` and
-`test_smoke1_honest_errors`. The validation-factory failure is its intentional
-dirty-runtime freeze guard and must be rerun from the committed tree. A final
-standing-suite result will replace this provisional disposition.
+fixture certification. Its validation-factory failure was the intentional
+dirty-runtime freeze guard; it passed after the runtime commit.
+
+The final broad run has no assertion failure and no GEO/runtime error. Its only
+seven errors are sandbox `PermissionError: [Errno 1] Operation not permitted`
+at localhost `WorkbenchServer` bind: five cases in
+`test_deploy1_public_mode` and two in `test_smoke1_honest_errors`. Product logic
+is not reached in those cases, so the canonical command is honestly reported
+as environment-blocked rather than PASS.
 
 An earlier focused invocation omitted `PYTHONPATH=src` and produced four import
 errors before executing tests. It is environment-invalid and not presented as
@@ -162,6 +189,8 @@ product evidence; the corrected 32-test invocation above passed.
   cherry-picked as `d9800654` so execution could follow the requested text.
 - Executor controls live outside the repository at
   `/private/tmp/priori-geo0a-baseline.lxDvry` and
-  `/private/tmp/priori-geo0a-proof.hPnEjY`.
+  `/private/tmp/priori-geo0a-proof.hPnEjY`. The committed executor clone is
+  `/private/tmp/priori-geo0a-89d6a0f6` at `89d6a0f6`.
+- Implementation commit: `89d6a0f6`.
 - No push, deploy, registry mutation, or external-service mutation occurred.
 - Pre-existing untracked files are not packet work and remain untouched.
