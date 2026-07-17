@@ -1,9 +1,14 @@
 # ADR 0019 — CAR v0: Continuity Above Replacement, computed honestly
 
-Date: 2026-07-18. Status: PROPOSED — awaiting OWNER ratification of
-(a) the definition and (b) the name-bearer fork. Metric definitions
-are vision calls; this ADR activates on the owner's word and not
-before.
+Date: 2026-07-18. Status: ACCEPTED — owner-ratified 2026-07-18: CAR names the
+RESIDUAL SUM; CAR100 ships as the mandatory companion. Owner's
+ratification note, preserved: the difficulty adjustment must live in
+the residual ("if any other player would have lost that ball and you
+kept it — I don't care if it's only once — that's still something")
+— confirmed as the design's core: the class-conditional baseline
+makes one heroic escape worth nearly a full possession above
+replacement, with honest intervals; within-class difficulty variance
+is the v0 limitation exposed, not denied.
 
 ## Provenance
 
