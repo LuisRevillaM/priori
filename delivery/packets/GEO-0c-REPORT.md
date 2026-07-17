@@ -7,7 +7,7 @@ Frontier: `38fe8bbd08f8a1f380a9d2acaee88fcd72fc1bbf`
 Executor clone: `/private/tmp/priori-geo0c-executor.Wt4y0h` (outside the
 repository tree)
 
-Status: **IMPLEMENTED — CERTIFIED VALUE-LEVEL STOP AUDIT CLEAR; FINAL SUITE PENDING**
+Status: **IMPLEMENTED — CERTIFIED VALUE-LEVEL STOP AUDIT CLEAR; FULL SUITE PASS**
 
 ## Design brief (authored before implementation)
 
@@ -142,7 +142,8 @@ or result is rewritten or re-certified on this branch.
 ## Implementation record
 
 The design was sealed first in `035cb02c`. Runtime implementation and the six
-direction tests landed in `f3319c97`.
+direction tests landed in `f3319c97`. The semantic contract and committed
+generated artifacts landed in `6bcb999f`.
 
 `multi_line_anchor_record` now evaluates the GEO-0a player-track coverage row,
 the known outfield population, coordinate validity, and the
@@ -218,7 +219,8 @@ bound-plan identity. Both frozen expectation files stayed byte-unchanged.
 | Q6 frontier-vs-GEO value comparison | PASS — exact values; disclosed bound-plan hash only |
 | Final SCP-0 generation/check | PASS — 58 tests; zero unapproved parity drift |
 | `compileall` and `git diff --check` | PASS |
-| Final canonical `make test` | PENDING |
+| Final canonical `make test` | PASS — 621 tests in 798.666 s; attestation `VERIFIED`; zero blockers |
+| Leg zero | PASS — charter, GEO-0a law, oracles, dev sets, and frozen AFL-09A expectations unchanged |
 
 ## Deviations and repository state
 
@@ -228,4 +230,8 @@ bound-plan identity. Both frozen expectation files stayed byte-unchanged.
   primary-worktree file was changed. Sandbox denial prevented restoring that
   branch pointer. All packet edits and commits are confined to the clone named
   above.
-- No push or external-service mutation will be attempted.
+- The broad suite exceeded five minutes; its exact 798.666-second duration is
+  reported rather than hidden.
+- Packet commits before this report-close commit are `035cb02c`, `f3319c97`,
+  and `6bcb999f`.
+- No push or external-service mutation was attempted.
