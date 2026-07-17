@@ -20,6 +20,7 @@ from tqe.runtime.ir import (
     TypedValue,
     Unit,
 )
+from tqe.runtime.field_references import migrate_catalog_field_references
 
 LANE_PARTITION_LIMITATION = (
     "Lane outputs use the shared five-equal-lanes model on a 68m pitch: "
@@ -6136,8 +6137,12 @@ def default_operators() -> list[OperatorSignature]:
 
 
 def default_catalog() -> CapabilityCatalog:
-    primitives = declare_anchor_evaluation_coverage(default_primitives())
-    relations = declare_anchor_evaluation_coverage(default_relations())
+    primitives = migrate_catalog_field_references(
+        declare_anchor_evaluation_coverage(default_primitives())
+    )
+    relations = migrate_catalog_field_references(
+        declare_anchor_evaluation_coverage(default_relations())
+    )
     return CapabilityCatalog(
         primitives=primitives,
         relations=relations,

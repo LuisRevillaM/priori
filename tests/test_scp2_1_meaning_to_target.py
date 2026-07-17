@@ -284,9 +284,18 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
             "right_start_frame_field",
             "right_end_frame_field",
         ):
-            self.assertEqual("none", join_node["parameters"][parameter]["value"])
-        self.assertEqual("anchor_id", join_node["parameters"]["left_anchor_id_field"]["value"])
-        self.assertEqual("anchor_frame_id", join_node["parameters"]["left_frame_field"]["value"])
+            self.assertEqual(
+                {"kind": "frame", "field": None},
+                join_node["parameters"][parameter]["value"],
+            )
+        self.assertEqual(
+            {"kind": "provenance", "field": "anchor_id"},
+            join_node["parameters"]["left_anchor_id_field"]["value"],
+        )
+        self.assertEqual(
+            {"kind": "frame", "field": "anchor_frame_id"},
+            join_node["parameters"]["left_frame_field"]["value"],
+        )
 
         bind_document(TacticalQueryDocument.model_validate(build["document"]))
 

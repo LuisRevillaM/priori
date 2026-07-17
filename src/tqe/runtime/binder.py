@@ -10,6 +10,7 @@ from typing import Any
 from pydantic import ValidationError
 
 from tqe.runtime.catalog import default_catalog
+from tqe.runtime.field_references import legacy_operator_signature
 from tqe.runtime.ir import (
     BindIssue,
     BoundCatalogNode,
@@ -46,7 +47,10 @@ from tqe.runtime.ir import (
     TypedArgument,
     TypedValue,
     Unit,
+    field_reference,
+    field_reference_name,
     model_payload,
+    parameter_accepts_payload,
     stable_hash,
 )
 from tqe.runtime.operators import (
@@ -344,7 +348,7 @@ class Binder:
     def _validate_parameter_value(
         self, parameter: ParameterDefinition, value: TypedValue, path: str
     ) -> None:
-        if value.payload_type != parameter.payload_type:
+        if not parameter_accepts_payload(parameter, value):
             self._issue(
                 "parameter_payload_mismatch",
                 (
@@ -353,6 +357,18 @@ class Binder:
                 ),
                 path,
             )
+            return
+        if value.payload_type == PayloadType.FIELD_REF:
+            reference = field_reference(value)
+            if reference.kind != parameter.field_reference_kind:
+                self._issue(
+                    "parameter_field_reference_kind_mismatch",
+                    (
+                        f"parameter {parameter.name} expects "
+                        f"{parameter.field_reference_kind.value}, got {reference.kind.value}"
+                    ),
+                    path,
+                )
         if value.unit != parameter.unit:
             self._issue(
                 "parameter_unit_mismatch",
@@ -379,6 +395,20 @@ class Binder:
                 (
                     f"parameter {parameter.name} must be one of "
                     f"{sorted(parameter.allowed_values)}, got {value.value}"
+                ),
+                path,
+            )
+        if (
+            value.payload_type == PayloadType.ENUM
+            and parameter.payload_type == PayloadType.FIELD_REF
+            and parameter.legacy_allowed_values is not None
+            and str(value.value) not in set(parameter.legacy_allowed_values)
+        ):
+            self._issue(
+                "parameter_value_not_allowed",
+                (
+                    f"parameter {parameter.name} legacy enum must be one of "
+                    f"{sorted(parameter.legacy_allowed_values)}, got {value.value}"
                 ),
                 path,
             )
@@ -456,6 +486,13 @@ class Binder:
             if value is not None:
                 self._validate_parameter_value(parameter, value, f"{path}.parameters.{name}")
                 resolved_node_parameters[name] = value
+
+        self._validate_catalog_field_parameters(
+            entry=entry,
+            bound_inputs=bound_inputs,
+            resolved_parameters=resolved_node_parameters,
+            path=path,
+        )
 
         bound = BoundCatalogNode(
             kind=node.kind,
@@ -601,10 +638,16 @@ class Binder:
             )
             return
 
+        bound_signature = signature
+        if not any(
+            value.payload_type == PayloadType.FIELD_REF
+            for value in resolved_node_parameters.values()
+        ):
+            bound_signature = legacy_operator_signature(signature)
         bound = BoundOperatorNode(
             node_id=node.node_id,
             operator=node.operator,
-            operator_signature=signature,
+            operator_signature=bound_signature,
             inputs={name: reference for name, (reference, _) in bound_inputs.items()},
             input_types={name: output for name, (_, output) in bound_inputs.items()},
             outputs=outputs,
@@ -751,7 +794,7 @@ class Binder:
             value = resolved_parameters.get(parameter.name)
             if value is None:
                 continue
-            field_name = str(value.value)
+            field_name = field_reference_name(value)
             if field_name == "none":
                 continue
             if field_name not in declared_fields:
@@ -783,6 +826,39 @@ class Binder:
                         ),
                         f"{path}.parameters.{parameter.name}",
                     )
+
+    def _validate_catalog_field_parameters(
+        self,
+        *,
+        entry: CatalogEntry,
+        bound_inputs: dict[str, tuple[SignalRef, CatalogOutput]],
+        resolved_parameters: dict[str, TypedValue],
+        path: str,
+    ) -> None:
+        if not bound_inputs:
+            return
+        declared_fields: set[str] = set()
+        for _, output in bound_inputs.values():
+            declared_fields.add(output.name)
+            declared_fields.update(output.evidence_fields)
+        for parameter in entry.parameters:
+            if parameter.payload_type != PayloadType.FIELD_REF:
+                continue
+            value = resolved_parameters.get(parameter.name)
+            if value is None or value.payload_type != PayloadType.FIELD_REF:
+                continue
+            field_name = field_reference_name(value)
+            if field_name == "none":
+                continue
+            if field_name not in declared_fields:
+                self._issue(
+                    "catalog_field_parameter_not_in_input",
+                    (
+                        f"{entry.name}@{entry.version} parameter {parameter.name} "
+                        f"references field {field_name}, but no bound input declares it"
+                    ),
+                    f"{path}.parameters.{parameter.name}",
+                )
 
     def _validate_declared_join_constraints(
         self,

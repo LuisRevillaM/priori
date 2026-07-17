@@ -1,9 +1,9 @@
 /* eslint-disable */
 // Generated from Pydantic TacticalQuerySchemaBundle.
-// schema_sha256: d2ef471238eb562a51d6261b972484ae74e6f50269c61096ca29acbb0f694dac
+// schema_sha256: aaf92d790d52ad474390cf81c4f8a83328000e5e343beb1637f671f44eee7af0
 
 export type TemporalContainer = 'scalar' | 'frame_signal' | 'episode_set' | 'relation_episode_set';
-export type PayloadType = 'boolean' | 'number' | 'enum' | 'anchor_ref' | 'entity_ref' | 'team_ref' | 'region_ref' | 'point' | 'entity_set' | 'relation_ref';
+export type PayloadType = 'boolean' | 'number' | 'enum' | 'anchor_ref' | 'entity_ref' | 'team_ref' | 'region_ref' | 'point' | 'entity_set' | 'relation_ref' | 'field_ref';
 export type Cardinality = 'single' | 'per_player' | 'per_team' | 'collection';
 export type Unit = 'none' | 'metre' | 'second' | 'millisecond' | 'frame' | 'fraction' | 'hertz' | 'count';
 export type EntityScope = 'none' | 'anchor' | 'ball' | 'player' | 'team' | 'match' | 'possession' | 'frame' | 'relation';
@@ -11,6 +11,7 @@ export type MissingDataSemantics = 'unknown' | 'quality_fail' | 'not_applicable'
 export type UnknownEvidencePolicy = 'exclude_candidate' | 'include_with_warning' | 'invalidate_execution';
 export type ExecutionMode = 'bind_only' | 'dry_run' | 'execute';
 export type PlanStatus = 'approved' | 'experimental';
+export type FieldReferenceKind = 'frame' | 'entity' | 'point' | 'status' | 'provenance';
 
 export type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
 
@@ -18,6 +19,11 @@ export interface TypedValue {
   payload_type: PayloadType;
   value: JsonValue;
   unit?: Unit;
+}
+
+export interface FieldReference {
+  kind: FieldReferenceKind;
+  field?: string | null;
 }
 
 export interface ParameterRef {
@@ -36,6 +42,9 @@ export interface ParameterDefinition {
   minimum?: number;
   maximum?: number;
   allowed_values?: string[];
+  field_reference_kind?: FieldReferenceKind;
+  allow_legacy_enum?: boolean;
+  legacy_allowed_values?: string[];
   description: string;
 }
 

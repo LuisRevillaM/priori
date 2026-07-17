@@ -507,8 +507,17 @@ def _signature_mismatch(
 def _parameter_signature_mismatch(semantic_field: Any, runtime_parameter: dict[str, Any]) -> list[str]:
     semantic_type = semantic_field.type
     semantic_payload = _type_value_to_runtime(semantic_type.value)
+    legacy_field_reference = (
+        semantic_payload == "enum"
+        and runtime_parameter.get("payload_type") == "field_ref"
+        and runtime_parameter.get("allow_legacy_enum") is True
+    )
     mismatches: list[str] = []
-    if semantic_payload != "any" and semantic_payload != runtime_parameter.get("payload_type"):
+    if (
+        not legacy_field_reference
+        and semantic_payload != "any"
+        and semantic_payload != runtime_parameter.get("payload_type")
+    ):
         mismatches.append(
             f"payload {semantic_payload} != {runtime_parameter.get('payload_type')}"
         )
@@ -530,9 +539,14 @@ def _parameter_signature_mismatch(semantic_field: Any, runtime_parameter: dict[s
         ("allowed_values", "allowed_values"),
     ):
         semantic_value = getattr(semantic_field, attr, None)
-        runtime_has_value = runtime_key in runtime_parameter
+        comparison_key = (
+            "legacy_allowed_values"
+            if legacy_field_reference and runtime_key == "allowed_values"
+            else runtime_key
+        )
+        runtime_has_value = comparison_key in runtime_parameter
         if semantic_value is not None or runtime_has_value:
-            runtime_value = runtime_parameter.get(runtime_key)
+            runtime_value = runtime_parameter.get(comparison_key)
             if semantic_value != runtime_value:
                 mismatches.append(f"{runtime_key} {semantic_value} != {runtime_value}")
     return mismatches
@@ -2392,11 +2406,23 @@ def validate_projection_identities(
 
 
 def _canonical_fields(fields: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    def compatibility_payload(item: dict[str, Any]) -> tuple[Any, Any]:
+        if (
+            item.get("payload_type") == "field_ref"
+            and item.get("allow_legacy_enum") is True
+        ):
+            # Projection parity tracks the accepted contract. GEO-0b is
+            # typed-write/dual-read, so its legacy enum spelling remains the
+            # stable compatibility face while generated authoring artifacts
+            # advertise the structured field reference.
+            return "enum", item.get("legacy_allowed_values")
+        return item.get("payload_type"), item.get("allowed_values")
+
     return sorted(
         [
             {
                 "name": item.get("name"),
-                "payload_type": item.get("payload_type"),
+                "payload_type": compatibility_payload(item)[0],
                 "temporal_type": item.get("temporal_type"),
                 "unit": item.get("unit", "none"),
                 "cardinality": item.get("cardinality"),
@@ -2404,7 +2430,7 @@ def _canonical_fields(fields: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "required": item.get("required", False),
                 "missing_data_semantics": item.get("missing_data_semantics"),
                 "evidence_fields": sorted(item.get("evidence_fields", [])),
-                "allowed_values": item.get("allowed_values"),
+                "allowed_values": compatibility_payload(item)[1],
             }
             for item in fields
         ],

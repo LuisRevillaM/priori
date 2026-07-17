@@ -40,6 +40,15 @@ class PayloadType(StrEnum):
     POINT = "point"
     ENTITY_SET = "entity_set"
     RELATION_REF = "relation_ref"
+    FIELD_REF = "field_ref"
+
+
+class FieldReferenceKind(StrEnum):
+    FRAME = "frame"
+    ENTITY = "entity"
+    POINT = "point"
+    STATUS = "status"
+    PROVENANCE = "provenance"
 
 
 class Cardinality(StrEnum):
@@ -120,6 +129,14 @@ class BindIssue(StrictModel):
     path: str
 
 
+class FieldReference(StrictModel):
+    kind: FieldReferenceKind
+    field: str | None = Field(default=None, pattern=r"^[a-z][a-z0-9_]*$")
+
+    def __str__(self) -> str:
+        return self.field or "none"
+
+
 class TypedValue(StrictModel):
     payload_type: PayloadType
     value: Any
@@ -141,6 +158,11 @@ class TypedValue(StrictModel):
             PayloadType.RELATION_REF,
         } and not isinstance(self.value, str):
             raise ValueError(f"{self.payload_type.value} typed values must contain a string")
+        if self.payload_type == PayloadType.FIELD_REF:
+            reference = FieldReference.model_validate(self.value)
+            object.__setattr__(self, "value", reference)
+            if self.unit != Unit.NONE:
+                raise ValueError("field_ref typed values must use unit none")
         if self.payload_type == PayloadType.POINT:
             if (
                 not isinstance(self.value, dict)
@@ -156,6 +178,20 @@ class TypedValue(StrictModel):
         return self
 
 
+def field_reference(value: TypedValue) -> FieldReference:
+    if value.payload_type != PayloadType.FIELD_REF:
+        raise ValueError(f"expected field_ref, got {value.payload_type.value}")
+    if isinstance(value.value, FieldReference):
+        return value.value
+    return FieldReference.model_validate(value.value)
+
+
+def field_reference_name(value: TypedValue, *, none_sentinel: str = "none") -> str:
+    if value.payload_type != PayloadType.FIELD_REF:
+        return str(value.value)
+    return field_reference(value).field or none_sentinel
+
+
 class ParameterDefinition(StrictModel):
     name: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
     payload_type: PayloadType
@@ -165,6 +201,9 @@ class ParameterDefinition(StrictModel):
     minimum: float | None = None
     maximum: float | None = None
     allowed_values: list[str] | None = None
+    field_reference_kind: FieldReferenceKind | None = None
+    allow_legacy_enum: bool | None = None
+    legacy_allowed_values: list[str] | None = None
     description: str
 
     @model_validator(mode="after")
@@ -173,11 +212,27 @@ class ParameterDefinition(StrictModel):
             raise ValueError("parameter minimum cannot exceed maximum")
         if self.allowed_values is not None and self.payload_type != PayloadType.ENUM:
             raise ValueError("allowed_values can only be declared for enum parameters")
+        if self.payload_type == PayloadType.FIELD_REF:
+            if self.field_reference_kind is None:
+                raise ValueError("field_ref parameters must declare field_reference_kind")
+            if self.legacy_allowed_values is not None and not self.allow_legacy_enum:
+                raise ValueError("legacy_allowed_values requires allow_legacy_enum")
+        elif (
+            self.field_reference_kind is not None
+            or self.allow_legacy_enum
+            or self.legacy_allowed_values is not None
+        ):
+            raise ValueError("field reference compatibility applies only to field_ref parameters")
         if self.default is None:
             if not self.required:
                 raise ValueError("non-required parameters must declare a default")
             return self
-        if self.default.payload_type != self.payload_type:
+        default_is_legacy = (
+            self.payload_type == PayloadType.FIELD_REF
+            and self.allow_legacy_enum
+            and self.default.payload_type == PayloadType.ENUM
+        )
+        if self.default.payload_type != self.payload_type and not default_is_legacy:
             raise ValueError("parameter default payload_type must match definition")
         if self.default.unit != self.unit:
             raise ValueError("parameter default unit must match definition")
@@ -189,7 +244,27 @@ class ParameterDefinition(StrictModel):
                 raise ValueError("parameter default is above maximum")
         if self.allowed_values is not None and str(self.default.value) not in set(self.allowed_values):
             raise ValueError("parameter default is not in allowed_values")
+        if (
+            default_is_legacy
+            and self.legacy_allowed_values is not None
+            and str(self.default.value) not in set(self.legacy_allowed_values)
+        ):
+            raise ValueError("legacy field reference default is not in legacy_allowed_values")
+        if self.default.payload_type == PayloadType.FIELD_REF:
+            reference = field_reference(self.default)
+            if reference.kind != self.field_reference_kind:
+                raise ValueError("field reference default kind must match definition")
         return self
+
+
+def parameter_accepts_payload(parameter: ParameterDefinition, value: TypedValue) -> bool:
+    if value.payload_type == parameter.payload_type:
+        return True
+    return (
+        parameter.payload_type == PayloadType.FIELD_REF
+        and parameter.allow_legacy_enum
+        and value.payload_type == PayloadType.ENUM
+    )
 
 
 class QueryInvocation(StrictModel):

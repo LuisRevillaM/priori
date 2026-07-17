@@ -324,8 +324,14 @@ class DeltaAcrossAnchorTests(unittest.TestCase):
         parameters = operator_nodes[0]["parameters"]
         self.assertEqual("nearest_defender_distance_m", parameters["before_value_field"]["value"])
         self.assertEqual("nearest_defender_distance_m", parameters["after_value_field"]["value"])
-        self.assertEqual("pressure_frame_id", parameters["before_frame_field"]["value"])
-        self.assertEqual("pressure_frame_id", parameters["after_frame_field"]["value"])
+        self.assertEqual(
+            {"kind": "frame", "field": "pressure_frame_id"},
+            parameters["before_frame_field"]["value"],
+        )
+        self.assertEqual(
+            {"kind": "frame", "field": "pressure_frame_id"},
+            parameters["after_frame_field"]["value"],
+        )
         self.assertEqual("physical_release_frame_id", build.metadata["delta_across_anchor_constraint"]["before_frame_field"])
         self.assertEqual("controlled_reception_frame_id", build.metadata["delta_across_anchor_constraint"]["after_frame_field"])
         self.assertEqual("pressure_frame_id", build.metadata["delta_across_anchor_constraint"]["before_record_frame_field"])
@@ -341,7 +347,8 @@ class DeltaAcrossAnchorTests(unittest.TestCase):
         pressure_nodes = [node for node in build.nodes if node.get("catalog_ref") == "pressure_on_carrier"]
         self.assertEqual(2, len(pressure_nodes))
         contexts = {
-            node["parameters"]["frame_field"]["value"]: node["parameters"]["carrier_id_field"]["value"]
+            node["parameters"]["frame_field"]["value"]["field"]:
+            node["parameters"]["carrier_id_field"]["value"]["field"]
             for node in pressure_nodes
         }
         self.assertEqual(

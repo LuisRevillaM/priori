@@ -58,6 +58,7 @@ from tqe.runtime.ir import (
     TypedValue,
     Unit,
     UnknownEvidencePolicy,
+    field_reference_name,
     stable_hash,
 )
 from tqe.runtime.operators import OperatorImplementation, OperatorKey, build_operator_registry
@@ -3787,9 +3788,13 @@ def node_parameter_integer(node: BoundCatalogNode, name: str) -> int:
 
 def node_parameter_text(node: BoundCatalogNode, name: str) -> str:
     value = required_node_parameter(node, name)
-    if value.payload_type not in {PayloadType.ENUM, PayloadType.RELATION_REF}:
+    if value.payload_type not in {
+        PayloadType.ENUM,
+        PayloadType.RELATION_REF,
+        PayloadType.FIELD_REF,
+    }:
         raise RuntimeError(f"{node.catalog_ref}.{node.node_id}.{name} must be textual")
-    return str(value.value)
+    return field_reference_name(value)
 
 
 def required_node_parameter(node: BoundCatalogNode, name: str) -> TypedValue:
