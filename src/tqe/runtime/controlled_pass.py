@@ -16,6 +16,7 @@ from typing import Any
 
 import pandas as pd
 
+from tqe.evidence.observation_manifest import ObservationCoverage
 
 BALL_ENTITY_ID = "DFL-OBJ-0000XT"
 DEFAULT_CANONICAL_ROOT = Path("data/canonical/v1")
@@ -145,6 +146,7 @@ def evaluate_controlled_passes(
                 positions=positions,
                 attack_x_sign_by_role=attack_x_signs(orientation, match_id, period),
                 config=config,
+                observation_coverage=ObservationCoverage.for_canonical_root(canonical_root),
             )
             for event in period_candidates:
                 episode, evaluation = evaluate_candidate(event, context)
@@ -207,6 +209,7 @@ class PeriodControlContext:
         positions: pd.DataFrame,
         attack_x_sign_by_role: dict[str, int],
         config: ControlledPassConfig,
+        observation_coverage: ObservationCoverage | None = None,
     ) -> None:
         self.match_id = match_id
         self.period = period
@@ -214,6 +217,7 @@ class PeriodControlContext:
         self.positions = positions
         self.attack_x_sign_by_role = attack_x_sign_by_role
         self.config = config
+        self.observation_coverage = observation_coverage or ObservationCoverage.from_path(None)
         self.analysis_rate_hz = period_analysis_rate(frames)
         self.frame_ids = [int(item) for item in frames["frame_id"].tolist()]
         self.frame_index_by_id = {frame_id: index for index, frame_id in enumerate(self.frame_ids)}

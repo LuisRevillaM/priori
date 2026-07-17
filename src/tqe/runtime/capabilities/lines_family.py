@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from tqe.evidence.observation_manifest import ObservationModality, gate_state_absence_status
 from tqe.runtime.controlled_line_break import (
     ControlledLineBreakConfig,
     evaluate_controlled_line_break_episode,
@@ -235,6 +236,16 @@ def multi_line_anchor_record(
     else:
         status = "PASS"
         reason = "target_line_rank_observed"
+    if status == "FAIL":
+        gated = gate_state_absence_status(
+            state=state,
+            start_frame_id=evaluation_frame_id,
+            end_frame_id=evaluation_frame_id,
+            modalities=(ObservationModality.PLAYER_TRACK,),
+            status=status,
+            reason=reason,
+        )
+        status, reason = gated.status, gated.reason
     return multi_line_payload_from_anchor(
         state=state,
         anchor=anchor,
@@ -337,6 +348,17 @@ def defensive_line_anchor_record(
     )
     payload = evaluation.to_dict()
     line_status = str(payload["status"])
+    line_reason = str(payload["reason"])
+    if line_status == "FAIL" and line_reason == "no_qualifying_line":
+        gated = gate_state_absence_status(
+            state=state,
+            start_frame_id=line_evaluation_frame_id,
+            end_frame_id=line_evaluation_frame_id,
+            modalities=(ObservationModality.PLAYER_TRACK,),
+            status=line_status,
+            reason=line_reason,
+        )
+        line_status, line_reason = gated.status, gated.reason
     return {
         **anchor,
         "match_id": state.match_id,
@@ -361,7 +383,7 @@ def defensive_line_anchor_record(
         "line_evaluation_frame_field": anchor_frame_field,
         "line_evaluation_frame_id": line_evaluation_frame_id,
         "line_status": line_status,
-        "line_reason": payload["reason"],
+        "line_reason": line_reason,
         "line_type": payload["line_type"],
         "selected_band_id": payload["selected_band_id"],
         "line_x_m": payload["line_x_m"],

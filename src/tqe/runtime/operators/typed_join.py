@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from tqe.evidence.observation_manifest import ObservationModality, gate_state_absence_status
 from tqe.runtime.ir import (
     Cardinality,
     CompositionOperatorSignature,
@@ -393,6 +394,26 @@ def execute_typed_join(
                 continue
             status = "FAIL" if no_match_policy == "FAIL" else "UNKNOWN"
             reason = "join_counterpart_missing_fail" if status == "FAIL" else "join_counterpart_missing_unknown"
+            left_start = _record_frame_id(left, fields.left_start_frame_field)
+            left_end = _record_frame_id(left, fields.left_end_frame_field)
+            left_frame = _record_frame_id(left, fields.left_frame_field)
+            window_start = left_start if left_start is not None else left_frame
+            window_end = left_end if left_end is not None else left_frame
+            if status == "FAIL" and window_start is not None and window_end is not None:
+                gated = gate_state_absence_status(
+                    state=state,
+                    start_frame_id=window_start,
+                    end_frame_id=window_end,
+                    modalities=(
+                        ObservationModality.EVENT,
+                        ObservationModality.BALL,
+                        ObservationModality.POSSESSION,
+                        ObservationModality.PLAYER_TRACK,
+                    ),
+                    status=status,
+                    reason=reason,
+                )
+                status, reason = gated.status, gated.reason
             records.append(
                 _join_record(
                     state=state,

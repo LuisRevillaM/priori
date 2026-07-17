@@ -27,6 +27,11 @@ import pandas as pd
 import pyarrow.parquet as pq
 from lxml import etree
 
+from tqe.evidence.observation_manifest import (
+    ObservationCoverage,
+    ObservationModality,
+    gate_absence_status,
+)
 from tqe.idsse.source_lock import SOURCE_VERSION
 from tqe.runtime.binder import HOST_RUNTIME_PARAMETER_DEFAULTS, bind_document_from_path
 from tqe.runtime.capabilities import (
@@ -130,6 +135,9 @@ class PeriodState:
     defender_count: pd.Series
     defender_centroid_y: pd.Series
     canonical_data_manifest_hash: str = ""
+    observation_coverage: ObservationCoverage = field(
+        default_factory=lambda: ObservationCoverage.from_path(None)
+    )
     signals: dict[str, Any] = field(default_factory=dict)
     runtime_values: dict[str, dict[str, RuntimeValue]] = field(default_factory=dict)
     candidates: list[dict[str, Any]] = field(default_factory=list)
@@ -313,9 +321,14 @@ class TacticalQueryExecutor:
         parallel_workers: int | None = None,
         progress_callback: Callable[[dict[str, Any]], None] | None = None,
         progress_log: bool | None = None,
+        observation_manifest_path: Path | None = None,
     ) -> None:
         self.canonical_root = canonical_root
         self.raw_root = raw_root
+        self.observation_coverage = ObservationCoverage.for_canonical_root(
+            canonical_root,
+            manifest_path=observation_manifest_path,
+        )
         self.canonical_data_manifest_hash = canonical_data_manifest_hash(canonical_root)
         if compatibility_profile not in {GENERIC_EXECUTION_PROFILE, legacy_m1.LEGACY_M1_PARITY_PROFILE}:
             raise RuntimeError(f"Unsupported compatibility profile {compatibility_profile}")
@@ -1009,6 +1022,7 @@ class TacticalQueryExecutor:
                 match_id=match_id,
                 period=period,
             ),
+            observation_coverage=self.observation_coverage,
             canonical_data_manifest_hash=self.canonical_data_manifest_hash,
             positions=positions,
             frame_ids=frame_ids,
@@ -1375,6 +1389,7 @@ def data_scope_manifest_entries(
     period: str,
 ) -> list[dict[str, Any]]:
     paths = [
+        canonical_root / "observation-manifest.json",
         canonical_root / "positions" / f"match_id={match_id}" / f"period={period}.parquet",
         canonical_root / "frames" / f"match_id={match_id}" / f"period={period}.parquet",
         canonical_root / "frame_state" / f"match_id={match_id}" / f"period={period}.parquet",
@@ -3516,6 +3531,7 @@ def predicate_traces_from_declared_runtime_outputs(
             anchor=anchor,
             result_id=result_id,
             common_evidence=common,
+            observation_coverage=state.observation_coverage,
         )
         if trace is not None:
             traces.append(trace)
@@ -3553,6 +3569,7 @@ def predicate_trace_from_runtime_value(
     anchor: RuntimeAnchor,
     result_id: str,
     common_evidence: dict[str, Any],
+    observation_coverage: ObservationCoverage | None = None,
 ) -> PredicateTrace | None:
     source_evidence = {
         **common_evidence,
@@ -3626,6 +3643,25 @@ def predicate_trace_from_runtime_value(
             status = "PASS" if matched is not None else "FAIL"
             matched_window = matched
             reason = None
+        if status == "FAIL" and matched is None and observation_coverage is not None:
+            gated = gate_absence_status(
+                coverage=observation_coverage,
+                match_id=anchor.match_id,
+                period=anchor.period,
+                start_frame_id=anchor.anchor_frame_id,
+                end_frame_id=anchor.anchor_frame_id,
+                modalities=(
+                    ObservationModality.EVENT,
+                    ObservationModality.BALL,
+                    ObservationModality.POSSESSION,
+                    ObservationModality.PLAYER_TRACK,
+                ),
+                status=status,
+                reason="temporal_episode_absent_at_anchor",
+            )
+            if gated.status == "UNKNOWN":
+                status = gated.status
+                reason = gated.reason
         return PredicateTrace(
             predicate_id=node.node_id,
             status=status,

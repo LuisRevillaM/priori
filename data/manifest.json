@@ -1,5 +1,5 @@
 {
-  "file_count": 60,
+  "file_count": 61,
   "files": [
     {
       "path": "data/canonical/v1/events/match_id=J03WMX.parquet",
@@ -110,6 +110,11 @@
       "path": "data/canonical/v1/matches.parquet",
       "sha256": "158c1fa975d9883ac08eba1ca5f8a0c9d01d7b8e23272062c3e2ea985085601e",
       "size": 3663
+    },
+    {
+      "path": "data/canonical/v1/observation-manifest.json",
+      "sha256": "ad8d629058958300b41cd16964740fb3b4aeee399c95465bdd072221c67b9341",
+      "size": 18477
     },
     {
       "path": "data/canonical/v1/orientation.parquet",

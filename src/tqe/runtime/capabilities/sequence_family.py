@@ -13,6 +13,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+from tqe.evidence.observation_manifest import ObservationModality, gate_state_absence_status
 from tqe.runtime.executor import (
     FRAME_RATE_HZ,
     PeriodState,
@@ -353,6 +354,7 @@ def carry_episode_anchor_record(
         return None
     maximum_end_frame_id = int(start_frame_id + math.ceil(maximum_carry_seconds * FRAME_RATE_HZ - 1e-9))
     terminal = terminal_pass_after_reception(
+        state=state,
         start_pass=start_pass,
         pass_records=pass_records,
         carrier_id=carrier_id,
@@ -486,6 +488,7 @@ def carry_episode_anchor_record(
 
 def terminal_pass_after_reception(
     *,
+    state: PeriodState,
     start_pass: dict[str, Any],
     pass_records: list[dict[str, Any]],
     carrier_id: str,
@@ -506,7 +509,15 @@ def terminal_pass_after_reception(
         if str(candidate.get("passer_id") or "") != carrier_id or str(candidate.get("team_role") or "") != team_role:
             return {"status": "FAIL", "reason": "next_confirmed_pass_by_other_player", "record": candidate}
         return {"status": "PASS", "reason": "terminal_same_player_pass", "record": candidate}
-    return {"status": "FAIL", "reason": "terminal_pass_not_found_within_window", "record": None}
+    gated = gate_state_absence_status(
+        state=state,
+        start_frame_id=start_frame_id,
+        end_frame_id=maximum_end_frame_id,
+        modalities=(ObservationModality.EVENT, ObservationModality.PLAYER_TRACK),
+        status="FAIL",
+        reason="terminal_pass_not_found_within_window",
+    )
+    return {"status": gated.status, "reason": gated.reason, "record": None}
 
 
 def carry_possession_continuity(

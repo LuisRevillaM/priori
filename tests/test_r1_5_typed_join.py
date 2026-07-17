@@ -5,6 +5,13 @@ import unittest
 from pathlib import Path
 from types import SimpleNamespace
 
+from tqe.evidence.observation_manifest import (
+    ObservationCoverage,
+    ObservationCoverageRow,
+    ObservationManifestDocument,
+    ObservationModality,
+    ObservationWindow,
+)
 from tqe.runtime.binder import BindError, bind_document, bind_error_codes
 from tqe.runtime.executor import TacticalQueryExecutor, execution_result_rows
 from tqe.runtime.ir import CatalogOutput, MissingDataSemantics, TacticalQueryDocument, TypedValue
@@ -94,6 +101,31 @@ def operator_node() -> SimpleNamespace:
     )
 
 
+def certified_observation_coverage() -> ObservationCoverage:
+    rows = tuple(
+        ObservationCoverageRow(
+            row_id=f"TST:firstHalf:{modality.value}",
+            modality=modality,
+            match_id="TST",
+            period="firstHalf",
+            window=ObservationWindow(start_frame_id=0, end_frame_id=1_000_000),
+            status="CERTIFIED",
+            reason="synthetic fixture declares complete observation",
+            provenance_token="test:TST:firstHalf",
+        )
+        for modality in ObservationModality
+    )
+    return ObservationCoverage(
+        ObservationManifestDocument(
+            schema_version="tqe.observation_manifest.v1",
+            manifest_id="typed-join-test-certified",
+            producer="test",
+            rows=rows,
+        ),
+        manifest_path=None,
+    )
+
+
 def run_join(
     left: list[dict[str, object]],
     right: list[dict[str, object]],
@@ -110,7 +142,12 @@ def run_join(
     left_required_status: str | None = None,
     right_required_status: str | None = None,
 ) -> dict[str, object]:
-    state = SimpleNamespace(match_id="TST", period="firstHalf", signals={})
+    state = SimpleNamespace(
+        match_id="TST",
+        period="firstHalf",
+        signals={},
+        observation_coverage=certified_observation_coverage(),
+    )
     execute_typed_join(
         state=state,
         node=operator_node(),
