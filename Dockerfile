@@ -91,6 +91,7 @@ COPY delivery/n1d/n1d-canonical-freeze-manifest.json ./delivery/n1d/n1d-canonica
 COPY delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json ./delivery/packets/r2-2-flagship/fragile_retention_rate_v0.json
 COPY delivery/packets/r2-2-flagship/fragile_retention_rate_table.json ./delivery/packets/r2-2-flagship/fragile_retention_rate_table.json
 COPY delivery/packets/r2-4-flagship/meaning-expressions/counterattack_initiation_sequence_rate.v0.json ./delivery/packets/r2-4-flagship/meaning-expressions/counterattack_initiation_sequence_rate.v0.json
+COPY delivery/packets/gallery-2-pressing-map/ ./delivery/packets/gallery-2-pressing-map/
 COPY delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_v0.json ./delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_v0.json
 COPY delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json ./delivery/packets/scp2-3-evidence/witness-plan/counterattack_initiation_table.json
 COPY --from=frontend /app/apps/workbench-alpha/dist ./apps/workbench-alpha/dist
