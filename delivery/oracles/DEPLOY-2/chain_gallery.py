@@ -36,6 +36,10 @@ def main() -> int:
     fails = []
     if state != "ready":
         fails.append(f"state={state}")
+    for rec in boot.get("prewarm_records") or []:
+        reason = str(rec.get("reason_code") or "")
+        if "ABSENT" in reason or "MISSING" in reason.upper():
+            fails.append(f"flagship {rec.get('key')} reports {reason} — the image or disk forgot its evidence")
     ans = boot.get("answer") or {}
     moments = ans.get("moments") or []
     if len(moments) < 2:

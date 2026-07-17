@@ -1,7 +1,7 @@
 # STATE — Entrelíneas
 
-Updated: 2026-07-13 (DIRECTOR-grade)
-**Phase:** Gate 1 — perceptual stack automated gates PASSED; human gates remain
+Updated: 2026-07-17 (DIRECTOR-grade)
+**Phase:** Gate 1 — two-ask gallery LIVE (retention + pressing map); human gates remain
 **Read order:** STATE → PLAN → STEWARDSHIP → LEDGER → active packet
 
 ## Where we are

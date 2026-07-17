@@ -34,3 +34,15 @@ green: full suite; sealed 2GiB proof on the refreshed layout (peak
 absence proof (retention 115 + pressing typed-absent, zero payload
 bytes opened). Refreshed bundle (SHA 32f44347…) uploaded to S3 by the
 director; fresh presign + SHA in the Render env. ACCEPTED; shipping.
+
+---
+
+## Live closure — 2026-07-17
+
+ORACLE PASS on the public URL: both asks servable — the pressing map
+at 2,811 moments (defensive 1,204 / middle 1,054 / attacking 500,
+53 location-unknown) beside the retention chain's 115. One final
+image defect (the plan file absent — the LEGIBILITY-1 class) was
+caught GENTLY by the isolation law as a typed absence, fixed by the
+director in one line, and verified inside the built image before
+deploy. GALLERY-2 is CLOSED live. The confident layout is public.
