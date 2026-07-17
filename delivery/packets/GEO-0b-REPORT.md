@@ -7,7 +7,7 @@ Frontier: `e30c70fd8028b51a9fd15ca47c735cb5c0c43ec7`
 Executor clone: `/private/tmp/priori-geo0b-executor.yxaF0J` (outside the
 repository tree)
 
-Status: **DESIGN BRIEF SEALED BEFORE IMPLEMENTATION**
+Status: **IMPLEMENTED — CERTIFIED STOP AUDIT CLEAR**
 
 ## Design brief (authored before implementation)
 
@@ -166,5 +166,122 @@ re-certified or rewritten to make the comparison pass.
 
 ## Implementation record
 
-Pending. This section will be updated only after the design brief above is
-committed as its own predecessor commit.
+The design brief was committed first as 2c134992. Implementation landed in
+8b32693b; generated authoring/parity artifacts and the committed SCP2
+round-trip refresh landed in 35467af8. No registry YAML or certified tactical
+table changed on the packet branch.
+
+### Sealed-inventory correction
+
+The design-time name heuristic said 107 of the 126 field parameters would
+migrate. The exact owner/parameter map contains **110** singular references:
+
+| Kind | Exact migrated count |
+| --- | ---: |
+| frame | 41 |
+| entity | 34 |
+| point | 5 |
+| status | 24 |
+| provenance | 6 |
+| **total** | **110** |
+
+The net correction is +3. The heuristic undercounted acting-team,
+possession-identity, and team-role references while sweeping two
+comma/equality mini-language selectors into its provisional entity count.
+Those mini-languages remain excluded. The exact split is 44 of 50 catalog
+parameters and 66 of 76 operator parameters; 16 value/grouping/mini-language
+selectors remain unmigrated. The exact-inventory test locks all 110 owners.
+
+### Runtime and compiler changes
+
+- PayloadType.FIELD_REF, FieldReferenceKind, and FieldReference implement the
+  five closed kinds with an open lower-snake-case field and typed null.
+- Catalog and operator declarations migrate through exact owner/parameter
+  maps. Exported signatures advertise field_ref, kind, and a legacy-only
+  compatibility vocabulary.
+- Binder and semantic compiler dual-read both spellings. Typed values must
+  have the required kind; non-null fields must be declared by a bound input.
+- The executor unwraps typed and legacy forms to the same field name. Typed
+  null preserves the existing none sentinel.
+- Compiler search typed-writes migrated selectors. Existing plans remain
+  legacy-readable.
+- Legacy defaults stay byte-identical. A reconstructed legacy operator
+  signature preserves old plan hashes. The Q5 compatibility fixture remains
+  exactly 618ce9961bc04d6d4fefb2e1d58f4a8ed24ae2bac0435c751cc141675f928d30
+  / 7ff420d83a54a821f2ca117dbb7b0d348a95590e1062f0cb0be611773375b3c2.
+
+The registry YAML remains unchanged, as designed. SCP-0 recognizes an exact
+legacy Enum binding as the compatibility face of field_ref only when
+allow_legacy_enum is true and its values equal legacy_allowed_values.
+Projection parity canonicalizes that accepted face, preserving existing
+waiver hashes without hiding the typed generated authoring contract.
+
+Schema, TypeScript, catalog, knowledge pack, runtime manifest, SCP-0
+projections/passports/lock, and reports were regenerated through committed
+producers. SCP-0 is PASS with zero findings. The SCP2 round-trip typed-writes,
+executes its novel composition with 13 results and zero evidence failures,
+and now agrees with the coverage map on document hash
+f902c33100671cb1e997e4fa50d5f89a7eee7f47704c22dbda65b7b8a27ab59f.
+Older certified R1/R2 execution provenance remains unchanged and valid.
+
+## Mutation evidence
+
+The binder kind guard was temporarily bypassed. The wrong-kind oracle failed
+because BindError was not raised. Restoring the guard made the same test pass;
+a source grep confirmed no mutation remained. Direction tests also prove a
+new upstream-declared controller_frame_id binds without enum expansion,
+wrong-kind and undeclared fields fail, and typed null requires unit none.
+
+## Certified-result STOP audit
+
+Controls ran in external clone /private/tmp/priori-geo0b-controls.R1VcAD
+against clone-local canonical data and the unchanged raw corpus.
+
+| Certified surface | Fresh result | Disposition |
+| --- | --- | --- |
+| R2-1 aggregate | file SHA 68d8100793a3cf907a177a7b25c5a7625b03691fb4855850ec40833702c47a30; period 15ddf8d7e1c998a35428993dbf020dc876fc148a9ef92f0a80c395597d301945; PASS 145 / FAIL 2,615 / UNKNOWN 5,654 / population 8,414 | exact frontier match |
+| R2-2 retention | file SHA 58e34c6ddc1971605d235c780c147783131ebad00400dfe8e3387a8fc48305cf; period 1a263f547ac10216bfbf7e764e69547c3a0227392568f62830ca69e7f95bd7d2; plan df155f08757cc9e5b136ac6752c0bb0765c2cad5fe1a4d98baa4338518e84f6a; 14 reconciliations true | exact frontier match |
+| R2-4 sequence | period 3fb270eda29fc14f57746491881afacaee388f7799284ee9f6caf2bf74416afd; 28 records; population 2,811; PASS 1 / FAIL 0 / UNKNOWN 2,810 | exact tactical match; two schema hashes disclosed |
+| GALLERY-2 pressing | plan 41d80fb5308a7e90ad633327e4422f11ef3c5c404d01f6012aa90e080317925c; table e40f1abc02d142eb96b644e12841e6ac5714b60c1f94817aecfbeda2d482e97e; 2,811 = 1,204 + 1,054 + 500 + 53 UNKNOWN | generator and independent check exact |
+
+The first R2-2 diagnostic consumed the freshly regenerated R2-1 table and
+therefore differed only in its embedded r2_1_table_hash. Repeating it with
+the sealed R2-1 input reproduced the frontier file exactly.
+
+R2-4's recursive table comparison found exactly two changes:
+plan_hash and synthesized_sequence_rate_document_hash, both moving from
+legacy-enum d8179a5a... to typed-write
+a33882bfbd400657c3d178d78dd166801a602e9b06a804b957c7904075266966.
+Every other field was identical. This is the brief's disclosed
+schema-artifact exception: no value, status, count, population,
+classification, evidence row, or period hash changed. **STOP does not fire.**
+
+## Verification table
+
+| Gate | Result |
+| --- | --- |
+| Direction and R1 operator suites | PASS — 135 tests in 132.640s |
+| Binder kind-guard mutation | EXPECTED FAIL; restored oracle PASS |
+| Typed compiler/SCP2 focused suite | PASS — 30 tests in 0.098s |
+| SCP-0 artifact check | PASS — zero findings and drift |
+| Validation-factory dirty-runtime diagnostic | EXPECTED FAIL before commit; PASS — 4 tests after commit |
+| Fresh R2-1 / R2-2 / R2-4 controls | PASS as above |
+| GALLERY-2 generation and independent check | PASS — exact 2,811 |
+| Final canonical make test | PASS — 615 tests in 735.709s; attestation VERIFIED |
+| compileall and git diff check | PASS |
+
+## Deviations and environment notes
+
+- Initial broad runs were invalid because the external clone lacked regular
+  data files; symlinks also fail manifest path resolution. The authoritative
+  run used APFS-cloned regular canonical files and the untouched raw root.
+- A 602-test intermediate run had ten manifest errors plus the intentional
+  dirty-runtime validation guard. Neither remained in the final run.
+- R2-1 took about 40 minutes; R2-4 took 716.919 seconds. Both completed.
+- The Gallery producer retained in packet history is absent from the current
+  tree. The archived committed producer at
+  /private/tmp/priori-geo0a-proof.hPnEjY was copied only into the disposable
+  control clone, run against current code, then run with its own check. It is
+  not added back to this branch.
+- No push was attempted. All commits are in
+  /private/tmp/priori-geo0b-executor.yxaF0J.
