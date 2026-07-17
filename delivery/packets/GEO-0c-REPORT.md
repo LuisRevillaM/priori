@@ -7,7 +7,7 @@ Frontier: `38fe8bbd08f8a1f380a9d2acaee88fcd72fc1bbf`
 Executor clone: `/private/tmp/priori-geo0c-executor.Wt4y0h` (outside the
 repository tree)
 
-Status: **DESIGN SEALED BEFORE IMPLEMENTATION**
+Status: **IMPLEMENTED — CERTIFIED VALUE-LEVEL STOP AUDIT CLEAR; FINAL SUITE PENDING**
 
 ## Design brief (authored before implementation)
 
@@ -141,19 +141,84 @@ or result is rewritten or re-certified on this branch.
 
 ## Implementation record
 
-Pending after the design-only commit.
+The design was sealed first in `035cb02c`. Runtime implementation and the six
+direction tests landed in `f3319c97`.
+
+`multi_line_anchor_record` now evaluates the GEO-0a player-track coverage row,
+the known outfield population, coordinate validity, and the
+`target_line_rank × minimum_line_defenders` witness floor before any missing
+rank can become `FAIL`. All disposition and coverage evidence is emitted on
+the anchor record. `selected_line` is withheld unless the overall result is
+`PASS`, so partial bands from an insufficient snapshot cannot leak downstream
+as a certified selected line.
+
+The catalog and semantic evidence contract advertise the new witnesses. The
+committed producers regenerated the capability catalog, SCP-0 projections,
+passport, registry lock, capability context, and tactical knowledge pack.
+SCP-0 initially and correctly rejected the unregenerated contract. A temporary
+AI-parity bridge was used only to order the generation dependency, then
+removed after the model-visible knowledge pack was rebuilt. The final registry
+contains no waiver for GEO-0c and SCP-0 passes with zero unapproved drift.
+
+The capability-context producer also normalized inherited GEO-0b typed-field
+references that were stale on the frontier. Those generated diffs are
+producer output, not a GEO-0c runtime expansion; they are disclosed rather
+than hand-edited away.
 
 ## Mutation evidence
 
-Pending.
+The guard
+`len(valid_defenders) < required_observed_defender_count` was temporarily
+bypassed. The named oracle
+`test_insufficient_defender_observation_is_forced_unknown` failed exactly as
+required: expected `UNKNOWN`, received `FAIL` (exit 1). After restoration, the
+same oracle passed, all six direction tests passed, and a source grep proved
+the mutation absent.
 
 ## Certified-result STOP audit
 
-Pending.
+Control clone: `/private/tmp/priori-geo0c-control.nH9MPn`, detached at
+`38fe8bbd08f8a1f380a9d2acaee88fcd72fc1bbf`. Both trees used regular-file
+copies of the same 182 MB canonical corpus, the same absolute raw corpus and
+data manifest, and one execution worker.
+
+| Certified surface | Untouched frontier control | GEO-0c | Value verdict |
+| --- | --- | --- | --- |
+| Q3 execution | PASS; 13 results; 0 evidence failures | exact same | no delta |
+| Q3 multi-line probe | PASS 142; FAIL 106; UNKNOWN 0; population 248 | exact same | no delta |
+| Q3 downstream probes | support FAIL 184 / UNKNOWN 64; action chain PASS 146 / FAIL 64 | exact same | no delta |
+| Q6 execution | PASS; honest zero; 0 results; 0 evidence failures | exact same | no delta |
+| Q6 line transition | PASS 1; FAIL 13; UNKNOWN 3; population 17 | exact same | no delta |
+| Q6 pressure / velocity | pressure PASS 5 / FAIL 7; velocity PASS 17 | exact same | no delta |
+
+The coverage-witness contract changes plan identity, as it must under the
+PERF-1 cache-key law. Q3 bound-plan hash moves from `f6f3776d...` to
+`88970ddc...`; Q6 moves from `d3f23c56...` to `f1a264b2...`. Q3 result IDs
+and its signature hash also move because their identity includes the changed
+plan contract. Q6's empty-result signature remains exactly
+`4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945`.
+No status, count, classification, population, requested-evidence result, or
+tactical value changed. Therefore **the certified-value STOP condition does
+not fire**.
+
+The untouched Q3 control already fails its older frozen expectation on the
+current frontier (its GEO-0b-era bound-plan hash and result IDs differ from the
+frozen file). GEO-0c neither caused nor concealed that pre-existing mismatch.
+Q6's control matches its frozen expectation; GEO-0c differs only on the new
+bound-plan identity. Both frozen expectation files stayed byte-unchanged.
 
 ## Verification table
 
-Pending.
+| Gate | Result |
+| --- | --- |
+| GEO-0c both-direction suite | PASS — 6 tests in 0.011 s |
+| GEO-0a + GEO-0c + line kernel + executor boundary suite | PASS — 48 tests in 0.248 s |
+| Structural-guard mutation | EXPECTED FAIL; restored oracle PASS; mutation absent |
+| Q3 frontier-vs-GEO value comparison | PASS — exact values; disclosed identity-only hashes |
+| Q6 frontier-vs-GEO value comparison | PASS — exact values; disclosed bound-plan hash only |
+| Final SCP-0 generation/check | PASS — 58 tests; zero unapproved parity drift |
+| `compileall` and `git diff --check` | PASS |
+| Final canonical `make test` | PENDING |
 
 ## Deviations and repository state
 
