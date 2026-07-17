@@ -1876,6 +1876,11 @@ runtime_bindings:
       forward_progression_m: {runtime_port: forward_progression_m}
       anchors: {runtime_port: anchors}
     semantic_parameters:
+      - name: team_scope
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: all, unit: none}
+        allowed_values: [all, perspective_team]
       - name: release_search_before_seconds
         type: {container: Scalar, value: Scalar, unit: second}
         required: false
@@ -1924,6 +1929,7 @@ runtime_bindings:
         default: {payload_type: enum, value: Play_Pass, unit: none}
         allowed_values: [any, Play_Pass, ThrowIn_Play_Pass, FreeKick_Play_Pass, GoalKick_Play_Pass, KickOff_Play_Pass]
     parameter_bindings:
+      team_scope: team_scope
       release_search_before_seconds: release_search_before_seconds
       release_search_after_seconds: release_search_after_seconds
       reception_search_seconds: reception_search_seconds
@@ -4647,7 +4653,7 @@ evidence_contracts:
     display_name: Between Observed Lines Evidence
     description: Evidence required for signed entity geometry between two selected observed line bands, including GEO-0c coverage witnesses.
     required: [anchor_id, anchor_frame_id, between_observed_lines_status, between_observed_lines_reason, between_observed_lines_definition_version, entity_id, entity_frame_id, line_selector, nearer_line_rank, farther_line_rank, line_boundary_buffer_m, minimum_interline_gap_m, between_lines_line_model_status, between_lines_defender_observation_status, between_lines_player_track_coverage_status, between_lines_player_track_coverage_row_ids]
-    optional: [entity_x_m, entity_y_m, normalized_entity_x_m, selected_nearer_line, selected_farther_line, selected_nearer_line_id, selected_farther_line_id, selected_nearer_line_player_ids, selected_farther_line_player_ids, signed_distance_to_nearer_line_m, signed_distance_to_farther_line_m, interline_gap_m, between_lines_line_model_reason, between_lines_defender_observation_reason, between_lines_player_track_coverage_reason]
+    optional: [match_id, period, team_role, receiver_id, controlled_pass_status, controlled_reception_status, entity_x_m, entity_y_m, normalized_entity_x_m, selected_nearer_line, selected_farther_line, selected_nearer_line_id, selected_farther_line_id, selected_nearer_line_player_ids, selected_farther_line_player_ids, signed_distance_to_nearer_line_m, signed_distance_to_farther_line_m, interline_gap_m, between_lines_line_model_reason, between_lines_defender_observation_reason, between_lines_player_track_coverage_reason]
     replay_projection: [entity_marker, selected_observed_line_bands, signed_distance_badges, interline_gap_badge, coverage_badge]
   - id: evidence.controlled_pass_crosses_observed_line.v1
     kind: EvidenceContract

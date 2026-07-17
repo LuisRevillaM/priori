@@ -3156,6 +3156,14 @@ def default_primitives() -> list[CatalogEntry]:
             ],
             parameters=[
                 parameter(
+                    name="team_scope",
+                    payload_type=PayloadType.ENUM,
+                    unit=Unit.NONE,
+                    default=typed_enum("all"),
+                    allowed_values=["all", "perspective_team"],
+                    description="Retain all provider pass candidates or only the declared execution perspective team.",
+                ),
+                parameter(
                     name="release_search_before_seconds",
                     payload_type=PayloadType.NUMBER,
                     unit=Unit.SECOND,
@@ -3663,6 +3671,12 @@ def default_primitives() -> list[CatalogEntry]:
                         "between_observed_lines_status",
                         "between_observed_lines_reason",
                         "between_observed_lines_definition_version",
+                        "match_id",
+                        "period",
+                        "team_role",
+                        "receiver_id",
+                        "controlled_pass_status",
+                        "controlled_reception_status",
                         "entity_id",
                         "entity_frame_id",
                         "entity_x_m",
@@ -3779,6 +3793,8 @@ def default_primitives() -> list[CatalogEntry]:
             evidence_fields=[
                 "between_observed_lines_status",
                 "between_observed_lines_reason",
+                "receiver_id",
+                "controlled_pass_status",
                 "entity_id",
                 "entity_frame_id",
                 "line_selector",

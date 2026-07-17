@@ -509,6 +509,8 @@
       "evidence_fields": [
         "between_observed_lines_status",
         "between_observed_lines_reason",
+        "receiver_id",
+        "controlled_pass_status",
         "entity_id",
         "entity_frame_id",
         "line_selector",
@@ -572,6 +574,12 @@
             "between_observed_lines_status",
             "between_observed_lines_reason",
             "between_observed_lines_definition_version",
+            "match_id",
+            "period",
+            "team_role",
+            "receiver_id",
+            "controlled_pass_status",
+            "controlled_reception_status",
             "entity_id",
             "entity_frame_id",
             "entity_x_m",
@@ -1560,6 +1568,22 @@
         }
       ],
       "parameters": [
+        {
+          "allowed_values": [
+            "all",
+            "perspective_team"
+          ],
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "all"
+          },
+          "description": "Retain all provider pass candidates or only the declared execution perspective team.",
+          "name": "team_scope",
+          "payload_type": "enum",
+          "required": false,
+          "unit": "none"
+        },
         {
           "default": {
             "payload_type": "number",
@@ -9564,6 +9588,6 @@
       "unit": "none"
     }
   ],
-  "runtime_manifest_revision": "7ab70699cfcb48a3df82a52c0e8c6c9203665e854017b1f76d0d57d21dc7eb48",
+  "runtime_manifest_revision": "0ef9f07e874df3031c1bf2cb539b17ec8a0e8f6bf432b2c686ef9d3f3412fd85",
   "schema_version": "1.0"
 }

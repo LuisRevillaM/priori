@@ -852,11 +852,11 @@
       "shared_count": 49
     },
     "baseline_sources": {
-      "baseline_artifact_revision": "439a741f54a505b8f235780d2d3a79916849a508aa96b38f62d822af3c7abc75",
+      "baseline_artifact_revision": "6b9a00b92715dca2441c591faaf0a7873764c212326f0c95be93ac0e26beb23e",
       "capability_catalog": {
         "exists": true,
         "path": "generated/capability-catalog.json",
-        "source_artifact_sha256": "f6ff910a42dd3208038ed9e503a95ad6a8f452527be8c6e8ddb468b7d23d50d5"
+        "source_artifact_sha256": "37251bc6def2a88b691506d03e94cbeb4587a5cbf67e79a134a18d1d81a1a342"
       },
       "product_recipe_contracts": {
         "frozen_baseline": false,
@@ -867,7 +867,7 @@
       "tactical_knowledge_pack": {
         "exists": true,
         "path": "generated/tactical-knowledge-pack.json",
-        "source_artifact_sha256": "b56e9a3561870f4621b045a1b5ca4ebefe3547458af139315732f4f61c7693f8"
+        "source_artifact_sha256": "b8bdf93672014e4903a5dd5568ee1a5ddb7ed072e15deffaa5eccb2b3c39c198"
       }
     },
     "product": {
@@ -950,16 +950,16 @@
   },
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "439a741f54a505b8f235780d2d3a79916849a508aa96b38f62d822af3c7abc75",
+    "baseline_artifact_revision": "6b9a00b92715dca2441c591faaf0a7873764c212326f0c95be93ac0e26beb23e",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "629c437b39cb7d47574943141fd3331e7df37953d7156dda8785188cf675c5f6",
+    "lock_hash": "26fb763e4ef71895ae2e2afd6cf9581f79adb2460be1d57a120de3c761905971",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "899eea68edf59badd518877f2694cbc3a60cb4fc48dcc63b5548195cdac2bfe8",
+    "registry_revision": "68aa9a96aa786b227c2a73e2c59e182c5093b81a9e5c674de102e25e4329ef8e",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "7ab70699cfcb48a3df82a52c0e8c6c9203665e854017b1f76d0d57d21dc7eb48",
+    "runtime_manifest_revision": "0ef9f07e874df3031c1bf2cb539b17ec8a0e8f6bf432b2c686ef9d3f3412fd85",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"

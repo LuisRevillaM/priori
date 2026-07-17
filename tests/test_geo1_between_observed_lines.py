@@ -10,6 +10,9 @@ from tqe.runtime.capabilities import (
     PRIMITIVE_IMPLEMENTATION_NAMES,
     RELOCATED_IMPLEMENTATION_MODULES,
 )
+from tqe.runtime.capabilities.pass_family import (
+    controlled_pass_evaluations_for_team_scope,
+)
 from tqe.runtime.catalog import default_catalog
 from tqe.runtime.ir import FieldReferenceKind, PayloadType
 
@@ -163,6 +166,18 @@ class BetweenObservedLinesHonestyTests(unittest.TestCase):
             result.player_track_coverage_row_ids,
         )
 
+    def test_fail_status_without_adequate_coverage_is_forced_unknown(self) -> None:
+        evidence = line_evidence(
+            status="FAIL",
+            defender_observation_status="INSUFFICIENT",
+            lines=[observed_line(1, 5.0)],
+        )
+
+        result = evaluate(7.0, evidence=evidence)
+
+        self.assertEqual("UNKNOWN", result.status)
+        self.assertEqual("insufficient_observed_outfield_defenders", result.reason)
+
     def test_frame_misalignment_is_unknown_before_geometry(self) -> None:
         result = evaluate(7.0, frame_id=11)
 
@@ -216,6 +231,62 @@ class BetweenObservedLinesCatalogTests(unittest.TestCase):
             "tqe.runtime.capabilities.lines_family",
             RELOCATED_IMPLEMENTATION_MODULES["primitive_between_observed_lines"],
         )
+
+    def test_recipe_team_scope_filters_without_changing_legacy_all_default(self) -> None:
+        evaluations = [
+            {"anchor_id": "home-pass", "team_role": "home"},
+            {"anchor_id": "away-pass", "team_role": "away"},
+        ]
+
+        self.assertEqual(
+            evaluations,
+            controlled_pass_evaluations_for_team_scope(
+                evaluations,
+                team_scope="all",
+                perspective_team_role="home",
+            ),
+        )
+        self.assertEqual(
+            [evaluations[0]],
+            controlled_pass_evaluations_for_team_scope(
+                evaluations,
+                team_scope="perspective_team",
+                perspective_team_role="home",
+            ),
+        )
+        controlled_pass = next(
+            entry
+            for entry in default_catalog().primitives
+            if entry.name == "controlled_pass_episode"
+        )
+        team_scope = next(
+            parameter
+            for parameter in controlled_pass.parameters
+            if parameter.name == "team_scope"
+        )
+        self.assertEqual("all", str(team_scope.default.value))
+
+    def test_certified_recipe_synthesizes_one_shared_perspective_chain(self) -> None:
+        from scripts.packets.geo1_reception_between_lines_generator import (
+            AGGREGATE_NODE_ID,
+            RATE_NODE_ID,
+            synthesized_plan_bundle,
+        )
+
+        bundle, _ = synthesized_plan_bundle()
+
+        for role in ("home", "away"):
+            document = bundle["documents"][role]
+            nodes = {node["node_id"]: node for node in document["draft_plan"]["nodes"]}
+            controlled = nodes["controlled_pass_episode"]
+            lines = nodes["multi_line_model"]
+            between = nodes["between_observed_lines"]
+            self.assertEqual("perspective_team", controlled["parameters"]["team_scope"]["value"])
+            self.assertEqual(controlled["node_id"], lines["inputs"]["anchors"]["source_node_id"])
+            self.assertEqual(controlled["node_id"], between["inputs"]["entity_anchors"]["source_node_id"])
+            self.assertEqual(lines["node_id"], between["inputs"]["line_evaluations"]["source_node_id"])
+            self.assertIn(AGGREGATE_NODE_ID, nodes)
+            self.assertIn(RATE_NODE_ID, nodes)
 
 
 if __name__ == "__main__":

@@ -969,6 +969,12 @@
                 "between_observed_lines_status",
                 "between_observed_lines_reason",
                 "between_observed_lines_definition_version",
+                "match_id",
+                "period",
+                "team_role",
+                "receiver_id",
+                "controlled_pass_status",
+                "controlled_reception_status",
                 "entity_id",
                 "entity_frame_id",
                 "entity_x_m",
@@ -2240,6 +2246,35 @@
                   "required": false,
                   "unit": "second"
                 }
+              },
+              "team_scope": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "enum",
+                    "unit": "none",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "allowed_values": [
+                    "all",
+                    "perspective_team"
+                  ],
+                  "default": {
+                    "payload_type": "enum",
+                    "unit": "none",
+                    "value": "all"
+                  },
+                  "description": "Retain all provider pass candidates or only the declared execution perspective team.",
+                  "name": "team_scope",
+                  "payload_type": "enum",
+                  "required": false,
+                  "unit": "none"
+                }
               }
             },
             "version": "0.1.0"
@@ -2354,6 +2389,7 @@
             "forward_progression_m"
           ],
           "valid_parameter_names": [
+            "team_scope",
             "release_search_before_seconds",
             "release_search_after_seconds",
             "reception_search_seconds",
@@ -14388,10 +14424,12 @@
       "between_lines_player_track_coverage_status",
       "between_observed_lines_reason",
       "between_observed_lines_status",
+      "controlled_pass_status",
       "entity_frame_id",
       "entity_id",
       "interline_gap_m",
       "line_selector",
+      "receiver_id",
       "selected_farther_line_id",
       "selected_nearer_line_id",
       "signed_distance_to_farther_line_m",
@@ -19976,6 +20014,22 @@
       ],
       "parameters": [
         {
+          "allowed_values": [
+            "all",
+            "perspective_team"
+          ],
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "all"
+          },
+          "description": "Retain all provider pass candidates or only the declared execution perspective team.",
+          "name": "team_scope",
+          "payload_type": "enum",
+          "required": false,
+          "unit": "none"
+        },
+        {
           "default": {
             "payload_type": "number",
             "unit": "second",
@@ -20630,6 +20684,8 @@
       "evidence_fields": [
         "between_observed_lines_status",
         "between_observed_lines_reason",
+        "receiver_id",
+        "controlled_pass_status",
         "entity_id",
         "entity_frame_id",
         "line_selector",
@@ -20693,6 +20749,12 @@
             "between_observed_lines_status",
             "between_observed_lines_reason",
             "between_observed_lines_definition_version",
+            "match_id",
+            "period",
+            "team_role",
+            "receiver_id",
+            "controlled_pass_status",
+            "controlled_reception_status",
             "entity_id",
             "entity_frame_id",
             "entity_x_m",

@@ -1,6 +1,6 @@
 {
   "passport_count": 49,
-  "passport_revision": "ccc1b405c663b01d3cb3804831a40d1d067dc68876ea666760cf20e349a554bc",
+  "passport_revision": "f24366e9f21f73f52ced99ed879d7017bde0ee1d5ff02e7ca42ef23392cb0684",
   "passports": [
     {
       "binding": {
@@ -2023,10 +2023,15 @@
             "between_lines_defender_observation_reason",
             "between_lines_line_model_reason",
             "between_lines_player_track_coverage_reason",
+            "controlled_pass_status",
+            "controlled_reception_status",
             "entity_x_m",
             "entity_y_m",
             "interline_gap_m",
+            "match_id",
             "normalized_entity_x_m",
+            "period",
+            "receiver_id",
             "selected_farther_line",
             "selected_farther_line_id",
             "selected_farther_line_player_ids",
@@ -2034,7 +2039,8 @@
             "selected_nearer_line_id",
             "selected_nearer_line_player_ids",
             "signed_distance_to_farther_line_m",
-            "signed_distance_to_nearer_line_m"
+            "signed_distance_to_nearer_line_m",
+            "team_role"
           ],
           "replay_projection": [
             "coverage_badge",
@@ -2239,7 +2245,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "f2c0953b92f5c78cb4e5ad2dbbce19d2e6decdf68d93b44dd9d84d0567f3460a",
+      "passport_hash": "f0c52cb2e1b02e788c0fc9b2ed37ad0b9f7bcf0f2ca41b25c8a9b0239eec1eb2",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -2254,6 +2260,8 @@
         "evidence_fields": [
           "between_observed_lines_status",
           "between_observed_lines_reason",
+          "receiver_id",
+          "controlled_pass_status",
           "entity_id",
           "entity_frame_id",
           "line_selector",
@@ -2317,6 +2325,12 @@
               "between_observed_lines_status",
               "between_observed_lines_reason",
               "between_observed_lines_definition_version",
+              "match_id",
+              "period",
+              "team_role",
+              "receiver_id",
+              "controlled_pass_status",
+              "controlled_reception_status",
               "entity_id",
               "entity_frame_id",
               "entity_x_m",
@@ -4610,9 +4624,31 @@
           "nearest_teammate_margin_m": "nearest_teammate_margin_m",
           "reception_search_seconds": "reception_search_seconds",
           "release_search_after_seconds": "release_search_after_seconds",
-          "release_search_before_seconds": "release_search_before_seconds"
+          "release_search_before_seconds": "release_search_before_seconds",
+          "team_scope": "team_scope"
         },
         "semantic_parameters": [
+          {
+            "allowed_values": [
+              "all",
+              "perspective_team"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "all"
+            },
+            "description": "",
+            "name": "team_scope",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
+            }
+          },
           {
             "default": {
               "payload_type": "number",
@@ -5020,7 +5056,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "76d78b44d384bfb4146e7e3deab552e0050c0503e8d1fd1ae7256ce3d9f56488",
+      "passport_hash": "d3c02b4fd4c1dcc04166b143bfcd80352fac74deba6af85883fa3072de1a33ca",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -5155,6 +5191,22 @@
           }
         ],
         "parameters": [
+          {
+            "allowed_values": [
+              "all",
+              "perspective_team"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "all"
+            },
+            "description": "Retain all provider pass candidates or only the declared execution perspective team.",
+            "name": "team_scope",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
           {
             "default": {
               "payload_type": "number",
@@ -27551,16 +27603,16 @@
   "projection_id": "priori.capability_passport_projection.afl08",
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "439a741f54a505b8f235780d2d3a79916849a508aa96b38f62d822af3c7abc75",
+    "baseline_artifact_revision": "6b9a00b92715dca2441c591faaf0a7873764c212326f0c95be93ac0e26beb23e",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "629c437b39cb7d47574943141fd3331e7df37953d7156dda8785188cf675c5f6",
+    "lock_hash": "26fb763e4ef71895ae2e2afd6cf9581f79adb2460be1d57a120de3c761905971",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "899eea68edf59badd518877f2694cbc3a60cb4fc48dcc63b5548195cdac2bfe8",
+    "registry_revision": "68aa9a96aa786b227c2a73e2c59e182c5093b81a9e5c674de102e25e4329ef8e",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "7ab70699cfcb48a3df82a52c0e8c6c9203665e854017b1f76d0d57d21dc7eb48",
+    "runtime_manifest_revision": "0ef9f07e874df3031c1bf2cb539b17ec8a0e8f6bf432b2c686ef9d3f3412fd85",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"
