@@ -283,6 +283,261 @@
     {
       "agent_safety_maturity": "APPROVED",
       "ai_exposure": "ALLOWED",
+      "binding_id": "binding.primitive.between_observed_lines.0_1_0",
+      "conformance": "EXACT",
+      "id": "between_observed_lines",
+      "implements": [
+        "op.between_observed_lines.v1"
+      ],
+      "kind": "primitive",
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "between_observed_lines_status",
+          "between_observed_lines_reason",
+          "entity_id",
+          "entity_frame_id",
+          "line_selector",
+          "selected_nearer_line_id",
+          "selected_farther_line_id",
+          "signed_distance_to_nearer_line_m",
+          "signed_distance_to_farther_line_m",
+          "interline_gap_m",
+          "between_lines_defender_observation_status",
+          "between_lines_player_track_coverage_status",
+          "between_lines_player_track_coverage_row_ids"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "line_evaluations",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "entity_anchors",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "kind": "primitive",
+        "limitations": [
+          "Line identities are observed geometric bands, never tactical midfield/back/last-line roles.",
+          "Does not infer formation, legal offside, intent, quality, optimality, causation, or assignment.",
+          "FAIL requires adequately observed negation inherited from multi_line_model and GEO-0c."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "between_observed_lines",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "coverage": {
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "between_observed_lines_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "between_observed_lines_status",
+              "between_observed_lines_reason",
+              "between_observed_lines_definition_version",
+              "entity_id",
+              "entity_frame_id",
+              "entity_x_m",
+              "entity_y_m",
+              "normalized_entity_x_m",
+              "line_selector",
+              "nearer_line_rank",
+              "farther_line_rank",
+              "selected_nearer_line",
+              "selected_farther_line",
+              "selected_nearer_line_id",
+              "selected_farther_line_id",
+              "selected_nearer_line_rank",
+              "selected_farther_line_rank",
+              "selected_nearer_line_player_ids",
+              "selected_farther_line_player_ids",
+              "signed_distance_to_nearer_line_m",
+              "signed_distance_to_farther_line_m",
+              "interline_gap_m",
+              "line_boundary_buffer_m",
+              "minimum_interline_gap_m",
+              "between_lines_line_model_status",
+              "between_lines_line_model_reason",
+              "between_lines_defender_observation_status",
+              "between_lines_defender_observation_reason",
+              "between_lines_player_track_coverage_status",
+              "between_lines_player_track_coverage_reason",
+              "between_lines_player_track_coverage_row_ids"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchor_evaluations",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "between_observed_lines_status",
+              "between_observed_lines_reason"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "between_observed_lines_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "parameters": [
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "count",
+              "value": 1
+            },
+            "description": "Declared nearer observed geometric line rank goal-side of the ball.",
+            "maximum": 4.0,
+            "minimum": 1.0,
+            "name": "nearer_line_rank",
+            "payload_type": "number",
+            "required": false,
+            "unit": "count"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "count",
+              "value": 2
+            },
+            "description": "Declared farther rank used by declared_ranks and echoed for every selector.",
+            "maximum": 4.0,
+            "minimum": 1.0,
+            "name": "farther_line_rank",
+            "payload_type": "number",
+            "required": false,
+            "unit": "count"
+          },
+          {
+            "allowed_values": [
+              "declared_ranks",
+              "deepest_observed_line"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "declared_ranks"
+            },
+            "description": "Select the declared farther rank or the deepest identifiable observed geometric line.",
+            "name": "line_selector",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allow_legacy_enum": true,
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "receiver_id"
+            },
+            "description": "Typed entity-reference field read from the entity anchor record.",
+            "field_reference_kind": "entity",
+            "legacy_allowed_values": [
+              "receiver_id",
+              "passer_id",
+              "relay_player_id",
+              "terminal_receiver_id"
+            ],
+            "name": "entity_id_field",
+            "payload_type": "field_ref",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allow_legacy_enum": true,
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "controlled_reception_frame_id"
+            },
+            "description": "Typed frame-reference field at which the entity position is evaluated.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
+              "controlled_reception_frame_id",
+              "physical_release_frame_id",
+              "anchor_frame_id",
+              "input_physical_release_frame_id",
+              "relay_touch_frame_id",
+              "relay_physical_release_frame_id",
+              "terminal_controlled_reception_frame_id"
+            ],
+            "name": "entity_frame_field",
+            "payload_type": "field_ref",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 0.5
+            },
+            "description": "Closed uncertainty buffer around each selected observed line boundary.",
+            "maximum": 10.0,
+            "minimum": 0.0,
+            "name": "line_boundary_buffer_m",
+            "payload_type": "number",
+            "required": false,
+            "unit": "metre"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 0.0
+            },
+            "description": "Optional declared minimum observed separation; zero disables a positive minimum.",
+            "maximum": 80.0,
+            "minimum": 0.0,
+            "name": "minimum_interline_gap_m",
+            "payload_type": "number",
+            "required": false,
+            "unit": "metre"
+          }
+        ],
+        "purpose": "Classify an entity as strictly between two selected observed geometric line bands in attacking-direction-normalized coordinates.",
+        "runtime_id": "primitive:between_observed_lines:0.1.0",
+        "version": "0.1.0"
+      },
+      "version": "0.1.0"
+    },
+    {
+      "agent_safety_maturity": "APPROVED",
+      "ai_exposure": "ALLOWED",
       "binding_id": "binding.primitive.carry_episode.0_1_0",
       "conformance": "PARTIAL",
       "id": "carry_episode",
@@ -6809,16 +7064,16 @@
   ],
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "2106c32c5a837f90bcb322e9eac89480e1af637f3b34c0452d381322d97583b5",
+    "baseline_artifact_revision": "439a741f54a505b8f235780d2d3a79916849a508aa96b38f62d822af3c7abc75",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "9ea3dbeeadba012ce64f3beeb4637448a3484f1c14fdb32c79b9e8c9e51a728e",
+    "lock_hash": "629c437b39cb7d47574943141fd3331e7df37953d7156dda8785188cf675c5f6",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "0a989c48244f8275bfc67decdd9e6a25fe2594b9db34e6650a6a42e33f246218",
+    "registry_revision": "899eea68edf59badd518877f2694cbc3a60cb4fc48dcc63b5548195cdac2bfe8",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "6a77bb9a82d6a7f8fd431a77eeb38f5caa044e30abcdfa99fc4d6678ea0142b4",
+    "runtime_manifest_revision": "7ab70699cfcb48a3df82a52c0e8c6c9203665e854017b1f76d0d57d21dc7eb48",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"

@@ -1,6 +1,6 @@
 {
-  "passport_count": 48,
-  "passport_revision": "c0dae440b8bec4a584a8f46cbb84c435493e7a34e957964615b4332ca4769ad7",
+  "passport_count": 49,
+  "passport_revision": "ccc1b405c663b01d3cb3804831a40d1d067dc68876ea666760cf20e349a554bc",
   "passports": [
     {
       "binding": {
@@ -1761,6 +1761,739 @@
       },
       "status": "CURRENT",
       "subject_ref": "runtime:primitive:ball_lateral_fraction:0.1.0"
+    },
+    {
+      "binding": {
+        "conformance": "EXACT",
+        "id": "binding.primitive.between_observed_lines.0_1_0",
+        "input_bindings": {
+          "entity_anchors": {
+            "runtime_port": "entity_anchors",
+            "source": "NODE_INPUT"
+          },
+          "line_evaluations": {
+            "runtime_port": "line_evaluations",
+            "source": "NODE_INPUT"
+          },
+          "tracking_window": {
+            "context_ref": "canonical_tracking_window",
+            "source": "RUNTIME_CONTEXT"
+          }
+        },
+        "known_deviations": [],
+        "output_bindings": {
+          "anchor_evaluations": {
+            "runtime_port": "anchor_evaluations"
+          },
+          "between_observed_lines_status": {
+            "runtime_port": "between_observed_lines_status"
+          }
+        },
+        "parameter_bindings": {
+          "entity_frame_field": "entity_frame_field",
+          "entity_id_field": "entity_id_field",
+          "farther_line_rank": "farther_line_rank",
+          "line_boundary_buffer_m": "line_boundary_buffer_m",
+          "line_selector": "line_selector",
+          "minimum_interline_gap_m": "minimum_interline_gap_m",
+          "nearer_line_rank": "nearer_line_rank"
+        },
+        "semantic_parameters": [
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "count",
+              "value": 1
+            },
+            "description": "",
+            "maximum": 4.0,
+            "minimum": 1.0,
+            "name": "nearer_line_rank",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "count",
+              "value": "Scalar"
+            }
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "count",
+              "value": 2
+            },
+            "description": "",
+            "maximum": 4.0,
+            "minimum": 1.0,
+            "name": "farther_line_rank",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "count",
+              "value": "Scalar"
+            }
+          },
+          {
+            "allowed_values": [
+              "declared_ranks",
+              "deepest_observed_line"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "declared_ranks"
+            },
+            "description": "",
+            "name": "line_selector",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
+            }
+          },
+          {
+            "allowed_values": [
+              "receiver_id",
+              "passer_id",
+              "relay_player_id",
+              "terminal_receiver_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "receiver_id"
+            },
+            "description": "",
+            "name": "entity_id_field",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
+            }
+          },
+          {
+            "allowed_values": [
+              "controlled_reception_frame_id",
+              "physical_release_frame_id",
+              "anchor_frame_id",
+              "input_physical_release_frame_id",
+              "relay_touch_frame_id",
+              "relay_physical_release_frame_id",
+              "terminal_controlled_reception_frame_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "controlled_reception_frame_id"
+            },
+            "description": "",
+            "name": "entity_frame_field",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
+            }
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 0.5
+            },
+            "description": "",
+            "maximum": 10.0,
+            "minimum": 0.0,
+            "name": "line_boundary_buffer_m",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "metre",
+              "value": "Scalar"
+            }
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 0.0
+            },
+            "description": "",
+            "maximum": 80.0,
+            "minimum": 0.0,
+            "name": "minimum_interline_gap_m",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "metre",
+              "value": "Scalar"
+            }
+          }
+        ],
+        "uncovered_runtime_inputs": [],
+        "uncovered_runtime_outputs": [],
+        "uncovered_runtime_parameters": [],
+        "uncovered_semantic_inputs": [],
+        "uncovered_semantic_outputs": [],
+        "uncovered_semantic_parameters": []
+      },
+      "claim_contracts": [
+        {
+          "contract_ref": "claim.between_observed_lines.v1",
+          "inherits": [
+            "claim.observed_multi_line_model.v1"
+          ],
+          "permitted": [
+            "deepest_observed_geometric_line_selected",
+            "entity_between_selected_observed_lines_under_declared_buffers",
+            "entity_outside_selected_observed_lines_when_evidence_complete",
+            "observed_geometric_line_rank_fit_under_declared_thresholds",
+            "observed_interline_gap_measured",
+            "target_line_rank_absent_when_evidence_complete"
+          ],
+          "prohibited": [
+            "defender_intent_inferred",
+            "defensive_line_was_broken",
+            "formation_inferred",
+            "legal_offside_inferred",
+            "pass_quality_inferred",
+            "pass_was_optimal",
+            "player_intent_inferred",
+            "tactical_line_role_identified"
+          ],
+          "unknown_conditions": [
+            "ambiguous_candidate_lines",
+            "attacking_direction_missing_or_invalid",
+            "ball_position_missing",
+            "defending_outfield_positions_incomplete",
+            "entity_position_missing",
+            "entity_within_line_boundary_buffer",
+            "line_entity_frame_misaligned",
+            "selected_line_geometry_ambiguous",
+            "selected_line_missing_under_uncertain_coverage"
+          ]
+        }
+      ],
+      "concepts": [
+        {
+          "aliases": [],
+          "claim_contract_ref": "claim.between_observed_lines.v1",
+          "created_from": [],
+          "description": "An entity's observed position classified against two declared observed geometric line boundaries in attacking-direction-normalized coordinates.",
+          "display_name": "Between Observed Lines",
+          "evidence_contract_ref": "evidence.between_observed_lines.v1",
+          "id": "concept.between_observed_lines",
+          "kind": "Concept",
+          "owners": [],
+          "reviewers": [],
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [
+            "line",
+            "geometry",
+            "relative_position",
+            "coverage"
+          ],
+          "version": "1.0.0"
+        }
+      ],
+      "description": "Canonical runtime binding for between_observed_lines 0.1.0.",
+      "display_name": "between_observed_lines runtime binding",
+      "evidence_contracts": [
+        {
+          "contract_ref": "evidence.between_observed_lines.v1",
+          "inherits": [],
+          "optional": [
+            "between_lines_defender_observation_reason",
+            "between_lines_line_model_reason",
+            "between_lines_player_track_coverage_reason",
+            "entity_x_m",
+            "entity_y_m",
+            "interline_gap_m",
+            "normalized_entity_x_m",
+            "selected_farther_line",
+            "selected_farther_line_id",
+            "selected_farther_line_player_ids",
+            "selected_nearer_line",
+            "selected_nearer_line_id",
+            "selected_nearer_line_player_ids",
+            "signed_distance_to_farther_line_m",
+            "signed_distance_to_nearer_line_m"
+          ],
+          "replay_projection": [
+            "coverage_badge",
+            "entity_marker",
+            "interline_gap_badge",
+            "selected_observed_line_bands",
+            "signed_distance_badges"
+          ],
+          "required": [
+            "anchor_frame_id",
+            "anchor_id",
+            "between_lines_defender_observation_status",
+            "between_lines_line_model_status",
+            "between_lines_player_track_coverage_row_ids",
+            "between_lines_player_track_coverage_status",
+            "between_observed_lines_definition_version",
+            "between_observed_lines_reason",
+            "between_observed_lines_status",
+            "entity_frame_id",
+            "entity_id",
+            "farther_line_rank",
+            "line_boundary_buffer_m",
+            "line_selector",
+            "minimum_interline_gap_m",
+            "nearer_line_rank"
+          ]
+        }
+      ],
+      "exposure_policy": {
+        "ai_compiler": "ALLOWED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Exposure policy for coverage-aware signed geometry between observed lines.",
+        "display_name": "between_observed_lines exposure",
+        "id": "exposure.runtime.between_observed_lines.0_1_0",
+        "kind": "ExposurePolicy",
+        "owners": [],
+        "parameter_overrides": {},
+        "product": "ALLOWED",
+        "reasons": [],
+        "reviewed_recipes": "ALLOWED",
+        "reviewers": [],
+        "status": "CURRENT",
+        "subject_ref": "runtime:primitive:between_observed_lines:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "implementation": {
+        "aliases": [],
+        "created_from": [],
+        "description": "Current signed-distance and coverage-aware observed-line interval implementation.",
+        "display_name": "Between Observed Lines Python Implementation",
+        "id": "impl.between_observed_lines.python.v1",
+        "implementation_type": "python",
+        "implements": [
+          "op.between_observed_lines.v1"
+        ],
+        "kind": "Implementation",
+        "owners": [],
+        "reviewers": [],
+        "source_refs": [
+          "src/tqe/runtime/between_observed_lines.py",
+          "src/tqe/runtime/capabilities/lines_family.py",
+          "src/tqe/runtime/catalog.py"
+        ],
+        "status": "CURRENT",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "maturity_assessment": {
+        "agent_safety": "APPROVED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Maturity assessment for the ADR 0018 signed observed-line geometry primitive.",
+        "display_name": "between_observed_lines maturity",
+        "id": "maturity.runtime.between_observed_lines.0_1_0",
+        "implementation": "IMPLEMENTED",
+        "kind": "MaturityAssessment",
+        "owners": [],
+        "product": "EXPOSED",
+        "reviewers": [],
+        "semantic": "REVIEWED",
+        "status": "CURRENT",
+        "subject_ref": "runtime:primitive:between_observed_lines:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "validation": "VERIFIED",
+        "version": "1.0.0"
+      },
+      "operationalizations": [
+        {
+          "aliases": [],
+          "applicability": [
+            "multi_line_evaluation_available",
+            "entity_anchor_available",
+            "entity_tracking_available",
+            "line_entity_frame_aligned"
+          ],
+          "claim_contract_ref": "claim.between_observed_lines.v1",
+          "concept_refs": [
+            "concept.between_observed_lines"
+          ],
+          "created_from": [],
+          "description": "Evaluate strict buffered entity inclusion between two selected observed geometric line bands while preserving GEO-0c coverage honesty.",
+          "display_name": "Between Observed Lines",
+          "evidence_contract_ref": "evidence.between_observed_lines.v1",
+          "id": "op.between_observed_lines.v1",
+          "inputs": [
+            {
+              "description": "",
+              "name": "line_evaluations",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "multi_line_evaluation",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "entity_anchors",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "entity_anchor",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "tracking_window",
+              "required": true,
+              "type": {
+                "container": "TrajectorySet",
+                "coordinate_frame": "pitch_absolute",
+                "nullable": true,
+                "temporal_basis": "canonical_frame_time",
+                "unit": "metre",
+                "value": "Position"
+              }
+            }
+          ],
+          "kind": "Operationalization",
+          "lowering": [
+            "exact_anchor_alignment",
+            "entity_position_lookup",
+            "attacking_direction_normalization",
+            "observed_line_selector",
+            "signed_line_distances",
+            "boundary_buffer_check",
+            "geo0c_coverage_gate"
+          ],
+          "outputs": [
+            {
+              "description": "",
+              "name": "anchor_evaluations",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "between_observed_lines_evaluation",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "between_observed_lines_status",
+              "required": true,
+              "type": {
+                "container": "FrameSignal",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "between_observed_lines_status",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "Enum"
+              }
+            }
+          ],
+          "owners": [],
+          "required_modalities": [
+            "tracking"
+          ],
+          "reviewers": [],
+          "semantic_basis": "DETERMINISTIC",
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [],
+          "version": "1.0.0"
+        }
+      ],
+      "passport_hash": "f2c0953b92f5c78cb4e5ad2dbbce19d2e6decdf68d93b44dd9d84d0567f3460a",
+      "projection_membership": {
+        "ai": true,
+        "product": true
+      },
+      "runtime_capability": {
+        "id": "between_observed_lines",
+        "kind": "primitive",
+        "version": "0.1.0"
+      },
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "between_observed_lines_status",
+          "between_observed_lines_reason",
+          "entity_id",
+          "entity_frame_id",
+          "line_selector",
+          "selected_nearer_line_id",
+          "selected_farther_line_id",
+          "signed_distance_to_nearer_line_m",
+          "signed_distance_to_farther_line_m",
+          "interline_gap_m",
+          "between_lines_defender_observation_status",
+          "between_lines_player_track_coverage_status",
+          "between_lines_player_track_coverage_row_ids"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "line_evaluations",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "entity_anchors",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "kind": "primitive",
+        "limitations": [
+          "Line identities are observed geometric bands, never tactical midfield/back/last-line roles.",
+          "Does not infer formation, legal offside, intent, quality, optimality, causation, or assignment.",
+          "FAIL requires adequately observed negation inherited from multi_line_model and GEO-0c."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "between_observed_lines",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "coverage": {
+              "fail_values": [
+                "FAIL"
+              ],
+              "pass_values": [
+                "PASS"
+              ],
+              "status_field": "between_observed_lines_status",
+              "unknown_values": [
+                "UNKNOWN"
+              ]
+            },
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "between_observed_lines_status",
+              "between_observed_lines_reason",
+              "between_observed_lines_definition_version",
+              "entity_id",
+              "entity_frame_id",
+              "entity_x_m",
+              "entity_y_m",
+              "normalized_entity_x_m",
+              "line_selector",
+              "nearer_line_rank",
+              "farther_line_rank",
+              "selected_nearer_line",
+              "selected_farther_line",
+              "selected_nearer_line_id",
+              "selected_farther_line_id",
+              "selected_nearer_line_rank",
+              "selected_farther_line_rank",
+              "selected_nearer_line_player_ids",
+              "selected_farther_line_player_ids",
+              "signed_distance_to_nearer_line_m",
+              "signed_distance_to_farther_line_m",
+              "interline_gap_m",
+              "line_boundary_buffer_m",
+              "minimum_interline_gap_m",
+              "between_lines_line_model_status",
+              "between_lines_line_model_reason",
+              "between_lines_defender_observation_status",
+              "between_lines_defender_observation_reason",
+              "between_lines_player_track_coverage_status",
+              "between_lines_player_track_coverage_reason",
+              "between_lines_player_track_coverage_row_ids"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchor_evaluations",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "between_observed_lines_status",
+              "between_observed_lines_reason"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "between_observed_lines_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "parameters": [
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "count",
+              "value": 1
+            },
+            "description": "Declared nearer observed geometric line rank goal-side of the ball.",
+            "maximum": 4.0,
+            "minimum": 1.0,
+            "name": "nearer_line_rank",
+            "payload_type": "number",
+            "required": false,
+            "unit": "count"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "count",
+              "value": 2
+            },
+            "description": "Declared farther rank used by declared_ranks and echoed for every selector.",
+            "maximum": 4.0,
+            "minimum": 1.0,
+            "name": "farther_line_rank",
+            "payload_type": "number",
+            "required": false,
+            "unit": "count"
+          },
+          {
+            "allowed_values": [
+              "declared_ranks",
+              "deepest_observed_line"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "declared_ranks"
+            },
+            "description": "Select the declared farther rank or the deepest identifiable observed geometric line.",
+            "name": "line_selector",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allow_legacy_enum": true,
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "receiver_id"
+            },
+            "description": "Typed entity-reference field read from the entity anchor record.",
+            "field_reference_kind": "entity",
+            "legacy_allowed_values": [
+              "receiver_id",
+              "passer_id",
+              "relay_player_id",
+              "terminal_receiver_id"
+            ],
+            "name": "entity_id_field",
+            "payload_type": "field_ref",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allow_legacy_enum": true,
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "controlled_reception_frame_id"
+            },
+            "description": "Typed frame-reference field at which the entity position is evaluated.",
+            "field_reference_kind": "frame",
+            "legacy_allowed_values": [
+              "controlled_reception_frame_id",
+              "physical_release_frame_id",
+              "anchor_frame_id",
+              "input_physical_release_frame_id",
+              "relay_touch_frame_id",
+              "relay_physical_release_frame_id",
+              "terminal_controlled_reception_frame_id"
+            ],
+            "name": "entity_frame_field",
+            "payload_type": "field_ref",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 0.5
+            },
+            "description": "Closed uncertainty buffer around each selected observed line boundary.",
+            "maximum": 10.0,
+            "minimum": 0.0,
+            "name": "line_boundary_buffer_m",
+            "payload_type": "number",
+            "required": false,
+            "unit": "metre"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 0.0
+            },
+            "description": "Optional declared minimum observed separation; zero disables a positive minimum.",
+            "maximum": 80.0,
+            "minimum": 0.0,
+            "name": "minimum_interline_gap_m",
+            "payload_type": "number",
+            "required": false,
+            "unit": "metre"
+          }
+        ],
+        "purpose": "Classify an entity as strictly between two selected observed geometric line bands in attacking-direction-normalized coordinates.",
+        "runtime_id": "primitive:between_observed_lines:0.1.0",
+        "version": "0.1.0"
+      },
+      "status": "CURRENT",
+      "subject_ref": "runtime:primitive:between_observed_lines:0.1.0"
     },
     {
       "binding": {
@@ -26818,16 +27551,16 @@
   "projection_id": "priori.capability_passport_projection.afl08",
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "2106c32c5a837f90bcb322e9eac89480e1af637f3b34c0452d381322d97583b5",
+    "baseline_artifact_revision": "439a741f54a505b8f235780d2d3a79916849a508aa96b38f62d822af3c7abc75",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "9ea3dbeeadba012ce64f3beeb4637448a3484f1c14fdb32c79b9e8c9e51a728e",
+    "lock_hash": "629c437b39cb7d47574943141fd3331e7df37953d7156dda8785188cf675c5f6",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "0a989c48244f8275bfc67decdd9e6a25fe2594b9db34e6650a6a42e33f246218",
+    "registry_revision": "899eea68edf59badd518877f2694cbc3a60cb4fc48dcc63b5548195cdac2bfe8",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "6a77bb9a82d6a7f8fd431a77eeb38f5caa044e30abcdfa99fc4d6678ea0142b4",
+    "runtime_manifest_revision": "7ab70699cfcb48a3df82a52c0e8c6c9203665e854017b1f76d0d57d21dc7eb48",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"

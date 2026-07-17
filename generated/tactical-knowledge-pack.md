@@ -1,7 +1,7 @@
 # Tactical Knowledge Pack
 
 Version: `m1.2-s2i-a.0`
-SHA-256: `7b6456c7521f0802b5d53afda27f2f54a4cdca6a4523b0dc72a14c9c18513e83`
+SHA-256: `0838d9d7e5d4448a048907edb23fdc25c5f0b5cab5651e83a97761c20f51d094`
 Generated: `reproducible_from_source_hashes`
 
 ## Architecture
@@ -223,11 +223,11 @@ Composition constraint kinds:
 - `config/query-plans/line_break_support_response.experimental.v1.json`: `8f9d6da096c55c5bea3461750eeca77d19f08d6b363920021f07fcb7a02510a5`
 - `config/query-plans/opposite_corridor_after_shift.experimental.v1.json`: `9244603037c2db474bd766688a87ed7b72d5d8695953ec225a4a71f1b0206b74`
 - `config/query-plans/possession_corridor_availability.experimental.v1.json`: `81ff93059b8b6bf5e0b5958610b2dc48a5814f0b7001f4bb4efc6956b2e94fde`
-- `generated/capability-context.json`: `3c179e8c6aa569833512cecaa22e00609693695c77ba90878c271b9e1d0e181c`
+- `generated/capability-context.json`: `1328573884c9dc30762aa6578f16acd5615700e2026fcb728570611aace53c76`
 - `generated/tactical-query-plan.schema.json`: `73289de85bf8cb486ea27c166c8039f0cb002c6bd5a234f77631370e97941c5d`
 - `generated/tactical-query-plan.types.ts`: `b674c5091ce001e04f393defba6bed2f9ec9b93ec660bc679b7aa73b6d955223`
 - `src/tqe/runtime/binder.py`: `74326af6f81bc72028da0a3fd829891a6a2bc7d393804f71ef08e29cb289f1e9`
-- `src/tqe/runtime/catalog.py`: `51835672af569c49e9c5ad380ba82022d9ad65ba76a874134bd2a09b6a4bdf62`
+- `src/tqe/runtime/catalog.py`: `150cb9d7eb3ea7bf12798219692fb1643331066532aa3aaa9a23b620c3e26d8f`
 - `src/tqe/runtime/executor.py`: `2299bd238aaef5889a8a330a3a81b7b7e58877b3063f6ac1eb100421bfc3bbad`
 - `src/tqe/runtime/ir.py`: `43507b1929ec3bee528b5dfff851d73ed73aad12e1a4e2dfe8223f50b1ca1c55`
 - `src/tqe/runtime/operators/__init__.py`: `20c6e5cfe7f575d3846a1511cbc610192881a8bc2845d4c5a85b79789a6e4fd3`

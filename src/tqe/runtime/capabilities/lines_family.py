@@ -11,6 +11,10 @@ import math
 from typing import Any
 
 from tqe.evidence.observation_manifest import ObservationModality, gate_state_absence_status
+from tqe.runtime.between_observed_lines import (
+    BetweenObservedLinesConfig,
+    evaluate_between_observed_lines,
+)
 from tqe.runtime.controlled_line_break import (
     ControlledLineBreakConfig,
     evaluate_controlled_line_break_episode,
@@ -554,6 +558,143 @@ def primitive_relative_position_to_line(state: PeriodState, node: BoundCatalogNo
             entity_scope=catalog_output(node, "relative_position_status").entity_scope,
         ),
         "relative_position_status_records": records,
+    }
+
+
+def primitive_between_observed_lines(state: PeriodState, node: BoundCatalogNode) -> None:
+    line_value = catalog_input_value(state, node, "line_evaluations")
+    entity_value = catalog_input_value(state, node, "entity_anchors")
+    line_records = line_value.value
+    entity_records = entity_value.value
+    if not isinstance(line_records, list) or not isinstance(entity_records, list):
+        raise RuntimeError(f"{node.node_id} requires line and entity anchor records")
+    entity_by_anchor_id = record_by_anchor_id(entity_records)
+    entity_id_field = node_parameter_text(node, "entity_id_field")
+    entity_frame_field = node_parameter_text(node, "entity_frame_field")
+    config = BetweenObservedLinesConfig(
+        nearer_line_rank=int(round(node_parameter_number(node, "nearer_line_rank"))),
+        farther_line_rank=int(round(node_parameter_number(node, "farther_line_rank"))),
+        line_selector=node_parameter_text(node, "line_selector"),
+        line_boundary_buffer_m=node_parameter_number(node, "line_boundary_buffer_m"),
+        minimum_interline_gap_m=node_parameter_number(node, "minimum_interline_gap_m"),
+    )
+    records = [
+        between_observed_lines_anchor_record(
+            state=state,
+            line_record=line_record,
+            entity_record=entity_by_anchor_id.get(str(line_record.get("anchor_id"))),
+            entity_id_field=entity_id_field,
+            entity_frame_field=entity_frame_field,
+            config=config,
+        )
+        for line_record in line_records
+        if isinstance(line_record, dict)
+    ]
+    records = [record for record in records if record is not None]
+    frame_ids = [int(record["anchor_frame_id"]) for record in records]
+    status_values = [
+        None
+        if str(record["between_observed_lines_status"]) == "UNKNOWN"
+        else str(record["between_observed_lines_status"])
+        for record in records
+    ]
+    state.signals[node.node_id] = {
+        "anchor_evaluations": records,
+        "anchor_evaluations_records": records,
+        "between_observed_lines_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=status_values,
+            unknown_mask=[value is None for value in status_values],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(
+                node, "between_observed_lines_status"
+            ).entity_scope,
+        ),
+        "between_observed_lines_status_records": records,
+    }
+
+
+def between_observed_lines_anchor_record(
+    *,
+    state: PeriodState,
+    line_record: dict[str, Any],
+    entity_record: dict[str, Any] | None,
+    entity_id_field: str,
+    entity_frame_field: str,
+    config: BetweenObservedLinesConfig,
+) -> dict[str, Any] | None:
+    anchor_frame_id = optional_int(line_record.get("anchor_frame_id"))
+    if anchor_frame_id is None:
+        return None
+    entity_id = (
+        None
+        if entity_record is None or entity_record.get(entity_id_field) is None
+        else str(entity_record.get(entity_id_field))
+    )
+    entity_frame_id = (
+        optional_int(entity_record.get(entity_frame_field))
+        if entity_record is not None
+        else None
+    )
+    if entity_frame_id is None and entity_frame_field == "anchor_frame_id":
+        entity_frame_id = optional_int(entity_record.get("anchor_frame_id")) if entity_record else None
+    entity_position = (
+        None
+        if entity_id is None or entity_frame_id is None
+        else cached_player_position_at_frame(state, entity_frame_id, entity_id)
+    )
+    payload = evaluate_between_observed_lines(
+        entity_position=entity_position,
+        entity_id=entity_id,
+        entity_frame_id=entity_frame_id,
+        line_evaluation=line_record,
+        config=config,
+    ).to_dict()
+    nearer = payload["selected_nearer_line"]
+    farther = payload["selected_farther_line"]
+    return {
+        **line_record,
+        "match_id": state.match_id,
+        "period": state.period,
+        "anchor_id": str(line_record.get("anchor_id")),
+        "anchor_frame_id": anchor_frame_id,
+        "start_frame_id": optional_int(line_record.get("start_frame_id")) or anchor_frame_id,
+        "end_frame_id": optional_int(line_record.get("end_frame_id")) or anchor_frame_id,
+        "entity_refs": list(line_record.get("entity_refs") or []),
+        "between_observed_lines_status": str(payload["status"]),
+        "between_observed_lines_reason": str(payload["reason"]),
+        "between_observed_lines_definition_version": payload["definition_version"],
+        "between_observed_lines_entity_id_field": entity_id_field,
+        "between_observed_lines_entity_frame_field": entity_frame_field,
+        "entity_record_found": entity_record is not None,
+        "entity_id": payload["entity_id"],
+        "entity_frame_id": payload["entity_frame_id"],
+        "entity_x_m": payload["entity_x_m"],
+        "entity_y_m": payload["entity_y_m"],
+        "normalized_entity_x_m": payload["normalized_entity_x_m"],
+        "line_selector": payload["line_selector"],
+        "nearer_line_rank": payload["declared_nearer_line_rank"],
+        "farther_line_rank": payload["declared_farther_line_rank"],
+        "selected_nearer_line": nearer,
+        "selected_farther_line": farther,
+        "selected_nearer_line_id": None if nearer is None else nearer.get("line_id"),
+        "selected_farther_line_id": None if farther is None else farther.get("line_id"),
+        "selected_nearer_line_rank": payload["selected_nearer_line_rank"],
+        "selected_farther_line_rank": payload["selected_farther_line_rank"],
+        "selected_nearer_line_player_ids": [] if nearer is None else list(nearer.get("defender_ids") or []),
+        "selected_farther_line_player_ids": [] if farther is None else list(farther.get("defender_ids") or []),
+        "signed_distance_to_nearer_line_m": payload["signed_distance_to_nearer_line_m"],
+        "signed_distance_to_farther_line_m": payload["signed_distance_to_farther_line_m"],
+        "interline_gap_m": payload["interline_gap_m"],
+        "line_boundary_buffer_m": payload["line_boundary_buffer_m"],
+        "minimum_interline_gap_m": payload["minimum_interline_gap_m"],
+        "between_lines_line_model_status": payload["line_model_status"],
+        "between_lines_line_model_reason": payload["line_model_reason"],
+        "between_lines_defender_observation_status": payload["defender_observation_status"],
+        "between_lines_defender_observation_reason": payload["defender_observation_reason"],
+        "between_lines_player_track_coverage_status": payload["player_track_coverage_status"],
+        "between_lines_player_track_coverage_reason": payload["player_track_coverage_reason"],
+        "between_lines_player_track_coverage_row_ids": payload["player_track_coverage_row_ids"],
     }
 
 def relative_position_to_line_anchor_record(
