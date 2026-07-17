@@ -196,7 +196,7 @@ class Deploy2LazyHydrationTests(unittest.TestCase):
 
         self.assertEqual(1, summary["descriptor_count"])
 
-    def test_pressing_map_certified_population_builds_lazy_descriptors_without_execution(self) -> None:
+    def test_pressing_map_bundled_population_loads_lazy_descriptors_without_execution(self) -> None:
         table = read_json(app_service.FILM_ROOM_GALLERY_2_TABLE_PATH)
         pressing_spec = next(
             spec for spec in film_room_flagship_specs() if spec["key"] == "pressing_map"
@@ -211,6 +211,25 @@ class Deploy2LazyHydrationTests(unittest.TestCase):
                     return_value=[pressing_spec],
                 ),
             ):
+                for role in ("away", "home"):
+                    write_film_room_descriptor_fragment(
+                        key="pressing_map",
+                        role=role,
+                        plan_path=Path(pressing_spec["plan_path"]),
+                        executions=[
+                            {
+                                "role": role,
+                                "execution": {
+                                    "bound_plan_hash": f"bundled-{role}",
+                                    "execution_id": f"bundled-{role}",
+                                    "results": [],
+                                },
+                                "cache_after_execute": {"cache_status": "BUNDLE_BUILD"},
+                                "bound_record": {"bound_plan_hash": f"bundled-{role}"},
+                            }
+                        ],
+                        output_root=root / "runtime",
+                    )
                 index = build_film_room_descriptor_index(output_root=root / "runtime")
 
             fragments = [
@@ -236,9 +255,112 @@ class Deploy2LazyHydrationTests(unittest.TestCase):
         self.assertNotIn("frames", first["descriptor"])
         self.assertIn("moment_record", hydration)
         self.assertNotIn("frames", hydration)
+
+    def test_missing_pressing_cache_and_invalid_fragile_cache_do_not_take_down_retention(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            cache = root / "old-bundle-cache"
+            counter_spec = next(
+                spec
+                for spec in film_room_flagship_specs()
+                if spec["key"] == "counterattack_sequence_rate"
+            )
+            counter_plan_path = Path(counter_spec["plan_path"])
+            counter_plan = read_json(counter_plan_path)
+            with patch("tqe.workshop.app_service.CACHE_ROOT", cache):
+                for role in ("away", "home"):
+                    records = (
+                        [chain_record(5000 + index * 100) for index in range(115)]
+                        if role == "away"
+                        else []
+                    )
+                    summary = write_film_room_descriptor_fragment(
+                        key="counterattack_sequence_rate",
+                        role=role,
+                        plan_path=counter_plan_path,
+                        executions=[
+                            {
+                                "role": role,
+                                "execution": {
+                                    "bound_plan_hash": f"retention-{role}",
+                                    "execution_id": f"retention-{role}",
+                                    "results": (
+                                        [
+                                            {
+                                                "result_id": "retention-population",
+                                                "classification": "PASS",
+                                                "requested_evidence": {
+                                                    "source_records": records
+                                                },
+                                            }
+                                        ]
+                                        if records
+                                        else []
+                                    ),
+                                },
+                                "cache_after_execute": {"cache_status": "OLD_BUNDLE"},
+                                "bound_record": {
+                                    "bound_plan_hash": f"retention-{role}"
+                                },
+                            }
+                        ],
+                        output_root=root / "runtime",
+                    )
+                    legacy_fragment = read_json(Path(summary["fragment_path"]))
+                    legacy_fragment["schema_version"] = "film_room.descriptor_index.v1"
+                    legacy_fragment.pop("code_epoch", None)
+                    write_json(Path(summary["fragment_path"]), legacy_fragment)
+                fragile_spec = next(
+                    spec
+                    for spec in film_room_flagship_specs()
+                    if spec["key"] == "fragile_retention"
+                )
+                fragile_plan_path = Path(fragile_spec["plan_path"])
+                fragile_plan = read_json(fragile_plan_path)
+                for role in sorted(film_room_role_documents(fragile_plan)):
+                    write_json(
+                        cache
+                        / app_service.FILM_ROOM_DESCRIPTOR_FRAGMENT_DIR
+                        / f"fragile_retention-{role}.json",
+                        {
+                            "schema_version": "film_room.descriptor_index.v0",
+                            "flagship_key": "fragile_retention",
+                            "role": role,
+                            "plan_hash": stable_hash(fragile_plan),
+                            "plan_path": str(fragile_plan_path),
+                            "bound_plan_hash": f"orphaned-{role}",
+                            "moments": [],
+                        },
+                    )
+                initialize_film_room_prewarm(
+                    output_root=root / "fresh-runtime",
+                    execution_enabled=False,
+                )
+                bootstrap = film_room_bootstrap_response(
+                    output_root=root / "fresh-runtime"
+                )
+
+        pressing = bootstrap["flagship_responses"]["pressing_map"]
+        retention = bootstrap["flagship_responses"]["counterattack_sequence_rate"]
+        self.assertEqual("ready", bootstrap["state"])
+        self.assertEqual(115, len(retention["answer"]["moments"]))
+        self.assertIsNone(pressing["answer"])
+        self.assertEqual("understood_but_not_expressible", pressing["outcome"])
         self.assertEqual(
-            "certified_moment_records",
-            app_service.FILM_ROOM_PREWARM_STATE["descriptor_rebuild"]["source"],
+            app_service.FILM_ROOM_BUNDLED_DESCRIPTOR_ABSENT,
+            pressing["refusal"]["gap_code"],
+        )
+        self.assertEqual(
+            "prewarmed_descriptor_absence",
+            pressing["provider"],
+        )
+        self.assertEqual(
+            "absent",
+            next(
+                item
+                for item in app_service.FILM_ROOM_PREWARM_STATE["items"]
+                if item["key"] == "fragile_retention"
+            )["execution_status"],
         )
 
     def test_prewarm_off_startup_loads_metadata_without_execution_or_full_payloads(self) -> None:
@@ -399,7 +521,7 @@ class Deploy2LazyHydrationTests(unittest.TestCase):
                     write_json(
                         cache / f"film-room-descriptor-fragments/{key}-{role}.json",
                         {
-                            "schema_version": "film_room.descriptor_index.v1",
+                            "schema_version": "film_room.descriptor_index.v0",
                             "flagship_key": key,
                             "role": role,
                             "plan_hash": plan_hash,
@@ -435,13 +557,17 @@ class Deploy2LazyHydrationTests(unittest.TestCase):
         self.assertEqual("ready", bootstrap["state"])
         self.assertEqual(1, len(bootstrap["answer"]["moments"]))
         self.assertEqual("disk-cache", hydrated_marker)
-        self.assertEqual(6, len(rebuild_records))
+        self.assertEqual(4, len(rebuild_records))
         self.assertTrue(
             all("cache-key miss" in record["rebuild_reason"] for record in rebuild_records)
         )
         self.assertEqual(
-            "complete",
+            "complete_with_absences",
             app_service.FILM_ROOM_PREWARM_STATE["descriptor_rebuild"]["status"],
+        )
+        self.assertEqual(
+            app_service.FILM_ROOM_BUNDLED_DESCRIPTOR_ABSENT,
+            bootstrap["flagship_responses"]["pressing_map"]["refusal"]["gap_code"],
         )
         self.assertTrue(all(record["execution_performed"] is False for record in rebuild_records))
         plan_execution.assert_not_called()
@@ -459,12 +585,21 @@ class Deploy2LazyHydrationTests(unittest.TestCase):
 
         state = app_service.FILM_ROOM_PREWARM_STATE
         self.assertEqual("warming", state["state"])
-        self.assertEqual("failed", state["descriptor_rebuild"]["status"])
-        self.assertEqual("fragile_retention", state["descriptor_rebuild"]["flagship_key"])
-        self.assertEqual("away", state["descriptor_rebuild"]["role"])
-        self.assertIn("found 0", state["descriptor_rebuild"]["message"])
+        self.assertEqual("complete_with_absences", state["descriptor_rebuild"]["status"])
         self.assertEqual(
-            "rebuilding_descriptor_cache",
+            {
+                "pressing_map",
+                "fragile_retention",
+                "counterattack_sequence_rate",
+            },
+            set(state["descriptor_absences"]),
+        )
+        self.assertIn(
+            "found 0",
+            state["descriptor_absences"]["fragile_retention"]["message"],
+        )
+        self.assertEqual(
+            "absent",
             state["items"][0]["execution_status"],
         )
 

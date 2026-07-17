@@ -1,0 +1,29 @@
+{
+  "archive_path": "/private/tmp/gallery2-hotfix-bundle-r1/entrelineas-cloud-workbench-alpha-seven-match-v1.tar.gz",
+  "archive_sha256": "32f44347187219383dcf2289ba47c993b88da6c6704f1cdfade182e0eaa5dbd9",
+  "compressed_size_bytes": 662912564,
+  "created_at": "2026-07-16T23:44:02.177061+00:00",
+  "descriptor_code_epoch": "eb9ebc1e9116377c188ef2cdf9b8acaa67876cd733bd225aca4a07171482c5f1",
+  "execution_cache_count": 6,
+  "expanded_size_bytes": 5118311742,
+  "file_count": 3350,
+  "hydration_shard_count": 2926,
+  "manifest_path": "/private/tmp/gallery2-hotfix-bundle-r1/entrelineas-cloud-workbench-alpha-seven-match-v1.manifest.json",
+  "pressing_fragments": [
+    {
+      "descriptor_count": 1407,
+      "path": "cache/film-room-descriptor-fragments/pressing_map-away.json",
+      "sha256": "8e70ce9c8e2bab61bbb6ee8c4253a738ab9bf991bfdfbb49c23c1f708274322d"
+    },
+    {
+      "descriptor_count": 1404,
+      "path": "cache/film-room-descriptor-fragments/pressing_map-home.json",
+      "sha256": "3459e916d2e847a96747cd40fedd99232730694d8b0315f49ba26f7a83739691"
+    }
+  ],
+  "runtime_code_epoch": "794e8b52d6546230a8c284adcb6493764dca147d6c3e7d25e0c85c751d679861",
+  "s3_target": "s3://priori-cloud-alpha-477665006166/priori/cloud-alpha/entrelineas-cloud-workbench-alpha-seven-match-v1.tar.gz",
+  "source_commit": "b75a2f2cc0463ca4bd52ecf3cd785734842c2a1d",
+  "source_dirty": false,
+  "upload_status": "blocked_before_write_aws_sts_unreachable"
+}

@@ -1,0 +1,37 @@
+{
+  "bootstrap_state": "ready",
+  "cgroup_limit_bytes": null,
+  "descriptor_absences": {
+    "pressing_map": {
+      "descriptor_source": "bundled_descriptor_fragments",
+      "error_type": "CapabilityGap",
+      "message": "Bundled Film Room descriptor evidence is absent or invalid for flagship=pressing_map role=away: missing.",
+      "reason_code": "FILM_ROOM_BUNDLED_DESCRIPTOR_EVIDENCE_ABSENT"
+    }
+  },
+  "execution_cache_payloads_opened_by_migration": 0,
+  "execution_prewarm": false,
+  "fragment_migration_count": 4,
+  "headroom_bytes": null,
+  "hydrations": [
+    {
+      "frame_count": 101,
+      "replay_window_id": "replay_0e2ba8014f63667a",
+      "stage_label_count": 1
+    },
+    {
+      "frame_count": 301,
+      "replay_window_id": "replay_4f459a027b295d1e",
+      "stage_label_count": 1
+    }
+  ],
+  "layout_root": "/private/tmp/gallery2-hotfix-old-bundle-r1",
+  "memory_peak_bytes": 301301760,
+  "memory_peak_source": "process_ru_maxrss",
+  "mode": "old",
+  "pressing_absence_code": "FILM_ROOM_BUNDLED_DESCRIPTOR_EVIDENCE_ABSENT",
+  "pressing_moment_count": 0,
+  "retention_moment_count": 115,
+  "schema_version": "gallery_2_hotfix_bundle_proof.v1",
+  "sealed_2gib_proof": false
+}
