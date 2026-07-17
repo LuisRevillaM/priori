@@ -44,7 +44,7 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
         cls.coverage_rows = json.loads(Path("generated/coverage-map.json").read_text(encoding="utf-8"))
 
     def test_vocabulary_and_composition_grammar_are_derived_from_generated_pack(self) -> None:
-        self.assertEqual(37, len(self.vocabulary.primitive_names))
+        self.assertEqual(38, len(self.vocabulary.primitive_names))
         self.assertEqual(8, len(self.vocabulary.predicate_operator_names))
         self.assertEqual(8, len(self.vocabulary.composition_operator_names))
         self.assertEqual(15, len(self.vocabulary.constraint_kinds))
