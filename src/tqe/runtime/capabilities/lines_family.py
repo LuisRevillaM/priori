@@ -7,6 +7,7 @@ phase.
 
 from __future__ import annotations
 
+import math
 from typing import Any
 
 from tqe.evidence.observation_manifest import ObservationModality, gate_state_absence_status
@@ -166,6 +167,43 @@ def multi_line_anchor_record(
     evaluation_frame_id = optional_int(anchor.get(anchor_frame_field)) or anchor_frame_id
     if anchor_frame_id is None or evaluation_frame_id is None:
         return None
+    required_observed_defender_count = minimum_line_defenders * target_line_rank
+    defenders = cached_observed_outfield_positions_at_frame(
+        state,
+        evaluation_frame_id,
+        state.defending_team_role,
+        known_outfield_ids,
+    )
+    invalid_defender_ids = sorted(
+        str(defender["player_id"])
+        for defender in defenders
+        if not _finite_position(defender)
+    )
+    valid_defenders = [defender for defender in defenders if _finite_position(defender)]
+    coverage_probe = gate_state_absence_status(
+        state=state,
+        start_frame_id=evaluation_frame_id,
+        end_frame_id=evaluation_frame_id,
+        modalities=(ObservationModality.PLAYER_TRACK,),
+        status="FAIL",
+        reason="defender_observation_coverage_probe",
+    )
+    player_track_coverage = coverage_probe.coverage[0]
+    if not player_track_coverage.certified:
+        defender_observation_status = "UNCERTIFIED"
+        defender_observation_reason = coverage_probe.reason
+    elif not known_outfield_ids:
+        defender_observation_status = "AMBIGUOUS"
+        defender_observation_reason = "defending_outfield_population_unknown"
+    elif invalid_defender_ids:
+        defender_observation_status = "AMBIGUOUS"
+        defender_observation_reason = "defender_positions_ambiguous"
+    elif len(valid_defenders) < required_observed_defender_count:
+        defender_observation_status = "INSUFFICIENT"
+        defender_observation_reason = "insufficient_observed_outfield_defenders"
+    else:
+        defender_observation_status = "ADEQUATE"
+        defender_observation_reason = "defender_observation_adequate"
     ball_point = ball_point_at_frame(state, evaluation_frame_id)
     if ball_point is None:
         return multi_line_payload_from_anchor(
@@ -177,18 +215,23 @@ def multi_line_anchor_record(
             target_line_rank=target_line_rank,
             lines=[],
             attack_x_sign=attack_x_sign,
+            defender_observation_status=defender_observation_status,
+            defender_observation_reason=defender_observation_reason,
+            observed_outfield_defender_count=len(defenders),
+            valid_observed_outfield_defender_count=len(valid_defenders),
+            invalid_observed_outfield_defender_ids=invalid_defender_ids,
+            required_observed_outfield_defender_count=(
+                required_observed_defender_count
+            ),
+            player_track_coverage_status=(
+                "CERTIFIED" if player_track_coverage.certified else "UNCERTIFIED"
+            ),
+            player_track_coverage_reason=player_track_coverage.reason,
+            player_track_coverage_row_ids=list(player_track_coverage.row_ids),
         )
-    defenders = cached_observed_outfield_positions_at_frame(
-        state,
-        evaluation_frame_id,
-        state.defending_team_role,
-        known_outfield_ids,
-    )
     candidates = []
     normalized_ball_x = float(ball_point[0]) * attack_x_sign
-    for defender in defenders:
-        if defender.get("x_m") is None or defender.get("y_m") is None:
-            continue
+    for defender in valid_defenders:
         normalized_x = float(defender["x_m"]) * attack_x_sign
         if normalized_x > normalized_ball_x + goal_side_buffer_m:
             candidates.append(
@@ -227,7 +270,10 @@ def multi_line_anchor_record(
                 "defender_count": len(defender_ids),
             }
         )
-    if not lines:
+    if defender_observation_status != "ADEQUATE":
+        status = "UNKNOWN"
+        reason = defender_observation_reason
+    elif not lines:
         status = "FAIL"
         reason = "no_observed_lines"
     elif len(lines) < target_line_rank:
@@ -254,14 +300,41 @@ def multi_line_anchor_record(
         reason=reason,
         target_line_rank=target_line_rank,
         lines=lines,
-        selected_line=lines[target_line_rank - 1] if len(lines) >= target_line_rank else None,
+        selected_line=lines[target_line_rank - 1] if status == "PASS" else None,
         ball_x_m=ball_point[0],
         normalized_ball_x_m=normalized_ball_x,
         goal_side_buffer_m=goal_side_buffer_m,
         line_band_width_m=line_band_width_m,
         minimum_line_defenders=minimum_line_defenders,
         attack_x_sign=attack_x_sign,
+        defender_observation_status=defender_observation_status,
+        defender_observation_reason=defender_observation_reason,
+        observed_outfield_defender_count=len(defenders),
+        valid_observed_outfield_defender_count=len(valid_defenders),
+        invalid_observed_outfield_defender_ids=invalid_defender_ids,
+        required_observed_outfield_defender_count=(
+            required_observed_defender_count
+        ),
+        player_track_coverage_status=(
+            "CERTIFIED" if player_track_coverage.certified else "UNCERTIFIED"
+        ),
+        player_track_coverage_reason=player_track_coverage.reason,
+        player_track_coverage_row_ids=list(player_track_coverage.row_ids),
     )
+
+
+def _finite_position(defender: dict[str, Any]) -> bool:
+    x_m = defender.get("x_m")
+    y_m = defender.get("y_m")
+    return (
+        isinstance(x_m, (int, float))
+        and not isinstance(x_m, bool)
+        and math.isfinite(float(x_m))
+        and isinstance(y_m, (int, float))
+        and not isinstance(y_m, bool)
+        and math.isfinite(float(y_m))
+    )
+
 
 def multi_line_payload_from_anchor(
     *,
@@ -279,6 +352,15 @@ def multi_line_payload_from_anchor(
     line_band_width_m: float | None = None,
     minimum_line_defenders: int | None = None,
     attack_x_sign: int | None = None,
+    defender_observation_status: str | None = None,
+    defender_observation_reason: str | None = None,
+    observed_outfield_defender_count: int | None = None,
+    valid_observed_outfield_defender_count: int | None = None,
+    invalid_observed_outfield_defender_ids: list[str] | None = None,
+    required_observed_outfield_defender_count: int | None = None,
+    player_track_coverage_status: str | None = None,
+    player_track_coverage_reason: str | None = None,
+    player_track_coverage_row_ids: list[str] | None = None,
 ) -> dict[str, Any]:
     anchor_frame_id = optional_int(anchor.get("anchor_frame_id")) or evaluation_frame_id
     return {
@@ -309,7 +391,23 @@ def multi_line_payload_from_anchor(
         "line_band_width_m": line_band_width_m,
         "minimum_line_defenders": minimum_line_defenders,
         "attacking_direction": attack_x_sign,
+        "defender_observation_status": defender_observation_status,
+        "defender_observation_reason": defender_observation_reason,
+        "observed_outfield_defender_count": observed_outfield_defender_count,
+        "valid_observed_outfield_defender_count": (
+            valid_observed_outfield_defender_count
+        ),
+        "invalid_observed_outfield_defender_ids": (
+            invalid_observed_outfield_defender_ids or []
+        ),
+        "required_observed_outfield_defender_count": (
+            required_observed_outfield_defender_count
+        ),
+        "player_track_coverage_status": player_track_coverage_status,
+        "player_track_coverage_reason": player_track_coverage_reason,
+        "player_track_coverage_row_ids": player_track_coverage_row_ids or [],
     }
+
 
 def defensive_line_anchor_record(
     *,
