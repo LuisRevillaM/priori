@@ -856,11 +856,11 @@
       "shared_count": 50
     },
     "baseline_sources": {
-      "baseline_artifact_revision": "9f199230e1c005e4940186bbe7d4bb551d4bbf9844ea2eea78714bc5d8c67e31",
+      "baseline_artifact_revision": "c29416f49804040b4bac1952e5ccfce91969c2e5b5429be4292d6c1443f35da2",
       "capability_catalog": {
         "exists": true,
         "path": "generated/capability-catalog.json",
-        "source_artifact_sha256": "ef9aa07c1ab94f2d962610bcb817b9f4ba11c9c34c87fc9059d82e9d74705ba1"
+        "source_artifact_sha256": "7a959ad223ac6c39a3b191b52165dd51071c024b8636bad25f2422cbd88e55dc"
       },
       "product_recipe_contracts": {
         "frozen_baseline": false,
@@ -883,19 +883,9 @@
           "projection_contract_hash": "a796f3d6ca9399358c6bf535d0d7d8f57509bbf9763661cf191c76e346af9d3b"
         }
       },
-      "baseline_count": 56,
-      "contract_changed": [
-        "runtime:relation:pressure_on_carrier:0.1.0"
-      ],
-      "contract_changed_details": {
-        "runtime:relation:pressure_on_carrier:0.1.0": {
-          "baseline_contract_hash": "ea266053fd2e504d662371aa5da15aa5ba431cffa295f136fa0778a32aab4a2e",
-          "changed_fields": [
-            "outputs"
-          ],
-          "projection_contract_hash": "de09d17431e8fd4eaadf55695c128f0ae720ab8d26ab1dff15fc35eb88324224"
-        }
-      },
+      "baseline_count": 57,
+      "contract_changed": [],
+      "contract_changed_details": {},
       "projection_count": 44,
       "recipe_contract_baseline_mode": "current_runtime_alignment",
       "recipe_contract_baseline_note": "Product recipe contracts are compared against current runtime manifest recipes until a pinned product recipe baseline artifact exists.",
@@ -904,6 +894,7 @@
         "runtime:primitive:acceleration:0.1.0",
         "runtime:primitive:cover_shadow:0.1.0",
         "runtime:primitive:fragile_carrier_episode:0.1.0",
+        "runtime:primitive:fragile_state_eligibility:0.1.0",
         "runtime:primitive:join_episode_sets:0.1.0",
         "runtime:primitive:marking:0.1.0",
         "runtime:primitive:off_ball_run:0.1.0",
@@ -924,6 +915,9 @@
         },
         "runtime:primitive:fragile_carrier_episode:0.1.0": {
           "baseline_contract_hash": "96b5e45731dbeed5704b2d0b2a6e818b20fcd2daa0e6bc6538672aaa52a9c50f"
+        },
+        "runtime:primitive:fragile_state_eligibility:0.1.0": {
+          "baseline_contract_hash": "3e18d9ade8ac6e8c3d840b6ac1d1a671517e28294491e20f5b86d92693d1deef"
         },
         "runtime:primitive:join_episode_sets:0.1.0": {
           "baseline_contract_hash": "4464b25fda2f2c4b2b109bc1779a38c3f3aa46ce37fadf223b09c38901f83a22"
@@ -968,14 +962,14 @@
   },
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "9f199230e1c005e4940186bbe7d4bb551d4bbf9844ea2eea78714bc5d8c67e31",
+    "baseline_artifact_revision": "c29416f49804040b4bac1952e5ccfce91969c2e5b5429be4292d6c1443f35da2",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "f0250ded4dd48c037874064f0bcc314f8b76e25866699c24a25a5d96042c3446",
+    "lock_hash": "56cc2e8e8da7180ed6495d3d6124ad6e4278ec6eec4b3b6b155e206cfa928b38",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "95f08348441ee80b332c073fd9546cfdd462e9e679fba5689c46f6e304ab9192",
+    "registry_revision": "d994bf9f32218e0130e41e0dbc026d682099aea05f2a3da7c9a09914e618c575",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
     "runtime_manifest_revision": "bb120fb93aefe8dadd6d1ae96c9f7de84d4c719a2b6949eb38ad0daa06473ef5",
     "schema_version": "1.0",

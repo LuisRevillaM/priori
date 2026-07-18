@@ -5569,13 +5569,12 @@ projection_policies:
     requires: {runtime_binding: VERIFIED, product_exposure: ALLOWED, product_maturity: EXPOSED, validation: VERIFIED}
     excludes: [PROPOSED_ATLAS, DEPRECATED]
     accepted_differences:
-      - subject_ref: runtime:relation:pressure_on_carrier:0.1.0
-        difference_kind: CONTRACT_CHANGED
-        baseline_contract_hash: ea266053fd2e504d662371aa5da15aa5ba431cffa295f136fa0778a32aab4a2e
-        projection_contract_hash: de09d17431e8fd4eaadf55695c128f0ae720ab8d26ab1dff15fc35eb88324224
-        permitted_fields: [outputs]
-        rationale: CAR-0b exposes inherited possession/control/boundary routing fields so the certified pressure record can feed the typed CAR-0a adapter without parallel pressure logic; pressure values are unchanged.
-        review_condition: Retain while fragile_carrier_episode consumes certified pressure records through typed field routing.
+      - subject_ref: runtime:primitive:fragile_state_eligibility:0.1.0
+        difference_kind: REMOVED
+        baseline_contract_hash: 3e18d9ade8ac6e8c3d840b6ac1d1a671517e28294491e20f5b86d92693d1deef
+        permitted_fields: []
+        rationale: CAR-0b eligibility is certified substrate but intentionally held from product projection until the complete CAR episode ledger ships.
+        review_condition: Remove this waiver when CAR-1 is product-exposed.
       - subject_ref: runtime:primitive:fragile_carrier_episode:0.1.0
         difference_kind: REMOVED
         baseline_contract_hash: 96b5e45731dbeed5704b2d0b2a6e818b20fcd2daa0e6bc6538672aaa52a9c50f

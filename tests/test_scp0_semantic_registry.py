@@ -292,13 +292,9 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
         differences = scpgen.build_projection_differences(runtime_manifest, projections)
 
         product = differences["product"]
-        # CAR-0b ratchet: pressure values are unchanged; its anchor-evaluation
-        # contract now declares inherited possession/control/boundary routing
-        # fields consumed by the typed CAR episode adapter.
-        self.assertEqual(
-            ["runtime:relation:pressure_on_carrier:0.1.0"],
-            product["contract_changed"],
-        )
+        # The regenerated product baseline includes CAR-0b's declared routing
+        # evidence, so shared records have no unapproved contract drift.
+        self.assertEqual([], product["contract_changed"])
         # Diff counts must be internally consistent rather than pinned numbers.
         self.assertEqual(
             product["shared_count"],
