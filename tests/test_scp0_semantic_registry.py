@@ -292,8 +292,8 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
         differences = scpgen.build_projection_differences(runtime_manifest, projections)
 
         product = differences["product"]
-        # The product baseline is the regenerated capability catalog, so shared
-        # records must have identical contracts (no silent drift).
+        # The regenerated product baseline includes CAR-0b's declared routing
+        # evidence, so shared records have no unapproved contract drift.
         self.assertEqual([], product["contract_changed"])
         # Diff counts must be internally consistent rather than pinned numbers.
         self.assertEqual(

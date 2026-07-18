@@ -1,0 +1,475 @@
+{
+  "plan_hash": "31503dd0797becbe6a22c6eb172c68890befe4b2ddafedf882c97a6635fc5b46",
+  "population_definition": "deduplicated fragile carrier episodes; no optional context geometry required",
+  "rows": [
+    {
+      "eligible_episode_count": 44,
+      "episode_ids_hash": "519bf7b57712b276ee5a1655e3b29cda3d58f235e84da6152a312843eab18342",
+      "episode_population": 44,
+      "fail_episode_count": 0,
+      "match_id": "J03WOH",
+      "pressure_candidate_population": 330,
+      "pressure_reason_code_counts": {
+        "FAIL:pressure_duration_below_threshold": 11,
+        "FAIL:pressure_threshold_not_met:approach_angle": 4,
+        "FAIL:pressure_threshold_not_met:closing_speed": 9,
+        "FAIL:pressure_threshold_not_met:closing_speed,approach_angle": 1,
+        "FAIL:pressure_threshold_not_met:distance": 210,
+        "FAIL:pressure_threshold_not_met:distance,approach_angle": 11,
+        "FAIL:pressure_threshold_not_met:distance,closing_speed": 30,
+        "FAIL:pressure_threshold_not_met:distance,closing_speed,approach_angle": 10,
+        "PASS:pressure_observed": 44
+      },
+      "pressure_status_counts": {
+        "FAIL": 286,
+        "PASS": 44
+      },
+      "reason_code_counts": {
+        "certified_possession_control_and_pressure": 44
+      },
+      "status_counts": {
+        "PASS": 44
+      },
+      "team_role": "home",
+      "unknown_episode_count": 0,
+      "unknown_pressure_candidate_count": 0,
+      "unknown_share": 0.0
+    },
+    {
+      "eligible_episode_count": 44,
+      "episode_ids_hash": "519bf7b57712b276ee5a1655e3b29cda3d58f235e84da6152a312843eab18342",
+      "episode_population": 44,
+      "fail_episode_count": 0,
+      "match_id": "J03WOH",
+      "pressure_candidate_population": 330,
+      "pressure_reason_code_counts": {
+        "FAIL:pressure_duration_below_threshold": 11,
+        "FAIL:pressure_threshold_not_met:approach_angle": 4,
+        "FAIL:pressure_threshold_not_met:closing_speed": 9,
+        "FAIL:pressure_threshold_not_met:closing_speed,approach_angle": 1,
+        "FAIL:pressure_threshold_not_met:distance": 210,
+        "FAIL:pressure_threshold_not_met:distance,approach_angle": 11,
+        "FAIL:pressure_threshold_not_met:distance,closing_speed": 30,
+        "FAIL:pressure_threshold_not_met:distance,closing_speed,approach_angle": 10,
+        "PASS:pressure_observed": 44
+      },
+      "pressure_status_counts": {
+        "FAIL": 286,
+        "PASS": 44
+      },
+      "reason_code_counts": {
+        "certified_possession_control_and_pressure": 44
+      },
+      "status_counts": {
+        "PASS": 44
+      },
+      "team_role": "away",
+      "unknown_episode_count": 0,
+      "unknown_pressure_candidate_count": 0,
+      "unknown_share": 0.0
+    },
+    {
+      "eligible_episode_count": 39,
+      "episode_ids_hash": "4bb579d446c4053afa73110e17f2ce50fbcbf363d45d4c7154b4e5d0e6176cb5",
+      "episode_population": 39,
+      "fail_episode_count": 0,
+      "match_id": "J03WOY",
+      "pressure_candidate_population": 408,
+      "pressure_reason_code_counts": {
+        "FAIL:pressure_duration_below_threshold": 10,
+        "FAIL:pressure_threshold_not_met:approach_angle": 1,
+        "FAIL:pressure_threshold_not_met:closing_speed": 15,
+        "FAIL:pressure_threshold_not_met:closing_speed,approach_angle": 7,
+        "FAIL:pressure_threshold_not_met:distance": 273,
+        "FAIL:pressure_threshold_not_met:distance,approach_angle": 7,
+        "FAIL:pressure_threshold_not_met:distance,closing_speed": 43,
+        "FAIL:pressure_threshold_not_met:distance,closing_speed,approach_angle": 13,
+        "PASS:pressure_observed": 39
+      },
+      "pressure_status_counts": {
+        "FAIL": 369,
+        "PASS": 39
+      },
+      "reason_code_counts": {
+        "certified_possession_control_and_pressure": 39
+      },
+      "status_counts": {
+        "PASS": 39
+      },
+      "team_role": "home",
+      "unknown_episode_count": 0,
+      "unknown_pressure_candidate_count": 0,
+      "unknown_share": 0.0
+    },
+    {
+      "eligible_episode_count": 39,
+      "episode_ids_hash": "4bb579d446c4053afa73110e17f2ce50fbcbf363d45d4c7154b4e5d0e6176cb5",
+      "episode_population": 39,
+      "fail_episode_count": 0,
+      "match_id": "J03WOY",
+      "pressure_candidate_population": 408,
+      "pressure_reason_code_counts": {
+        "FAIL:pressure_duration_below_threshold": 10,
+        "FAIL:pressure_threshold_not_met:approach_angle": 1,
+        "FAIL:pressure_threshold_not_met:closing_speed": 15,
+        "FAIL:pressure_threshold_not_met:closing_speed,approach_angle": 7,
+        "FAIL:pressure_threshold_not_met:distance": 273,
+        "FAIL:pressure_threshold_not_met:distance,approach_angle": 7,
+        "FAIL:pressure_threshold_not_met:distance,closing_speed": 43,
+        "FAIL:pressure_threshold_not_met:distance,closing_speed,approach_angle": 13,
+        "PASS:pressure_observed": 39
+      },
+      "pressure_status_counts": {
+        "FAIL": 369,
+        "PASS": 39
+      },
+      "reason_code_counts": {
+        "certified_possession_control_and_pressure": 39
+      },
+      "status_counts": {
+        "PASS": 39
+      },
+      "team_role": "away",
+      "unknown_episode_count": 0,
+      "unknown_pressure_candidate_count": 0,
+      "unknown_share": 0.0
+    },
+    {
+      "eligible_episode_count": 33,
+      "episode_ids_hash": "06f4c8b4a5c8ba6cc5ad5fc5f3d613634e6c3b6fcf3800ec2f79ad7f15359fe3",
+      "episode_population": 33,
+      "fail_episode_count": 0,
+      "match_id": "J03WPY",
+      "pressure_candidate_population": 471,
+      "pressure_reason_code_counts": {
+        "FAIL:pressure_duration_below_threshold": 17,
+        "FAIL:pressure_threshold_not_met:approach_angle": 2,
+        "FAIL:pressure_threshold_not_met:closing_speed": 9,
+        "FAIL:pressure_threshold_not_met:closing_speed,approach_angle": 6,
+        "FAIL:pressure_threshold_not_met:distance": 315,
+        "FAIL:pressure_threshold_not_met:distance,approach_angle": 15,
+        "FAIL:pressure_threshold_not_met:distance,closing_speed": 47,
+        "FAIL:pressure_threshold_not_met:distance,closing_speed,approach_angle": 27,
+        "PASS:pressure_observed": 33
+      },
+      "pressure_status_counts": {
+        "FAIL": 438,
+        "PASS": 33
+      },
+      "reason_code_counts": {
+        "certified_possession_control_and_pressure": 33
+      },
+      "status_counts": {
+        "PASS": 33
+      },
+      "team_role": "home",
+      "unknown_episode_count": 0,
+      "unknown_pressure_candidate_count": 0,
+      "unknown_share": 0.0
+    },
+    {
+      "eligible_episode_count": 33,
+      "episode_ids_hash": "06f4c8b4a5c8ba6cc5ad5fc5f3d613634e6c3b6fcf3800ec2f79ad7f15359fe3",
+      "episode_population": 33,
+      "fail_episode_count": 0,
+      "match_id": "J03WPY",
+      "pressure_candidate_population": 471,
+      "pressure_reason_code_counts": {
+        "FAIL:pressure_duration_below_threshold": 17,
+        "FAIL:pressure_threshold_not_met:approach_angle": 2,
+        "FAIL:pressure_threshold_not_met:closing_speed": 9,
+        "FAIL:pressure_threshold_not_met:closing_speed,approach_angle": 6,
+        "FAIL:pressure_threshold_not_met:distance": 315,
+        "FAIL:pressure_threshold_not_met:distance,approach_angle": 15,
+        "FAIL:pressure_threshold_not_met:distance,closing_speed": 47,
+        "FAIL:pressure_threshold_not_met:distance,closing_speed,approach_angle": 27,
+        "PASS:pressure_observed": 33
+      },
+      "pressure_status_counts": {
+        "FAIL": 438,
+        "PASS": 33
+      },
+      "reason_code_counts": {
+        "certified_possession_control_and_pressure": 33
+      },
+      "status_counts": {
+        "PASS": 33
+      },
+      "team_role": "away",
+      "unknown_episode_count": 0,
+      "unknown_pressure_candidate_count": 0,
+      "unknown_share": 0.0
+    },
+    {
+      "eligible_episode_count": 50,
+      "episode_ids_hash": "b910be9ed903797274ad0bd6d08f69c7502e6a6678043cafb32e55b4606626bf",
+      "episode_population": 50,
+      "fail_episode_count": 0,
+      "match_id": "J03WQQ",
+      "pressure_candidate_population": 555,
+      "pressure_reason_code_counts": {
+        "FAIL:pressure_duration_below_threshold": 16,
+        "FAIL:pressure_threshold_not_met:closing_speed": 11,
+        "FAIL:pressure_threshold_not_met:closing_speed,approach_angle": 6,
+        "FAIL:pressure_threshold_not_met:distance": 386,
+        "FAIL:pressure_threshold_not_met:distance,approach_angle": 6,
+        "FAIL:pressure_threshold_not_met:distance,closing_speed": 54,
+        "FAIL:pressure_threshold_not_met:distance,closing_speed,approach_angle": 26,
+        "PASS:pressure_observed": 50
+      },
+      "pressure_status_counts": {
+        "FAIL": 505,
+        "PASS": 50
+      },
+      "reason_code_counts": {
+        "certified_possession_control_and_pressure": 50
+      },
+      "status_counts": {
+        "PASS": 50
+      },
+      "team_role": "home",
+      "unknown_episode_count": 0,
+      "unknown_pressure_candidate_count": 0,
+      "unknown_share": 0.0
+    },
+    {
+      "eligible_episode_count": 50,
+      "episode_ids_hash": "b910be9ed903797274ad0bd6d08f69c7502e6a6678043cafb32e55b4606626bf",
+      "episode_population": 50,
+      "fail_episode_count": 0,
+      "match_id": "J03WQQ",
+      "pressure_candidate_population": 555,
+      "pressure_reason_code_counts": {
+        "FAIL:pressure_duration_below_threshold": 16,
+        "FAIL:pressure_threshold_not_met:closing_speed": 11,
+        "FAIL:pressure_threshold_not_met:closing_speed,approach_angle": 6,
+        "FAIL:pressure_threshold_not_met:distance": 386,
+        "FAIL:pressure_threshold_not_met:distance,approach_angle": 6,
+        "FAIL:pressure_threshold_not_met:distance,closing_speed": 54,
+        "FAIL:pressure_threshold_not_met:distance,closing_speed,approach_angle": 26,
+        "PASS:pressure_observed": 50
+      },
+      "pressure_status_counts": {
+        "FAIL": 505,
+        "PASS": 50
+      },
+      "reason_code_counts": {
+        "certified_possession_control_and_pressure": 50
+      },
+      "status_counts": {
+        "PASS": 50
+      },
+      "team_role": "away",
+      "unknown_episode_count": 0,
+      "unknown_pressure_candidate_count": 0,
+      "unknown_share": 0.0
+    },
+    {
+      "eligible_episode_count": 35,
+      "episode_ids_hash": "5096944672e6099a070925583d501675995fb33715558d30f06ddcbb1c59b398",
+      "episode_population": 35,
+      "fail_episode_count": 0,
+      "match_id": "J03WR9",
+      "pressure_candidate_population": 479,
+      "pressure_reason_code_counts": {
+        "FAIL:pressure_duration_below_threshold": 16,
+        "FAIL:pressure_threshold_not_met:approach_angle": 1,
+        "FAIL:pressure_threshold_not_met:closing_speed": 6,
+        "FAIL:pressure_threshold_not_met:closing_speed,approach_angle": 6,
+        "FAIL:pressure_threshold_not_met:distance": 296,
+        "FAIL:pressure_threshold_not_met:distance,approach_angle": 17,
+        "FAIL:pressure_threshold_not_met:distance,closing_speed": 57,
+        "FAIL:pressure_threshold_not_met:distance,closing_speed,approach_angle": 45,
+        "PASS:pressure_observed": 35
+      },
+      "pressure_status_counts": {
+        "FAIL": 444,
+        "PASS": 35
+      },
+      "reason_code_counts": {
+        "certified_possession_control_and_pressure": 35
+      },
+      "status_counts": {
+        "PASS": 35
+      },
+      "team_role": "home",
+      "unknown_episode_count": 0,
+      "unknown_pressure_candidate_count": 0,
+      "unknown_share": 0.0
+    },
+    {
+      "eligible_episode_count": 35,
+      "episode_ids_hash": "5096944672e6099a070925583d501675995fb33715558d30f06ddcbb1c59b398",
+      "episode_population": 35,
+      "fail_episode_count": 0,
+      "match_id": "J03WR9",
+      "pressure_candidate_population": 479,
+      "pressure_reason_code_counts": {
+        "FAIL:pressure_duration_below_threshold": 16,
+        "FAIL:pressure_threshold_not_met:approach_angle": 1,
+        "FAIL:pressure_threshold_not_met:closing_speed": 6,
+        "FAIL:pressure_threshold_not_met:closing_speed,approach_angle": 6,
+        "FAIL:pressure_threshold_not_met:distance": 296,
+        "FAIL:pressure_threshold_not_met:distance,approach_angle": 17,
+        "FAIL:pressure_threshold_not_met:distance,closing_speed": 57,
+        "FAIL:pressure_threshold_not_met:distance,closing_speed,approach_angle": 45,
+        "PASS:pressure_observed": 35
+      },
+      "pressure_status_counts": {
+        "FAIL": 444,
+        "PASS": 35
+      },
+      "reason_code_counts": {
+        "certified_possession_control_and_pressure": 35
+      },
+      "status_counts": {
+        "PASS": 35
+      },
+      "team_role": "away",
+      "unknown_episode_count": 0,
+      "unknown_pressure_candidate_count": 0,
+      "unknown_share": 0.0
+    },
+    {
+      "eligible_episode_count": 36,
+      "episode_ids_hash": "4944ac4a4e6bbbb0efa6c28b05d3d5a856b2306786fa765bc947998c25628e42",
+      "episode_population": 36,
+      "fail_episode_count": 0,
+      "match_id": "J03WMX",
+      "pressure_candidate_population": 485,
+      "pressure_reason_code_counts": {
+        "FAIL:pressure_duration_below_threshold": 21,
+        "FAIL:pressure_threshold_not_met:approach_angle": 2,
+        "FAIL:pressure_threshold_not_met:closing_speed": 6,
+        "FAIL:pressure_threshold_not_met:closing_speed,approach_angle": 2,
+        "FAIL:pressure_threshold_not_met:distance": 342,
+        "FAIL:pressure_threshold_not_met:distance,approach_angle": 9,
+        "FAIL:pressure_threshold_not_met:distance,closing_speed": 48,
+        "FAIL:pressure_threshold_not_met:distance,closing_speed,approach_angle": 19,
+        "PASS:pressure_observed": 36
+      },
+      "pressure_status_counts": {
+        "FAIL": 449,
+        "PASS": 36
+      },
+      "reason_code_counts": {
+        "certified_possession_control_and_pressure": 36
+      },
+      "status_counts": {
+        "PASS": 36
+      },
+      "team_role": "home",
+      "unknown_episode_count": 0,
+      "unknown_pressure_candidate_count": 0,
+      "unknown_share": 0.0
+    },
+    {
+      "eligible_episode_count": 36,
+      "episode_ids_hash": "4944ac4a4e6bbbb0efa6c28b05d3d5a856b2306786fa765bc947998c25628e42",
+      "episode_population": 36,
+      "fail_episode_count": 0,
+      "match_id": "J03WMX",
+      "pressure_candidate_population": 485,
+      "pressure_reason_code_counts": {
+        "FAIL:pressure_duration_below_threshold": 21,
+        "FAIL:pressure_threshold_not_met:approach_angle": 2,
+        "FAIL:pressure_threshold_not_met:closing_speed": 6,
+        "FAIL:pressure_threshold_not_met:closing_speed,approach_angle": 2,
+        "FAIL:pressure_threshold_not_met:distance": 342,
+        "FAIL:pressure_threshold_not_met:distance,approach_angle": 9,
+        "FAIL:pressure_threshold_not_met:distance,closing_speed": 48,
+        "FAIL:pressure_threshold_not_met:distance,closing_speed,approach_angle": 19,
+        "PASS:pressure_observed": 36
+      },
+      "pressure_status_counts": {
+        "FAIL": 449,
+        "PASS": 36
+      },
+      "reason_code_counts": {
+        "certified_possession_control_and_pressure": 36
+      },
+      "status_counts": {
+        "PASS": 36
+      },
+      "team_role": "away",
+      "unknown_episode_count": 0,
+      "unknown_pressure_candidate_count": 0,
+      "unknown_share": 0.0
+    },
+    {
+      "eligible_episode_count": 22,
+      "episode_ids_hash": "b897de7b46199a4c46129f9baa5be634f1b6938be41c296b17c21556f98420a7",
+      "episode_population": 22,
+      "fail_episode_count": 0,
+      "match_id": "J03WN1",
+      "pressure_candidate_population": 181,
+      "pressure_reason_code_counts": {
+        "FAIL:pressure_duration_below_threshold": 8,
+        "FAIL:pressure_threshold_not_met:approach_angle": 1,
+        "FAIL:pressure_threshold_not_met:closing_speed": 5,
+        "FAIL:pressure_threshold_not_met:closing_speed,approach_angle": 2,
+        "FAIL:pressure_threshold_not_met:distance": 111,
+        "FAIL:pressure_threshold_not_met:distance,approach_angle": 6,
+        "FAIL:pressure_threshold_not_met:distance,closing_speed": 18,
+        "FAIL:pressure_threshold_not_met:distance,closing_speed,approach_angle": 8,
+        "PASS:pressure_observed": 22
+      },
+      "pressure_status_counts": {
+        "FAIL": 159,
+        "PASS": 22
+      },
+      "reason_code_counts": {
+        "certified_possession_control_and_pressure": 22
+      },
+      "status_counts": {
+        "PASS": 22
+      },
+      "team_role": "home",
+      "unknown_episode_count": 0,
+      "unknown_pressure_candidate_count": 0,
+      "unknown_share": 0.0
+    },
+    {
+      "eligible_episode_count": 22,
+      "episode_ids_hash": "b897de7b46199a4c46129f9baa5be634f1b6938be41c296b17c21556f98420a7",
+      "episode_population": 22,
+      "fail_episode_count": 0,
+      "match_id": "J03WN1",
+      "pressure_candidate_population": 181,
+      "pressure_reason_code_counts": {
+        "FAIL:pressure_duration_below_threshold": 8,
+        "FAIL:pressure_threshold_not_met:approach_angle": 1,
+        "FAIL:pressure_threshold_not_met:closing_speed": 5,
+        "FAIL:pressure_threshold_not_met:closing_speed,approach_angle": 2,
+        "FAIL:pressure_threshold_not_met:distance": 111,
+        "FAIL:pressure_threshold_not_met:distance,approach_angle": 6,
+        "FAIL:pressure_threshold_not_met:distance,closing_speed": 18,
+        "FAIL:pressure_threshold_not_met:distance,closing_speed,approach_angle": 8,
+        "PASS:pressure_observed": 22
+      },
+      "pressure_status_counts": {
+        "FAIL": 159,
+        "PASS": 22
+      },
+      "reason_code_counts": {
+        "certified_possession_control_and_pressure": 22
+      },
+      "status_counts": {
+        "PASS": 22
+      },
+      "team_role": "away",
+      "unknown_episode_count": 0,
+      "unknown_pressure_candidate_count": 0,
+      "unknown_share": 0.0
+    }
+  ],
+  "schema_version": "car0b.fragile_state.population.v1",
+  "totals": {
+    "eligible_episode_count": 518,
+    "episode_population": 518,
+    "fail_episode_count": 0,
+    "pressure_candidate_population": 5818,
+    "unknown_episode_count": 0,
+    "unknown_pressure_candidate_count": 0
+  }
+}

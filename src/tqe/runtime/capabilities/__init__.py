@@ -17,6 +17,7 @@ Implementation = Callable[..., None]
 
 PRIMITIVE_IMPLEMENTATION_NAMES: tuple[tuple[str, str], ...] = (
     ("fragile_carrier_episode", "primitive_fragile_carrier_episode"),
+    ("fragile_state_eligibility", "primitive_fragile_state_eligibility"),
     ("possession_segment", "primitive_possession_segment"),
     ("transition_anchor", "primitive_transition_anchor"),
     ("structured_zone", "primitive_structured_zone"),
@@ -75,6 +76,7 @@ RELATION_IMPLEMENTATION_NAMES: tuple[tuple[str, str], ...] = (
 
 RELOCATED_IMPLEMENTATION_MODULES: dict[str, str] = {
     "primitive_fragile_carrier_episode": "tqe.runtime.capabilities.possession_family",
+    "primitive_fragile_state_eligibility": "tqe.runtime.capabilities.possession_family",
     "primitive_possession_segment": "tqe.runtime.capabilities.possession_family",
     "primitive_transition_anchor": "tqe.runtime.capabilities.possession_family",
     "primitive_structured_zone": "tqe.runtime.capabilities.possession_family",

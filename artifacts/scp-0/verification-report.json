@@ -733,7 +733,7 @@
           "projection_contract_hash": "a796f3d6ca9399358c6bf535d0d7d8f57509bbf9763661cf191c76e346af9d3b"
         }
       },
-      "baseline_count": 62,
+      "baseline_count": 63,
       "contract_changed": [
         "recipe:ball_side_block_shift_v1:1.0.0",
         "recipe:first_time_relay_after_receiver_line_transition_v1:0.1.0",
@@ -796,7 +796,7 @@
           "projection_contract_hash": "0d1daea8595cd6fe2d7c3a8b483f05efa3fea99dbe5e9df496c443783d8b4f70"
         }
       },
-      "projection_count": 50,
+      "projection_count": 51,
       "removed": [
         "runtime:primitive:acceleration:0.1.0",
         "runtime:primitive:cover_shadow:0.1.0",
@@ -853,14 +853,14 @@
           "baseline_contract_hash": "4cf1558ccf3ed95deb1fea53b10166cb7144b63af1b1b8fa8b45b623425a6708"
         }
       },
-      "shared_count": 49
+      "shared_count": 50
     },
     "baseline_sources": {
-      "baseline_artifact_revision": "981f3fd129ac710051faa78a0b959ec8c963612bef949373c2af6f926dfa8748",
+      "baseline_artifact_revision": "c29416f49804040b4bac1952e5ccfce91969c2e5b5429be4292d6c1443f35da2",
       "capability_catalog": {
         "exists": true,
         "path": "generated/capability-catalog.json",
-        "source_artifact_sha256": "ef9aa07c1ab94f2d962610bcb817b9f4ba11c9c34c87fc9059d82e9d74705ba1"
+        "source_artifact_sha256": "7a959ad223ac6c39a3b191b52165dd51071c024b8636bad25f2422cbd88e55dc"
       },
       "product_recipe_contracts": {
         "frozen_baseline": false,
@@ -871,7 +871,7 @@
       "tactical_knowledge_pack": {
         "exists": true,
         "path": "generated/tactical-knowledge-pack.json",
-        "source_artifact_sha256": "bce9af06c8b9cb3f0a8145fe4aa60b53c9e6c83d226fa2b71a9643fea3eabc74"
+        "source_artifact_sha256": "ae332a2b3ab3a5c9360787c37f272ebae7fb06a164c79ae7ca44580c45ab8c37"
       }
     },
     "product": {
@@ -883,7 +883,7 @@
           "projection_contract_hash": "a796f3d6ca9399358c6bf535d0d7d8f57509bbf9763661cf191c76e346af9d3b"
         }
       },
-      "baseline_count": 56,
+      "baseline_count": 57,
       "contract_changed": [],
       "contract_changed_details": {},
       "projection_count": 44,
@@ -894,6 +894,7 @@
         "runtime:primitive:acceleration:0.1.0",
         "runtime:primitive:cover_shadow:0.1.0",
         "runtime:primitive:fragile_carrier_episode:0.1.0",
+        "runtime:primitive:fragile_state_eligibility:0.1.0",
         "runtime:primitive:join_episode_sets:0.1.0",
         "runtime:primitive:marking:0.1.0",
         "runtime:primitive:off_ball_run:0.1.0",
@@ -914,6 +915,9 @@
         },
         "runtime:primitive:fragile_carrier_episode:0.1.0": {
           "baseline_contract_hash": "96b5e45731dbeed5704b2d0b2a6e818b20fcd2daa0e6bc6538672aaa52a9c50f"
+        },
+        "runtime:primitive:fragile_state_eligibility:0.1.0": {
+          "baseline_contract_hash": "3e18d9ade8ac6e8c3d840b6ac1d1a671517e28294491e20f5b86d92693d1deef"
         },
         "runtime:primitive:join_episode_sets:0.1.0": {
           "baseline_contract_hash": "4464b25fda2f2c4b2b109bc1779a38c3f3aa46ce37fadf223b09c38901f83a22"
@@ -958,26 +962,26 @@
   },
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "981f3fd129ac710051faa78a0b959ec8c963612bef949373c2af6f926dfa8748",
+    "baseline_artifact_revision": "c29416f49804040b4bac1952e5ccfce91969c2e5b5429be4292d6c1443f35da2",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "b22aabdadf8cd2ade56e90d7c1a221e81cee46b9006a61faf9b7ccceb514c306",
+    "lock_hash": "56cc2e8e8da7180ed6495d3d6124ad6e4278ec6eec4b3b6b155e206cfa928b38",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "d42cba00d7a72820d89d07edca04a153c3be75de8ad6ad61809939f515935786",
+    "registry_revision": "d994bf9f32218e0130e41e0dbc026d682099aea05f2a3da7c9a09914e618c575",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "99391f34d33d4338dcfd70915f64cd0e87b900e1520423a5887db9949d67b7b6",
+    "runtime_manifest_revision": "bb120fb93aefe8dadd6d1ae96c9f7de84d4c719a2b6949eb38ad0daa06473ef5",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"
   },
   "runtime_capabilities": {
-    "bound": 50,
+    "bound": 51,
     "duplicate_bindings": 0,
-    "including_operators_total": 58,
+    "including_operators_total": 59,
     "orphaned": 0,
-    "runtime_total": 50,
+    "runtime_total": 51,
     "unresolved_bindings": 0
   },
   "schema_version": "1.0",

@@ -2392,6 +2392,83 @@
     {
       "ai_authorable_by_runtime_context": true,
       "evidence_fields": [
+        "episode_id",
+        "fragile_state_eligibility_id",
+        "fragile_state_status",
+        "fragile_state_reason",
+        "pressure_source_signature",
+        "entry_dwell_seconds",
+        "same_episode_gap_tolerance_s",
+        "optional_context_required"
+      ],
+      "executable": true,
+      "inputs": [
+        {
+          "cardinality": "collection",
+          "entity_scope": "possession",
+          "name": "episodes",
+          "payload_type": "boolean",
+          "required": true,
+          "temporal_type": "episode_set",
+          "unit": "none"
+        }
+      ],
+      "kind": "primitive",
+      "limitations": [
+        "Consumes certified pressure-qualified episodes; it has no pressure thresholds.",
+        "Local numbers, support arrival, confinement, and escape geometry are not eligibility requirements.",
+        "No continuity, baseline, score, or player aggregation is produced."
+      ],
+      "missing_data_semantics": "unknown",
+      "name": "fragile_state_eligibility",
+      "outputs": [
+        {
+          "cardinality": "collection",
+          "entity_scope": "possession",
+          "evidence_fields": [
+            "episode_id",
+            "onset_frame_id",
+            "onset_carrier_id",
+            "fragile_state_status",
+            "fragile_state_reason",
+            "pressure_source_signature",
+            "entry_dwell_seconds",
+            "same_episode_gap_tolerance_s"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "eligibility_evaluations",
+          "payload_type": "anchor_ref",
+          "temporal_type": "episode_set",
+          "unit": "none"
+        },
+        {
+          "allowed_values": [
+            "PASS",
+            "FAIL",
+            "UNKNOWN"
+          ],
+          "cardinality": "single",
+          "entity_scope": "possession",
+          "evidence_fields": [
+            "episode_id",
+            "fragile_state_status",
+            "fragile_state_reason"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "fragile_state_status",
+          "payload_type": "enum",
+          "temporal_type": "frame_signal",
+          "unit": "none"
+        }
+      ],
+      "parameters": [],
+      "purpose": "Certify CAR fragile-state eligibility from reused pressure-qualified episode evidence without adding context geometry.",
+      "runtime_id": "primitive:fragile_state_eligibility:0.1.0",
+      "version": "0.1.0"
+    },
+    {
+      "ai_authorable_by_runtime_context": true,
+      "evidence_fields": [
         "join_status",
         "join_reason",
         "left_key_field",
@@ -7964,6 +8041,9 @@
             "pressure_frame_id",
             "carrier_id_field",
             "carrier_id",
+            "possession_id",
+            "controlled_reception_status",
+            "episode_boundary_status",
             "pressure_defending_team_role",
             "nearest_defender_id",
             "nearest_defender_distance_m",
@@ -9819,6 +9899,6 @@
       "unit": "none"
     }
   ],
-  "runtime_manifest_revision": "99391f34d33d4338dcfd70915f64cd0e87b900e1520423a5887db9949d67b7b6",
+  "runtime_manifest_revision": "bb120fb93aefe8dadd6d1ae96c9f7de84d4c719a2b6949eb38ad0daa06473ef5",
   "schema_version": "1.0"
 }

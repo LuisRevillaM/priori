@@ -171,6 +171,14 @@ concepts:
     evidence_contract_ref: evidence.fragile_carrier_episode_identity.v1
     tags: [carrier, pressure, identity, attribution]
 
+  - id: concept.fragile_state_eligibility
+    kind: Concept
+    display_name: Fragile-State Eligibility
+    description: Tri-state CAR episode eligibility from certified possession, unique onset control, and reused pressure evidence.
+    claim_contract_ref: claim.fragile_state_eligibility.v1
+    evidence_contract_ref: evidence.fragile_state_eligibility.v1
+    tags: [carrier, pressure, eligibility, coverage]
+
   - id: concept.observed_defender_distance_candidate_set
     kind: Concept
     display_name: Observed Defender Distance Candidate Set
@@ -884,6 +892,26 @@ operationalizations:
     lowering: [certified_pressure_reuse, exact_observation_deduplication, gap_tolerance, refractory_rearm, onset_carrier_freeze]
     claim_contract_ref: claim.fragile_carrier_episode_identity.v1
     evidence_contract_ref: evidence.fragile_carrier_episode_identity.v1
+
+  - id: op.fragile_state_eligibility.v1
+    kind: Operationalization
+    display_name: Fragile-State Eligibility
+    description: Evaluate pressure-qualified episode onset eligibility without making optional replacement-class geometry mandatory.
+    concept_refs: [concept.fragile_state_eligibility]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking]
+    applicability: [fragile_carrier_episode_available, certified_pressure_source_available]
+    inputs:
+      - name: episodes
+        type: {container: EpisodeSet, value: Boolean, quantity: fragile_carrier_episode, unit: none, entity_scope: possession}
+    outputs:
+      - name: eligibility_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, quantity: fragile_state_eligibility, unit: none, entity_scope: possession}
+      - name: fragile_state_status
+        type: {container: FrameSignal, value: Enum, quantity: fragile_state_status, unit: none, entity_scope: possession}
+    lowering: [certified_episode_identity_reuse, certified_pressure_signature_check, onset_control_check, coverage_tri_state]
+    claim_contract_ref: claim.fragile_state_eligibility.v1
+    evidence_contract_ref: evidence.fragile_state_eligibility.v1
 
   - id: op.observed_team_compactness.v1
     kind: Operationalization
@@ -1690,6 +1718,12 @@ implementations:
     description: Pure deterministic identity kernel and possession-family runtime adapter.
     implements: [op.fragile_carrier_episode_identity.v1]
     source_refs: [src/tqe/runtime/fragile_carrier_episode.py, src/tqe/runtime/capabilities/possession_family.py, src/tqe/runtime/catalog.py]
+  - id: impl.fragile_state_eligibility.python.v1
+    kind: Implementation
+    display_name: Fragile-State Eligibility Python Implementation
+    description: Pure deterministic eligibility kernel and possession-family runtime adapter.
+    implements: [op.fragile_state_eligibility.v1]
+    source_refs: [src/tqe/runtime/fragile_state_eligibility.py, src/tqe/runtime/capabilities/possession_family.py, src/tqe/runtime/catalog.py]
   - id: impl.team_compactness.python.v1
     kind: Implementation
     display_name: Team Compactness Python Implementation
@@ -2942,6 +2976,23 @@ runtime_bindings:
       same_episode_gap_tolerance_s: same_episode_gap_tolerance_s
       refractory_after_resolution_s: refractory_after_resolution_s
     uncovered_runtime_parameters: [observation_frame_field, onset_carrier_id_field, possession_id_field, pressure_status_field, carrier_control_status_field, boundary_status_field]
+
+  - id: binding.primitive.fragile_state_eligibility.0_1_0
+    kind: RuntimeBinding
+    display_name: fragile_state_eligibility runtime binding
+    description: Canonical runtime binding for fragile_state_eligibility 0.1.0.
+    runtime_capability: {id: fragile_state_eligibility, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.fragile_state_eligibility.python.v1
+    implements: [op.fragile_state_eligibility.v1]
+    conformance_status: EXACT
+    known_deviations: []
+    input_bindings:
+      episodes: {source: NODE_INPUT, runtime_port: episodes}
+    output_bindings:
+      eligibility_evaluations: {runtime_port: eligibility_evaluations}
+      fragile_state_status: {runtime_port: fragile_state_status}
+    semantic_parameters: []
+    parameter_bindings: {}
 
   - id: binding.relation.defender_distance_candidate_set.0_1_0
     kind: RuntimeBinding
@@ -4453,6 +4504,13 @@ claim_contracts:
     permitted: [pressure_qualified_episode_identity_observed, unique_controlled_onset_carrier_attributed]
     prohibited: [continuity_outcome_inferred, continuity_score_inferred, baseline_comparison_made, tactical_causation_inferred, aggregation_reported]
     unknown_conditions: [pressure_coverage_unknown, possession_identity_unknown, onset_carrier_not_unique, individual_control_unknown]
+  - id: claim.fragile_state_eligibility.v1
+    kind: ClaimContract
+    display_name: Fragile-State Eligibility Claims
+    description: Claims permitted for CAR onset eligibility only.
+    permitted: [certified_possession_control_and_pressure_eligibility_observed]
+    prohibited: [continuity_outcome_inferred, continuity_score_inferred, baseline_comparison_made, local_number_required, support_arrival_required, escape_route_required, tactical_causation_inferred, aggregation_reported]
+    unknown_conditions: [episode_identity_missing, pressure_source_signature_missing, pressure_entry_dwell_echo_missing, onset_carrier_not_unique, individual_control_unknown, pressure_coverage_unknown]
   - id: claim.observed_defender_distance_candidate_set.v1
     kind: ClaimContract
     display_name: Observed Defender Distance Candidate Set Claims
@@ -4831,6 +4889,13 @@ evidence_contracts:
     required: [episode_id, definition_hash, pressure_source_signature, match_id, period, team_role, possession_id, onset_frame_id, onset_match_time_ms, attribution_status, attribution_reason, continuity_status, source_observation_hashes]
     optional: [onset_carrier_id, onset_carrier_candidate_ids, reentry_carrier_ids, identity_end_frame_id, identity_boundary_kind]
     replay_projection: [onset_frame, onset_carrier_badge, attribution_status_badge]
+  - id: evidence.fragile_state_eligibility.v1
+    kind: EvidenceContract
+    display_name: Fragile-State Eligibility Evidence
+    description: Evidence required to reproduce CAR onset eligibility without optional context geometry.
+    required: [episode_id, fragile_state_eligibility_id, onset_frame_id, fragile_state_status, fragile_state_reason, pressure_source_signature, entry_dwell_seconds, same_episode_gap_tolerance_s, optional_context_required]
+    optional: [onset_carrier_id, onset_carrier_candidate_ids]
+    replay_projection: [onset_frame, onset_carrier_badge, fragile_state_status_badge]
   - id: evidence.observed_defender_distance_candidate_set.v1
     kind: EvidenceContract
     display_name: Observed Defender Distance Candidate Set Evidence
@@ -5248,6 +5313,14 @@ exposure_policies:
     ai_compiler: DENIED
     product: DENIED
     reasons: [car_substrate_pending_first_certified_composition]
+  - id: exposure.runtime.fragile_state_eligibility.0_1_0
+    kind: ExposurePolicy
+    display_name: fragile_state_eligibility exposure
+    description: Certified CAR eligibility substrate held from product projection until the complete episode ledger ships.
+    subject_ref: runtime:primitive:fragile_state_eligibility:0.1.0
+    ai_compiler: ALLOWED
+    product: DENIED
+    reasons: [car_episode_ledger_not_yet_shipped]
   - id: exposure.runtime.defender_distance_candidate_set.0_1_0
     kind: ExposurePolicy
     display_name: defender_distance_candidate_set exposure
@@ -5496,6 +5569,12 @@ projection_policies:
     requires: {runtime_binding: VERIFIED, product_exposure: ALLOWED, product_maturity: EXPOSED, validation: VERIFIED}
     excludes: [PROPOSED_ATLAS, DEPRECATED]
     accepted_differences:
+      - subject_ref: runtime:primitive:fragile_state_eligibility:0.1.0
+        difference_kind: REMOVED
+        baseline_contract_hash: 3e18d9ade8ac6e8c3d840b6ac1d1a671517e28294491e20f5b86d92693d1deef
+        permitted_fields: []
+        rationale: CAR-0b eligibility is certified substrate but intentionally held from product projection until the complete CAR episode ledger ships.
+        review_condition: Remove this waiver when CAR-1 is product-exposed.
       - subject_ref: runtime:primitive:fragile_carrier_episode:0.1.0
         difference_kind: REMOVED
         baseline_contract_hash: 96b5e45731dbeed5704b2d0b2a6e818b20fcd2daa0e6bc6538672aaa52a9c50f
@@ -6002,6 +6081,16 @@ maturity_assessments:
     display_name: fragile_carrier_episode maturity
     description: Mutation-tested deterministic identity and attribution substrate.
     subject_ref: runtime:primitive:fragile_carrier_episode:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: NOT_EXPOSED
+  - id: maturity.runtime.fragile_state_eligibility.0_1_0
+    kind: MaturityAssessment
+    display_name: fragile_state_eligibility maturity
+    description: Mutation-tested deterministic CAR eligibility predicate with seven-match certification.
+    subject_ref: runtime:primitive:fragile_state_eligibility:0.1.0
     semantic: REVIEWED
     implementation: IMPLEMENTED
     validation: VERIFIED

@@ -1,0 +1,6 @@
+{
+  "generated_by": "scripts/packets/car0b_fragile_state_generator.py",
+  "plan_hash": "31503dd0797becbe6a22c6eb172c68890befe4b2ddafedf882c97a6635fc5b46",
+  "schema_version": "car0b.fragile_state.provenance.v1",
+  "table_hash": "7577601bff0b3294cf2b95752a428b50caf792dd367d4369ca0439cbb346bce1"
+}
