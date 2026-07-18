@@ -44,7 +44,11 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
         cls.coverage_rows = json.loads(Path("generated/coverage-map.json").read_text(encoding="utf-8"))
 
     def test_vocabulary_and_composition_grammar_are_derived_from_generated_pack(self) -> None:
-        self.assertEqual(38, len(self.vocabulary.primitive_names))
+        # Vocabulary census ratchet: 38→39 (2026-07-18) — the GEO-1 +
+        # CAR-0a merge admitted between_observed_lines and
+        # fragile_carrier_episode to the pack (net +1 vs the prior
+        # census after pack-derivation filtering).
+        self.assertEqual(39, len(self.vocabulary.primitive_names))
         self.assertEqual(8, len(self.vocabulary.predicate_operator_names))
         self.assertEqual(8, len(self.vocabulary.composition_operator_names))
         self.assertEqual(15, len(self.vocabulary.constraint_kinds))
