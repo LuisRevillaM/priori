@@ -1,7 +1,7 @@
 # STATE — Entrelíneas
 
-Updated: 2026-07-17 (DIRECTOR-grade)
-**Phase:** Gate 1 — two-ask gallery LIVE (retention + pressing map); human gates remain
+Updated: 2026-07-18 (DIRECTOR-grade)
+**Phase:** Gate 1 human gates remain; GEO+CAR eras interleaving (flagship between-lines ANSWERED: 121/4,189)
 **Read order:** STATE → PLAN → STEWARDSHIP → LEDGER → active packet
 
 ## Where we are
