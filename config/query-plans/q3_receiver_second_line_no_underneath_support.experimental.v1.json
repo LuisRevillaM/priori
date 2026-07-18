@@ -143,11 +143,6 @@
         "kind": "primitive",
         "node_id": "second_line_at_release",
         "parameters": {
-          "line_collection_scope": {
-            "payload_type": "enum",
-            "unit": "none",
-            "value": "goal_side_of_ball"
-          },
           "anchor_frame_field": {
             "payload_type": "enum",
             "unit": "none",
@@ -160,6 +155,11 @@
           "line_band_width_m": {
             "kind": "parameter",
             "name": "line_band_width_m"
+          },
+          "line_collection_scope": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "goal_side_of_ball"
           },
           "minimum_line_defenders": {
             "kind": "parameter",
