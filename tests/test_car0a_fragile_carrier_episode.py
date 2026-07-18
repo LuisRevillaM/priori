@@ -9,7 +9,7 @@ from tqe.runtime.fragile_carrier_episode import build_fragile_carrier_episodes
 
 def obs(t: int, status: str = "PASS", carrier: str | None = "p1", **extra):
     row = {"match_id": "m1", "period": 1, "team_role": "home", "possession_id": "pos1",
-        "pressure_frame_id": t // 40, "match_time_ms": t, "pressure_status": status,
+        "pressure_frame_id": t // 40, "match_time_ms": t, "possession_status": "PASS", "pressure_status": status,
         "coverage_status": "PASS", "carrier_id": carrier, "carrier_control_status": "PASS",
         "pressure_duration_seconds": 0.4, "minimum_pressure_duration_seconds": 0.4,
         "maximum_pressure_distance_m": 4.0, "minimum_closing_speed_mps": 0.2,

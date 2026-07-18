@@ -7,7 +7,7 @@ Frontier: `174ac4fcaeee99ba79ce75932fc1fd11883ed8a4`
 Executor clone: `/private/tmp/priori-car0a-executor.of6VJh` (outside the
 repository tree)
 
-Status: **DESIGN SEALED — IMPLEMENTATION PENDING**
+Status: **IMPLEMENTED — STOP AUDIT ZERO DELTA**
 
 ## Design brief (authored before implementation)
 
@@ -214,3 +214,61 @@ additive catalog/registry contract will be disclosed. If any existing certified
 tactical value changes, implementation stops and reports the exact delta; no
 oracle, frozen expectation, dev set, plan, or certified table is rewritten to
 make the delta disappear.
+
+## Implementation result
+
+The sealed design is implemented as `fragile_carrier_episode@0.1.0`: a pure
+identity kernel plus a possession-family runtime adapter. Exact duplicates
+collapse; logical-frame conflicts preserve ambiguous onset candidates;
+identity excludes carrier; attribution freezes at onset; and re-arm requires
+both the refractory and a certified pressure-FAIL release. Every output states
+`continuity_status=NOT_EVALUATED`.
+
+The adapter requires certified possession identity, certified pressure PASS,
+non-UNKNOWN pressure coverage, and the upstream pressure-duration echo. It
+contains no pressure geometry. The only new numeric parameters are the 0.40s
+gap tolerance and 1.00s refractory. Typed references route frame, entity,
+provenance, pressure/control status, and boundary status fields.
+
+The full semantic chain and generated artifacts landed. The primitive remains
+out of direct product/model projection until a reviewed CAR composition
+consumes it; this is a conservative exposure ruling, not a capability waiver.
+
+## Mutation evidence
+
+| Mutation | Required catcher | Result |
+|---|---|---|
+| Disable active-episode collapse (one identity per PASS frame) | frame-farming test | KILLED, exit 1 |
+| Weaken refractory AND certified-release to OR | continuous-pressure test | KILLED, exit 1 |
+
+Both mutations were restored byte-for-byte. The focused CAR-0a module then
+passed 9/9.
+
+## Certified-result STOP audit
+
+`teamshape_family.py`, existing plans, certified tables, and frozen
+expectations are byte-untouched. The pressure-focused runtime suite passed
+64/64 after the external clone received the ignored canonical parquet files.
+No certified tactical value, status population, classification, or evidence
+row changed. STOP delta: **zero**.
+
+## Verification table
+
+| Check | Result |
+|---|---|
+| CAR-0a identity/attribution tests | PASS — 9/9 |
+| Frame-farming mutation | PASS — mutation killed |
+| Flicker/refractory mutation | PASS — mutation killed |
+| SCP-0 semantic registry | PASS — 58/58 |
+| Meaning-to-target / knowledge pack | PASS — 24/24 |
+| Pressure-focused STOP suite | PASS — 64/64 |
+| Full `unittest discover` | INCOMPLETE — the repository ask-timeout test process terminated discovery after 100+ passing tests without a unittest summary; no CAR-0a failure was emitted |
+
+The full-suite interruption is reported rather than represented as green. The
+CAR-0a and certified-pressure scopes passed independently.
+
+## Execution notes
+
+The requested primary-worktree `git fetch --prune` was denied because the
+sandbox could not write `.git/FETCH_HEAD`; the local frontier already matched
+`174ac4fcaeee99ba79ce75932fc1fd11883ed8a4`. No push was attempted.

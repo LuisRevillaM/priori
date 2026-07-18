@@ -91,7 +91,8 @@ def _episodes_for_possession(
 
 
 def _qualified(row: dict[str, Any]) -> bool:
-    return (str(row.get("pressure_status")) == "PASS"
+    return (str(row.get("possession_status")) == "PASS"
+            and str(row.get("pressure_status")) == "PASS"
             and str(row.get("coverage_status", "PASS")) != "UNKNOWN"
             and float(row.get("pressure_duration_seconds") or 0.0) + 1e-9
             >= float(row.get("minimum_pressure_duration_seconds") or 0.0))
@@ -118,6 +119,11 @@ def _new_episode(key: tuple[str, int, str, str], time_ms: int, frame_id: int,
             "maximum_pressure_distance_m", "minimum_closing_speed_mps",
             "maximum_approach_angle_degrees", "minimum_pressure_duration_seconds", "lookback_seconds")}
             for row in rows]})
+    pressure_parameter_echo = {
+        name: rows[0].get(name) for name in (
+            "maximum_pressure_distance_m", "minimum_closing_speed_mps",
+            "maximum_approach_angle_degrees", "minimum_pressure_duration_seconds", "lookback_seconds")
+    }
     preimage = {"definition_hash": DEFINITION_HASH, "pressure_source_signature": source_signature,
         "match_id": key[0], "period": key[1], "team_role": key[2], "possession_id": key[3],
         "onset_frame_id": frame_id, "onset_match_time_ms": time_ms}
@@ -135,4 +141,7 @@ def _new_episode(key: tuple[str, int, str, str], time_ms: int, frame_id: int,
         "same_episode_gap_tolerance_s": config.same_episode_gap_tolerance_s,
         "refractory_after_resolution_s": config.refractory_after_resolution_s,
         "continuity_status": "NOT_EVALUATED",
+        "pressure_parameter_echo": pressure_parameter_echo,
+        "source_anchor_ids": sorted({str(row["anchor_id"]) for row in rows if row.get("anchor_id")}),
+        "deduplicated_source_row_count": len({stable_hash(row) for row in rows}),
         "source_observation_hashes": sorted(stable_hash(row) for row in rows)}

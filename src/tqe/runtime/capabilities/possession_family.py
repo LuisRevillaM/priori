@@ -67,6 +67,9 @@ def primitive_fragile_carrier_episode(state: PeriodState, node: BoundCatalogNode
         if possession_id is None:
             possession_id = possession_identity_at_frame(state, frame_id, record["team_role"])
         record["possession_id"] = possession_id
+        record["possession_status"] = record.get(
+            "possession_status", "PASS" if possession_id is not None else "UNKNOWN"
+        )
         record["match_time_ms"] = int(record.get("match_time_ms") or frame_match_time_ms(state, frame_id))
         carrier_field = node_parameter_text(node, "onset_carrier_id_field")
         if record.get("carrier_id") is None:
