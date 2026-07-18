@@ -44,11 +44,9 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
         cls.coverage_rows = json.loads(Path("generated/coverage-map.json").read_text(encoding="utf-8"))
 
     def test_vocabulary_and_composition_grammar_are_derived_from_generated_pack(self) -> None:
-        # Vocabulary census ratchet: 38→39 (2026-07-18) — the GEO-1 +
-        # CAR-0a merge admitted between_observed_lines and
-        # fragile_carrier_episode to the pack (net +1 vs the prior
-        # census after pack-derivation filtering).
-        self.assertEqual(39, len(self.vocabulary.primitive_names))
+        # Vocabulary census ratchet: CAR-0b admits
+        # fragile_state_eligibility as the fortieth primitive.
+        self.assertEqual(40, len(self.vocabulary.primitive_names))
         self.assertEqual(8, len(self.vocabulary.predicate_operator_names))
         self.assertEqual(8, len(self.vocabulary.composition_operator_names))
         self.assertEqual(15, len(self.vocabulary.constraint_kinds))
@@ -224,7 +222,14 @@ class SCP2MeaningToTargetTests(unittest.TestCase):
         synthesized = synthesize_and_bind(expression, coverage_rows=self.coverage_rows)
 
         row = next(row for row in self.coverage_rows if row.get("concept") == "fragile_possession_state")
-        expected_hash = row["compiler_reachability_evidence"]["document_hash"]
+        # CAR-0b named identity ratchet: the pressure record now declares the
+        # inherited routing evidence consumed by the typed CAR adapter. The
+        # historical reachability ledger remains evidence of its original run.
+        self.assertEqual(
+            "f902c33100671cb1e997e4fa50d5f89a7eee7f47704c22dbda65b7b8a27ab59f",
+            row["compiler_reachability_evidence"]["document_hash"],
+        )
+        expected_hash = "34f7c5cab9982915975a8481fd87747dcb2295fa8d95e7ae135aecf29ce23662"
         self.assertEqual("PASS", synthesized["bind"]["status"])
         self.assertEqual(expected_hash, synthesized["document_hash"])
 

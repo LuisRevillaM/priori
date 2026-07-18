@@ -733,7 +733,7 @@
           "projection_contract_hash": "a796f3d6ca9399358c6bf535d0d7d8f57509bbf9763661cf191c76e346af9d3b"
         }
       },
-      "baseline_count": 62,
+      "baseline_count": 63,
       "contract_changed": [
         "recipe:ball_side_block_shift_v1:1.0.0",
         "recipe:first_time_relay_after_receiver_line_transition_v1:0.1.0",
@@ -796,7 +796,7 @@
           "projection_contract_hash": "0d1daea8595cd6fe2d7c3a8b483f05efa3fea99dbe5e9df496c443783d8b4f70"
         }
       },
-      "projection_count": 50,
+      "projection_count": 51,
       "removed": [
         "runtime:primitive:acceleration:0.1.0",
         "runtime:primitive:cover_shadow:0.1.0",
@@ -853,10 +853,10 @@
           "baseline_contract_hash": "4cf1558ccf3ed95deb1fea53b10166cb7144b63af1b1b8fa8b45b623425a6708"
         }
       },
-      "shared_count": 49
+      "shared_count": 50
     },
     "baseline_sources": {
-      "baseline_artifact_revision": "981f3fd129ac710051faa78a0b959ec8c963612bef949373c2af6f926dfa8748",
+      "baseline_artifact_revision": "9f199230e1c005e4940186bbe7d4bb551d4bbf9844ea2eea78714bc5d8c67e31",
       "capability_catalog": {
         "exists": true,
         "path": "generated/capability-catalog.json",
@@ -871,7 +871,7 @@
       "tactical_knowledge_pack": {
         "exists": true,
         "path": "generated/tactical-knowledge-pack.json",
-        "source_artifact_sha256": "bce9af06c8b9cb3f0a8145fe4aa60b53c9e6c83d226fa2b71a9643fea3eabc74"
+        "source_artifact_sha256": "ae332a2b3ab3a5c9360787c37f272ebae7fb06a164c79ae7ca44580c45ab8c37"
       }
     },
     "product": {
@@ -884,8 +884,18 @@
         }
       },
       "baseline_count": 56,
-      "contract_changed": [],
-      "contract_changed_details": {},
+      "contract_changed": [
+        "runtime:relation:pressure_on_carrier:0.1.0"
+      ],
+      "contract_changed_details": {
+        "runtime:relation:pressure_on_carrier:0.1.0": {
+          "baseline_contract_hash": "ea266053fd2e504d662371aa5da15aa5ba431cffa295f136fa0778a32aab4a2e",
+          "changed_fields": [
+            "outputs"
+          ],
+          "projection_contract_hash": "de09d17431e8fd4eaadf55695c128f0ae720ab8d26ab1dff15fc35eb88324224"
+        }
+      },
       "projection_count": 44,
       "recipe_contract_baseline_mode": "current_runtime_alignment",
       "recipe_contract_baseline_note": "Product recipe contracts are compared against current runtime manifest recipes until a pinned product recipe baseline artifact exists.",
@@ -958,26 +968,26 @@
   },
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "981f3fd129ac710051faa78a0b959ec8c963612bef949373c2af6f926dfa8748",
+    "baseline_artifact_revision": "9f199230e1c005e4940186bbe7d4bb551d4bbf9844ea2eea78714bc5d8c67e31",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "b22aabdadf8cd2ade56e90d7c1a221e81cee46b9006a61faf9b7ccceb514c306",
+    "lock_hash": "f0250ded4dd48c037874064f0bcc314f8b76e25866699c24a25a5d96042c3446",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "d42cba00d7a72820d89d07edca04a153c3be75de8ad6ad61809939f515935786",
+    "registry_revision": "95f08348441ee80b332c073fd9546cfdd462e9e679fba5689c46f6e304ab9192",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "99391f34d33d4338dcfd70915f64cd0e87b900e1520423a5887db9949d67b7b6",
+    "runtime_manifest_revision": "bb120fb93aefe8dadd6d1ae96c9f7de84d4c719a2b6949eb38ad0daa06473ef5",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"
   },
   "runtime_capabilities": {
-    "bound": 50,
+    "bound": 51,
     "duplicate_bindings": 0,
-    "including_operators_total": 58,
+    "including_operators_total": 59,
     "orphaned": 0,
-    "runtime_total": 50,
+    "runtime_total": 51,
     "unresolved_bindings": 0
   },
   "schema_version": "1.0",

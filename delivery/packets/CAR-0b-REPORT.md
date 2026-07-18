@@ -104,3 +104,70 @@ Expected census movements are declared before implementation:
 - catalog/context, knowledge pack, registry lock, passport/projections,
   parity, and SCP-0 evidence.
 
+## Implementation result
+
+`fragile_state_eligibility@0.1.0` is implemented as a pure tri-state
+predicate plus a possession-family runtime adapter. It consumes the unchanged
+CAR-0a episode identity and verifies its certified pressure-source signature,
+entry-dwell echo, gap law, and unique onset attribution. It emits no continuity
+outcome, score, baseline, or aggregate.
+
+The committed plan binds `pressure_on_carrier@0.1.0` at 0.2s minimum pressure
+duration, then `fragile_carrier_episode@0.1.0` at 0.4s gap tolerance and 1.0s
+refractory, followed by the eligibility predicate. Support arrival, local
+numbers, confinement, lane, escape-route, and between-lines geometry do not
+appear in the plan.
+
+CAR-0a's pure episode-ID preimage is unchanged. Runtime exercise exposed two
+adapter-only defects—period labels were not normalized to the kernel's numeric
+period identity, and episode outputs lacked canonical runtime anchor fields.
+Both are corrected in the adapter without changing episode-ID construction.
+
+## Certified seven-match population
+
+| Measure | Result |
+|---|---:|
+| Pressure candidates | 5,818 |
+| Deduplicated episode population | 518 |
+| Eligible episodes | 518 |
+| Episode FAIL | 0 |
+| Episode UNKNOWN | 0 |
+| Coverage-UNKNOWN pressure candidates | 0 |
+
+The zero UNKNOWN share is an observed corpus result, not a binary fallback.
+The table preserves per-match/team status and reason-code partitions. The
+mutation-standard test forces uncertified pressure coverage and proves the
+same predicate returns UNKNOWN, never FAIL. Ambiguous onset attribution is
+likewise retained as UNKNOWN.
+
+Plan hash: `31503dd0797becbe6a22c6eb172c68890befe4b2ddafedf882c97a6635fc5b46`.
+Table hash: `7577601bff0b3294cf2b95752a428b50caf792dd367d4369ca0439cbb346bce1`.
+
+## Named ratchets and STOP audit
+
+- Primitive vocabulary: 39 → 40, naming `fragile_state_eligibility`.
+- Typed-field census: unchanged; the new predicate adds no field-routing
+  parameter of its own.
+- `pressure_on_carrier@0.1.0` declares three inherited routing fields on its
+  anchor-evaluation contract: possession identity, controlled-reception
+  status, and episode-boundary status. Its runtime pressure values are
+  unchanged; the product contract-change waiver names the exact old/new hashes.
+- The historical fragile-possession compiler-reachability document remains
+  immutable evidence. Fresh synthesis changes document identity from
+  `f902c331…` to `34f7c5ca…` because of the declared routing evidence; the test
+  acknowledges both identities by name.
+- The full semantic concept → operationalization → implementation → binding →
+  claim → evidence → exposure → maturity chain is generated and SCP-0 passes.
+
+Existing CAR-0a kernel tests and certified pressure values are unchanged.
+No existing certified tactical population, status, classification, or evidence
+row moved. STOP delta: **zero**.
+
+## Verification table
+
+| Check | Result |
+|---|---|
+| CAR-0a + CAR-0b mutation tests | PASS — 15/15 |
+| SCP-0, vocabulary, typed-field ratchets | PASS — focused set 103/103 |
+| Byte-reproducing producer | PENDING FINAL RUN |
+| Full `unittest discover` | PENDING FINAL RUN |

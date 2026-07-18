@@ -1,6 +1,6 @@
 {
-  "passport_count": 50,
-  "passport_revision": "5d4ba400aceec265f5e993505e1ca95f1c8ad90c4bd9d49049d16f80edc57bd2",
+  "passport_count": 51,
+  "passport_revision": "9fdc9741f99ef561812e75e7364ce36aba4279e9be89e3be362bc9d968fe8139",
   "passports": [
     {
       "binding": {
@@ -7440,6 +7440,348 @@
       },
       "status": "CURRENT",
       "subject_ref": "runtime:primitive:fragile_carrier_episode:0.1.0"
+    },
+    {
+      "binding": {
+        "conformance": "EXACT",
+        "id": "binding.primitive.fragile_state_eligibility.0_1_0",
+        "input_bindings": {
+          "episodes": {
+            "runtime_port": "episodes",
+            "source": "NODE_INPUT"
+          }
+        },
+        "known_deviations": [],
+        "output_bindings": {
+          "eligibility_evaluations": {
+            "runtime_port": "eligibility_evaluations"
+          },
+          "fragile_state_status": {
+            "runtime_port": "fragile_state_status"
+          }
+        },
+        "parameter_bindings": {},
+        "semantic_parameters": [],
+        "uncovered_runtime_inputs": [],
+        "uncovered_runtime_outputs": [],
+        "uncovered_runtime_parameters": [],
+        "uncovered_semantic_inputs": [],
+        "uncovered_semantic_outputs": [],
+        "uncovered_semantic_parameters": []
+      },
+      "claim_contracts": [
+        {
+          "contract_ref": "claim.fragile_state_eligibility.v1",
+          "inherits": [],
+          "permitted": [
+            "certified_possession_control_and_pressure_eligibility_observed"
+          ],
+          "prohibited": [
+            "aggregation_reported",
+            "baseline_comparison_made",
+            "continuity_outcome_inferred",
+            "continuity_score_inferred",
+            "escape_route_required",
+            "local_number_required",
+            "support_arrival_required",
+            "tactical_causation_inferred"
+          ],
+          "unknown_conditions": [
+            "episode_identity_missing",
+            "individual_control_unknown",
+            "onset_carrier_not_unique",
+            "pressure_coverage_unknown",
+            "pressure_entry_dwell_echo_missing",
+            "pressure_source_signature_missing"
+          ]
+        }
+      ],
+      "concepts": [
+        {
+          "aliases": [],
+          "claim_contract_ref": "claim.fragile_state_eligibility.v1",
+          "created_from": [],
+          "description": "Tri-state CAR episode eligibility from certified possession, unique onset control, and reused pressure evidence.",
+          "display_name": "Fragile-State Eligibility",
+          "evidence_contract_ref": "evidence.fragile_state_eligibility.v1",
+          "id": "concept.fragile_state_eligibility",
+          "kind": "Concept",
+          "owners": [],
+          "reviewers": [],
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [
+            "carrier",
+            "pressure",
+            "eligibility",
+            "coverage"
+          ],
+          "version": "1.0.0"
+        }
+      ],
+      "description": "Canonical runtime binding for fragile_state_eligibility 0.1.0.",
+      "display_name": "fragile_state_eligibility runtime binding",
+      "evidence_contracts": [
+        {
+          "contract_ref": "evidence.fragile_state_eligibility.v1",
+          "inherits": [],
+          "optional": [
+            "onset_carrier_candidate_ids",
+            "onset_carrier_id"
+          ],
+          "replay_projection": [
+            "fragile_state_status_badge",
+            "onset_carrier_badge",
+            "onset_frame"
+          ],
+          "required": [
+            "entry_dwell_seconds",
+            "episode_id",
+            "fragile_state_eligibility_id",
+            "fragile_state_reason",
+            "fragile_state_status",
+            "onset_frame_id",
+            "optional_context_required",
+            "pressure_source_signature",
+            "same_episode_gap_tolerance_s"
+          ]
+        }
+      ],
+      "exposure_policy": {
+        "ai_compiler": "ALLOWED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Certified CAR eligibility substrate held from product projection until the complete episode ledger ships.",
+        "display_name": "fragile_state_eligibility exposure",
+        "id": "exposure.runtime.fragile_state_eligibility.0_1_0",
+        "kind": "ExposurePolicy",
+        "owners": [],
+        "parameter_overrides": {},
+        "product": "DENIED",
+        "reasons": [
+          "car_episode_ledger_not_yet_shipped"
+        ],
+        "reviewed_recipes": "ALLOWED",
+        "reviewers": [],
+        "status": "CURRENT",
+        "subject_ref": "runtime:primitive:fragile_state_eligibility:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "implementation": {
+        "aliases": [],
+        "created_from": [],
+        "description": "Pure deterministic eligibility kernel and possession-family runtime adapter.",
+        "display_name": "Fragile-State Eligibility Python Implementation",
+        "id": "impl.fragile_state_eligibility.python.v1",
+        "implementation_type": "python",
+        "implements": [
+          "op.fragile_state_eligibility.v1"
+        ],
+        "kind": "Implementation",
+        "owners": [],
+        "reviewers": [],
+        "source_refs": [
+          "src/tqe/runtime/fragile_state_eligibility.py",
+          "src/tqe/runtime/capabilities/possession_family.py",
+          "src/tqe/runtime/catalog.py"
+        ],
+        "status": "CURRENT",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "maturity_assessment": {
+        "agent_safety": "APPROVED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Mutation-tested deterministic CAR eligibility predicate with seven-match certification.",
+        "display_name": "fragile_state_eligibility maturity",
+        "id": "maturity.runtime.fragile_state_eligibility.0_1_0",
+        "implementation": "IMPLEMENTED",
+        "kind": "MaturityAssessment",
+        "owners": [],
+        "product": "NOT_EXPOSED",
+        "reviewers": [],
+        "semantic": "REVIEWED",
+        "status": "CURRENT",
+        "subject_ref": "runtime:primitive:fragile_state_eligibility:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "validation": "VERIFIED",
+        "version": "1.0.0"
+      },
+      "operationalizations": [
+        {
+          "aliases": [],
+          "applicability": [
+            "fragile_carrier_episode_available",
+            "certified_pressure_source_available"
+          ],
+          "claim_contract_ref": "claim.fragile_state_eligibility.v1",
+          "concept_refs": [
+            "concept.fragile_state_eligibility"
+          ],
+          "created_from": [],
+          "description": "Evaluate pressure-qualified episode onset eligibility without making optional replacement-class geometry mandatory.",
+          "display_name": "Fragile-State Eligibility",
+          "evidence_contract_ref": "evidence.fragile_state_eligibility.v1",
+          "id": "op.fragile_state_eligibility.v1",
+          "inputs": [
+            {
+              "description": "",
+              "name": "episodes",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "possession",
+                "nullable": true,
+                "quantity": "fragile_carrier_episode",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "Boolean"
+              }
+            }
+          ],
+          "kind": "Operationalization",
+          "lowering": [
+            "certified_episode_identity_reuse",
+            "certified_pressure_signature_check",
+            "onset_control_check",
+            "coverage_tri_state"
+          ],
+          "outputs": [
+            {
+              "description": "",
+              "name": "eligibility_evaluations",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "possession",
+                "nullable": true,
+                "quantity": "fragile_state_eligibility",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "fragile_state_status",
+              "required": true,
+              "type": {
+                "container": "FrameSignal",
+                "entity_scope": "possession",
+                "nullable": true,
+                "quantity": "fragile_state_status",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "Enum"
+              }
+            }
+          ],
+          "owners": [],
+          "required_modalities": [
+            "tracking"
+          ],
+          "reviewers": [],
+          "semantic_basis": "DETERMINISTIC",
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [],
+          "version": "1.0.0"
+        }
+      ],
+      "passport_hash": "1cc9e4abf11213b3fc5d4e18f2112abd6ad1846173a670afdff2b2e064c51373",
+      "projection_membership": {
+        "ai": true,
+        "product": false
+      },
+      "runtime_capability": {
+        "id": "fragile_state_eligibility",
+        "kind": "primitive",
+        "version": "0.1.0"
+      },
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "episode_id",
+          "fragile_state_eligibility_id",
+          "fragile_state_status",
+          "fragile_state_reason",
+          "pressure_source_signature",
+          "entry_dwell_seconds",
+          "same_episode_gap_tolerance_s",
+          "optional_context_required"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "possession",
+            "name": "episodes",
+            "payload_type": "boolean",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "kind": "primitive",
+        "limitations": [
+          "Consumes certified pressure-qualified episodes; it has no pressure thresholds.",
+          "Local numbers, support arrival, confinement, and escape geometry are not eligibility requirements.",
+          "No continuity, baseline, score, or player aggregation is produced."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "fragile_state_eligibility",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "possession",
+            "evidence_fields": [
+              "episode_id",
+              "onset_frame_id",
+              "onset_carrier_id",
+              "fragile_state_status",
+              "fragile_state_reason",
+              "pressure_source_signature",
+              "entry_dwell_seconds",
+              "same_episode_gap_tolerance_s"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "eligibility_evaluations",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "cardinality": "single",
+            "entity_scope": "possession",
+            "evidence_fields": [
+              "episode_id",
+              "fragile_state_status",
+              "fragile_state_reason"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "fragile_state_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "parameters": [],
+        "purpose": "Certify CAR fragile-state eligibility from reused pressure-qualified episode evidence without adding context geometry.",
+        "runtime_id": "primitive:fragile_state_eligibility:0.1.0",
+        "version": "0.1.0"
+      },
+      "status": "CURRENT",
+      "subject_ref": "runtime:primitive:fragile_state_eligibility:0.1.0"
     },
     {
       "binding": {
@@ -25568,7 +25910,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "4ae05e4141d758bf574b824af439176a0b243c4b11eacaf8377fbe3044407b89",
+      "passport_hash": "76b3d0efca20de18b52d63207f09ed0185aa75d5c7eef7f6c0f378d9c970facc",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -25643,6 +25985,9 @@
               "pressure_frame_id",
               "carrier_id_field",
               "carrier_id",
+              "possession_id",
+              "controlled_reception_status",
+              "episode_boundary_status",
               "pressure_defending_team_role",
               "nearest_defender_id",
               "nearest_defender_distance_m",
@@ -28177,16 +28522,16 @@
   "projection_id": "priori.capability_passport_projection.afl08",
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "981f3fd129ac710051faa78a0b959ec8c963612bef949373c2af6f926dfa8748",
+    "baseline_artifact_revision": "9f199230e1c005e4940186bbe7d4bb551d4bbf9844ea2eea78714bc5d8c67e31",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "b22aabdadf8cd2ade56e90d7c1a221e81cee46b9006a61faf9b7ccceb514c306",
+    "lock_hash": "f0250ded4dd48c037874064f0bcc314f8b76e25866699c24a25a5d96042c3446",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "d42cba00d7a72820d89d07edca04a153c3be75de8ad6ad61809939f515935786",
+    "registry_revision": "95f08348441ee80b332c073fd9546cfdd462e9e679fba5689c46f6e304ab9192",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "99391f34d33d4338dcfd70915f64cd0e87b900e1520423a5887db9949d67b7b6",
+    "runtime_manifest_revision": "bb120fb93aefe8dadd6d1ae96c9f7de84d4c719a2b6949eb38ad0daa06473ef5",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"

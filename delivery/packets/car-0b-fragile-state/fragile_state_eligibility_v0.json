@@ -1,0 +1,622 @@
+{
+  "documents": {
+    "away": {
+      "default_invocation": {
+        "execution_mode": "execute",
+        "invocation_id": "car_0b_fragile_state_eligibility_v0_away",
+        "match_ids": [
+          "J03WOH",
+          "J03WOY",
+          "J03WPY",
+          "J03WQQ",
+          "J03WR9",
+          "J03WMX",
+          "J03WN1"
+        ],
+        "max_results": 100,
+        "parameters": {},
+        "periods": [
+          "firstHalf",
+          "secondHalf"
+        ],
+        "perspective_team_role": "away",
+        "schema_version": "1.0"
+      },
+      "draft_plan": {
+        "anchor_source": {
+          "output_name": "eligibility_evaluations",
+          "source_node_id": "fragile_state_eligibility"
+        },
+        "classification_mode": "exhaustive",
+        "classification_rules": [
+          {
+            "description": "Certified active-possession, unique-control, reused-pressure eligibility only.",
+            "label": "CAR_0B_FRAGILE_STATE_ELIGIBLE",
+            "predicate_ids": [
+              "eligible_predicate"
+            ]
+          }
+        ],
+        "nodes": [
+          {
+            "catalog_ref": "controlled_pass_episode",
+            "kind": "primitive",
+            "node_id": "controlled_pass_episode",
+            "version": "0.1.0"
+          },
+          {
+            "catalog_ref": "pressure_on_carrier",
+            "inputs": {
+              "anchors": {
+                "output_name": "anchors",
+                "source_node_id": "controlled_pass_episode"
+              }
+            },
+            "kind": "relation",
+            "node_id": "pressure_on_carrier",
+            "parameters": {
+              "candidate_scope": {
+                "payload_type": "enum",
+                "unit": "none",
+                "value": "defending_outfield"
+              },
+              "carrier_id_field": {
+                "payload_type": "enum",
+                "unit": "none",
+                "value": "receiver_id"
+              },
+              "frame_field": {
+                "payload_type": "enum",
+                "unit": "none",
+                "value": "controlled_reception_frame_id"
+              },
+              "lookback_seconds": {
+                "payload_type": "number",
+                "unit": "second",
+                "value": 0.4
+              },
+              "maximum_approach_angle_degrees": {
+                "payload_type": "number",
+                "unit": "none",
+                "value": 100.0
+              },
+              "maximum_pressure_distance_m": {
+                "payload_type": "number",
+                "unit": "metre",
+                "value": 4.0
+              },
+              "minimum_closing_speed_mps": {
+                "payload_type": "number",
+                "unit": "none",
+                "value": 0.2
+              },
+              "minimum_pressure_duration_seconds": {
+                "payload_type": "number",
+                "unit": "second",
+                "value": 0.2
+              }
+            },
+            "version": "0.1.0"
+          },
+          {
+            "catalog_ref": "fragile_carrier_episode",
+            "inputs": {
+              "pressure_evaluations": {
+                "output_name": "anchor_evaluations",
+                "source_node_id": "pressure_on_carrier"
+              }
+            },
+            "kind": "primitive",
+            "node_id": "fragile_carrier_episode",
+            "parameters": {
+              "boundary_status_field": {
+                "payload_type": "field_ref",
+                "unit": "none",
+                "value": {
+                  "field": "episode_boundary_status",
+                  "kind": "status"
+                }
+              },
+              "carrier_control_status_field": {
+                "payload_type": "field_ref",
+                "unit": "none",
+                "value": {
+                  "field": "controlled_reception_status",
+                  "kind": "status"
+                }
+              },
+              "observation_frame_field": {
+                "payload_type": "field_ref",
+                "unit": "none",
+                "value": {
+                  "field": "pressure_frame_id",
+                  "kind": "frame"
+                }
+              },
+              "onset_carrier_id_field": {
+                "payload_type": "field_ref",
+                "unit": "none",
+                "value": {
+                  "field": "carrier_id",
+                  "kind": "entity"
+                }
+              },
+              "possession_id_field": {
+                "payload_type": "field_ref",
+                "unit": "none",
+                "value": {
+                  "field": "possession_id",
+                  "kind": "provenance"
+                }
+              },
+              "pressure_status_field": {
+                "payload_type": "field_ref",
+                "unit": "none",
+                "value": {
+                  "field": "pressure_status",
+                  "kind": "status"
+                }
+              },
+              "refractory_after_resolution_s": {
+                "payload_type": "number",
+                "unit": "second",
+                "value": 1.0
+              },
+              "same_episode_gap_tolerance_s": {
+                "payload_type": "number",
+                "unit": "second",
+                "value": 0.4
+              }
+            },
+            "version": "0.1.0"
+          },
+          {
+            "catalog_ref": "fragile_state_eligibility",
+            "inputs": {
+              "episodes": {
+                "output_name": "episodes",
+                "source_node_id": "fragile_carrier_episode"
+              }
+            },
+            "kind": "primitive",
+            "node_id": "fragile_state_eligibility",
+            "version": "0.1.0"
+          },
+          {
+            "compare": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "PASS"
+            },
+            "input": {
+              "output_name": "fragile_state_status",
+              "source_node_id": "fragile_state_eligibility"
+            },
+            "kind": "predicate",
+            "node_id": "eligible_predicate",
+            "operator": {
+              "name": "eq",
+              "version": "1.0.0"
+            }
+          }
+        ],
+        "plan_id": "car_0b_fragile_state_eligibility_v0",
+        "plan_version": "0.1.0",
+        "recipe_id": "car_0b_fragile_state_eligibility_v0",
+        "recipe_version": "0.1.0",
+        "requested_evidence": [
+          {
+            "alias": "episode_id",
+            "field": "episode_id",
+            "required": true,
+            "source": {
+              "output_name": "eligibility_evaluations",
+              "source_node_id": "fragile_state_eligibility"
+            }
+          },
+          {
+            "alias": "onset_frame_id",
+            "field": "onset_frame_id",
+            "required": true,
+            "source": {
+              "output_name": "eligibility_evaluations",
+              "source_node_id": "fragile_state_eligibility"
+            }
+          },
+          {
+            "alias": "onset_carrier_id",
+            "field": "onset_carrier_id",
+            "required": true,
+            "source": {
+              "output_name": "eligibility_evaluations",
+              "source_node_id": "fragile_state_eligibility"
+            }
+          },
+          {
+            "alias": "fragile_state_status",
+            "field": "fragile_state_status",
+            "required": true,
+            "source": {
+              "output_name": "eligibility_evaluations",
+              "source_node_id": "fragile_state_eligibility"
+            }
+          },
+          {
+            "alias": "fragile_state_reason",
+            "field": "fragile_state_reason",
+            "required": true,
+            "source": {
+              "output_name": "eligibility_evaluations",
+              "source_node_id": "fragile_state_eligibility"
+            }
+          },
+          {
+            "alias": "pressure_source_signature",
+            "field": "pressure_source_signature",
+            "required": true,
+            "source": {
+              "output_name": "eligibility_evaluations",
+              "source_node_id": "fragile_state_eligibility"
+            }
+          },
+          {
+            "alias": "entry_dwell_seconds",
+            "field": "entry_dwell_seconds",
+            "required": true,
+            "source": {
+              "output_name": "eligibility_evaluations",
+              "source_node_id": "fragile_state_eligibility"
+            }
+          },
+          {
+            "alias": "same_episode_gap_tolerance_s",
+            "field": "same_episode_gap_tolerance_s",
+            "required": true,
+            "source": {
+              "output_name": "eligibility_evaluations",
+              "source_node_id": "fragile_state_eligibility"
+            }
+          }
+        ],
+        "schema_version": "1.0",
+        "status": "experimental",
+        "unknown_evidence_policy": "exclude_candidate"
+      },
+      "recipe": {
+        "allowed_claims": [
+          "An onset episode met the declared possession, control, and certified pressure eligibility law."
+        ],
+        "default_unknown_evidence_policy": "exclude_candidate",
+        "description": "Certifies fragile-state eligibility using active possession, unique carrier control, and reused pressure evidence.",
+        "disallowed_claims": [
+          "Eligibility measures continuity, value, ability, causation, decision quality, or replacement performance."
+        ],
+        "display_name": "CAR-0b Fragile-State Eligibility",
+        "limitations": [
+          "Local numbers, support arrival, confinement, and escape geometry are not eligibility requirements.",
+          "Seven-match methodology demonstration only."
+        ],
+        "output_classifications": [
+          "CAR_0B_FRAGILE_STATE_ELIGIBLE"
+        ],
+        "parameters": [],
+        "recipe_id": "car_0b_fragile_state_eligibility_v0",
+        "recipe_version": "0.1.0",
+        "schema_version": "1.0"
+      },
+      "schema_version": "1.0"
+    },
+    "home": {
+      "default_invocation": {
+        "execution_mode": "execute",
+        "invocation_id": "car_0b_fragile_state_eligibility_v0_home",
+        "match_ids": [
+          "J03WOH",
+          "J03WOY",
+          "J03WPY",
+          "J03WQQ",
+          "J03WR9",
+          "J03WMX",
+          "J03WN1"
+        ],
+        "max_results": 100,
+        "parameters": {},
+        "periods": [
+          "firstHalf",
+          "secondHalf"
+        ],
+        "perspective_team_role": "home",
+        "schema_version": "1.0"
+      },
+      "draft_plan": {
+        "anchor_source": {
+          "output_name": "eligibility_evaluations",
+          "source_node_id": "fragile_state_eligibility"
+        },
+        "classification_mode": "exhaustive",
+        "classification_rules": [
+          {
+            "description": "Certified active-possession, unique-control, reused-pressure eligibility only.",
+            "label": "CAR_0B_FRAGILE_STATE_ELIGIBLE",
+            "predicate_ids": [
+              "eligible_predicate"
+            ]
+          }
+        ],
+        "nodes": [
+          {
+            "catalog_ref": "controlled_pass_episode",
+            "kind": "primitive",
+            "node_id": "controlled_pass_episode",
+            "version": "0.1.0"
+          },
+          {
+            "catalog_ref": "pressure_on_carrier",
+            "inputs": {
+              "anchors": {
+                "output_name": "anchors",
+                "source_node_id": "controlled_pass_episode"
+              }
+            },
+            "kind": "relation",
+            "node_id": "pressure_on_carrier",
+            "parameters": {
+              "candidate_scope": {
+                "payload_type": "enum",
+                "unit": "none",
+                "value": "defending_outfield"
+              },
+              "carrier_id_field": {
+                "payload_type": "enum",
+                "unit": "none",
+                "value": "receiver_id"
+              },
+              "frame_field": {
+                "payload_type": "enum",
+                "unit": "none",
+                "value": "controlled_reception_frame_id"
+              },
+              "lookback_seconds": {
+                "payload_type": "number",
+                "unit": "second",
+                "value": 0.4
+              },
+              "maximum_approach_angle_degrees": {
+                "payload_type": "number",
+                "unit": "none",
+                "value": 100.0
+              },
+              "maximum_pressure_distance_m": {
+                "payload_type": "number",
+                "unit": "metre",
+                "value": 4.0
+              },
+              "minimum_closing_speed_mps": {
+                "payload_type": "number",
+                "unit": "none",
+                "value": 0.2
+              },
+              "minimum_pressure_duration_seconds": {
+                "payload_type": "number",
+                "unit": "second",
+                "value": 0.2
+              }
+            },
+            "version": "0.1.0"
+          },
+          {
+            "catalog_ref": "fragile_carrier_episode",
+            "inputs": {
+              "pressure_evaluations": {
+                "output_name": "anchor_evaluations",
+                "source_node_id": "pressure_on_carrier"
+              }
+            },
+            "kind": "primitive",
+            "node_id": "fragile_carrier_episode",
+            "parameters": {
+              "boundary_status_field": {
+                "payload_type": "field_ref",
+                "unit": "none",
+                "value": {
+                  "field": "episode_boundary_status",
+                  "kind": "status"
+                }
+              },
+              "carrier_control_status_field": {
+                "payload_type": "field_ref",
+                "unit": "none",
+                "value": {
+                  "field": "controlled_reception_status",
+                  "kind": "status"
+                }
+              },
+              "observation_frame_field": {
+                "payload_type": "field_ref",
+                "unit": "none",
+                "value": {
+                  "field": "pressure_frame_id",
+                  "kind": "frame"
+                }
+              },
+              "onset_carrier_id_field": {
+                "payload_type": "field_ref",
+                "unit": "none",
+                "value": {
+                  "field": "carrier_id",
+                  "kind": "entity"
+                }
+              },
+              "possession_id_field": {
+                "payload_type": "field_ref",
+                "unit": "none",
+                "value": {
+                  "field": "possession_id",
+                  "kind": "provenance"
+                }
+              },
+              "pressure_status_field": {
+                "payload_type": "field_ref",
+                "unit": "none",
+                "value": {
+                  "field": "pressure_status",
+                  "kind": "status"
+                }
+              },
+              "refractory_after_resolution_s": {
+                "payload_type": "number",
+                "unit": "second",
+                "value": 1.0
+              },
+              "same_episode_gap_tolerance_s": {
+                "payload_type": "number",
+                "unit": "second",
+                "value": 0.4
+              }
+            },
+            "version": "0.1.0"
+          },
+          {
+            "catalog_ref": "fragile_state_eligibility",
+            "inputs": {
+              "episodes": {
+                "output_name": "episodes",
+                "source_node_id": "fragile_carrier_episode"
+              }
+            },
+            "kind": "primitive",
+            "node_id": "fragile_state_eligibility",
+            "version": "0.1.0"
+          },
+          {
+            "compare": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "PASS"
+            },
+            "input": {
+              "output_name": "fragile_state_status",
+              "source_node_id": "fragile_state_eligibility"
+            },
+            "kind": "predicate",
+            "node_id": "eligible_predicate",
+            "operator": {
+              "name": "eq",
+              "version": "1.0.0"
+            }
+          }
+        ],
+        "plan_id": "car_0b_fragile_state_eligibility_v0",
+        "plan_version": "0.1.0",
+        "recipe_id": "car_0b_fragile_state_eligibility_v0",
+        "recipe_version": "0.1.0",
+        "requested_evidence": [
+          {
+            "alias": "episode_id",
+            "field": "episode_id",
+            "required": true,
+            "source": {
+              "output_name": "eligibility_evaluations",
+              "source_node_id": "fragile_state_eligibility"
+            }
+          },
+          {
+            "alias": "onset_frame_id",
+            "field": "onset_frame_id",
+            "required": true,
+            "source": {
+              "output_name": "eligibility_evaluations",
+              "source_node_id": "fragile_state_eligibility"
+            }
+          },
+          {
+            "alias": "onset_carrier_id",
+            "field": "onset_carrier_id",
+            "required": true,
+            "source": {
+              "output_name": "eligibility_evaluations",
+              "source_node_id": "fragile_state_eligibility"
+            }
+          },
+          {
+            "alias": "fragile_state_status",
+            "field": "fragile_state_status",
+            "required": true,
+            "source": {
+              "output_name": "eligibility_evaluations",
+              "source_node_id": "fragile_state_eligibility"
+            }
+          },
+          {
+            "alias": "fragile_state_reason",
+            "field": "fragile_state_reason",
+            "required": true,
+            "source": {
+              "output_name": "eligibility_evaluations",
+              "source_node_id": "fragile_state_eligibility"
+            }
+          },
+          {
+            "alias": "pressure_source_signature",
+            "field": "pressure_source_signature",
+            "required": true,
+            "source": {
+              "output_name": "eligibility_evaluations",
+              "source_node_id": "fragile_state_eligibility"
+            }
+          },
+          {
+            "alias": "entry_dwell_seconds",
+            "field": "entry_dwell_seconds",
+            "required": true,
+            "source": {
+              "output_name": "eligibility_evaluations",
+              "source_node_id": "fragile_state_eligibility"
+            }
+          },
+          {
+            "alias": "same_episode_gap_tolerance_s",
+            "field": "same_episode_gap_tolerance_s",
+            "required": true,
+            "source": {
+              "output_name": "eligibility_evaluations",
+              "source_node_id": "fragile_state_eligibility"
+            }
+          }
+        ],
+        "schema_version": "1.0",
+        "status": "experimental",
+        "unknown_evidence_policy": "exclude_candidate"
+      },
+      "recipe": {
+        "allowed_claims": [
+          "An onset episode met the declared possession, control, and certified pressure eligibility law."
+        ],
+        "default_unknown_evidence_policy": "exclude_candidate",
+        "description": "Certifies fragile-state eligibility using active possession, unique carrier control, and reused pressure evidence.",
+        "disallowed_claims": [
+          "Eligibility measures continuity, value, ability, causation, decision quality, or replacement performance."
+        ],
+        "display_name": "CAR-0b Fragile-State Eligibility",
+        "limitations": [
+          "Local numbers, support arrival, confinement, and escape geometry are not eligibility requirements.",
+          "Seven-match methodology demonstration only."
+        ],
+        "output_classifications": [
+          "CAR_0B_FRAGILE_STATE_ELIGIBLE"
+        ],
+        "parameters": [],
+        "recipe_id": "car_0b_fragile_state_eligibility_v0",
+        "recipe_version": "0.1.0",
+        "schema_version": "1.0"
+      },
+      "schema_version": "1.0"
+    }
+  },
+  "perspective_team_roles": [
+    "home",
+    "away"
+  ],
+  "schema_version": "car0b.fragile_state.plan_bundle.v1",
+  "target_id": "car_0b_fragile_state_eligibility_v0"
+}
