@@ -16,6 +16,7 @@
         "defender_distance_candidate_set",
         "defensive_line_model",
         "defensive_outfield_centroid",
+        "fragile_carrier_episode",
         "geometric_progressive_corridor",
         "geometric_progressive_corridor_from_anchor_set",
         "join_episode_sets",
@@ -3416,6 +3417,336 @@
             "centroid_y"
           ],
           "valid_parameter_names": [],
+          "version": "0.1.0"
+        },
+        "fragile_carrier_episode": {
+          "kind": "primitive",
+          "limitations": [
+            "Consumes certified pressure; it has no parallel pressure thresholds.",
+            "Identity boundaries are not continuity outcomes.",
+            "No continuity score, baseline, or aggregation is produced."
+          ],
+          "node_schema": {
+            "catalog_ref": "fragile_carrier_episode",
+            "inputs": {
+              "pressure_evaluations": {
+                "output_name": "<registered_output_name>",
+                "source_node_id": "<source_node_id>"
+              }
+            },
+            "kind": "primitive",
+            "node_id": "<agent_chosen_lower_snake_id>",
+            "parameters": {
+              "boundary_status_field": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "field_ref",
+                    "unit": "none",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "allow_legacy_enum": true,
+                  "default": {
+                    "payload_type": "enum",
+                    "unit": "none",
+                    "value": "episode_boundary_status"
+                  },
+                  "description": "Generic identity-boundary status; never a continuity classification.",
+                  "field_reference_kind": "status",
+                  "legacy_allowed_values": [
+                    "episode_boundary_status",
+                    "boundary_status"
+                  ],
+                  "name": "boundary_status_field",
+                  "payload_type": "field_ref",
+                  "required": false,
+                  "unit": "none"
+                }
+              },
+              "carrier_control_status_field": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "field_ref",
+                    "unit": "none",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "allow_legacy_enum": true,
+                  "default": {
+                    "payload_type": "enum",
+                    "unit": "none",
+                    "value": "carrier_control_status"
+                  },
+                  "description": "Certified individual-control status used for attribution.",
+                  "field_reference_kind": "status",
+                  "legacy_allowed_values": [
+                    "carrier_control_status",
+                    "controlled_reception_status",
+                    "carry_status"
+                  ],
+                  "name": "carrier_control_status_field",
+                  "payload_type": "field_ref",
+                  "required": false,
+                  "unit": "none"
+                }
+              },
+              "observation_frame_field": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "field_ref",
+                    "unit": "none",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "allow_legacy_enum": true,
+                  "default": {
+                    "payload_type": "enum",
+                    "unit": "none",
+                    "value": "pressure_frame_id"
+                  },
+                  "description": "Certified pressure observation frame field.",
+                  "field_reference_kind": "frame",
+                  "legacy_allowed_values": [
+                    "pressure_frame_id",
+                    "anchor_frame_id"
+                  ],
+                  "name": "observation_frame_field",
+                  "payload_type": "field_ref",
+                  "required": false,
+                  "unit": "none"
+                }
+              },
+              "onset_carrier_id_field": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "field_ref",
+                    "unit": "none",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "allow_legacy_enum": true,
+                  "default": {
+                    "payload_type": "enum",
+                    "unit": "none",
+                    "value": "carrier_id"
+                  },
+                  "description": "Entity field used only for onset attribution.",
+                  "field_reference_kind": "entity",
+                  "legacy_allowed_values": [
+                    "carrier_id",
+                    "receiver_id",
+                    "relay_player_id"
+                  ],
+                  "name": "onset_carrier_id_field",
+                  "payload_type": "field_ref",
+                  "required": false,
+                  "unit": "none"
+                }
+              },
+              "possession_id_field": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "field_ref",
+                    "unit": "none",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "allow_legacy_enum": true,
+                  "default": {
+                    "payload_type": "enum",
+                    "unit": "none",
+                    "value": "possession_id"
+                  },
+                  "description": "Provenance field defining possession identity.",
+                  "field_reference_kind": "provenance",
+                  "legacy_allowed_values": [
+                    "possession_id",
+                    "anchor_id"
+                  ],
+                  "name": "possession_id_field",
+                  "payload_type": "field_ref",
+                  "required": false,
+                  "unit": "none"
+                }
+              },
+              "pressure_status_field": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "field_ref",
+                    "unit": "none",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "allow_legacy_enum": true,
+                  "default": {
+                    "payload_type": "enum",
+                    "unit": "none",
+                    "value": "pressure_status"
+                  },
+                  "description": "Status field emitted by a certified pressure primitive.",
+                  "field_reference_kind": "status",
+                  "legacy_allowed_values": [
+                    "pressure_status",
+                    "team_press_status"
+                  ],
+                  "name": "pressure_status_field",
+                  "payload_type": "field_ref",
+                  "required": false,
+                  "unit": "none"
+                }
+              },
+              "refractory_after_resolution_s": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "number",
+                    "unit": "second",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "second",
+                    "value": 1.0
+                  },
+                  "description": "CAR-owned re-arm interval after a declared identity boundary.",
+                  "maximum": 10.0,
+                  "minimum": 0.0,
+                  "name": "refractory_after_resolution_s",
+                  "payload_type": "number",
+                  "required": false,
+                  "unit": "second"
+                }
+              },
+              "same_episode_gap_tolerance_s": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "number",
+                    "unit": "second",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "second",
+                    "value": 0.4
+                  },
+                  "description": "CAR-owned tolerance for flicker inside one identity.",
+                  "maximum": 3.0,
+                  "minimum": 0.0,
+                  "name": "same_episode_gap_tolerance_s",
+                  "payload_type": "number",
+                  "required": false,
+                  "unit": "second"
+                }
+              }
+            },
+            "version": "0.1.0"
+          },
+          "outputs": [
+            {
+              "allowed_values": null,
+              "cardinality": "collection",
+              "coverage": null,
+              "entity_scope": "possession",
+              "evidence_fields": [
+                "episode_id",
+                "onset_frame_id",
+                "onset_carrier_id",
+                "attribution_status",
+                "continuity_status"
+              ],
+              "missing_data_semantics": "unknown",
+              "name": "episodes",
+              "payload_type": "boolean",
+              "temporal_type": "episode_set",
+              "unit": "none"
+            },
+            {
+              "allowed_values": [
+                "PASS",
+                "UNKNOWN"
+              ],
+              "cardinality": "single",
+              "coverage": null,
+              "entity_scope": "possession",
+              "evidence_fields": [
+                "episode_id",
+                "attribution_status",
+                "attribution_reason"
+              ],
+              "missing_data_semantics": "unknown",
+              "name": "attribution_status",
+              "payload_type": "enum",
+              "temporal_type": "frame_signal",
+              "unit": "none"
+            }
+          ],
+          "registered_catalog_ref": "fragile_carrier_episode",
+          "required_inputs": [
+            {
+              "cardinality": "collection",
+              "entity_scope": "anchor",
+              "name": "pressure_evaluations",
+              "payload_type": "anchor_ref",
+              "required": true,
+              "temporal_type": "episode_set",
+              "unit": "none"
+            }
+          ],
+          "valid_output_names": [
+            "episodes",
+            "attribution_status"
+          ],
+          "valid_parameter_names": [
+            "observation_frame_field",
+            "onset_carrier_id_field",
+            "possession_id_field",
+            "pressure_status_field",
+            "carrier_control_status_field",
+            "boundary_status_field",
+            "same_episode_gap_tolerance_s",
+            "refractory_after_resolution_s"
+          ],
           "version": "0.1.0"
         },
         "geometric_progressive_corridor": {
@@ -14577,6 +14908,16 @@
       "baseline_defensive_centroid_y_m",
       "defending_team_id"
     ],
+    "fragile_carrier_episode": [
+      "attribution_reason",
+      "attribution_status",
+      "continuity_status",
+      "definition_hash",
+      "episode_id",
+      "onset_carrier_id",
+      "onset_frame_id",
+      "pressure_source_signature"
+    ],
     "geometric_progressive_corridor": [
       "close_frame_id",
       "close_reason",
@@ -15530,6 +15871,218 @@
     }
   ],
   "primitives": [
+    {
+      "agent_authorable": true,
+      "evidence_fields": [
+        "episode_id",
+        "definition_hash",
+        "pressure_source_signature",
+        "onset_frame_id",
+        "onset_carrier_id",
+        "attribution_status",
+        "attribution_reason",
+        "continuity_status"
+      ],
+      "inputs": [
+        {
+          "cardinality": "collection",
+          "entity_scope": "anchor",
+          "name": "pressure_evaluations",
+          "payload_type": "anchor_ref",
+          "required": true,
+          "temporal_type": "episode_set",
+          "unit": "none"
+        }
+      ],
+      "kind": "primitive",
+      "limitations": [
+        "Consumes certified pressure; it has no parallel pressure thresholds.",
+        "Identity boundaries are not continuity outcomes.",
+        "No continuity score, baseline, or aggregation is produced."
+      ],
+      "name": "fragile_carrier_episode",
+      "outputs": [
+        {
+          "allowed_values": null,
+          "cardinality": "collection",
+          "coverage": null,
+          "entity_scope": "possession",
+          "evidence_fields": [
+            "episode_id",
+            "onset_frame_id",
+            "onset_carrier_id",
+            "attribution_status",
+            "continuity_status"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "episodes",
+          "payload_type": "boolean",
+          "temporal_type": "episode_set",
+          "unit": "none"
+        },
+        {
+          "allowed_values": [
+            "PASS",
+            "UNKNOWN"
+          ],
+          "cardinality": "single",
+          "coverage": null,
+          "entity_scope": "possession",
+          "evidence_fields": [
+            "episode_id",
+            "attribution_status",
+            "attribution_reason"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "attribution_status",
+          "payload_type": "enum",
+          "temporal_type": "frame_signal",
+          "unit": "none"
+        }
+      ],
+      "parameters": [
+        {
+          "allow_legacy_enum": true,
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "pressure_frame_id"
+          },
+          "description": "Certified pressure observation frame field.",
+          "field_reference_kind": "frame",
+          "legacy_allowed_values": [
+            "pressure_frame_id",
+            "anchor_frame_id"
+          ],
+          "name": "observation_frame_field",
+          "payload_type": "field_ref",
+          "required": false,
+          "unit": "none"
+        },
+        {
+          "allow_legacy_enum": true,
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "carrier_id"
+          },
+          "description": "Entity field used only for onset attribution.",
+          "field_reference_kind": "entity",
+          "legacy_allowed_values": [
+            "carrier_id",
+            "receiver_id",
+            "relay_player_id"
+          ],
+          "name": "onset_carrier_id_field",
+          "payload_type": "field_ref",
+          "required": false,
+          "unit": "none"
+        },
+        {
+          "allow_legacy_enum": true,
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "possession_id"
+          },
+          "description": "Provenance field defining possession identity.",
+          "field_reference_kind": "provenance",
+          "legacy_allowed_values": [
+            "possession_id",
+            "anchor_id"
+          ],
+          "name": "possession_id_field",
+          "payload_type": "field_ref",
+          "required": false,
+          "unit": "none"
+        },
+        {
+          "allow_legacy_enum": true,
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "pressure_status"
+          },
+          "description": "Status field emitted by a certified pressure primitive.",
+          "field_reference_kind": "status",
+          "legacy_allowed_values": [
+            "pressure_status",
+            "team_press_status"
+          ],
+          "name": "pressure_status_field",
+          "payload_type": "field_ref",
+          "required": false,
+          "unit": "none"
+        },
+        {
+          "allow_legacy_enum": true,
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "carrier_control_status"
+          },
+          "description": "Certified individual-control status used for attribution.",
+          "field_reference_kind": "status",
+          "legacy_allowed_values": [
+            "carrier_control_status",
+            "controlled_reception_status",
+            "carry_status"
+          ],
+          "name": "carrier_control_status_field",
+          "payload_type": "field_ref",
+          "required": false,
+          "unit": "none"
+        },
+        {
+          "allow_legacy_enum": true,
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "episode_boundary_status"
+          },
+          "description": "Generic identity-boundary status; never a continuity classification.",
+          "field_reference_kind": "status",
+          "legacy_allowed_values": [
+            "episode_boundary_status",
+            "boundary_status"
+          ],
+          "name": "boundary_status_field",
+          "payload_type": "field_ref",
+          "required": false,
+          "unit": "none"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "second",
+            "value": 0.4
+          },
+          "description": "CAR-owned tolerance for flicker inside one identity.",
+          "maximum": 3.0,
+          "minimum": 0.0,
+          "name": "same_episode_gap_tolerance_s",
+          "payload_type": "number",
+          "required": false,
+          "unit": "second"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "second",
+            "value": 1.0
+          },
+          "description": "CAR-owned re-arm interval after a declared identity boundary.",
+          "maximum": 10.0,
+          "minimum": 0.0,
+          "name": "refractory_after_resolution_s",
+          "payload_type": "number",
+          "required": false,
+          "unit": "second"
+        }
+      ],
+      "purpose": "Deduplicate certified pressure observations into carrier-independent fragile episode identities and freeze onset attribution.",
+      "version": "0.1.0"
+    },
     {
       "agent_authorable": true,
       "evidence_fields": [

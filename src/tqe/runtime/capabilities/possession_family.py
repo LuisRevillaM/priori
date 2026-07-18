@@ -39,11 +39,65 @@ from tqe.runtime.executor import (
     segment_true,
 )
 from tqe.runtime.controlled_pass import align_event_to_frame
+from tqe.runtime.fragile_carrier_episode import EpisodeIdentityConfig, build_fragile_carrier_episodes
 from tqe.runtime.ir import BoundCatalogNode, Unit
 from tqe.runtime.one_touch import EVENT_COLUMNS
 from tqe.runtime.pass_bypass import attack_x_sign_for
 from tqe.runtime.possession_identity import possession_identity_at_frame
 from tqe.runtime.values import FrameSignal
+
+
+def primitive_fragile_carrier_episode(state: PeriodState, node: BoundCatalogNode) -> None:
+    """Adapt certified pressure records to the pure CAR episode kernel."""
+    value = catalog_input_value(state, node, "pressure_evaluations")
+    source = runtime_records(value)
+    observations: list[dict[str, Any]] = []
+    for raw in source:
+        record = dict(raw)
+        frame_id = optional_int(record.get(node_parameter_text(node, "observation_frame_field")))
+        frame_id = frame_id if frame_id is not None else optional_int(record.get("pressure_frame_id"))
+        if frame_id is None:
+            continue
+        record["pressure_frame_id"] = frame_id
+        record["match_id"] = str(record.get("match_id") or state.match_id)
+        record["period"] = int(record.get("period") or state.period)
+        record["team_role"] = str(record.get("team_role") or state.perspective_team_role)
+        possession_field = node_parameter_text(node, "possession_id_field")
+        possession_id = record.get(possession_field)
+        if possession_id is None:
+            possession_id = possession_identity_at_frame(state, frame_id, record["team_role"])
+        record["possession_id"] = possession_id
+        record["possession_status"] = record.get(
+            "possession_status", "PASS" if possession_id is not None else "UNKNOWN"
+        )
+        record["match_time_ms"] = int(record.get("match_time_ms") or frame_match_time_ms(state, frame_id))
+        carrier_field = node_parameter_text(node, "onset_carrier_id_field")
+        if record.get("carrier_id") is None:
+            record["carrier_id"] = record.get(carrier_field)
+        pressure_field = node_parameter_text(node, "pressure_status_field")
+        record["pressure_status"] = record.get(pressure_field, record.get("pressure_status", "UNKNOWN"))
+        control_field = node_parameter_text(node, "carrier_control_status_field")
+        record["carrier_control_status"] = record.get(control_field, "UNKNOWN")
+        boundary_field = node_parameter_text(node, "boundary_status_field")
+        record["episode_boundary_status"] = record.get(boundary_field, "FAIL")
+        observations.append(record)
+    episodes = build_fragile_carrier_episodes(
+        observations,
+        EpisodeIdentityConfig(
+            same_episode_gap_tolerance_s=node_parameter_number(node, "same_episode_gap_tolerance_s"),
+            refractory_after_resolution_s=node_parameter_number(node, "refractory_after_resolution_s"),
+        ),
+    )
+    state.signals[node.node_id] = {
+        "episodes": episodes,
+        "attribution_status": FrameSignal(
+            frame_ids=[int(item["onset_frame_id"]) for item in episodes],
+            values=[item["attribution_status"] if item["attribution_status"] != "UNKNOWN" else None for item in episodes],
+            unknown_mask=[item["attribution_status"] == "UNKNOWN" for item in episodes],
+            unit=node.outputs[1].unit,
+            entity_scope=node.outputs[1].entity_scope,
+        ),
+    }
 
 
 def primitive_possession_segment(state: PeriodState, node: BoundCatalogNode) -> None:

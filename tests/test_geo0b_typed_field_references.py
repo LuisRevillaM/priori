@@ -105,9 +105,13 @@ class TypedFieldReferenceLawTests(unittest.TestCase):
             if parameter.payload_type == PayloadType.FIELD_REF
         ]
 
-        self.assertEqual(112, len(migrated))
+        # Ratchet census: grows ONLY with an explicit acknowledgment here.
+        # 110→118 (2026-07-18): GEO-1 between_observed_lines (+1 frame,
+        # +1 entity) and CAR-0a episode identity/attribution (+1 frame,
+        # +1 entity, +3 status, +1 provenance).
+        self.assertEqual(118, len(migrated))
         self.assertEqual(
-            Counter(frame=42, entity=35, status=24, provenance=6, point=5),
+            Counter(frame=43, entity=36, status=27, provenance=7, point=5),
             Counter(parameter.field_reference_kind.value for parameter in migrated),
         )
         self.assertTrue(all(parameter.allowed_values is None for parameter in migrated))

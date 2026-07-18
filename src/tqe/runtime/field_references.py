@@ -18,6 +18,12 @@ OperatorParameterKey = tuple[str, str]
 
 
 CATALOG_FIELD_REFERENCE_KINDS: dict[CatalogParameterKey, FieldReferenceKind] = {
+    ("fragile_carrier_episode", "observation_frame_field"): FieldReferenceKind.FRAME,
+    ("fragile_carrier_episode", "onset_carrier_id_field"): FieldReferenceKind.ENTITY,
+    ("fragile_carrier_episode", "possession_id_field"): FieldReferenceKind.PROVENANCE,
+    ("fragile_carrier_episode", "pressure_status_field"): FieldReferenceKind.STATUS,
+    ("fragile_carrier_episode", "carrier_control_status_field"): FieldReferenceKind.STATUS,
+    ("fragile_carrier_episode", "boundary_status_field"): FieldReferenceKind.STATUS,
     ("structured_zone", "frame_field"): FieldReferenceKind.FRAME,
     ("space_region_generation", "frame_field"): FieldReferenceKind.FRAME,
     ("outcome_window", "required_anchor_status_field"): FieldReferenceKind.STATUS,

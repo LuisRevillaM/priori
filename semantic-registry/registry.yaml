@@ -163,6 +163,14 @@ concepts:
     evidence_contract_ref: evidence.observed_pressure_on_carrier.v1
     tags: [pressure, defending, relation, movement]
 
+  - id: concept.fragile_carrier_episode_identity
+    kind: Concept
+    display_name: Fragile Carrier Episode Identity
+    description: A deduplicated pressure-qualified possession episode with carrier-independent identity and frozen onset attribution.
+    claim_contract_ref: claim.fragile_carrier_episode_identity.v1
+    evidence_contract_ref: evidence.fragile_carrier_episode_identity.v1
+    tags: [carrier, pressure, identity, attribution]
+
   - id: concept.observed_defender_distance_candidate_set
     kind: Concept
     display_name: Observed Defender Distance Candidate Set
@@ -856,6 +864,26 @@ operationalizations:
     lowering: [nearest_defender_selection, distance_threshold, closing_speed_estimate, approach_angle_estimate, duration_window_check]
     claim_contract_ref: claim.observed_pressure_on_carrier.v1
     evidence_contract_ref: evidence.observed_pressure_on_carrier.v1
+
+  - id: op.fragile_carrier_episode_identity.v1
+    kind: Operationalization
+    display_name: Fragile Carrier Episode Identity
+    description: Deduplicate certified pressure observations, bridge bounded flicker, enforce refractory re-arm, and freeze onset attribution.
+    concept_refs: [concept.fragile_carrier_episode_identity]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking]
+    applicability: [certified_pressure_evaluations_available, possession_identity_available]
+    inputs:
+      - name: pressure_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, quantity: pressure_evaluation, unit: none, entity_scope: anchor}
+    outputs:
+      - name: episodes
+        type: {container: EpisodeSet, value: Boolean, quantity: fragile_carrier_episode, unit: none, entity_scope: possession}
+      - name: attribution_status
+        type: {container: FrameSignal, value: Enum, quantity: attribution_status, unit: none, entity_scope: possession}
+    lowering: [certified_pressure_reuse, exact_observation_deduplication, gap_tolerance, refractory_rearm, onset_carrier_freeze]
+    claim_contract_ref: claim.fragile_carrier_episode_identity.v1
+    evidence_contract_ref: evidence.fragile_carrier_episode_identity.v1
 
   - id: op.observed_team_compactness.v1
     kind: Operationalization
@@ -1656,6 +1684,12 @@ implementations:
     description: Current observed nearest-defender pressure implementation.
     implements: [op.observed_pressure_on_carrier.v1]
     source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+  - id: impl.fragile_carrier_episode.python.v1
+    kind: Implementation
+    display_name: Fragile Carrier Episode Python Implementation
+    description: Pure deterministic identity kernel and possession-family runtime adapter.
+    implements: [op.fragile_carrier_episode_identity.v1]
+    source_refs: [src/tqe/runtime/fragile_carrier_episode.py, src/tqe/runtime/capabilities/possession_family.py, src/tqe/runtime/catalog.py]
   - id: impl.team_compactness.python.v1
     kind: Implementation
     display_name: Team Compactness Python Implementation
@@ -2870,6 +2904,38 @@ runtime_bindings:
       minimum_pressure_duration_seconds: minimum_pressure_duration_seconds
       lookback_seconds: lookback_seconds
       candidate_scope: candidate_scope
+
+  - id: binding.primitive.fragile_carrier_episode.0_1_0
+    kind: RuntimeBinding
+    display_name: fragile_carrier_episode runtime binding
+    description: Canonical runtime binding for fragile_carrier_episode 0.1.0.
+    runtime_capability: {id: fragile_carrier_episode, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.fragile_carrier_episode.python.v1
+    implements: [op.fragile_carrier_episode_identity.v1]
+    conformance_status: PARTIAL
+    known_deviations: [Typed source-field routing parameters are runtime adapter concerns and are deliberately uncovered by the two-parameter semantic identity model.]
+    input_bindings:
+      pressure_evaluations: {source: NODE_INPUT, runtime_port: pressure_evaluations}
+    output_bindings:
+      episodes: {runtime_port: episodes}
+      attribution_status: {runtime_port: attribution_status}
+    semantic_parameters:
+      - name: same_episode_gap_tolerance_s
+        type: {container: Scalar, value: Scalar, unit: second}
+        required: false
+        default: {payload_type: number, value: 0.4, unit: second}
+        minimum: 0.0
+        maximum: 3.0
+      - name: refractory_after_resolution_s
+        type: {container: Scalar, value: Scalar, unit: second}
+        required: false
+        default: {payload_type: number, value: 1.0, unit: second}
+        minimum: 0.0
+        maximum: 10.0
+    parameter_bindings:
+      same_episode_gap_tolerance_s: same_episode_gap_tolerance_s
+      refractory_after_resolution_s: refractory_after_resolution_s
+    uncovered_runtime_parameters: [observation_frame_field, onset_carrier_id_field, possession_id_field, pressure_status_field, carrier_control_status_field, boundary_status_field]
 
   - id: binding.relation.defender_distance_candidate_set.0_1_0
     kind: RuntimeBinding
@@ -4374,6 +4440,13 @@ claim_contracts:
     permitted: [nearest_defender_pressure_condition_evaluated_under_declared_thresholds]
     prohibited: [pressure_quality_inferred, defender_intent_inferred, player_intent_inferred, decision_quality_inferred, tactical_causation_inferred, pass_was_optimal]
     unknown_conditions: [carrier_position_missing, defender_positions_missing, velocity_endpoint_missing, duration_coverage_incomplete]
+  - id: claim.fragile_carrier_episode_identity.v1
+    kind: ClaimContract
+    display_name: Fragile Carrier Episode Identity Claims
+    description: Claims permitted for pressure-qualified episode identity and onset attribution only.
+    permitted: [pressure_qualified_episode_identity_observed, unique_controlled_onset_carrier_attributed]
+    prohibited: [continuity_outcome_inferred, continuity_score_inferred, baseline_comparison_made, tactical_causation_inferred, aggregation_reported]
+    unknown_conditions: [pressure_coverage_unknown, possession_identity_unknown, onset_carrier_not_unique, individual_control_unknown]
   - id: claim.observed_defender_distance_candidate_set.v1
     kind: ClaimContract
     display_name: Observed Defender Distance Candidate Set Claims
@@ -4745,6 +4818,13 @@ evidence_contracts:
     required: [anchor_id, anchor_frame_id, pressure_status, pressure_reason, pressure_frame_id, carrier_id, nearest_defender_distance_m, closing_speed_mps, approach_angle_degrees, pressure_duration_seconds, maximum_pressure_distance_m, minimum_closing_speed_mps, maximum_approach_angle_degrees, minimum_pressure_duration_seconds, coverage_status]
     optional: [nearest_defender_id]
     replay_projection: [carrier_marker, nearest_defender_marker, pressure_distance_badge, closing_speed_badge]
+  - id: evidence.fragile_carrier_episode_identity.v1
+    kind: EvidenceContract
+    display_name: Fragile Carrier Episode Identity Evidence
+    description: Evidence required to reproduce carrier-independent identity and frozen onset attribution.
+    required: [episode_id, definition_hash, pressure_source_signature, match_id, period, team_role, possession_id, onset_frame_id, onset_match_time_ms, attribution_status, attribution_reason, continuity_status, source_observation_hashes]
+    optional: [onset_carrier_id, onset_carrier_candidate_ids, reentry_carrier_ids, identity_end_frame_id, identity_boundary_kind]
+    replay_projection: [onset_frame, onset_carrier_badge, attribution_status_badge]
   - id: evidence.observed_defender_distance_candidate_set.v1
     kind: EvidenceContract
     display_name: Observed Defender Distance Candidate Set Evidence
@@ -5154,6 +5234,14 @@ exposure_policies:
     subject_ref: runtime:relation:pressure_on_carrier:0.1.0
     ai_compiler: ALLOWED
     product: ALLOWED
+  - id: exposure.runtime.fragile_carrier_episode.0_1_0
+    kind: ExposurePolicy
+    display_name: fragile_carrier_episode exposure
+    description: Identity and attribution substrate held from direct projection until its first certified CAR composition; continuity claims remain prohibited.
+    subject_ref: runtime:primitive:fragile_carrier_episode:0.1.0
+    ai_compiler: DENIED
+    product: DENIED
+    reasons: [car_substrate_pending_first_certified_composition]
   - id: exposure.runtime.defender_distance_candidate_set.0_1_0
     kind: ExposurePolicy
     display_name: defender_distance_candidate_set exposure
@@ -5402,6 +5490,12 @@ projection_policies:
     requires: {runtime_binding: VERIFIED, product_exposure: ALLOWED, product_maturity: EXPOSED, validation: VERIFIED}
     excludes: [PROPOSED_ATLAS, DEPRECATED]
     accepted_differences:
+      - subject_ref: runtime:primitive:fragile_carrier_episode:0.1.0
+        difference_kind: REMOVED
+        baseline_contract_hash: 96b5e45731dbeed5704b2d0b2a6e818b20fcd2daa0e6bc6538672aaa52a9c50f
+        permitted_fields: []
+        rationale: CAR-0a identity is certified substrate but intentionally held from the direct product projection until a reviewed CAR composition consumes it.
+        review_condition: Remove this waiver when a certified CAR composition is product-exposed.
       - subject_ref: composition:composition.ai_corridor_destination.2026_06_23
         difference_kind: ADDED
         projection_contract_hash: a796f3d6ca9399358c6bf535d0d7d8f57509bbf9763661cf191c76e346af9d3b
@@ -5488,6 +5582,12 @@ projection_policies:
     requires: {runtime_binding: VERIFIED, agent_safety: APPROVED, ai_compiler: ALLOWED, validation: VERIFIED}
     excludes: [PROPOSED_ATLAS, REVIEWED_PLAN_ONLY, DEPRECATED]
     accepted_differences:
+      - subject_ref: runtime:primitive:fragile_carrier_episode:0.1.0
+        difference_kind: REMOVED
+        baseline_contract_hash: 96b5e45731dbeed5704b2d0b2a6e818b20fcd2daa0e6bc6538672aaa52a9c50f
+        permitted_fields: []
+        rationale: CAR-0a identity is certified substrate but intentionally held from direct model authoring until a reviewed CAR composition consumes it.
+        review_condition: Remove this waiver when a certified CAR composition is AI-exposed.
       - subject_ref: composition:composition.ai_corridor_destination.2026_06_23
         difference_kind: ADDED
         projection_contract_hash: a796f3d6ca9399358c6bf535d0d7d8f57509bbf9763661cf191c76e346af9d3b
@@ -5891,6 +5991,16 @@ maturity_assessments:
     validation: VERIFIED
     agent_safety: APPROVED
     product: EXPOSED
+  - id: maturity.runtime.fragile_carrier_episode.0_1_0
+    kind: MaturityAssessment
+    display_name: fragile_carrier_episode maturity
+    description: Mutation-tested deterministic identity and attribution substrate.
+    subject_ref: runtime:primitive:fragile_carrier_episode:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: NOT_EXPOSED
   - id: maturity.runtime.defender_distance_candidate_set.0_1_0
     kind: MaturityAssessment
     display_name: defender_distance_candidate_set maturity
