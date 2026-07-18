@@ -108,4 +108,4 @@ byte on a second full seven-match execution.
 | V2 producer generation | PASS — 4,189 rows |
 | V2 producer `--check` | PASS — byte-identical |
 | GEO-1 v1 evidence overwrite audit | PASS — no changed path under `geo-1-reception-between-lines` |
-| Full suite | PENDING |
+| Full `unittest discover` | PASS — 650/650 in 538.810s |
