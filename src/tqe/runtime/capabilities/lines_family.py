@@ -106,6 +106,7 @@ def primitive_multi_line_model(state: PeriodState, node: BoundCatalogNode) -> No
     if not isinstance(anchors, list):
         raise RuntimeError(f"{node.node_id} requires anchor records")
     goal_side_buffer_m = node_parameter_number(node, "goal_side_buffer_m")
+    line_collection_scope = node_parameter_text(node, "line_collection_scope")
     line_band_width_m = node_parameter_number(node, "line_band_width_m")
     minimum_line_defenders = int(round(node_parameter_number(node, "minimum_line_defenders")))
     target_line_rank = int(round(node_parameter_number(node, "target_line_rank")))
@@ -128,6 +129,7 @@ def primitive_multi_line_model(state: PeriodState, node: BoundCatalogNode) -> No
             anchor=anchor,
             anchor_frame_field=anchor_frame_field,
             goal_side_buffer_m=goal_side_buffer_m,
+            line_collection_scope=line_collection_scope,
             line_band_width_m=line_band_width_m,
             minimum_line_defenders=minimum_line_defenders,
             target_line_rank=target_line_rank,
@@ -161,6 +163,7 @@ def multi_line_anchor_record(
     anchor: dict[str, Any],
     anchor_frame_field: str,
     goal_side_buffer_m: float,
+    line_collection_scope: str,
     line_band_width_m: float,
     minimum_line_defenders: int,
     target_line_rank: int,
@@ -209,7 +212,7 @@ def multi_line_anchor_record(
         defender_observation_status = "ADEQUATE"
         defender_observation_reason = "defender_observation_adequate"
     ball_point = ball_point_at_frame(state, evaluation_frame_id)
-    if ball_point is None:
+    if line_collection_scope == "goal_side_of_ball" and ball_point is None:
         return multi_line_payload_from_anchor(
             state=state,
             anchor=anchor,
@@ -232,12 +235,18 @@ def multi_line_anchor_record(
             ),
             player_track_coverage_reason=player_track_coverage.reason,
             player_track_coverage_row_ids=list(player_track_coverage.row_ids),
+            line_collection_scope=line_collection_scope,
         )
     candidates = []
-    normalized_ball_x = float(ball_point[0]) * attack_x_sign
+    normalized_ball_x = (
+        None if ball_point is None else float(ball_point[0]) * attack_x_sign
+    )
     for defender in valid_defenders:
         normalized_x = float(defender["x_m"]) * attack_x_sign
-        if normalized_x > normalized_ball_x + goal_side_buffer_m:
+        if (
+            line_collection_scope == "all_opposing_lines"
+            or normalized_x > float(normalized_ball_x) + goal_side_buffer_m
+        ):
             candidates.append(
                 {
                     "player_id": str(defender["player_id"]),
@@ -305,9 +314,10 @@ def multi_line_anchor_record(
         target_line_rank=target_line_rank,
         lines=lines,
         selected_line=lines[target_line_rank - 1] if status == "PASS" else None,
-        ball_x_m=ball_point[0],
+        ball_x_m=None if ball_point is None else ball_point[0],
         normalized_ball_x_m=normalized_ball_x,
         goal_side_buffer_m=goal_side_buffer_m,
+        line_collection_scope=line_collection_scope,
         line_band_width_m=line_band_width_m,
         minimum_line_defenders=minimum_line_defenders,
         attack_x_sign=attack_x_sign,
@@ -353,6 +363,7 @@ def multi_line_payload_from_anchor(
     ball_x_m: float | None = None,
     normalized_ball_x_m: float | None = None,
     goal_side_buffer_m: float | None = None,
+    line_collection_scope: str | None = None,
     line_band_width_m: float | None = None,
     minimum_line_defenders: int | None = None,
     attack_x_sign: int | None = None,
@@ -392,6 +403,7 @@ def multi_line_payload_from_anchor(
         "ball_x_m": ball_x_m,
         "normalized_ball_x_m": normalized_ball_x_m,
         "goal_side_buffer_m": goal_side_buffer_m,
+        "line_collection_scope": line_collection_scope,
         "line_band_width_m": line_band_width_m,
         "minimum_line_defenders": minimum_line_defenders,
         "attacking_direction": attack_x_sign,

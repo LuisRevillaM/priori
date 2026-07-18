@@ -5884,6 +5884,35 @@
                   "unit": "metre"
                 }
               },
+              "line_collection_scope": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "enum",
+                    "unit": "none",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "allowed_values": [
+                    "all_opposing_lines",
+                    "goal_side_of_ball"
+                  ],
+                  "default": {
+                    "payload_type": "enum",
+                    "unit": "none",
+                    "value": "all_opposing_lines"
+                  },
+                  "description": "Collect all opposing-team bands or explicitly retain the legacy goal-side-of-ball scope.",
+                  "name": "line_collection_scope",
+                  "payload_type": "enum",
+                  "required": false,
+                  "unit": "none"
+                }
+              },
               "minimum_line_defenders": {
                 "accepted_forms": [
                   {
@@ -5929,7 +5958,7 @@
                     "unit": "count",
                     "value": 2
                   },
-                  "description": "Geometric goal-side line rank to expose for downstream relative-position tests.",
+                  "description": "Normalized longitudinal line rank to expose for downstream relative-position tests.",
                   "maximum": 4.0,
                   "minimum": 1.0,
                   "name": "target_line_rank",
@@ -5939,7 +5968,7 @@
                 }
               }
             },
-            "version": "0.1.0"
+            "version": "0.2.0"
           },
           "outputs": [
             {
@@ -5965,6 +5994,7 @@
                 "multi_line_status",
                 "multi_line_reason",
                 "line_evaluation_frame_id",
+                "line_collection_scope",
                 "target_line_rank",
                 "observed_line_count",
                 "observed_lines",
@@ -6025,13 +6055,14 @@
             "multi_line_status"
           ],
           "valid_parameter_names": [
+            "line_collection_scope",
             "goal_side_buffer_m",
             "line_band_width_m",
             "minimum_line_defenders",
             "target_line_rank",
             "anchor_frame_field"
           ],
-          "version": "0.1.0"
+          "version": "0.2.0"
         },
         "off_ball_run": {
           "kind": "primitive",
@@ -15034,6 +15065,7 @@
       "defender_observation_status",
       "defensive_line_player_ids",
       "invalid_observed_outfield_defender_ids",
+      "line_collection_scope",
       "line_evaluation_frame_id",
       "line_x_m",
       "multi_line_status",
@@ -21053,6 +21085,7 @@
       "evidence_fields": [
         "multi_line_status",
         "line_evaluation_frame_id",
+        "line_collection_scope",
         "target_line_rank",
         "observed_line_count",
         "observed_lines",
@@ -21109,6 +21142,7 @@
             "multi_line_status",
             "multi_line_reason",
             "line_evaluation_frame_id",
+            "line_collection_scope",
             "target_line_rank",
             "observed_line_count",
             "observed_lines",
@@ -21153,6 +21187,22 @@
         }
       ],
       "parameters": [
+        {
+          "allowed_values": [
+            "all_opposing_lines",
+            "goal_side_of_ball"
+          ],
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "all_opposing_lines"
+          },
+          "description": "Collect all opposing-team bands or explicitly retain the legacy goal-side-of-ball scope.",
+          "name": "line_collection_scope",
+          "payload_type": "enum",
+          "required": false,
+          "unit": "none"
+        },
         {
           "default": {
             "payload_type": "number",
@@ -21201,7 +21251,7 @@
             "unit": "count",
             "value": 2
           },
-          "description": "Geometric goal-side line rank to expose for downstream relative-position tests.",
+          "description": "Normalized longitudinal line rank to expose for downstream relative-position tests.",
           "maximum": 4.0,
           "minimum": 1.0,
           "name": "target_line_rank",
@@ -21230,8 +21280,8 @@
           "unit": "none"
         }
       ],
-      "purpose": "Fit ranked observed defensive line bands at supplied anchor frames. Rank is geometric order goal-side of the ball, not tactical role taxonomy.",
-      "version": "0.1.0"
+      "purpose": "Fit all adequately observed opposing-team geometric line bands at supplied anchor frames. Rank is normalized longitudinal order, not tactical role taxonomy.",
+      "version": "0.2.0"
     },
     {
       "agent_authorable": true,

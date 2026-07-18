@@ -82,6 +82,7 @@ def evaluate(
     *,
     coverage_status: str = "CERTIFIED",
     known_outfield_ids: set[str] | None = None,
+    line_collection_scope: str = "goal_side_of_ball",
 ) -> dict[str, object]:
     resolved_ids = (
         {player_id for player_id, _x_m, _y_m in defenders}
@@ -93,6 +94,7 @@ def evaluate(
         anchor={"anchor_id": "anchor-10", "anchor_frame_id": FRAME_ID},
         anchor_frame_field="anchor_frame_id",
         goal_side_buffer_m=1.0,
+        line_collection_scope=line_collection_scope,
         line_band_width_m=0.5,
         minimum_line_defenders=3,
         target_line_rank=2,
@@ -111,6 +113,16 @@ def spread_defenders(count: int = 6) -> list[tuple[str, float, float]]:
 
 
 class MultiLineCoverageCorrectionTests(unittest.TestCase):
+    def test_all_opposing_lines_scope_includes_bands_on_both_sides_of_ball(self) -> None:
+        defenders = [
+            ("a1", -12.0, 0.0), ("a2", -11.8, 1.0), ("a3", -11.6, 2.0),
+            ("b1", 8.0, 3.0), ("b2", 8.2, 4.0), ("b3", 8.4, 5.0),
+        ]
+        result = evaluate(defenders, line_collection_scope="all_opposing_lines")
+        self.assertEqual("PASS", result["multi_line_status"])
+        self.assertEqual(2, result["observed_line_count"])
+        self.assertEqual("all_opposing_lines", result["line_collection_scope"])
+
     def test_adequately_observed_absence_of_declared_pair_can_fail(self) -> None:
         result = evaluate(spread_defenders())
 

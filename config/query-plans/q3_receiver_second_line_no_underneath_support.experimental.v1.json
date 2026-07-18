@@ -156,6 +156,11 @@
             "kind": "parameter",
             "name": "line_band_width_m"
           },
+          "line_collection_scope": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "goal_side_of_ball"
+          },
           "minimum_line_defenders": {
             "kind": "parameter",
             "name": "minimum_line_defenders"
@@ -166,7 +171,7 @@
             "value": 2
           }
         },
-        "version": "0.1.0"
+        "version": "0.2.0"
       },
       {
         "catalog_ref": "relative_position_to_line",

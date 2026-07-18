@@ -1,0 +1,133 @@
+{
+  "concept_identity": "reception_between_observed_lines",
+  "concept_refs": [
+    "controlled_pass_episode",
+    "multi_line_model",
+    "between_observed_lines"
+  ],
+  "correspondence_clauses": [
+    {
+      "name": "composition",
+      "value": "controlled_pass_episode to multi_line_model at controlled reception to between_observed_lines; aggregate and rate by receiver_id over controlled receptions"
+    },
+    {
+      "name": "line_definition",
+      "value": "the unique adjacent observed geometric line pair bracketing the receiver at controlled reception, with a declared 0.5 metre closed boundary buffer"
+    },
+    {
+      "name": "claim_boundary",
+      "value": "Signed reception geometry and interval rates only; no tactical line roles, legal offside, intent, quality, or optimality."
+    }
+  ],
+  "display_name": "Reception Between Observed Lines",
+  "expression_id": "reception_between_observed_lines",
+  "expression_version": "0.3.0",
+  "fixture_notes": [
+    "The certified generator appends registered aggregate_over and rate terminals to the standard-envelope synthesized primitive chain and binds the complete document."
+  ],
+  "group_by": [
+    "receiver_id"
+  ],
+  "meaning_clauses": [
+    {
+      "action": "observes",
+      "field": "controlled_pass_status",
+      "operator": "eq",
+      "subject": "controlled_pass_episode",
+      "value": "PASS"
+    },
+    {
+      "action": "fits",
+      "field": "multi_line_status",
+      "operator": "eq",
+      "subject": "multi_line_model",
+      "value": "PASS"
+    },
+    {
+      "action": "classifies",
+      "field": "between_observed_lines_status",
+      "operator": "eq",
+      "subject": "between_observed_lines",
+      "value": "PASS"
+    },
+    {
+      "action": "groups",
+      "field": "receiver_id",
+      "operator": "by",
+      "subject": "aggregate_over",
+      "value": "receiver_id"
+    },
+    {
+      "action": "rates",
+      "field": "between_observed_lines_status",
+      "operator": "over",
+      "subject": "rate",
+      "value": "controlled_pass_status PASS controlled receptions"
+    }
+  ],
+  "operator_applications": [],
+  "population": {
+    "match_ids": [
+      "J03WOH",
+      "J03WOY",
+      "J03WPY",
+      "J03WQQ",
+      "J03WR9",
+      "J03WMX",
+      "J03WN1"
+    ],
+    "periods": [
+      "firstHalf",
+      "secondHalf"
+    ],
+    "perspective_team_roles": [
+      "home",
+      "away"
+    ]
+  },
+  "schema_version": "meaning_expression.v0",
+  "target": {
+    "held_out": true,
+    "multi_step": true,
+    "target_id": "reception_between_observed_lines_v3"
+  },
+  "target_contract": {
+    "claim_boundary": "Signed entity distances to selected observed geometric lines and interval rates over controlled receptions only; no tactical role names, legal offside, intent, quality, or optimality.",
+    "composition_constraints": [],
+    "desired_output": "classification",
+    "required_evidence": [
+      "between_observed_lines_status",
+      "between_observed_lines_reason",
+      "between_observed_lines_definition_version",
+      "entity_id",
+      "entity_frame_id",
+      "line_selector",
+      "selected_nearer_line_id",
+      "selected_farther_line_id",
+      "selected_nearer_line_player_ids",
+      "selected_farther_line_player_ids",
+      "signed_distance_to_nearer_line_m",
+      "signed_distance_to_farther_line_m",
+      "interline_gap_m",
+      "between_lines_defender_observation_status",
+      "between_lines_player_track_coverage_status",
+      "between_lines_player_track_coverage_row_ids"
+    ],
+    "required_modalities": [
+      "events",
+      "tracking"
+    ],
+    "status_semantics": [
+      {
+        "field": "between_observed_lines_status",
+        "required_value": "PASS"
+      }
+    ]
+  },
+  "team_perspective": {
+    "required": true,
+    "same_team_enforced": true,
+    "statement": "controlled_pass_episode and multi_line_model are executed in one declared team perspective; between_observed_lines preserves the same anchor and receiver.",
+    "team_role_field": "team_role"
+  }
+}

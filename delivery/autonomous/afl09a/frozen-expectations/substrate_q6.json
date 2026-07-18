@@ -1,9 +1,9 @@
 {
   "expectation_id": "afl09a.substrate_q6.0_1_0",
   "expected": {
-    "bound_plan_hash": "d3f23c5655b1c01a1e6de6497a9202e1552e9b0e95be5898c284a534f57df1a6",
+    "bound_plan_hash": "85596d46cc8f2e19fffd394adf46bda7eda980ba4f1256510ae47e6b646b1911",
     "compatibility_profile": "generic",
-    "document_hash": "8e4efdfa27863b06bd08a7d6ef740b184b88c598ef1c7b69b026f3baf02cd074",
+    "document_hash": "e898f5d95148b0b3905068351e14b15c5012acb0fe82ff90c48c932d6ab8b024",
     "execution_status": "pass",
     "plan_id": "q6_throw_in_first_action_under_pressure",
     "report_status": "PASS",
@@ -16,11 +16,11 @@
     "freeze_mechanism": "explicit_AFL09A_FREEZE_EXPECTATIONS=1",
     "review": "controller_self_verified_original_real_data_verifier",
     "runtime_semantics_dirty": false,
-    "source_commit": "edde4584cc9734c3198afaefb99012b7114704b7",
+    "source_commit": "7c881c254f919c165fb4380910b05f544e2fc176",
     "source_verifier": "tqe.verification.afl_substrate_q6",
     "source_verifier_status": "PASS",
     "threshold_version": "q6_throw_in_first_action_under_pressure.v0.1.0",
-    "worktree_dirty": false
+    "worktree_dirty": true
   },
   "schema_version": "afl09a.frozen_expectation.v1",
   "subject_ref": "recipe:q6_throw_in_first_action_under_pressure_v1:0.1.0"

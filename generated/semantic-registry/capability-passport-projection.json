@@ -1,6 +1,6 @@
 {
   "passport_count": 50,
-  "passport_revision": "89ded1912905aa0f0067c94de60a4bc2455becf9f1e62cb53376a3996525f073",
+  "passport_revision": "5d4ba400aceec265f5e993505e1ca95f1c8ad90c4bd9d49049d16f80edc57bd2",
   "passports": [
     {
       "binding": {
@@ -9536,7 +9536,7 @@
     {
       "binding": {
         "conformance": "PARTIAL",
-        "id": "binding.primitive.multi_line_model.0_1_0",
+        "id": "binding.primitive.multi_line_model.0_2_0",
         "input_bindings": {
           "anchors": {
             "runtime_port": "anchors",
@@ -9566,10 +9566,32 @@
           "anchor_frame_field": "anchor_frame_field",
           "goal_side_buffer_m": "goal_side_buffer_m",
           "line_band_width_m": "line_band_width_m",
+          "line_collection_scope": "line_collection_scope",
           "minimum_line_defenders": "minimum_line_defenders",
           "target_line_rank": "target_line_rank"
         },
         "semantic_parameters": [
+          {
+            "allowed_values": [
+              "all_opposing_lines",
+              "goal_side_of_ball"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "all_opposing_lines"
+            },
+            "description": "",
+            "name": "line_collection_scope",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
+            }
+          },
           {
             "default": {
               "payload_type": "number",
@@ -9722,7 +9744,7 @@
           "version": "1.0.0"
         }
       ],
-      "description": "Canonical runtime binding for multi_line_model 0.1.0.",
+      "description": "Canonical runtime binding for multi_line_model 0.2.0.",
       "display_name": "multi_line_model runtime binding",
       "evidence_contracts": [
         {
@@ -9766,7 +9788,7 @@
         "created_from": [],
         "description": "Exposure policy for multi_line_model.",
         "display_name": "multi_line_model exposure",
-        "id": "exposure.runtime.multi_line_model.0_1_0",
+        "id": "exposure.runtime.multi_line_model.0_2_0",
         "kind": "ExposurePolicy",
         "owners": [],
         "parameter_overrides": {},
@@ -9775,7 +9797,7 @@
         "reviewed_recipes": "ALLOWED",
         "reviewers": [],
         "status": "CURRENT",
-        "subject_ref": "runtime:primitive:multi_line_model:0.1.0",
+        "subject_ref": "runtime:primitive:multi_line_model:0.2.0",
         "supersedes": [],
         "tags": [],
         "version": "1.0.0"
@@ -9808,7 +9830,7 @@
         "created_from": [],
         "description": "Maturity assessment for multi_line_model.",
         "display_name": "multi_line_model maturity",
-        "id": "maturity.runtime.multi_line_model.0_1_0",
+        "id": "maturity.runtime.multi_line_model.0_2_0",
         "implementation": "IMPLEMENTED",
         "kind": "MaturityAssessment",
         "owners": [],
@@ -9816,7 +9838,7 @@
         "reviewers": [],
         "semantic": "REVIEWED",
         "status": "CURRENT",
-        "subject_ref": "runtime:primitive:multi_line_model:0.1.0",
+        "subject_ref": "runtime:primitive:multi_line_model:0.2.0",
         "supersedes": [],
         "tags": [],
         "validation": "VERIFIED",
@@ -9936,7 +9958,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "5929261f0a02cbb10e61732c0ca8300286fa02b190a6f786b4a704cd50763092",
+      "passport_hash": "f6df1a92f2456397313188d57c86f73f6a9f769bde80ce97df7830f80bfbfa62",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -9944,13 +9966,14 @@
       "runtime_capability": {
         "id": "multi_line_model",
         "kind": "primitive",
-        "version": "0.1.0"
+        "version": "0.2.0"
       },
       "runtime_contract": {
         "ai_authorable_by_runtime_context": true,
         "evidence_fields": [
           "multi_line_status",
           "line_evaluation_frame_id",
+          "line_collection_scope",
           "target_line_rank",
           "observed_line_count",
           "observed_lines",
@@ -10007,6 +10030,7 @@
               "multi_line_status",
               "multi_line_reason",
               "line_evaluation_frame_id",
+              "line_collection_scope",
               "target_line_rank",
               "observed_line_count",
               "observed_lines",
@@ -10050,6 +10074,22 @@
           }
         ],
         "parameters": [
+          {
+            "allowed_values": [
+              "all_opposing_lines",
+              "goal_side_of_ball"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "all_opposing_lines"
+            },
+            "description": "Collect all opposing-team bands or explicitly retain the legacy goal-side-of-ball scope.",
+            "name": "line_collection_scope",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
           {
             "default": {
               "payload_type": "number",
@@ -10098,7 +10138,7 @@
               "unit": "count",
               "value": 2
             },
-            "description": "Geometric goal-side line rank to expose for downstream relative-position tests.",
+            "description": "Normalized longitudinal line rank to expose for downstream relative-position tests.",
             "maximum": 4.0,
             "minimum": 1.0,
             "name": "target_line_rank",
@@ -10127,12 +10167,12 @@
             "unit": "none"
           }
         ],
-        "purpose": "Fit ranked observed defensive line bands at supplied anchor frames. Rank is geometric order goal-side of the ball, not tactical role taxonomy.",
-        "runtime_id": "primitive:multi_line_model:0.1.0",
-        "version": "0.1.0"
+        "purpose": "Fit all adequately observed opposing-team geometric line bands at supplied anchor frames. Rank is normalized longitudinal order, not tactical role taxonomy.",
+        "runtime_id": "primitive:multi_line_model:0.2.0",
+        "version": "0.2.0"
       },
       "status": "CURRENT",
-      "subject_ref": "runtime:primitive:multi_line_model:0.1.0"
+      "subject_ref": "runtime:primitive:multi_line_model:0.2.0"
     },
     {
       "binding": {
@@ -28137,16 +28177,16 @@
   "projection_id": "priori.capability_passport_projection.afl08",
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "3fae99910dc339e35e2492aa1fe240d73373d50336e6a1be3566f33f83ffc80a",
+    "baseline_artifact_revision": "981f3fd129ac710051faa78a0b959ec8c963612bef949373c2af6f926dfa8748",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "61888feaebbbaba14e892aeab79aec8d093ea92bb260b856d82a28f82224ef2b",
+    "lock_hash": "b22aabdadf8cd2ade56e90d7c1a221e81cee46b9006a61faf9b7ccceb514c306",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "759913210c5d58cc9d706d6027fe339328c7de9ac50889511f9e5d71e3384ff8",
+    "registry_revision": "d42cba00d7a72820d89d07edca04a153c3be75de8ad6ad61809939f515935786",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "2c7ff846bd9022cc20d9a47e40145695d7932d52e7bd3054e51b9109ad9f930a",
+    "runtime_manifest_revision": "99391f34d33d4338dcfd70915f64cd0e87b900e1520423a5887db9949d67b7b6",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"

@@ -3156,6 +3156,7 @@
       "evidence_fields": [
         "multi_line_status",
         "line_evaluation_frame_id",
+        "line_collection_scope",
         "target_line_rank",
         "observed_line_count",
         "observed_lines",
@@ -3212,6 +3213,7 @@
             "multi_line_status",
             "multi_line_reason",
             "line_evaluation_frame_id",
+            "line_collection_scope",
             "target_line_rank",
             "observed_line_count",
             "observed_lines",
@@ -3255,6 +3257,22 @@
         }
       ],
       "parameters": [
+        {
+          "allowed_values": [
+            "all_opposing_lines",
+            "goal_side_of_ball"
+          ],
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "all_opposing_lines"
+          },
+          "description": "Collect all opposing-team bands or explicitly retain the legacy goal-side-of-ball scope.",
+          "name": "line_collection_scope",
+          "payload_type": "enum",
+          "required": false,
+          "unit": "none"
+        },
         {
           "default": {
             "payload_type": "number",
@@ -3303,7 +3321,7 @@
             "unit": "count",
             "value": 2
           },
-          "description": "Geometric goal-side line rank to expose for downstream relative-position tests.",
+          "description": "Normalized longitudinal line rank to expose for downstream relative-position tests.",
           "maximum": 4.0,
           "minimum": 1.0,
           "name": "target_line_rank",
@@ -3332,9 +3350,9 @@
           "unit": "none"
         }
       ],
-      "purpose": "Fit ranked observed defensive line bands at supplied anchor frames. Rank is geometric order goal-side of the ball, not tactical role taxonomy.",
-      "runtime_id": "primitive:multi_line_model:0.1.0",
-      "version": "0.1.0"
+      "purpose": "Fit all adequately observed opposing-team geometric line bands at supplied anchor frames. Rank is normalized longitudinal order, not tactical role taxonomy.",
+      "runtime_id": "primitive:multi_line_model:0.2.0",
+      "version": "0.2.0"
     },
     {
       "ai_authorable_by_runtime_context": true,
@@ -9801,6 +9819,6 @@
       "unit": "none"
     }
   ],
-  "runtime_manifest_revision": "2c7ff846bd9022cc20d9a47e40145695d7932d52e7bd3054e51b9109ad9f930a",
+  "runtime_manifest_revision": "99391f34d33d4338dcfd70915f64cd0e87b900e1520423a5887db9949d67b7b6",
   "schema_version": "1.0"
 }
