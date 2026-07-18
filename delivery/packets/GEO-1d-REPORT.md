@@ -134,7 +134,7 @@ contract ratchet, not a silent re-certification.
 | Q3 frozen read-compare | PASS — 13 results, no evidence failures |
 | Q6 frozen read-compare | PASS — honest zero, no evidence failures |
 | Focused GEO-0c/GEO-1 and ratchet tests | PASS (included in full discovery) |
-| Full `unittest discover` | PENDING FINAL RUN |
+| Full `unittest discover` | PASS — 651/651 in 532.876s |
 
 No registry additions, tactical role names, or legal-offside claims were
 introduced. No memory path changed, so the 2 GiB sealed law is not triggered.
