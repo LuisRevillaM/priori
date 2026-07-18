@@ -32,6 +32,7 @@ LANE_PARTITION_LIMITATION = (
 
 ANCHOR_EVALUATION_COVERAGE_STATUS_FIELDS: dict[str, str] = {
     "fragile_carrier_episode": "attribution_status",
+    "fragile_state_eligibility": "fragile_state_status",
     "transition_anchor": "transition_status",
     "structured_zone": "zone_status",
     "space_region_generation": "open_space_status",
@@ -218,6 +219,33 @@ def relation(
 
 def default_primitives() -> list[CatalogEntry]:
     return [
+        primitive(
+            name="fragile_state_eligibility",
+            version="0.1.0",
+            purpose="Certify CAR fragile-state eligibility from reused pressure-qualified episode evidence without adding context geometry.",
+            inputs=[input_ref(name="episodes", temporal_type=TemporalContainer.EPISODE_SET,
+                              payload_type=PayloadType.BOOLEAN, cardinality=Cardinality.COLLECTION,
+                              entity_scope=EntityScope.POSSESSION)],
+            outputs=[
+                output(name="eligibility_evaluations", temporal_type=TemporalContainer.EPISODE_SET,
+                       payload_type=PayloadType.ANCHOR_REF, cardinality=Cardinality.COLLECTION,
+                       entity_scope=EntityScope.POSSESSION,
+                       evidence_fields=["episode_id", "onset_frame_id", "onset_carrier_id",
+                                        "fragile_state_status", "fragile_state_reason",
+                                        "pressure_source_signature", "entry_dwell_seconds",
+                                        "same_episode_gap_tolerance_s"]),
+                output(name="fragile_state_status", temporal_type=TemporalContainer.FRAME_SIGNAL,
+                       payload_type=PayloadType.ENUM, cardinality=Cardinality.SINGLE,
+                       entity_scope=EntityScope.POSSESSION, allowed_values=["PASS", "FAIL", "UNKNOWN"],
+                       evidence_fields=["episode_id", "fragile_state_status", "fragile_state_reason"]),
+            ],
+            evidence_fields=["episode_id", "fragile_state_eligibility_id", "fragile_state_status",
+                             "fragile_state_reason", "pressure_source_signature", "entry_dwell_seconds",
+                             "same_episode_gap_tolerance_s", "optional_context_required"],
+            limitations=["Consumes certified pressure-qualified episodes; it has no pressure thresholds.",
+                         "Local numbers, support arrival, confinement, and escape geometry are not eligibility requirements.",
+                         "No continuity, baseline, score, or player aggregation is produced."],
+        ),
         primitive(
             name="fragile_carrier_episode",
             version="0.1.0",
@@ -5434,6 +5462,9 @@ def default_relations() -> list[CatalogEntry]:
                         "pressure_frame_id",
                         "carrier_id_field",
                         "carrier_id",
+                        "possession_id",
+                        "controlled_reception_status",
+                        "episode_boundary_status",
                         "pressure_defending_team_role",
                         "nearest_defender_id",
                         "nearest_defender_distance_m",

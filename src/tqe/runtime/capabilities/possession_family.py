@@ -40,6 +40,7 @@ from tqe.runtime.executor import (
 )
 from tqe.runtime.controlled_pass import align_event_to_frame
 from tqe.runtime.fragile_carrier_episode import EpisodeIdentityConfig, build_fragile_carrier_episodes
+from tqe.runtime.fragile_state_eligibility import evaluate_fragile_state_eligibility
 from tqe.runtime.ir import BoundCatalogNode, Unit
 from tqe.runtime.one_touch import EVENT_COLUMNS
 from tqe.runtime.pass_bypass import attack_x_sign_for
@@ -60,7 +61,12 @@ def primitive_fragile_carrier_episode(state: PeriodState, node: BoundCatalogNode
             continue
         record["pressure_frame_id"] = frame_id
         record["match_id"] = str(record.get("match_id") or state.match_id)
-        record["period"] = int(record.get("period") or state.period)
+        period_value = record.get("period") or state.period
+        record["period"] = (
+            int(period_value)
+            if str(period_value).isdigit()
+            else {"firstHalf": 1, "secondHalf": 2}[str(period_value)]
+        )
         record["team_role"] = str(record.get("team_role") or state.perspective_team_role)
         possession_field = node_parameter_text(node, "possession_id_field")
         possession_id = record.get(possession_field)
@@ -88,12 +94,56 @@ def primitive_fragile_carrier_episode(state: PeriodState, node: BoundCatalogNode
             refractory_after_resolution_s=node_parameter_number(node, "refractory_after_resolution_s"),
         ),
     )
+    episodes = [
+        {
+            **item,
+            "anchor_id": item["episode_id"],
+            "anchor_frame_id": item["onset_frame_id"],
+            "start_frame_id": item["onset_frame_id"],
+            "end_frame_id": item["last_pressure_frame_id"],
+            "entity_refs": [item["onset_carrier_id"]] if item["onset_carrier_id"] else [],
+        }
+        for item in episodes
+    ]
     state.signals[node.node_id] = {
         "episodes": episodes,
         "attribution_status": FrameSignal(
             frame_ids=[int(item["onset_frame_id"]) for item in episodes],
             values=[item["attribution_status"] if item["attribution_status"] != "UNKNOWN" else None for item in episodes],
             unknown_mask=[item["attribution_status"] == "UNKNOWN" for item in episodes],
+            unit=node.outputs[1].unit,
+            entity_scope=node.outputs[1].entity_scope,
+        ),
+    }
+
+
+def primitive_fragile_state_eligibility(state: PeriodState, node: BoundCatalogNode) -> None:
+    """Evaluate CAR eligibility from certified fragile episode evidence only."""
+    value = catalog_input_value(state, node, "episodes")
+    evaluations = evaluate_fragile_state_eligibility(
+        dict(item) for item in runtime_records(value) if isinstance(item, dict)
+    )
+    evaluations = [
+        {
+            **item,
+            "anchor_id": anchor_record_id(
+                match_id=str(item["match_id"]),
+                period=int(item["period"]),
+                anchor_frame_id=int(item["onset_frame_id"]),
+                start_frame_id=int(item["onset_frame_id"]),
+                end_frame_id=int(item["last_pressure_frame_id"]),
+                entity_refs=list(item.get("entity_refs") or []),
+            ),
+        }
+        for item in evaluations
+    ]
+    state.signals[node.node_id] = {
+        "eligibility_evaluations": evaluations,
+        "fragile_state_status": FrameSignal(
+            frame_ids=[int(item["onset_frame_id"]) for item in evaluations],
+            values=[None if item["fragile_state_status"] == "UNKNOWN"
+                    else item["fragile_state_status"] for item in evaluations],
+            unknown_mask=[item["fragile_state_status"] == "UNKNOWN" for item in evaluations],
             unit=node.outputs[1].unit,
             entity_scope=node.outputs[1].entity_scope,
         ),

@@ -5,6 +5,7 @@ import unittest
 
 from tqe.runtime.catalog import default_catalog
 from tqe.runtime.fragile_carrier_episode import build_fragile_carrier_episodes
+from tqe.runtime.fragile_state_eligibility import evaluate_fragile_state_eligibility
 
 
 def obs(t: int, status: str = "PASS", carrier: str | None = "p1", **extra):
@@ -82,3 +83,48 @@ class FragileCarrierEpisodeTests(unittest.TestCase):
         assert refs == {"observation_frame_field": "frame", "onset_carrier_id_field": "entity",
             "possession_id_field": "provenance", "pressure_status_field": "status",
             "carrier_control_status_field": "status", "boundary_status_field": "status"}
+
+
+class FragileStateEligibilityTests(unittest.TestCase):
+    def test_certified_episode_is_eligible_without_optional_context_geometry(self):
+        episode = build_fragile_carrier_episodes([obs(0)])[0]
+        episode.update(support_arrival_status="UNKNOWN", local_number_status="UNKNOWN",
+                       escape_route_status="UNKNOWN")
+        result = evaluate_fragile_state_eligibility([episode])[0]
+        assert result["fragile_state_status"] == "PASS"
+        assert result["optional_context_required"] is False
+
+    def test_ambiguous_carrier_is_retained_as_unknown(self):
+        episode = build_fragile_carrier_episodes(
+            [obs(0, carrier=None, carrier_candidate_ids=["p1", "p2"])]
+        )[0]
+        result = evaluate_fragile_state_eligibility([episode])[0]
+        assert result["fragile_state_status"] == "UNKNOWN"
+        assert result["episode_id"] == episode["episode_id"]
+
+    def test_missing_certified_pressure_source_is_unknown_not_fail(self):
+        episode = build_fragile_carrier_episodes([obs(0)])[0]
+        episode["pressure_source_signature"] = None
+        result = evaluate_fragile_state_eligibility([episode])[0]
+        assert result["fragile_state_status"] == "UNKNOWN"
+        assert result["fragile_state_reason"] == "pressure_source_signature_missing"
+
+    def test_uncertified_pressure_absence_is_unknown_not_fail(self):
+        episode = build_fragile_carrier_episodes([obs(0)])[0]
+        episode["coverage_status"] = "UNKNOWN"
+        result = evaluate_fragile_state_eligibility([episode])[0]
+        assert result["fragile_state_status"] == "UNKNOWN"
+        assert result["fragile_state_reason"] == "pressure_coverage_unknown"
+
+    def test_missing_entry_dwell_echo_is_unknown(self):
+        episode = build_fragile_carrier_episodes([obs(0)])[0]
+        episode["pressure_parameter_echo"].pop("minimum_pressure_duration_seconds")
+        result = evaluate_fragile_state_eligibility([episode])[0]
+        assert result["fragile_state_status"] == "UNKNOWN"
+        assert result["fragile_state_reason"] == "pressure_entry_dwell_echo_missing"
+
+    def test_predicate_preserves_episode_gap_law_and_identity(self):
+        episode = build_fragile_carrier_episodes([obs(0), obs(200, "FAIL"), obs(440)])[0]
+        result = evaluate_fragile_state_eligibility([episode])[0]
+        assert result["episode_id"] == episode["episode_id"]
+        assert result["same_episode_gap_tolerance_s"] == 0.4
