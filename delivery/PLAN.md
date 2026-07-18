@@ -94,6 +94,22 @@ field-domain mechanism; CAR ladder rungs 1-2 when a pitch needs them.
 4. EXAM-1 remaining sessions (window sweeps, E2, E3) — director.
 5. SCP2-E sealed exam under the two-sided bar — the Gate 1 closer.
 
+OWNER PRIORITY RULING (2026-07-18, verbatim intent): the ENGINE
+FOUNDATIONS outrank CAR — "tri-state logic, algebra, sequence and
+time generalized, compiler, the vocabulary... CAR should be able to
+be powered by a really powerful algebra engine." Consequence: the
+ALG era (three-valued logic + population set algebra + generalized
+sequence/time + general comparison) and SCP-3 Move 1 (the external-
+correspondence evaluation oracle) move to the FRONT of the main
+lane. The CAR era PARKS after CAR-0b (its landed packets — episode
+identity, fragility predicate — stand; the field-domain packets
+R2-1b/c transfer to ALG where they always belonged: numeric
+aggregation is algebra). CAR resumes post-ALG as the new algebra's
+flagship consumer and stress test. GEO-2..6 continue interleaved
+(vocabulary = the nouns; ALG = the connectives). In flight
+(GALLERY-2b) and owner-found product fixes (FILM-3) complete on
+their own track.
+
 GEO era (ADR 0018, owner-opened 2026-07-16): three substrate laws
 then six primitives (between_observed_lines, pitch_region_membership,
 point_pair_metric, team_distribution_relative_to_reference,
