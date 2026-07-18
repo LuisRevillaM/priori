@@ -733,7 +733,7 @@
           "projection_contract_hash": "a796f3d6ca9399358c6bf535d0d7d8f57509bbf9763661cf191c76e346af9d3b"
         }
       },
-      "baseline_count": 61,
+      "baseline_count": 62,
       "contract_changed": [
         "recipe:ball_side_block_shift_v1:1.0.0",
         "recipe:first_time_relay_after_receiver_line_transition_v1:0.1.0",
@@ -796,7 +796,7 @@
           "projection_contract_hash": "0d1daea8595cd6fe2d7c3a8b483f05efa3fea99dbe5e9df496c443783d8b4f70"
         }
       },
-      "projection_count": 49,
+      "projection_count": 50,
       "removed": [
         "runtime:primitive:acceleration:0.1.0",
         "runtime:primitive:cover_shadow:0.1.0",
@@ -853,14 +853,14 @@
           "baseline_contract_hash": "4cf1558ccf3ed95deb1fea53b10166cb7144b63af1b1b8fa8b45b623425a6708"
         }
       },
-      "shared_count": 48
+      "shared_count": 49
     },
     "baseline_sources": {
-      "baseline_artifact_revision": "bff844ebc85d0ebd4a8a7fafffaedb1e6700ecb90685f310a093c3d92f9ebd09",
+      "baseline_artifact_revision": "3fae99910dc339e35e2492aa1fe240d73373d50336e6a1be3566f33f83ffc80a",
       "capability_catalog": {
         "exists": true,
         "path": "generated/capability-catalog.json",
-        "source_artifact_sha256": "523fd0dde035faa6e35136d9699219d39c6e03606fbced3c5b3299f8028111ee"
+        "source_artifact_sha256": "109c7791c79d24941947ae0024f0642b00538e502f017ab11d9719fe7fb44e04"
       },
       "product_recipe_contracts": {
         "frozen_baseline": false,
@@ -871,7 +871,7 @@
       "tactical_knowledge_pack": {
         "exists": true,
         "path": "generated/tactical-knowledge-pack.json",
-        "source_artifact_sha256": "0370689c417819a940e2b5a740acc7753601bf4c556d1efcdb84f2fe8138c044"
+        "source_artifact_sha256": "5cb96b4ce9fde3a097dfe56c19245c156948542048e67d5c69699f95302c5a7c"
       }
     },
     "product": {
@@ -883,10 +883,10 @@
           "projection_contract_hash": "a796f3d6ca9399358c6bf535d0d7d8f57509bbf9763661cf191c76e346af9d3b"
         }
       },
-      "baseline_count": 55,
+      "baseline_count": 56,
       "contract_changed": [],
       "contract_changed_details": {},
-      "projection_count": 43,
+      "projection_count": 44,
       "recipe_contract_baseline_mode": "current_runtime_alignment",
       "recipe_contract_baseline_note": "Product recipe contracts are compared against current runtime manifest recipes until a pinned product recipe baseline artifact exists.",
       "recipe_contract_frozen_baseline": false,
@@ -946,7 +946,7 @@
           "baseline_contract_hash": "4cf1558ccf3ed95deb1fea53b10166cb7144b63af1b1b8fa8b45b623425a6708"
         }
       },
-      "shared_count": 42
+      "shared_count": 43
     }
   },
   "recipes": {
@@ -958,26 +958,26 @@
   },
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "bff844ebc85d0ebd4a8a7fafffaedb1e6700ecb90685f310a093c3d92f9ebd09",
+    "baseline_artifact_revision": "3fae99910dc339e35e2492aa1fe240d73373d50336e6a1be3566f33f83ffc80a",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "4a361074ffd42168991b094f620f3f84b73c81f59d8a1eaf11c7a8995d70e267",
+    "lock_hash": "61888feaebbbaba14e892aeab79aec8d093ea92bb260b856d82a28f82224ef2b",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "268433b423c4f035de64bf7344d981ae393169ab3db1e3f6036ba9e010be6da1",
+    "registry_revision": "759913210c5d58cc9d706d6027fe339328c7de9ac50889511f9e5d71e3384ff8",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "b158b310883ea9033637ba485c21aa85b435806c8cbe6c565b491e56417e952c",
+    "runtime_manifest_revision": "2c7ff846bd9022cc20d9a47e40145695d7932d52e7bd3054e51b9109ad9f930a",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"
   },
   "runtime_capabilities": {
-    "bound": 49,
+    "bound": 50,
     "duplicate_bindings": 0,
-    "including_operators_total": 57,
+    "including_operators_total": 58,
     "orphaned": 0,
-    "runtime_total": 49,
+    "runtime_total": 50,
     "unresolved_bindings": 0
   },
   "schema_version": "1.0",

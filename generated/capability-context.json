@@ -875,14 +875,15 @@
                 "definition": {
                   "allowed_values": [
                     "declared_ranks",
-                    "deepest_observed_line"
+                    "deepest_observed_line",
+                    "entity_relative_bracketing"
                   ],
                   "default": {
                     "payload_type": "enum",
                     "unit": "none",
                     "value": "declared_ranks"
                   },
-                  "description": "Select the declared farther rank or the deepest identifiable observed geometric line.",
+                  "description": "Select declared ranks, the deepest observed line, or the unique adjacent observed pair bracketing the entity.",
                   "name": "line_selector",
                   "payload_type": "enum",
                   "required": false,
@@ -944,7 +945,7 @@
                 }
               }
             },
-            "version": "0.1.0"
+            "version": "0.2.0"
           },
           "outputs": [
             {
@@ -1065,7 +1066,7 @@
             "line_boundary_buffer_m",
             "minimum_interline_gap_m"
           ],
-          "version": "0.1.0"
+          "version": "0.2.0"
         },
         "carry_episode": {
           "kind": "primitive",
@@ -21395,14 +21396,15 @@
         {
           "allowed_values": [
             "declared_ranks",
-            "deepest_observed_line"
+            "deepest_observed_line",
+            "entity_relative_bracketing"
           ],
           "default": {
             "payload_type": "enum",
             "unit": "none",
             "value": "declared_ranks"
           },
-          "description": "Select the declared farther rank or the deepest identifiable observed geometric line.",
+          "description": "Select declared ranks, the deepest observed line, or the unique adjacent observed pair bracketing the entity.",
           "name": "line_selector",
           "payload_type": "enum",
           "required": false,
@@ -21481,7 +21483,7 @@
         }
       ],
       "purpose": "Classify an entity as strictly between two selected observed geometric line bands in attacking-direction-normalized coordinates.",
-      "version": "0.1.0"
+      "version": "0.2.0"
     },
     {
       "agent_authorable": true,

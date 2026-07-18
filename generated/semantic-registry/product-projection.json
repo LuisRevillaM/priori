@@ -284,7 +284,7 @@
       "version": "0.1.0"
     },
     {
-      "binding_id": "binding.primitive.between_observed_lines.0_1_0",
+      "binding_id": "binding.primitive.between_observed_lines.0_2_0",
       "conformance": "EXACT",
       "id": "between_observed_lines",
       "implements": [
@@ -455,14 +455,15 @@
           {
             "allowed_values": [
               "declared_ranks",
-              "deepest_observed_line"
+              "deepest_observed_line",
+              "entity_relative_bracketing"
             ],
             "default": {
               "payload_type": "enum",
               "unit": "none",
               "value": "declared_ranks"
             },
-            "description": "Select the declared farther rank or the deepest identifiable observed geometric line.",
+            "description": "Select declared ranks, the deepest observed line, or the unique adjacent observed pair bracketing the entity.",
             "name": "line_selector",
             "payload_type": "enum",
             "required": false,
@@ -541,11 +542,11 @@
           }
         ],
         "purpose": "Classify an entity as strictly between two selected observed geometric line bands in attacking-direction-normalized coordinates.",
-        "runtime_id": "primitive:between_observed_lines:0.1.0",
-        "version": "0.1.0"
+        "runtime_id": "primitive:between_observed_lines:0.2.0",
+        "version": "0.2.0"
       },
       "semantic_maturity": "REVIEWED",
-      "version": "0.1.0"
+      "version": "0.2.0"
     },
     {
       "binding_id": "binding.primitive.carry_episode.0_1_0",
@@ -7244,16 +7245,16 @@
   ],
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "2a8d2ac3e873b574d98e8847e0e46dcc321c77d9dfbb80cc0256b7f25c0dfe0a",
+    "baseline_artifact_revision": "3fae99910dc339e35e2492aa1fe240d73373d50336e6a1be3566f33f83ffc80a",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "6ca0f5444e8032807788db7bba62daf37ce0c979a408daba749da9aa6a64a090",
+    "lock_hash": "61888feaebbbaba14e892aeab79aec8d093ea92bb260b856d82a28f82224ef2b",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "f560f1f3f78fac45ca195e3e5f3522653565c24604330d23749069adf24f012d",
+    "registry_revision": "759913210c5d58cc9d706d6027fe339328c7de9ac50889511f9e5d71e3384ff8",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "d6e80cf4791aa0ff41b2860b5bf2854348749f914b2c568a1c2e4e59530f36d6",
+    "runtime_manifest_revision": "2c7ff846bd9022cc20d9a47e40145695d7932d52e7bd3054e51b9109ad9f930a",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"

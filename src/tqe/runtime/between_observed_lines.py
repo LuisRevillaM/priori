@@ -17,6 +17,7 @@ FAIL = "FAIL"
 UNKNOWN = "UNKNOWN"
 DECLARED_RANKS = "declared_ranks"
 DEEPEST_OBSERVED_LINE = "deepest_observed_line"
+ENTITY_RELATIVE_BRACKETING = "entity_relative_bracketing"
 
 
 @dataclass(frozen=True)
@@ -110,7 +111,7 @@ def evaluate_between_observed_lines(
         return BetweenObservedLinesEvaluation(
             status=status,
             reason=reason,
-            definition_version="between_observed_lines.v1",
+            definition_version="between_observed_lines.v2",
             entity_id=entity_id,
             entity_frame_id=entity_frame_id,
             line_evaluation_frame_id=line_frame_id,
@@ -181,7 +182,9 @@ def evaluate_between_observed_lines(
             "observed_lines_invalid" if line_status == PASS else "selected_line_not_observed",
             normalized_entity_x_m=normalized_entity_x,
         )
-    selected, selection_reason = _select_lines(lines, config=config)
+    selected, selection_reason = _select_lines(
+        lines, config=config, normalized_entity_x_m=normalized_entity_x
+    )
     if selected is None:
         return result(
             FAIL if adequate and selection_reason == "selected_line_not_observed" else UNKNOWN,
@@ -229,7 +232,9 @@ def _validate_config(config: BetweenObservedLinesConfig) -> None:
         raise ValueError("line ranks must be positive")
     if config.nearer_line_rank >= config.farther_line_rank:
         raise ValueError("nearer_line_rank must be less than farther_line_rank")
-    if config.line_selector not in {DECLARED_RANKS, DEEPEST_OBSERVED_LINE}:
+    if config.line_selector not in {
+        DECLARED_RANKS, DEEPEST_OBSERVED_LINE, ENTITY_RELATIVE_BRACKETING
+    }:
         raise ValueError(f"unsupported line_selector {config.line_selector}")
     for name, value in (
         ("line_boundary_buffer_m", config.line_boundary_buffer_m),
@@ -243,6 +248,7 @@ def _select_lines(
     lines: Sequence[Any],
     *,
     config: BetweenObservedLinesConfig,
+    normalized_entity_x_m: float,
 ) -> tuple[tuple[dict[str, Any], dict[str, Any]] | None, str]:
     parsed: list[dict[str, Any]] = []
     for raw in lines:
@@ -253,6 +259,20 @@ def _select_lines(
     by_rank = {int(line["line_rank"]): line for line in parsed}
     if len(by_rank) != len(parsed):
         return None, "observed_line_rank_ambiguous"
+    if config.line_selector == ENTITY_RELATIVE_BRACKETING:
+        ordered = sorted(parsed, key=lambda line: float(line["normalized_line_x_m"]))
+        candidates = [
+            (ball_side, goal_side)
+            for ball_side, goal_side in zip(ordered, ordered[1:])
+            if float(ball_side["normalized_line_x_m"]) <= normalized_entity_x_m
+            <= float(goal_side["normalized_line_x_m"])
+        ]
+        if len(candidates) != 1:
+            return None, (
+                "entity_relative_bracketing_not_observed"
+                if not candidates else "entity_relative_bracketing_ambiguous"
+            )
+        return candidates[0], "entity_relative_bracketing_observed"
     nearer = by_rank.get(config.nearer_line_rank)
     if config.line_selector == DECLARED_RANKS:
         farther = by_rank.get(config.farther_line_rank)

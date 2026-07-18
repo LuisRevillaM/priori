@@ -3690,7 +3690,7 @@ def default_primitives() -> list[CatalogEntry]:
         ),
         primitive(
             name="between_observed_lines",
-            version="0.1.0",
+            version="0.2.0",
             purpose=(
                 "Classify an entity as strictly between two selected observed "
                 "geometric line bands in attacking-direction-normalized coordinates."
@@ -3797,8 +3797,8 @@ def default_primitives() -> list[CatalogEntry]:
                     payload_type=PayloadType.ENUM,
                     unit=Unit.NONE,
                     default=typed_enum("declared_ranks"),
-                    allowed_values=["declared_ranks", "deepest_observed_line"],
-                    description="Select the declared farther rank or the deepest identifiable observed geometric line.",
+                    allowed_values=["declared_ranks", "deepest_observed_line", "entity_relative_bracketing"],
+                    description="Select declared ranks, the deepest observed line, or the unique adjacent observed pair bracketing the entity.",
                 ),
                 parameter(
                     name="entity_id_field",

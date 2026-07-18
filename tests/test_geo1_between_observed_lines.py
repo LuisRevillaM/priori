@@ -3,6 +3,7 @@ from __future__ import annotations
 import unittest
 
 from tqe.runtime.between_observed_lines import (
+    ENTITY_RELATIVE_BRACKETING,
     BetweenObservedLinesConfig,
     evaluate_between_observed_lines,
 )
@@ -78,6 +79,29 @@ def evaluate(
 
 
 class BetweenObservedLinesGeometryTests(unittest.TestCase):
+    def test_entity_relative_selector_chooses_unique_adjacent_bracketing_pair(self) -> None:
+        result = evaluate(
+            5.0,
+            evidence=line_evidence(lines=[observed_line(1, -8.0), observed_line(2, 0.0), observed_line(3, 12.0)]),
+            config=BetweenObservedLinesConfig(line_selector=ENTITY_RELATIVE_BRACKETING),
+        )
+        self.assertEqual("PASS", result.status)
+        self.assertEqual(2, result.selected_nearer_line_rank)
+        self.assertEqual(3, result.selected_farther_line_rank)
+        self.assertEqual("between_observed_lines.v2", result.definition_version)
+
+    def test_entity_relative_selector_preserves_boundary_unknown(self) -> None:
+        result = evaluate(
+            0.25,
+            evidence=line_evidence(lines=[observed_line(1, 0.0), observed_line(2, 10.0)]),
+            config=BetweenObservedLinesConfig(
+                line_selector=ENTITY_RELATIVE_BRACKETING,
+                line_boundary_buffer_m=0.5,
+            ),
+        )
+        self.assertEqual("UNKNOWN", result.status)
+        self.assertEqual("entity_within_line_boundary_buffer", result.reason)
+
     def test_strict_signed_geometry_passes_in_both_attacking_directions(self) -> None:
         forward = evaluate(7.0)
         mirrored = evaluate(-7.0, evidence=line_evidence(direction=-1))
@@ -212,7 +236,7 @@ class BetweenObservedLinesCatalogTests(unittest.TestCase):
         entry = next(
             item
             for item in default_catalog().primitives
-            if item.name == "between_observed_lines" and item.version == "0.1.0"
+            if item.name == "between_observed_lines" and item.version == "0.2.0"
         )
         parameters = {parameter.name: parameter for parameter in entry.parameters}
 
