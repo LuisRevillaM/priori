@@ -3559,10 +3559,10 @@ def default_primitives() -> list[CatalogEntry]:
         ),
         primitive(
             name="multi_line_model",
-            version="0.1.0",
+            version="0.2.0",
             purpose=(
-                "Fit ranked observed defensive line bands at supplied anchor frames. "
-                "Rank is geometric order goal-side of the ball, not tactical role taxonomy."
+                "Fit all adequately observed opposing-team geometric line bands at supplied anchor frames. "
+                "Rank is normalized longitudinal order, not tactical role taxonomy."
             ),
             inputs=[
                 input_ref(
@@ -3586,6 +3586,7 @@ def default_primitives() -> list[CatalogEntry]:
                         "multi_line_status",
                         "multi_line_reason",
                         "line_evaluation_frame_id",
+                        "line_collection_scope",
                         "target_line_rank",
                         "observed_line_count",
                         "observed_lines",
@@ -3615,6 +3616,13 @@ def default_primitives() -> list[CatalogEntry]:
                 ),
             ],
             parameters=[
+                parameter(
+                    name="line_collection_scope",
+                    payload_type=PayloadType.ENUM,
+                    default=typed_enum("all_opposing_lines"),
+                    allowed_values=["all_opposing_lines", "goal_side_of_ball"],
+                    description="Collect all opposing-team bands or explicitly retain the legacy goal-side-of-ball scope.",
+                ),
                 parameter(
                     name="goal_side_buffer_m",
                     payload_type=PayloadType.NUMBER,
@@ -3649,7 +3657,7 @@ def default_primitives() -> list[CatalogEntry]:
                     default=typed_number(2, Unit.COUNT),
                     minimum=1,
                     maximum=4,
-                    description="Geometric goal-side line rank to expose for downstream relative-position tests.",
+                    description="Normalized longitudinal line rank to expose for downstream relative-position tests.",
                 ),
                 parameter(
                     name="anchor_frame_field",
@@ -3668,6 +3676,7 @@ def default_primitives() -> list[CatalogEntry]:
             evidence_fields=[
                 "multi_line_status",
                 "line_evaluation_frame_id",
+                "line_collection_scope",
                 "target_line_rank",
                 "observed_line_count",
                 "observed_lines",

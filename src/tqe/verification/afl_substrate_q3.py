@@ -187,11 +187,12 @@ def q3_document() -> dict[str, Any]:
                     "kind": "primitive",
                     "node_id": "second_line_at_release",
                     "catalog_ref": "multi_line_model",
-                    "version": "0.1.0",
+                    "version": "0.2.0",
                     "inputs": {
                         "anchors": {"source_node_id": "controlled_pass", "output_name": "anchors"},
                     },
                     "parameters": {
+                        "line_collection_scope": {"payload_type": "enum", "unit": "none", "value": "goal_side_of_ball"},
                         "goal_side_buffer_m": {"kind": "parameter", "name": "goal_side_buffer_m"},
                         "line_band_width_m": {"kind": "parameter", "name": "line_band_width_m"},
                         "minimum_line_defenders": {"kind": "parameter", "name": "minimum_line_defenders"},

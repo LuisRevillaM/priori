@@ -2375,11 +2375,11 @@ runtime_bindings:
       minimum_line_defenders: minimum_line_defenders
       anchor_frame_field: anchor_frame_field
 
-  - id: binding.primitive.multi_line_model.0_1_0
+  - id: binding.primitive.multi_line_model.0_2_0
     kind: RuntimeBinding
     display_name: multi_line_model runtime binding
-    description: Canonical runtime binding for multi_line_model 0.1.0.
-    runtime_capability: {id: multi_line_model, version: 0.1.0, kind: primitive}
+    description: Canonical runtime binding for multi_line_model 0.2.0.
+    runtime_capability: {id: multi_line_model, version: 0.2.0, kind: primitive}
     implementation_ref: impl.multi_line_model.python.v1
     implements: [op.observed_multi_line_model.v1]
     conformance_status: PARTIAL
@@ -2392,6 +2392,11 @@ runtime_bindings:
       anchor_evaluations: {runtime_port: anchor_evaluations}
       multi_line_status: {runtime_port: multi_line_status}
     semantic_parameters:
+      - name: line_collection_scope
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: all_opposing_lines, unit: none}
+        allowed_values: [all_opposing_lines, goal_side_of_ball]
       - name: goal_side_buffer_m
         type: {container: Scalar, value: Scalar, unit: metre}
         required: false
@@ -2422,6 +2427,7 @@ runtime_bindings:
         default: {payload_type: enum, value: physical_release_frame_id, unit: none}
         allowed_values: [anchor_frame_id, physical_release_frame_id, controlled_reception_frame_id, event_anchor_frame_id]
     parameter_bindings:
+      line_collection_scope: line_collection_scope
       goal_side_buffer_m: goal_side_buffer_m
       line_band_width_m: line_band_width_m
       minimum_line_defenders: minimum_line_defenders
@@ -5220,11 +5226,11 @@ exposure_policies:
     subject_ref: runtime:primitive:carry_episode:0.1.0
     ai_compiler: ALLOWED
     product: ALLOWED
-  - id: exposure.runtime.multi_line_model.0_1_0
+  - id: exposure.runtime.multi_line_model.0_2_0
     kind: ExposurePolicy
     display_name: multi_line_model exposure
     description: Exposure policy for multi_line_model.
-    subject_ref: runtime:primitive:multi_line_model:0.1.0
+    subject_ref: runtime:primitive:multi_line_model:0.2.0
     ai_compiler: ALLOWED
     product: ALLOWED
   - id: exposure.runtime.pressure_on_carrier.0_1_0
@@ -5971,11 +5977,11 @@ maturity_assessments:
     validation: VERIFIED
     agent_safety: APPROVED
     product: EXPOSED
-  - id: maturity.runtime.multi_line_model.0_1_0
+  - id: maturity.runtime.multi_line_model.0_2_0
     kind: MaturityAssessment
     display_name: multi_line_model maturity
     description: Maturity assessment for multi_line_model.
-    subject_ref: runtime:primitive:multi_line_model:0.1.0
+    subject_ref: runtime:primitive:multi_line_model:0.2.0
     semantic: REVIEWED
     implementation: IMPLEMENTED
     validation: VERIFIED

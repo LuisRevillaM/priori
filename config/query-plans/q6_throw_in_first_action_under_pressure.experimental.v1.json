@@ -121,6 +121,11 @@
         "kind": "primitive",
         "node_id": "first_line_at_release",
         "parameters": {
+          "line_collection_scope": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "goal_side_of_ball"
+          },
           "anchor_frame_field": {
             "payload_type": "enum",
             "unit": "none",
@@ -144,7 +149,7 @@
             "value": 1
           }
         },
-        "version": "0.1.0"
+        "version": "0.2.0"
       },
       {
         "catalog_ref": "relative_position_to_line",
