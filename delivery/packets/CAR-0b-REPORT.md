@@ -170,4 +170,4 @@ row moved. STOP delta: **zero**.
 | CAR-0a + CAR-0b mutation tests | PASS — 15/15 |
 | SCP-0, vocabulary, typed-field ratchets | PASS — focused set 103/103 |
 | Byte-reproducing producer | PASS — 5,818 candidates / 518 episodes; matching plan and table hashes |
-| Full `unittest discover` | PENDING FINAL RUN |
+| Full `unittest discover` | PASS — 657/657 in 564.176s |
