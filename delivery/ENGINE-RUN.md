@@ -28,6 +28,10 @@ E5. Coach vocabulary layer: saved, versioned, parameterized
 E6. Hermes serves the full grammar: pack projections regenerated,
     dev evals re-run, capability honestly reported.
 E7. In-flight product truth completes: GALLERY-2b, FILM-3.
+E8. Span Dossier Contract standing (ADR 0021) — the uniform span
+    artifact every match-producing query emits.
+E9. The Tier Law ratified constitution-grade (ADR 0021) and enforced
+    on every serving surface.
 
 ## Standing mechanics (unchanged laws)
 
