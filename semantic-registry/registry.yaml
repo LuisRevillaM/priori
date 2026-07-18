@@ -2466,11 +2466,11 @@ runtime_bindings:
       entity_frame_field: entity_frame_field
       line_buffer_m: line_buffer_m
 
-  - id: binding.primitive.between_observed_lines.0_1_0
+  - id: binding.primitive.between_observed_lines.0_2_0
     kind: RuntimeBinding
     display_name: between_observed_lines runtime binding
-    description: Canonical runtime binding for between_observed_lines 0.1.0.
-    runtime_capability: {id: between_observed_lines, version: 0.1.0, kind: primitive}
+    description: Canonical runtime binding for between_observed_lines 0.2.0.
+    runtime_capability: {id: between_observed_lines, version: 0.2.0, kind: primitive}
     implementation_ref: impl.between_observed_lines.python.v1
     implements: [op.between_observed_lines.v1]
     conformance_status: EXACT
@@ -2499,7 +2499,7 @@ runtime_bindings:
         type: {container: Scalar, value: Enum, unit: none}
         required: false
         default: {payload_type: enum, value: declared_ranks, unit: none}
-        allowed_values: [declared_ranks, deepest_observed_line]
+        allowed_values: [declared_ranks, deepest_observed_line, entity_relative_bracketing]
       - name: entity_id_field
         type: {container: Scalar, value: Enum, unit: none}
         required: false
@@ -5108,11 +5108,11 @@ exposure_policies:
     subject_ref: runtime:primitive:relative_position_to_line:0.1.0
     ai_compiler: ALLOWED
     product: ALLOWED
-  - id: exposure.runtime.between_observed_lines.0_1_0
+  - id: exposure.runtime.between_observed_lines.0_2_0
     kind: ExposurePolicy
     display_name: between_observed_lines exposure
     description: Exposure policy for coverage-aware signed geometry between observed lines.
-    subject_ref: runtime:primitive:between_observed_lines:0.1.0
+    subject_ref: runtime:primitive:between_observed_lines:0.2.0
     ai_compiler: ALLOWED
     product: ALLOWED
   - id: exposure.runtime.controlled_line_break_episode.0_1_0
@@ -5811,11 +5811,11 @@ maturity_assessments:
     validation: VERIFIED
     agent_safety: APPROVED
     product: EXPOSED
-  - id: maturity.runtime.between_observed_lines.0_1_0
+  - id: maturity.runtime.between_observed_lines.0_2_0
     kind: MaturityAssessment
     display_name: between_observed_lines maturity
     description: Maturity assessment for the ADR 0018 signed observed-line geometry primitive.
-    subject_ref: runtime:primitive:between_observed_lines:0.1.0
+    subject_ref: runtime:primitive:between_observed_lines:0.2.0
     semantic: REVIEWED
     implementation: IMPLEMENTED
     validation: VERIFIED

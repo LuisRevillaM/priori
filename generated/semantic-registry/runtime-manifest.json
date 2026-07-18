@@ -666,14 +666,15 @@
         {
           "allowed_values": [
             "declared_ranks",
-            "deepest_observed_line"
+            "deepest_observed_line",
+            "entity_relative_bracketing"
           ],
           "default": {
             "payload_type": "enum",
             "unit": "none",
             "value": "declared_ranks"
           },
-          "description": "Select the declared farther rank or the deepest identifiable observed geometric line.",
+          "description": "Select declared ranks, the deepest observed line, or the unique adjacent observed pair bracketing the entity.",
           "name": "line_selector",
           "payload_type": "enum",
           "required": false,
@@ -752,8 +753,8 @@
         }
       ],
       "purpose": "Classify an entity as strictly between two selected observed geometric line bands in attacking-direction-normalized coordinates.",
-      "runtime_id": "primitive:between_observed_lines:0.1.0",
-      "version": "0.1.0"
+      "runtime_id": "primitive:between_observed_lines:0.2.0",
+      "version": "0.2.0"
     },
     {
       "ai_authorable_by_runtime_context": true,
@@ -9800,6 +9801,6 @@
       "unit": "none"
     }
   ],
-  "runtime_manifest_revision": "d6e80cf4791aa0ff41b2860b5bf2854348749f914b2c568a1c2e4e59530f36d6",
+  "runtime_manifest_revision": "2c7ff846bd9022cc20d9a47e40145695d7932d52e7bd3054e51b9109ad9f930a",
   "schema_version": "1.0"
 }
