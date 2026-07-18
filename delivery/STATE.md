@@ -1,7 +1,7 @@
 # STATE — Entrelíneas
 
 Updated: 2026-07-18 (DIRECTOR-grade)
-**Phase:** Gate 1 human gates remain; GEO+CAR eras interleaving (flagship between-lines ANSWERED: 121/4,189)
+**Phase:** THE ENGINE RUN (delivery/ENGINE-RUN.md) — autonomous mandate to ship the engine; ALG counsel in flight; GALLERY-2b executing
 **Read order:** STATE → PLAN → STEWARDSHIP → LEDGER → active packet
 
 ## Where we are
